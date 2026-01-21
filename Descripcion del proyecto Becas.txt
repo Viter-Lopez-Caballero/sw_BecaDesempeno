@@ -1,0 +1,9 @@
+Descripción General del Sistema
+El sistema gestiona solicitudes de becas académicas para profesores. Los profesores suben documentos PDFs para cumplir requisitos, y envían solicitudes. Los evaluadores revisan con rúbricas estandarizadas (preguntas cerradas Si/No y escala Likert de 1-5). Los administradores asignan evaluadores, revisan documentos y toman la decisión final. Los superadministradores supervisan todo, generan reportes y gestionan usuarios de alto nivel.
+
+Roles y Responsabilidades
+
+Profesor: Sube documentos en PDF, actualiza su perfil perfil.
+Administrador: Asigna evaluadores, revisa documentos, aprueba/rechaza solicitudes (última palabra), gestiona evaluadores.
+Evaluador: Revisa solicitudes asignadas, aplica rúbrica de evaluación.
+Superadministrador: Supervisa todo, registra administradores, genera reportes y gráficas.

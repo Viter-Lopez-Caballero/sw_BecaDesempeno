@@ -11,7 +11,7 @@ import LandingLayout from '@/layouts/LandingLayout.vue';
         <section class="py-16 bg-gray-50">
              <div class="max-w-4xl mx-auto px-4 sm:px-6">
                 <div class="text-center mb-12">
-                     <h2 class="text-3xl font-bold text-[#002B5C] mb-4">Documentos de Trabajo 2026</h2>
+                     <h2 class="text-3xl md:text-4xl  font-bold text-[#000000] mb-4">Documentos de Trabajo 2026</h2>
                      <div class="h-1 w-24 bg-blue-500 mx-auto rounded"></div>
                 </div>
 

@@ -48,7 +48,7 @@ const showingNavigationDropdown = ref(false);
                         </div>
 
                         <div class="flex items-center space-x-3 absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 md:static md:transform-none md:translate-x-0 md:translate-y-0">
-                            <img src="/img/LogoTecNMCerrado.png" alt="TecNM" class="block md:hidden h-10 w-auto" />
+                            <img src="/img/LogoTecNMCompleto.png" alt="TecNM" class="block md:hidden h-10 w-auto" />
                             
                             <img src="/img/LogoTecNMCompleto.png" alt="TecNM" class="hidden md:block h-12 w-auto" />
                             
@@ -70,7 +70,7 @@ const showingNavigationDropdown = ref(false);
                         </Link>
                         <Link
                             :href="route('register')"
-                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition font-medium shadow-sm"
+                            class="text-white hover:text-blue-300 transition font-medium"
                         >
                             REGISTRARSE
                         </Link>

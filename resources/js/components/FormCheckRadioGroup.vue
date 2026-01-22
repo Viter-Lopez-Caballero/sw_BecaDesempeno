@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from "vue";
-import FormCheckRadio from '@/Components/FormCheckRadio.vue';
+import FormCheckRadio from "@/Components/FormCheckRadio.vue";
 
 const props = defineProps({
   options: {
@@ -21,6 +21,8 @@ const props = defineProps({
     default: null,
   },
   isColumn: Boolean,
+  inputValue: String,
+  inputKey: String,
   modelValue: {
     type: [Array, String, Number, Boolean],
     default: null,
@@ -44,12 +46,12 @@ const computedValue = computed({
   >
     <FormCheckRadio
       v-for="(value, key) in options"
-      :key="key"
+      :key="value[inputKey] ?? key"
       v-model="computedValue"
       :type="type"
       :name="name"
-      :input-value="key"
-      :label="value"
+      :input-value="value[inputKey] ?? key"
+      :label="value[inputValue] ??value"
       :class="componentClass"
       class="mr-6 mb-3 last:mr-0"
     />

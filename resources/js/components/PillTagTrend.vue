@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from "vue";
 import { mdiChevronUp, mdiChevronDown, mdiAlertCircleOutline } from "@mdi/js";
-import PillTag from '@/Components/PillTag.vue';
+import PillTag from "@/Components/PillTag.vue";
 
 const props = defineProps({
   trend: {

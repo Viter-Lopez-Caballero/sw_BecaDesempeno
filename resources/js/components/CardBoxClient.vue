@@ -1,10 +1,10 @@
 <script setup>
 import { computed } from "vue";
 import { mdiTrendingDown, mdiTrendingUp, mdiTrendingNeutral } from "@mdi/js";
-import CardBox from '@/Components/CardBox.vue';
-import BaseLevel from '@/Components/BaseLevel.vue';
-import PillTag from '@/Components/PillTag.vue';
-import UserAvatar from '@/Components/UserAvatar.vue';
+import CardBox from "@/Components/CardBox.vue";
+import BaseLevel from "@/Components/BaseLevel.vue";
+import PillTag from "@/Components/PillTag.vue";
+import UserAvatar from "@/Components/UserAvatar.vue";
 
 const props = defineProps({
   name: {
@@ -63,6 +63,7 @@ const pillIcon = computed(() => {
 
 const pillText = computed(() => props.text ?? `${props.progress}%`);
 </script>
+
 <template>
   <CardBox class="mb-6 last:mb-0" is-hoverable>
     <BaseLevel>

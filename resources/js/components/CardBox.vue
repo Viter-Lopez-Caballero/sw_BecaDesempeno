@@ -1,16 +1,28 @@
 <script setup>
 import { computed, useSlots } from "vue";
-import CardBoxComponentBody from '@/Components/CardBoxComponentBody.vue';
-import CardBoxComponentFooter from '@/Components/CardBoxComponentFooter.vue';
+import CardBoxComponentBody from "@/Components/CardBoxComponentBody.vue";
+import CardBoxComponentFooter from "@/Components/CardBoxComponentFooter.vue";
 
 const props = defineProps({
   rounded: {
     type: String,
-    default: "rounded-2xl",
+    default: "rounded-xl",
+  },
+  padding: {
+    type: String,
+    default: "p-1",
   },
   flex: {
     type: String,
     default: "flex-col",
+  },
+  bg: {
+    type: String,
+    default: "bg-white",
+  },
+  hasBorder: {
+    type: Boolean,
+    default: true,
   },
   hasComponentLayout: Boolean,
   hasTable: Boolean,
@@ -27,6 +39,8 @@ const hasFooterSlot = computed(() => slots.footer && !!slots.footer());
 
 const componentClass = computed(() => {
   const base = [
+    props.bg,
+    props.padding,
     props.rounded,
     props.flex,
     props.isModal ? "dark:bg-slate-900" : "dark:bg-slate-900/70",
@@ -34,6 +48,10 @@ const componentClass = computed(() => {
 
   if (props.isHoverable) {
     base.push("hover:shadow-lg transition-shadow duration-500");
+  }
+
+  if (props.hasBorder) {
+    base.push("border-2 border-forest-50/60 dark:border-gray-700");
   }
 
   return base;
@@ -48,7 +66,6 @@ const submit = (event) => {
   <component
     :is="isForm ? 'form' : 'div'"
     :class="componentClass"
-    class="bg-white flex"
     @submit="submit"
   >
     <slot v-if="hasComponentLayout" />

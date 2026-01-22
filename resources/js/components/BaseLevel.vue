@@ -1,5 +1,5 @@
 <script>
-import { h, defineComponent } from 'vue';
+import { h, defineComponent } from "vue";
 
 export default defineComponent({
   name: "BaseLevel",
@@ -12,12 +12,12 @@ export default defineComponent({
   },
   render() {
     const parentClass = [this.type, "items-center"];
-    const parentMobileClass = ["flex"];
-    const parentBaseClass = ["block", "md:flex"];
-    const childBaseClass = ["flex", "items-center", "justify-center"];
 
-    // Verificar si el slot predeterminado es una función
-    const defaultSlot = this.$slots.default ? this.$slots.default() : [];
+    const parentMobileClass = ["flex"];
+
+    const parentBaseClass = ["block", "md:flex"];
+
+    const childBaseClass = ["flex", "items-center", "justify-center"];
 
     return h(
       "div",
@@ -26,9 +26,9 @@ export default defineComponent({
           this.mobile ? parentMobileClass : parentBaseClass
         ),
       },
-      defaultSlot.map((element, index) => {
+      this.$slots.default().map((element, index) => {
         const childClass =
-          !this.mobile && defaultSlot.length > index + 1
+          !this.mobile && this.$slots.default().length > index + 1
             ? childBaseClass.concat(["mb-6", "md:mb-0"])
             : childBaseClass;
 

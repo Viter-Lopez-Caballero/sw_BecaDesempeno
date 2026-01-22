@@ -23,22 +23,22 @@ Route::get('/contacto', function () {
     return Inertia::render('Contacto');
 })->name('contacto');
 
-use App\Http\Controllers\ModuloController;
-use App\Http\Controllers\PermissionController;
-use App\Http\Controllers\UsuarioController;
-use App\Http\Controllers\PerfilesController;
+use App\Http\Controllers\Security\ModuleController;
+use App\Http\Controllers\Security\PermissionController;
+use App\Http\Controllers\Security\RoleController;
+use App\Http\Controllers\Security\UserController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
 
-    Route::resource('modulo', ModuloController::class)->names('modulo');
-    Route::get('modulo/recover/{id}', [ModuloController::class, 'recover'])->name('modulo.recover');
-    Route::resource('permissions', PermissionController::class)->names('permissions');
-    
-    Route::resource('usuarios', UsuarioController::class)->names('usuarios');
-    Route::resource('perfiles', PerfilesController::class)->names('perfiles');
+    // Security Module
+    Route::resource('modules', ModuleController::class);
+    Route::resource('permissions', PermissionController::class);
+    Route::resource('roles', RoleController::class);
+    Route::resource('users', UserController::class);
 });
 
 require __DIR__.'/settings.php';
+

@@ -3,11 +3,12 @@ import { mdiChevronUp, mdiChevronDown } from "@mdi/js";
 import { Link } from "@inertiajs/vue3";
 import { computed, ref, onMounted, onBeforeUnmount } from "vue";
 import { useStyleStore } from "@/stores/style.js";
-import BaseIcon from '@/Components/BaseIcon.vue';
-import UserAvatarCurrentUser from '@/Components/UserAvatarCurrentUser.vue';
-import NavBarMenuList from '@/Components/NavBarMenuList.vue';
-import BaseDivider from '@/Components/BaseDivider.vue';
 import { usePage } from "@inertiajs/vue3";
+import { useMainStore } from "@/stores/main.js";
+import BaseIcon from "@/Components/BaseIcon.vue";
+import UserAvatarCurrentUser from "@/Components/UserAvatarCurrentUser.vue";
+import NavBarMenuList from "@/Components/NavBarMenuList.vue";
+import BaseDivider from "@/Components/BaseDivider.vue";
 
 const props = defineProps({
   item: {
@@ -16,11 +17,11 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(["menu-click"]);
+
 const itemHref = computed(() =>
   props.item.route ? route(props.item.route) : props.item.href
 );
-
-const emit = defineEmits(["menu-click"]);
 
 const is = computed(() => {
   if (props.item.href) {
@@ -51,9 +52,20 @@ const componentClass = computed(() => {
   return base;
 });
 
-const itemLabel = computed(() =>
-  props.item.isCurrentUser ? usePage().props.auth.user.name : props.item.label
-);
+const itemLabel = computed(() => {
+  if (props.item.isCurrentUser) {
+    return usePage().props.auth.user.name;
+  } else if (props.item.isRol) {
+    const roles = usePage().props.auth.user.roles;
+    if (roles.length > 0) {
+      return roles[0].name;
+    } else {
+      return "Sin Rol"; // Cuando el user no tiene rol
+    }
+  } else {
+    return props.item.label;
+  }
+});
 
 const isDropdownActive = ref(false);
 
@@ -98,7 +110,8 @@ onBeforeUnmount(() => {
     ref="root"
     class="block lg:flex items-center relative cursor-pointer"
     :class="componentClass"
-    :href="itemHref"
+    :to="item.to ?? null"
+    :href="item.href ?? null"
     :target="item.target ?? null"
     @click="menuClick"
   >
@@ -111,9 +124,9 @@ onBeforeUnmount(() => {
     >
       <UserAvatarCurrentUser
         v-if="item.isCurrentUser"
-        class="w-6 h-6 mr-3 inline-flex"
+        class="w-8 h-8 mr-3 inline-flex"
       />
-      <BaseIcon v-if="item.icon" :path="item.icon" class="transition-colors" />
+      <BaseIcon v-if="item.icon" :path="item.icon" class="transition-colors" :class="item.bg" />
       <span
         class="px-2 transition-colors"
         :class="{ 'lg:hidden': item.isDesktopNoLabel && item.icon }"

@@ -23,6 +23,8 @@ const props = defineProps({
     type: [String, Number, Boolean],
     required: true,
   },
+  labelClass: String,
+  componentClass: String,
 });
 
 const emit = defineEmits(["update:modelValue"]);
@@ -37,17 +39,21 @@ const computedValue = computed({
 const inputType = computed(() =>
   props.type === "radio" ? "radio" : "checkbox"
 );
+
+const classes = computed(() => {
+  return [
+    props.type,
+    props.componentClass,
+  ];
+});
 </script>
 
 <template>
-  <label :class="type">
-    <input
-      v-model="computedValue"
-      :type="inputType"
-      :name="name"
-      :value="inputValue"
-    />
-    <span class="check" />
-    <span class="pl-2">{{ label }}</span>
+  <label :class="classes">
+    <div>
+      <input v-model="computedValue" :type="inputType" :name="name" :value="inputValue" />
+      <span class="check" />
+    </div>
+    <span class="pl-2" :class="labelClass">{{ label }}</span>
   </label>
 </template>

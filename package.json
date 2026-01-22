@@ -33,6 +33,7 @@
         "@inertiajs/vue3": "^2.3.7",
         "@mdi/js": "^7.4.47",
         "@vueuse/core": "^12.8.2",
+        "@vueuse/integrations": "^14.1.0",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "laravel-vite-plugin": "^2.0.0",

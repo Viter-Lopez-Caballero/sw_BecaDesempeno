@@ -1,5 +1,7 @@
 <script setup>
 import { computed } from "vue";
+import { Link, useForm, usePage } from '@inertiajs/vue3';
+import { IMAGES } from "@/Utils/Image";
 
 const props = defineProps({
   username: {
@@ -10,31 +12,24 @@ const props = defineProps({
     type: String,
     default: null,
   },
-  api: {
-    type: String,
-    default: "avataaars",
-  },
 });
 
-const avatar = computed(
-  () =>
-    props.avatar ??
-    `https://avatars.dicebear.com/api/${props.api}/${props.username.replace(
-      /[^a-z0-9]+/i,
-      "-"
-    )}.svg`
-);
+const user = usePage().props.auth.user;
+
+const avatar = computed(() => {
+    if (user.file) {
+        return user.file.path
+    }
+    return IMAGES.user.src
+});
 
 const username = computed(() => props.username);
 </script>
 
 <template>
   <div>
-    <img
-      :src="avatar"
-      :alt="username"
-      class="rounded-full block h-auto w-full max-w-full bg-gray-100 dark:bg-slate-800"
-    />
+    <img :src="avatar" :alt="username"
+      class="rounded-full block h-auto w-full max-w-full bg-gray-100 dark:bg-slate-800" />
     <slot />
   </div>
 </template>

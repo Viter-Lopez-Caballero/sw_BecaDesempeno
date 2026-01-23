@@ -5,7 +5,7 @@ import { Link } from "@inertiajs/vue3";
 
 import BaseIcon from "@/Components/BaseIcon.vue";
 import IconRounded from "@/Components/IconRounded.vue";
-import { colorsBgLight } from "@/colors";
+import { colorsBgLight } from "@/config/colors";
 
 const props = defineProps({
   icon: String,

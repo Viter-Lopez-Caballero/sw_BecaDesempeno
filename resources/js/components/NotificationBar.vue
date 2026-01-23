@@ -2,10 +2,10 @@
 import { ref } from 'vue';
 import BaseIcon from './BaseIcon.vue';
 import { computed } from 'vue';
-import { colorsBg, colorsBgLight, colorsOutline, colorsText } from '@/colors';
+import { colorsBgLight, colorsOutline, colorsText } from '@/config/colors';
 import BaseButton from './BaseButton.vue';
 import { mdiClose } from '@mdi/js';
-import { getButtonColor } from '@/colors';
+import { getButtonColor } from '@/config/colors';
 
 const props = defineProps({
     icon: {

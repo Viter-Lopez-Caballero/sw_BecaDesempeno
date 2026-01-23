@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from "vue";
-import { colorsBgLight, colorsOutline } from "@/colors.js";
+import { colorsBgLight, colorsOutline } from "@/config/colors.js";
 import PillTagPlain from "@/Components/PillTagPlain.vue";
 
 const props = defineProps({

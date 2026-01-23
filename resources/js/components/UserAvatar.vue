@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from "vue";
 import { Link, useForm, usePage } from '@inertiajs/vue3';
-import { IMAGES } from "@/Utils/Image";
+import { IMAGES } from "@/utils/image";
 
 const props = defineProps({
   username: {

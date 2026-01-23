@@ -53,8 +53,8 @@ import CardSection from './CardSection.vue';
 import FileForm from './FileForm.vue';
 import FileModal from './FileModal.vue';
 import InputError from './InputError.vue';
-import { useFile, useFileModal } from '@/Hooks/useFile';
-import { getButtonColor } from '@/colors.js';
+import { useFile, useFileModal } from '@/composables/useFile';
+import { getButtonColor } from '@/config/colors.js';
 import { mdiFileDocumentOutline, mdiPlus } from '@mdi/js';
 
 const { form } = defineProps({

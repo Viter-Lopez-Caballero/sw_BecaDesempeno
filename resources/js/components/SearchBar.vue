@@ -59,11 +59,11 @@
 </template>
 
 <script setup>
-import BaseButton from "@/Components/BaseButton.vue";
-import CardBox from "@/Components/CardBox.vue";
-import FormControl from "@/Components/FormControl.vue";
-import FormField from "@/Components/FormField.vue";
-import DropdownItem from "@/Components/DropdownItem.vue";
+import BaseButton from "@/components/BaseButton.vue";
+import CardBox from "@/components/CardBox.vue";
+import FormControl from "@/components/FormControl.vue";
+import FormField from "@/components/FormField.vue";
+import DropdownItem from "@/components/DropdownItem.vue";
 import {
     mdiBroom,
     mdiPlus,
@@ -74,7 +74,7 @@ import {
 import { onMounted, ref, watch } from "vue";
 import BaseButtons from "./BaseButtons.vue";
 import BaseIcon from "./BaseIcon.vue";
-import { verifyPermission } from "@/Hooks/usePermissions";
+import { verifyPermission } from "@/composables/usePermissions";
 
 const emits = defineEmits(['clearFilters', 'applyFilters']);
 

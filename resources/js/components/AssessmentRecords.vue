@@ -36,7 +36,7 @@
 
 <script setup>
 import CardBoxComponentEmpty from './CardBoxComponentEmpty.vue';
-import { IMAGES } from "@/Utils/Image";
+import { IMAGES } from "@/utils/image";
 
 defineProps({
     assessments: {

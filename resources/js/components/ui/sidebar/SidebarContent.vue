@@ -1,6 +1,6 @@
 <script setup>
 import { cn } from "@/lib/utils";
-import { IMAGES } from "@/Utils/Image";
+import { IMAGES } from "@/utils/image";
 
 const props = defineProps({
   class: { type: null, required: false },

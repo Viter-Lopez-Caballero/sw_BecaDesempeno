@@ -25,7 +25,7 @@ class UsuarioSeeder extends Seeder
         // 2. Crear Usuarios de prueba
         $userSuperAdmin = User::create([
             'name' => 'Super Admin',
-            'email' => 'superadmin@becas.com',
+            'email' => 'superadmin@gmail.com',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
         ]);
@@ -33,23 +33,23 @@ class UsuarioSeeder extends Seeder
 
         $userAdmin = User::create([
             'name' => 'Administrador',
-            'email' => 'admin@becas.com',
+            'email' => 'admin@gmail.com',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
         ]);
         $userAdmin->assignRole($admin);
 
         $userDocente = User::create([
-            'name' => 'Profesor Juan',
-            'email' => 'juan@docente.com',
+            'name' => 'Diego Eduardo Jaimez Flores',
+            'email' => 'diego@gmail.com',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
         ]);
         $userDocente->assignRole($docente);
 
         $userEvaluador = User::create([
-            'name' => 'Evaluador Ana',
-            'email' => 'ana@evaluador.com',
+            'name' => 'Abraham Avelino Pichardo',
+            'email' => 'abraham@gmail.com',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
         ]);

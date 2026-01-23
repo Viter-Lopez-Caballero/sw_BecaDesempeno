@@ -3,10 +3,10 @@ import { ref, computed } from "vue";
 import { Link } from "@inertiajs/vue3";
 import { useStyleStore } from "@/stores/style.js";
 import { mdiMinus, mdiPlus } from "@mdi/js";
-import { getButtonColor } from "@/colors.js";
+import { getButtonColor } from "@/config/colors.js";
 import BaseIcon from "@/Components/BaseIcon.vue";
 import AsideMenuList from "@/Components/AsideMenuList.vue";
-import { useCan, useRole } from '@/Hooks/usePermissions' 
+import { useCan, useRole } from '@/composables/usePermissions' 
 
 const props = defineProps({
     item: {

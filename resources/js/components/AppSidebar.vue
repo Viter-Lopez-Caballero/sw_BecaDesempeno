@@ -27,7 +27,7 @@ import AsideMenuList from "@/Layouts/Components/AsideMenuList.vue";
 import { useAside } from "@/Layouts/Composables/asideMenu.js";
 import AsideHeader from '@/Layouts/Components/AsideHeader.vue';
 import AsideFooter from '@/Layouts/Components/AsideFooter.vue';
-import { IMAGES } from '@/Utils/Image';
+import { IMAGES } from '@/utils/image';
 
 const props = defineProps({
   side: { type: String, required: false },

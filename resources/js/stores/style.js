@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import * as styles from "@/styles";
+import * as styles from "@/config/styles";
 import { darkModeKey, styleKey } from "@/config";
 
 export const useStyleStore = defineStore("style", {

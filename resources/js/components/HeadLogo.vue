@@ -1,5 +1,5 @@
 <script setup>
-import { IMAGES } from "@/Utils/Image";
+import { IMAGES } from "@/utils/image";
 import { Head } from "@inertiajs/vue3"
 
 defineProps({

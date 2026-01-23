@@ -14,7 +14,7 @@
 
 <script setup>
 import { cn } from '@/lib/utils';
-import { IMAGES } from '@/Utils/Image';
+import { IMAGES } from '@/utils/image';
 import { computed } from 'vue';
 
 const props = defineProps({

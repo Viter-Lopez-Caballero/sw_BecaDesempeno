@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import { useNFmt } from '@/Hooks/useFormato';
+import { useNFmt } from '@/composables/useFormato';
 import { Link } from '@inertiajs/vue3';
 import Loading from 'vue-loading-overlay';
 import { ref } from "vue";

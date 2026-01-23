@@ -29,9 +29,9 @@ use App\Http\Controllers\Security\RoleController;
 use App\Http\Controllers\Security\UserController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
+    Route::get('inicio', function () {
         return Inertia::render('Dashboard');
-    })->name('dashboard');
+    })->name('inicio.dashboard');
 
     // Security Module
     Route::resource('modules', ModuleController::class);

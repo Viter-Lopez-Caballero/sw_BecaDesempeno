@@ -27,13 +27,14 @@ class PermissionController extends Controller
     public function __construct()
     {
         $this->routeName = "permissions.";
-        $this->source    = "Core/Security/Permission/";
+        $this->source    = "Seguridad/Permisos/";
         $this->model     = new Permission();
 
-        $this->middleware("permission:{$this->routeName}index")->only(['index', 'show']);
-        $this->middleware("permission:{$this->routeName}create")->only(['store', 'create']);
-        $this->middleware("permission:{$this->routeName}edit")->only(['edit', 'update']);
-        $this->middleware("permission:{$this->routeName}delete")->only(['destroy']);
+        // TODO: Apply middleware in routes/web.php or use attributes
+        // $this->middleware("permission:{$this->routeName}index")->only(['index', 'show']);
+        // $this->middleware("permission:{$this->routeName}create")->only(['store', 'create']);
+        // $this->middleware("permission:{$this->routeName}edit")->only(['edit', 'update']);
+        // $this->middleware("permission:{$this->routeName}delete")->only(['destroy']);
     }
 
     public function index(Request $request): Response
@@ -51,7 +52,7 @@ class PermissionController extends Controller
 
         return Inertia::render("{$this->source}Index", [
             'title'         => 'Gestión de Permisos',
-            'permissions'   => PermissionResource::collection($permissions),
+            'permisos'      => PermissionResource::collection($permissions),
             'routeName'     => $this->routeName,
             'filters'       => $filters
         ]);

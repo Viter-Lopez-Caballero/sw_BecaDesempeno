@@ -76,4 +76,36 @@ class User extends Authenticatable
             return [$permission['name'] => true];
         });
     }
+
+    /**
+     * Get the primary role of the user
+     */
+    public function getPrimaryRole(): ?string
+    {
+        return $this->roles()->first()?->name;
+    }
+
+    /**
+     * Get the layout name based on user role
+     */
+    public function getLayoutName(): string
+    {
+        $role = $this->getPrimaryRole();
+        
+        return match($role) {
+            'Super Admin' => 'LayoutAuthenticated',
+            'Admin' => 'AdminLayout',
+            'Evaluador' => 'EvaluadorLayout',
+            'Docente' => 'DocenteLayout',
+            default => 'DocenteLayout',
+        };
+    }
+
+    /**
+     * Check if user has specific permission
+     */
+    public function canPermission(string $permission): bool
+    {
+        return $this->hasPermissionTo($permission);
+    }
 }

@@ -26,12 +26,14 @@ class UserController extends Controller
     public function __construct()
     {
         $this->routeName = "users.";
-        $this->source    = "Core/Security/User/";
+        $this->source    = "Seguridad/Usuarios/";
         $this->model     = new User();
-        $this->middleware("permission:{$this->routeName}index")->only(['index', 'show']);
-        $this->middleware("permission:{$this->routeName}create")->only(['store', 'create']);
-        $this->middleware("permission:{$this->routeName}edit")->only(['edit', 'update']);
-        $this->middleware("permission:{$this->routeName}delete")->only(['destroy']);
+        
+        // TODO: Apply middleware in routes/web.php or use attributes
+        // $this->middleware("permission:{$this->routeName}index")->only(['index', 'show']);
+        // $this->middleware("permission:{$this->routeName}create")->only(['store', 'create']);
+        // $this->middleware("permission:{$this->routeName}edit")->only(['edit', 'update']);
+        // $this->middleware("permission:{$this->routeName}delete")->only(['destroy']);
     }
 
     /**
@@ -58,7 +60,7 @@ class UserController extends Controller
 
         return Inertia::render("{$this->source}Index", [
             'title'     => 'Gestión de Usuarios',
-            'users'     => UserResource::collection($users),
+            'usuarios'  => UserResource::collection($users),
             'routeName' => $this->routeName,
             'filters'   => $filters
         ]);

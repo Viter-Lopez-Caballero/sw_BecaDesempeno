@@ -22,14 +22,15 @@ class ModuleController extends Controller
 
     public function __construct()
     {
-        $this->source = 'Core/Security/Module/';
+        $this->source = 'Seguridad/Modulos/';
         $this->model = new Module();
         $this->routeName = 'modules.';
 
-        $this->middleware("permission:{$this->routeName}index")->only(['index', 'show']);
-        $this->middleware("permission:{$this->routeName}create")->only(['store', 'create']);
-        $this->middleware("permission:{$this->routeName}edit")->only(['update', 'edit']);
-        $this->middleware("permission:{$this->routeName}delete")->only(['destroy']);
+        // TODO: Apply middleware in routes/web.php or use attributes
+        // $this->middleware("permission:{$this->routeName}index")->only(['index', 'show']);
+        // $this->middleware("permission:{$this->routeName}create")->only(['store', 'create']);
+        // $this->middleware("permission:{$this->routeName}edit")->only(['update', 'edit']);
+        // $this->middleware("permission:{$this->routeName}delete")->only(['destroy']);
     }
 
     /**
@@ -48,7 +49,7 @@ class ModuleController extends Controller
             ->withQueryString();
 
         return Inertia::render("{$this->source}Index", [
-            'modules'   => ModuleResource::collection($modules),
+            'modulos'   => ModuleResource::collection($modules),
             'title'     => 'Gestión de Módulos',
             'routeName' => $this->routeName,
             'filters'   => $filters

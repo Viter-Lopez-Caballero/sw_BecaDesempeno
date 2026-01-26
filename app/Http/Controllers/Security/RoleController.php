@@ -26,12 +26,14 @@ class RoleController extends Controller
     public function __construct()
     {
         $this->routeName = "roles.";
-        $this->source    = "Core/Security/Role/";
+        $this->source    = "Seguridad/Perfiles/";
         $this->model     = new Role();
-        $this->middleware("permission:{$this->routeName}index")->only(['index', 'show']);
-        $this->middleware("permission:{$this->routeName}create")->only(['store', 'create']);
-        $this->middleware("permission:{$this->routeName}edit")->only(['update', 'edit']);
-        $this->middleware("permission:{$this->routeName}delete")->only(['destroy']);
+        
+        // TODO: Apply middleware in routes/web.php or use attributes
+        // $this->middleware("permission:{$this->routeName}index")->only(['index', 'show']);
+        // $this->middleware("permission:{$this->routeName}create")->only(['store', 'create']);
+        // $this->middleware("permission:{$this->routeName}edit")->only(['update', 'edit']);
+        // $this->middleware("permission:{$this->routeName}delete")->only(['destroy']);
     }
 
     /**
@@ -51,7 +53,7 @@ class RoleController extends Controller
 
         return Inertia::render("{$this->source}Index", [
             'title'         => 'Gestión de Roles',
-            'roles'         => RoleResource::collection($roles),
+            'perfiles'      => RoleResource::collection($roles),
             'routeName'     => $this->routeName,
             'filters'       => $filters
         ]);

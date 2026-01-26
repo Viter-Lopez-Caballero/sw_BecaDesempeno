@@ -60,11 +60,11 @@
             <nav class="flex-1 overflow-y-auto py-4 custom-scrollbar">
                 <!-- Inicio -->
                 <Link
-                    :href="route('superadmin.inicio')"
+                    :href="route('evaluador.inicio')"
                     :class="[
                         'flex items-center py-3 transition-all duration-200 group relative before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-[80%] before:w-[4px] before:rounded-r-lg before:transition-colors',
                         sidebarCollapsed && !isMobile ? 'px-4 justify-center' : 'px-6',
-                        isActiveRoute('superadmin.inicio')
+                        isActiveRoute('evaluador.inicio')
                             ? 'bg-white/10 text-white before:bg-white'
                             : 'text-white/80 hover:bg-white/5 hover:text-white before:bg-transparent'
                     ]"
@@ -76,174 +76,40 @@
                     <span v-show="!sidebarCollapsed || isMobile" class="ml-3 text-sm font-medium">Inicio</span>
                 </Link>
 
-                <!-- Control de Solicitudes -->
+                <!-- Evaluaciones -->
                 <Link
-                    :href="route('superadmin.solicitudes.index')"
+                    :href="route('evaluador.evaluaciones.index')"
                     :class="[
                         'flex items-center py-3 transition-all duration-200 group relative before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-[80%] before:w-[4px] before:rounded-r-lg before:transition-colors',
                         sidebarCollapsed && !isMobile ? 'px-4 justify-center' : 'px-6',
-                        isActiveRoute('superadmin.solicitudes.index')
+                        isActiveRoute('evaluador.evaluaciones.index')
                             ? 'bg-white/10 text-white before:bg-white'
                             : 'text-white/80 hover:bg-white/5 hover:text-white before:bg-transparent'
                     ]"
-                    :title="sidebarCollapsed && !isMobile ? 'Control de Solicitudes' : ''"
+                    :title="sidebarCollapsed && !isMobile ? 'Evaluaciones' : ''"
                 >
                     <svg viewBox="0 0 24 24" class="w-5 h-5 flex-shrink-0">
-                        <path fill="currentColor" :d="mdiFileDocumentMultiple"/>
+                        <path fill="currentColor" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M15,18V16H6V18H15M18,14V12H6V14H18Z"/>
                     </svg>
-                    <span v-show="!sidebarCollapsed || isMobile" class="ml-3 text-sm font-medium">Control de Solicitudes</span>
+                    <span v-show="!sidebarCollapsed || isMobile" class="ml-3 text-sm font-medium">Evaluaciones</span>
                 </Link>
 
-                <!-- Convocatorias -->
+                <!-- Reconocimiento -->
                 <Link
-                    :href="route('superadmin.convocatorias.index')"
+                    :href="route('evaluador.reconocimiento.index')"
                     :class="[
                         'flex items-center py-3 transition-all duration-200 group relative before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-[80%] before:w-[4px] before:rounded-r-lg before:transition-colors',
                         sidebarCollapsed && !isMobile ? 'px-4 justify-center' : 'px-6',
-                        isActiveRoute('superadmin.convocatorias.index')
+                        isActiveRoute('evaluador.reconocimiento.index')
                             ? 'bg-white/10 text-white before:bg-white'
                             : 'text-white/80 hover:bg-white/5 hover:text-white before:bg-transparent'
                     ]"
-                    :title="sidebarCollapsed && !isMobile ? 'Convocatorias' : ''"
+                    :title="sidebarCollapsed && !isMobile ? 'Reconocimiento' : ''"
                 >
                     <svg viewBox="0 0 24 24" class="w-5 h-5 flex-shrink-0">
-                        <path fill="currentColor" :d="mdiBullhorn"/>
+                        <path fill="currentColor" d="M12,15.39L8.24,17.66L9.23,13.38L5.91,10.5L10.29,10.13L12,6.09L13.71,10.13L18.09,10.5L14.77,13.38L15.76,17.66M22,9.24L14.81,8.63L12,2L9.19,8.63L2,9.24L7.45,13.97L5.82,21L12,17.27L18.18,21L16.54,13.97L22,9.24Z"/>
                     </svg>
-                    <span v-show="!sidebarCollapsed || isMobile" class="ml-3 text-sm font-medium">Convocatorias</span>
-                </Link>
-
-                <!-- Seguridad (Collapsible) -->
-                <div v-if="!sidebarCollapsed || isMobile" class="mt-1">
-                    <button
-                        @click="securityExpanded = !securityExpanded"
-                        :class="[
-                            'w-full flex items-center justify-between px-6 py-3 transition-all duration-200 relative before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-[80%] before:w-[4px] before:rounded-r-lg before:transition-colors',
-                            securityExpanded || isSecurityActive()
-                                ? 'bg-white/10 text-white before:bg-white'
-                                : 'text-white/80 hover:bg-white/5 hover:text-white before:bg-transparent'
-                        ]"
-                    >
-                        <div class="flex items-center">
-                            <svg viewBox="0 0 24 24" class="w-5 h-5 flex-shrink-0">
-                                <path fill="currentColor" :d="mdiSecurity"/>
-                            </svg>
-                            <span class="ml-3 text-sm font-medium">Seguridad</span>
-                        </div>
-                        <svg
-                            viewBox="0 0 24 24"
-                            class="w-4 h-4 transition-transform duration-200"
-                            :class="{ 'rotate-90': securityExpanded }"
-                        >
-                            <path fill="currentColor" d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/>
-                        </svg>
-                    </button>
-
-                    <!-- Submenu -->
-                    <div
-                        v-show="securityExpanded"
-                        class="bg-[#152d47] py-1"
-                    >
-                        <Link
-                            v-for="item in securityItems"
-                            :key="item.route"
-                            :href="route(item.route)"
-                            :class="[
-                                'flex items-center px-4 py-2.5 pl-12 transition-colors duration-200',
-                                isActiveRoute(item.route)
-                                    ? 'bg-[#1e3a5f] text-white font-medium'
-                                    : 'text-gray-300 hover:bg-[#1e3a5f] hover:text-white'
-                            ]"
-                        >
-                            <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0">
-                                <path fill="currentColor" :d="item.icon"/>
-                            </svg>
-                            <span class="ml-3 text-sm">{{ item.label }}</span>
-                        </Link>
-                    </div>
-                </div>
-
-                <!-- Seguridad Icon Only (Collapsed) -->
-                <Link
-                    v-else
-                    :href="route('superadmin.modules.index')"
-                    :class="[
-                        'flex items-center py-3 px-4 justify-center transition-all duration-200 group relative before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-[80%] before:w-[4px] before:rounded-r-lg before:transition-colors',
-                        isSecurityActive()
-                            ? 'bg-white/10 text-white before:bg-white'
-                            : 'text-white/80 hover:bg-white/5 hover:text-white before:bg-transparent'
-                    ]"
-                    title="Seguridad"
-                >
-                    <svg viewBox="0 0 24 24" class="w-5 h-5 flex-shrink-0">
-                        <path fill="currentColor" :d="mdiSecurity"/>
-                    </svg>
-                </Link>
-
-                <!-- Catálogo (Collapsible) -->
-                <div v-if="!sidebarCollapsed || isMobile" class="mt-1">
-                    <button
-                        @click="catalogExpanded = !catalogExpanded"
-                        :class="[
-                            'w-full flex items-center justify-between px-6 py-3 transition-all duration-200 relative before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-[80%] before:w-[4px] before:rounded-r-lg before:transition-colors',
-                            catalogExpanded || isCatalogActive()
-                                ? 'bg-white/10 text-white before:bg-white'
-                                : 'text-white/80 hover:bg-white/5 hover:text-white before:bg-transparent'
-                        ]"
-                    >
-                        <div class="flex items-center">
-                            <svg viewBox="0 0 24 24" class="w-5 h-5 flex-shrink-0">
-                                <path fill="currentColor" :d="mdiBookOpenPageVariant"/>
-                            </svg>
-                            <span class="ml-3 text-sm font-medium">Catálogo</span>
-                        </div>
-                        <svg
-                            viewBox="0 0 24 24"
-                            class="w-4 h-4 transition-transform duration-200"
-                            :class="{ 'rotate-90': catalogExpanded }"
-                        >
-                            <path fill="currentColor" d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/>
-                        </svg>
-                    </button>
-
-                    <!-- Submenu -->
-                    <div
-                        v-show="catalogExpanded"
-                        class="bg-[#152d47] py-1"
-                    >
-                        <Link
-                            v-for="item in catalogItems"
-                            :key="item.route"
-                            :href="route(item.route)"
-                            :class="[
-                                'flex items-center px-4 py-2.5 pl-12 transition-colors duration-200',
-                                isActiveRoute(item.route)
-                                    ? 'bg-[#1e3a5f] text-white font-medium'
-                                    : 'text-gray-300 hover:bg-[#1e3a5f] hover:text-white'
-                            ]"
-                        >
-                            <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0">
-                                <path fill="currentColor" :d="item.icon"/>
-                            </svg>
-                            <span class="ml-3 text-sm">{{ item.label }}</span>
-                        </Link>
-                    </div>
-                </div>
-
-                <!-- Catálogo Icon Only (Collapsed) -->
-                <Link
-                    v-else
-                    :href="route('superadmin.catalogo.campus')"
-                    :class="[
-                        'flex items-center py-3 px-4 justify-center transition-all duration-200 group relative mt-1 before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-[80%] before:w-[4px] before:rounded-r-lg before:transition-colors',
-                        isCatalogActive()
-                            ? 'bg-white/10 text-white before:bg-white'
-                            : 'text-white/80 hover:bg-white/5 hover:text-white before:bg-transparent'
-                    ]"
-                    title="Catálogo"
-                >
-                    <svg viewBox="0 0 24 24" class="w-5 h-5 flex-shrink-0">
-                        <path fill="currentColor" :d="mdiBookOpenPageVariant"/>
-                    </svg>
+                    <span v-show="!sidebarCollapsed || isMobile" class="ml-3 text-sm font-medium">Reconocimiento</span>
                 </Link>
             </nav>
 
@@ -324,7 +190,7 @@
         <!-- Main Content -->
         <div class="flex-1 flex flex-col overflow-hidden">
             <!-- Page Content -->
-            <main class="flex-1 overflow-y-auto bg-gray-50 p-4">
+            <main class="flex-1 overflow-y-auto bg-gray-50 p-6">
                 <!-- Toggle Button -->
                 <div class="mb-4">
                     <!-- Mobile Menu Button -->
@@ -340,7 +206,7 @@
                     <!-- Desktop Toggle Button -->
                     <button
                         @click="sidebarCollapsed = !sidebarCollapsed"
-                        class="hidden lg:block p-1 rounded-md text-gray-900 hover:bg-gray-200 transition-colors duration-200"
+                        class="hidden lg:block p-2 rounded-md text-gray-900 hover:bg-gray-200 transition-colors duration-200"
                         :title="sidebarCollapsed ? 'Expandir sidebar' : 'Colapsar sidebar'"
                     >
                         <svg v-if="sidebarCollapsed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor" class="w-6 h-6">
@@ -360,25 +226,11 @@
 
 <script setup>
 import { Link, usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import {
     mdiHome,
-    mdiSecurity,
-    mdiViewModule,
-    mdiLockCheckOutline,
-    mdiAccountSupervisor,
     mdiAccount,
-    mdiFileDocumentMultiple,
-    mdiBullhorn,
-    mdiBookOpenPageVariant,
     mdiLogout,
-    mdiOfficeBuilding,
-    mdiLightbulbOnOutline,
-    mdiCalendar,
-    mdiClipboardTextOutline,
-    mdiChevronLeft,
-    mdiChevronRight,
-    mdiMenu,
 } from "@mdi/js";
 
 const page = usePage();
@@ -393,84 +245,17 @@ const checkMobile = () => {
     isMobile.value = window.innerWidth < 1024;
 };
 
-// Check on mount and resize
-import { onMounted, onUnmounted } from 'vue';
-
 const userName = computed(() => page.props.auth?.user?.name || 'Usuario');
 const userEmail = computed(() => page.props.auth?.user?.email || '');
-const pageTitle = computed(() => page.props.title || 'Dashboard');
 
 const userInitials = computed(() => {
     const name = userName.value;
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 });
 
-const securityItems = [
-    {
-        label: "Módulos",
-        route: "superadmin.modules.index",
-        icon: mdiViewModule,
-    },
-    {
-        label: "Permisos",
-        route: "superadmin.permissions.index",
-        icon: mdiLockCheckOutline,
-    },
-    {
-        label: "Roles",
-        route: "superadmin.roles.index",
-        icon: mdiAccountSupervisor,
-    },
-    {
-        label: "Usuarios",
-        route: "superadmin.users.index",
-        icon: mdiAccount,
-    },
-];
-
-const catalogItems = [
-    {
-        label: "Campus",
-        route: "superadmin.catalogo.campus",
-        icon: mdiOfficeBuilding,
-    },
-    {
-        label: "Áreas Prioritarias",
-        route: "superadmin.catalogo.areas",
-        icon: mdiLightbulbOnOutline,
-    },
-    {
-        label: "Documentos",
-        route: "superadmin.catalogo.documentos",
-        icon: mdiFileDocumentMultiple,
-    },
-    {
-        label: "Calendario",
-        route: "superadmin.catalogo.calendario",
-        icon: mdiCalendar,
-    },
-    {
-        label: "Rúbrica",
-        route: "superadmin.catalogo.rubrica",
-        icon: mdiClipboardTextOutline,
-    },
-];
-
 const isActiveRoute = (routeName) => {
     return route().current(routeName) || route().current(`${routeName}.*`);
 };
-
-const isSecurityActive = () => {
-    return securityItems.some(item => isActiveRoute(item.route));
-};
-
-const isCatalogActive = () => {
-    return catalogItems.some(item => isActiveRoute(item.route));
-};
-
-// Initialize menu states based on active routes
-const securityExpanded = ref(isSecurityActive());
-const catalogExpanded = ref(isCatalogActive());
 
 onMounted(() => {
     checkMobile();

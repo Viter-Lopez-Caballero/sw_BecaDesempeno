@@ -39,7 +39,7 @@ const submit = () => {
     <LandingLayout>
         <Head title="Iniciar Sesión" />
 
-        <div class="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-100 min-h-[calc(100vh-20rem)]">
+        <div class="flex items-center justify-center min-h-screen py-12 px-4 sm:px-6 lg:px-8">
             <div class="max-w-lg w-full">
                 <!-- Login Card -->
                 <div class="bg-white rounded-lg shadow-xl p-10 space-y-7">

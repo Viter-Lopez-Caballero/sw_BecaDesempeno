@@ -22,15 +22,9 @@ class ModuleController extends Controller
 
     public function __construct()
     {
-        $this->source = 'Seguridad/Modulos/';
+        $this->source = 'SuperAdmin/Seguridad/Modulos/';
         $this->model = new Module();
         $this->routeName = 'modules.';
-
-        // TODO: Apply middleware in routes/web.php or use attributes
-        // $this->middleware("permission:{$this->routeName}index")->only(['index', 'show']);
-        // $this->middleware("permission:{$this->routeName}create")->only(['store', 'create']);
-        // $this->middleware("permission:{$this->routeName}edit")->only(['update', 'edit']);
-        // $this->middleware("permission:{$this->routeName}delete")->only(['destroy']);
     }
 
     /**

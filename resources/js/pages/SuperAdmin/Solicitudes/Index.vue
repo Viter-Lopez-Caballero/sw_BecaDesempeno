@@ -5,13 +5,13 @@ import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
 
 <template>
     <LayoutAuthenticated>
-        <Head title="Control de Solicitudes" />
+        <Head title="Control de Solicitudes - SuperAdmin" />
 
         <div class="space-y-6">
             <!-- Header -->
             <div class="bg-white rounded-lg shadow-sm p-6">
                 <h1 class="text-2xl font-bold text-gray-900">Control de Solicitudes</h1>
-                <p class="text-gray-600 mt-2">Gestión y seguimiento de solicitudes de becas y estímulos.</p>
+                <p class="text-gray-600 mt-2">Gestión y seguimiento de solicitudes de becas y estímulos (SuperAdmin).</p>
             </div>
 
             <!-- Stats Cards -->
@@ -111,21 +111,6 @@ import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
                                         En Revisión
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <button class="text-[#1B396A] hover:text-[#002B5C] mr-3">Ver</button>
-                                    <button class="text-gray-600 hover:text-gray-900">Editar</button>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#2026-002</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Dra. María García</td>
-                                <td class="px-6 py-4 text-sm text-gray-900">Estímulos 2026</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">16 Ene 2026</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                        Aprobada
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">

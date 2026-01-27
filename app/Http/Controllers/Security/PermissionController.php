@@ -27,14 +27,8 @@ class PermissionController extends Controller
     public function __construct()
     {
         $this->routeName = "permissions.";
-        $this->source    = "Seguridad/Permisos/";
+        $this->source    = "SuperAdmin/Seguridad/Permisos/";
         $this->model     = new Permission();
-
-        // TODO: Apply middleware in routes/web.php or use attributes
-        // $this->middleware("permission:{$this->routeName}index")->only(['index', 'show']);
-        // $this->middleware("permission:{$this->routeName}create")->only(['store', 'create']);
-        // $this->middleware("permission:{$this->routeName}edit")->only(['edit', 'update']);
-        // $this->middleware("permission:{$this->routeName}delete")->only(['destroy']);
     }
 
     public function index(Request $request): Response

@@ -126,10 +126,10 @@
                         class="bg-[#152d47] py-1"
                     >
                         <Link
-                            :href="route('admin.users.index')"
+                            :href="route('admin.usuarios.index')"
                             :class="[
                                 'flex items-center px-4 py-2.5 pl-12 transition-colors duration-200',
-                                isActiveRoute('admin.users.index')
+                                isActiveRoute('admin.usuarios.index')
                                     ? 'bg-[#1e3a5f] text-white font-medium'
                                     : 'text-gray-300 hover:bg-[#1e3a5f] hover:text-white'
                             ]"
@@ -207,7 +207,7 @@
                 >
                     <div
                         v-show="profileMenuOpen"
-                        class="absolute bottom-full left-4 right-4 mb-2 bg-white rounded-xl shadow-xl z-50"
+                        class="absolute bottom-full left-4 mb-2 bg-white rounded-xl shadow-xl z-50 w-56"
                     >
                         <!-- User Info Header -->
                         <div class="px-4 py-4 bg-gradient-to-r from-[#1e3a5f] to-[#2d4a6f] flex rounded-t-lg items-center gap-3">
@@ -325,7 +325,7 @@ const isActiveRoute = (routeName) => {
 };
 
 const isSecurityActive = () => {
-    return isActiveRoute('admin.users.index');
+    return isActiveRoute('admin.usuarios.index');
 };
 
 // Initialize menu states based on active routes

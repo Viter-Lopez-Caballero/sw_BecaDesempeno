@@ -276,7 +276,7 @@
                 >
                     <div
                         v-show="profileMenuOpen"
-                        class="absolute bottom-full left-4 right-4 mb-2 bg-white rounded-xl shadow-xl z-50"
+                        class="absolute bottom-full left-4 mb-2 bg-white rounded-xl shadow-xl z-50 w-56"
                     >
                         <!-- User Info Header -->
                         <div class="px-4 py-4 bg-gradient-to-r from-[#1e3a5f] to-[#2d4a6f] flex rounded-t-lg items-center gap-3">

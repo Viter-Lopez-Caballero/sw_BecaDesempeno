@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
@@ -35,7 +36,7 @@ use App\Http\Controllers\DocenteController;
 Route::middleware(['auth', 'verified'])->group(function () {
     // Ruta de inicio genérica (redirige según rol)
     Route::get('inicio', function () {
-        $role = auth()->user()->getPrimaryRole();
+        $role = Auth::user()->getPrimaryRole();
         
         return match ($role) {
             'Super Admin' => redirect()->route('superadmin.inicio'),
@@ -53,25 +54,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('inicio', [SuperAdminController::class, 'inicio'])->name('inicio');
         
         // Security Module - Solo Super Admin con middleware de permisos
-        Route::resource('modules', ModuleController::class)
-            ->middleware([
-                'permission:modules.index|modules.create|modules.edit|modules.delete'
-            ]);
-        
-        Route::resource('permissions', PermissionController::class)
-            ->middleware([
-                'permission:permissions.index|permissions.create|permissions.edit|permissions.delete'
-            ]);
-        
-        Route::resource('roles', RoleController::class)
-            ->middleware([
-                'permission:roles.index|roles.create|roles.edit|roles.delete'
-            ]);
-        
-        Route::resource('users', UserController::class)
-            ->middleware([
-                'permission:users.index|users.create|users.edit|users.delete'
-            ]);
+        Route::prefix('seguridad')->name('seguridad.')->group(function () {
+            Route::resource('modules', ModuleController::class)
+                ->middleware([
+                    'permission:modules.index|modules.create|modules.edit|modules.delete'
+                ]);
+            
+            Route::resource('permissions', PermissionController::class)
+                ->middleware([
+                    'permission:permissions.index|permissions.create|permissions.edit|permissions.delete'
+                ]);
+            
+            Route::resource('roles', RoleController::class)
+                ->middleware([
+                    'permission:roles.index|roles.create|roles.edit|roles.delete'
+                ]);
+            
+            Route::resource('users', UserController::class)
+                ->middleware([
+                    'permission:users.index|users.create|users.edit|users.delete'
+                ]);
+        });
         
         // Control de Solicitudes - SuperAdmin
         Route::get('solicitudes', function () {

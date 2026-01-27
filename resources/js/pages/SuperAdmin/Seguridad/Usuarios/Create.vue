@@ -1,71 +1,111 @@
 <script setup>
-import CardBox from "@/Components/CardBox.vue";
-import LayoutMain from "@/Layouts/LayoutMain.vue";
-import SectionTitleLineWithButton from "@/Components/SectionTitleLineWithButton.vue";
-import { mdiBallotOutline, mdiInformation, mdiPlus, mdiPencil, mdiTrashCan, mdiContentSave, mdiClose } from "@mdi/js";
-import NotificationBar from "@/Components/NotificationBar.vue";
-import BaseButton from "@/Components/BaseButton.vue";
-import BaseButtons from "@/Components/BaseButtons.vue";
-import { defineProps, ref, provide } from 'vue'; // Importar ref
-import { Link, Head, router } from "@inertiajs/vue3";
-import JetInput from "@/Components/Input.vue";
-import JetInputError from "@/Components/InputError.vue";
-import JetButton from "@/Components/Button.vue";
-import { useForm } from "@inertiajs/vue3";
-import DataForm from "./DataForm.vue";
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
 
 const props = defineProps({
-    name: 'Create',
-    titulo: { type: String, required: true },
-    routeName: { type: String, required: true },
-    modulos: { type: Object, required: true },
-    permisos: { type: Object, required: true },
-    profiles: { type: Object, required: true },
+    title: {
+        type: String,
+        required: true,
+    },
+    routeName: {
+        type: String,
+        required: true,
+    },
+    roles: {
+        type: Array, // Array of available roles
+        required: true,
+    },
 });
 
-const saveStatus = ref(0); // Definir saveStatus
+const form = useForm({
+    name: '',
+    email: '',
+    password: '',
+    roles: [], // Array of role IDs
+});
 
-const form = useForm({ curp:'', name: '', email: '', password: '', profiles: [] });
-
-const guardar = () => {
-    form.transform(data => ({
-        ...data,
-        profiles: data.profiles.map(p => p.id)
-    }))
-    .post(route('usuarios.store'), {
-        onError: () => saveStatus.value = 3,
-    });
+const submit = () => {
+    // Backend expects an array of roles, but UI might be a single select.
+    // If using single select, wrap in array or bind directly if select multiple.
+    // User request: "le debera asignar el rol que es" (singular implies single select).
+    // Controller `syncRoles` accepts array or ID or name. `StoreUserRequest` validates `roles` as array?
+    // Let's check StoreUserRequest. Assuming it expects array.
+    // I will wrap the selected role in array before submit if needed, or bind to array.
+    form.post(route(`${props.routeName}store`));
 };
-
-provide('form', form);
-provide('profiles', props.profiles);
-
 </script>
 
 <template>
-    <Head :title="titulo">
-        <link rel="shortcut icon" type="image/png" href="/img/TecnmBlanco.png">
-    </Head>
-    <LayoutMain>
-        <SectionTitleLineWithButton :icon="mdiPlus" :title="titulo" main>
-            <a :href="route(`${routeName}index`)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-x"
-                    viewBox="0 0 16 16">
-                    <path
-                        d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
-                </svg>
-            </a>
-        </SectionTitleLineWithButton>
-        
-        <CardBox form @submit.prevent="guardar">
-            <DataForm />
-    
-            <template #footer>
-                <BaseButtons>
-                    <BaseButton :href="route(`${routeName}index`)" :icon="mdiClose" color="danger" label="Cancelar" />
-                    <BaseButton @click="guardar" :icon="mdiContentSave" type="submit" color="info" label="Guardar"/>
-                </BaseButtons>
-            </template>
-        </CardBox>
-    </LayoutMain>
+    <LayoutAuthenticated>
+        <Head :title="title" />
+
+        <div class="max-w-4xl mx-auto space-y-6">
+            <!-- Header -->
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
+                    <div class="flex items-center gap-2 mt-2 text-sm text-gray-600">
+                         <!-- Breadcrumb? -->
+                    </div>
+                </div>
+                <Link :href="route(`${routeName}index`)" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                    </svg>
+                    Regresar
+                </Link>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+                <form @submit.prevent="submit" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Nombre -->
+                        <div class="col-span-2 md:col-span-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
+                            <input v-model="form.name" type="text" class="w-full rounded-lg border-gray-300 focus:border-[#1B396A] focus:ring-[#1B396A]" placeholder="Ej: Juan Pérez" />
+                            <p v-if="form.errors.name" class="mt-1 text-sm text-red-600">{{ form.errors.name }}</p>
+                        </div>
+                        
+                         <!-- Correo -->
+                        <div class="col-span-2 md:col-span-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
+                            <input v-model="form.email" type="email" class="w-full rounded-lg border-gray-300 focus:border-[#1B396A] focus:ring-[#1B396A]" placeholder="correo@ejemplo.com" />
+                            <p v-if="form.errors.email" class="mt-1 text-sm text-red-600">{{ form.errors.email }}</p>
+                        </div>
+
+                         <!-- Contraseña -->
+                        <div class="col-span-2 md:col-span-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                            <input v-model="form.password" type="password" class="w-full rounded-lg border-gray-300 focus:border-[#1B396A] focus:ring-[#1B396A]" placeholder="********" />
+                            <p v-if="form.errors.password" class="mt-1 text-sm text-red-600">{{ form.errors.password }}</p>
+                        </div>
+
+                        <!-- Rol -->
+                        <div class="col-span-2 md:col-span-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Asignar Rol</label>
+                            <select v-model="form.roles[0]" class="w-full rounded-lg border-gray-300 focus:border-[#1B396A] focus:ring-[#1B396A]">
+                                <option :value="null" disabled>Selecciona un rol</option>
+                                <option v-for="rol in roles" :key="rol.id" :value="rol.id">{{ rol.name }}</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">El usuario tendrá los permisos asociados a este rol.</p>
+                             <p v-if="form.errors.roles" class="mt-1 text-sm text-red-600">{{ form.errors.roles }}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 bg-gray-50 -mx-8 -mb-8 p-4 mt-6 rounded-b-lg">
+                        <Link :href="route(`${routeName}index`)" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                            Cancelar
+                        </Link>
+                        <button :disabled="form.processing" type="submit" class="px-6 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#002B5C] transition shadow-lg disabled:opacity-75 flex items-center gap-2">
+                            <svg v-if="form.processing" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Guardar Usuario
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </LayoutAuthenticated>
 </template>

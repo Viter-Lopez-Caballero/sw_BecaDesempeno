@@ -17,18 +17,30 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
-class PermissionController extends Controller
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+use App\Http\Controllers\SecurityController;
+
+class PermissionController extends SecurityController
 {
     use Filterable;
     protected string $routeName;
+    protected string $permissionPrefix;
     protected string $source;
     protected Model $model;
 
     public function __construct()
     {
-        $this->routeName = "permissions.";
+        $this->routeName = "superadmin.seguridad.permissions.";
+        $this->permissionPrefix = "permissions.";
         $this->source    = "SuperAdmin/Seguridad/Permisos/";
         $this->model     = new Permission();
+
+        $this->middleware("permission:{$this->permissionPrefix}index")->only(['index', 'show']);
+        $this->middleware("permission:{$this->permissionPrefix}create")->only(['store', 'create']);
+        $this->middleware("permission:{$this->permissionPrefix}edit")->only(['edit', 'update']);
+        $this->middleware("permission:{$this->permissionPrefix}delete")->only(['destroy']);
     }
 
     public function index(Request $request): Response
@@ -40,7 +52,7 @@ class PermissionController extends Controller
                 ->orWhere('module_key', 'LIKE', '%' . $search . '%');
         });
 
-        $permissions = $query->orderBy($filters->order, $filters->direction)
+        $permissions = $query->orderBy('id', 'desc')
             ->paginate($filters->rows)
             ->withQueryString();
 

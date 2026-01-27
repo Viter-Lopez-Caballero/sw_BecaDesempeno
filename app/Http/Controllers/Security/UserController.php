@@ -15,30 +15,39 @@ use Inertia\Response;
 use Inertia\Inertia;
 use App\Traits\HasOrderableRelations;
 
-class UserController extends Controller
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+use App\Http\Controllers\SecurityController;
+
+class UserController extends SecurityController
 {
     use Filterable;
     use HasOrderableRelations;
     protected string $routeName;
+    protected string $permissionPrefix;
     protected string $source;
     protected Model $model;
 
     public function __construct()
     {
-        $this->routeName = "users.";
+        $this->routeName = "superadmin.seguridad.users.";
+        $this->permissionPrefix = "users.";
         $this->source    = "SuperAdmin/Seguridad/Usuarios/";
         $this->model     = new User();
+        
+        $this->middleware("permission:{$this->permissionPrefix}index")->only(['index', 'show']);
+        $this->middleware("permission:{$this->permissionPrefix}create")->only(['store', 'create']);
+        $this->middleware("permission:{$this->permissionPrefix}edit")->only(['edit', 'update']);
+        $this->middleware("permission:{$this->permissionPrefix}delete")->only(['destroy']);
     }
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request): Response
     {
         $filters = $this->getFiltersBase($request->query());
         $query = $this->model->with('roles')
             ->whereDoesntHave('roles', function ($q) {
-                $q->where('id', 3); // academic
+                $q->where('id', 3); 
             })
             ->when($filters->search, function ($query, $search) {
                 $query->where('users.name', 'LIKE', '%' . $search . '%')
@@ -49,7 +58,7 @@ class UserController extends Controller
                 $query->withTrashed();
             });
 
-        $this->applyOrdering($query, $filters->order, $filters->direction);
+        $this->applyOrdering($query, $filters->order ?? 'id', $filters->direction ?? 'desc');
         $users = $query->paginate($filters->rows)->withQueryString();
 
         return Inertia::render("{$this->source}Index", [
@@ -60,9 +69,6 @@ class UserController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         $roles = Role::orderBy('name')->where('id', '!=', 3)->get();
@@ -73,9 +79,7 @@ class UserController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(StoreUserRequest $request)
     {
         $user = $this->model::create($request->validated());

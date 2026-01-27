@@ -165,7 +165,7 @@
                 <!-- Seguridad Icon Only (Collapsed) -->
                 <Link
                     v-else
-                    :href="route('superadmin.modules.index')"
+                    :href="route('superadmin.seguridad.modules.index')"
                     :class="[
                         'flex items-center py-3 px-4 justify-center transition-all duration-200 group relative before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-[80%] before:w-[4px] before:rounded-r-lg before:transition-colors',
                         isSecurityActive()
@@ -408,22 +408,22 @@ const userInitials = computed(() => {
 const securityItems = [
     {
         label: "Módulos",
-        route: "superadmin.modules.index",
+        route: "superadmin.seguridad.modules.index",
         icon: mdiViewModule,
     },
     {
         label: "Permisos",
-        route: "superadmin.permissions.index",
+        route: "superadmin.seguridad.permissions.index",
         icon: mdiLockCheckOutline,
     },
     {
         label: "Roles",
-        route: "superadmin.roles.index",
+        route: "superadmin.seguridad.roles.index",
         icon: mdiAccountSupervisor,
     },
     {
         label: "Usuarios",
-        route: "superadmin.users.index",
+        route: "superadmin.seguridad.users.index",
         icon: mdiAccount,
     },
 ];

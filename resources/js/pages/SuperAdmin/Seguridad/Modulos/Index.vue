@@ -1,180 +1,194 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
+import Pagination from '@/Shared/Pagination.vue';
+import { ref, watch } from 'vue';
+import { debounce } from 'lodash';
+import { useCan } from '@/composables/usePermissions';
 
 const props = defineProps({
     modulos: {
         type: Object,
-        required: false,
+        required: true,
+    },
+    title: {
+        type: String,
+        required: true,
+    },
+    routeName: {
+        type: String,
+        required: true,
+    },
+    filters: {
+        type: Object,
+        required: true,
     },
 });
+
+const search = ref(props.filters.search);
+const rows = ref(props.filters.rows || 10);
+
+const onSearch = debounce((value) => {
+    router.get(route(`${props.routeName}index`), { search: value, rows: rows.value }, { preserveState: true, replace: true });
+}, 500);
+
+const onRowsChange = () => {
+    router.get(route(`${props.routeName}index`), { search: search.value, rows: rows.value }, { preserveState: true, replace: true });
+};
+
+watch(search, (value) => {
+    onSearch(value);
+});
+
+const cleanFilters = () => {
+    search.value = '';
+    rows.value = 10;
+    router.get(route(`${props.routeName}index`), {}, { preserveState: true, replace: true });
+};
+
+const deleteModule = (id) => {
+    if (confirm('¿Estás seguro de eliminar este módulo?')) {
+        router.delete(route(`${props.routeName}destroy`, id));
+    }
+};
 </script>
 
 <template>
     <LayoutAuthenticated>
-        <Head title="Módulos" />
+        <Head :title="title" />
 
         <div class="space-y-6">
             <!-- Header -->
-            <div class="bg-white rounded-lg shadow-sm p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Módulos del Sistema</h1>
-                        <p class="text-gray-600 mt-2">Gestión de módulos y funcionalidades del sistema.</p>
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
+                    <div class="flex items-center gap-2 mt-2 text-sm text-gray-600">
+                        <span class="text-[#1B396A] font-semibold flex items-center gap-1">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            </svg>
+                            Seguridad
+                        </span>
+                        <span>&gt;</span>
+                        <span class="flex items-center gap-1 text-[#1B396A] font-semibold">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                            </svg>
+                            Módulos
+                        </span>
                     </div>
-                    <button class="px-4 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#002B5C] transition">
-                        Nuevo Módulo
+                </div>
+                <Link v-if="useCan('modules.create')" :href="route(`${routeName}create`)" class="px-4 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#002B5C] transition flex items-center gap-2 shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    Agregar
+                </Link>
+            </div>
+
+            <!-- Filter Card -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                        </svg>
+                        <h2 class="text-lg font-semibold text-gray-800">Filtro de Búsqueda</h2>
+                    </div>
+                     <button @click="cleanFilters" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 flex items-center gap-2 text-sm font-medium transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Limpiar Filtros
                     </button>
                 </div>
-            </div>
-
-            <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-gray-600 font-medium">Total Módulos</p>
-                            <p class="text-3xl font-bold text-gray-900 mt-2">12</p>
-                        </div>
-                        <div class="p-3 bg-blue-100 rounded-full">
-                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                <div class="text-sm text-gray-500 mb-4">Buscar y filtrar módulos</div>
+                <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div class="relative w-full md:w-1/2">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-[#1B396A]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                         </div>
+                        <input v-model="search" type="text" placeholder="Buscar..." class="pl-10 w-full rounded-full border-gray-300 focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 shadow-sm" />
                     </div>
-                </div>
-
-                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-gray-600 font-medium">Activos</p>
-                            <p class="text-3xl font-bold text-gray-900 mt-2">10</p>
-                        </div>
-                        <div class="p-3 bg-green-100 rounded-full">
-                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-gray-500">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-gray-600 font-medium">Inactivos</p>
-                            <p class="text-3xl font-bold text-gray-900 mt-2">2</p>
-                        </div>
-                        <div class="p-3 bg-gray-100 rounded-full">
-                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
-                            </svg>
-                        </div>
+                    <div class="w-full md:w-auto">
+                        <select v-model="rows" @change="onRowsChange" class="rounded-lg border-gray-300 text-gray-700 text-sm focus:border-[#1B396A] focus:ring-[#1B396A] w-full md:w-48 shadow-sm">
+                            <option :value="10">10 Registros</option>
+                            <option :value="25">25 Registros</option>
+                            <option :value="50">50 Registros</option>
+                        </select>
                     </div>
                 </div>
             </div>
 
-            <!-- Modules Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500 hover:shadow-md transition">
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="p-3 bg-blue-100 rounded-lg">
-                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                            </svg>
-                        </div>
-                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">Activo</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Dashboard</h3>
-                    <p class="text-sm text-gray-600 mb-4">Panel principal del sistema</p>
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-gray-500">15 permisos</span>
-                        <button class="text-[#1B396A] hover:text-[#002B5C] font-medium">Editar →</button>
-                    </div>
+            <!-- Table -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
+                            <tr>
+                                <th scope="col" class="px-6 py-4 tracking-wider">ID</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">
+                                    <div class="flex items-center gap-1 cursor-pointer">
+                                        Módulos
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                                        </svg>
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">
+                                    <div class="flex items-center gap-1 cursor-pointer">
+                                        Descripción
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                                        </svg>
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">
+                                    <div class="flex items-center gap-1 cursor-pointer">
+                                        Clave
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                                        </svg>
+                                    </div>
+                                </th>
+                                <th v-if="useCan('modules.edit') || useCan('modules.delete')" scope="col" class="px-6 py-4 text-center tracking-wider">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr v-for="(modulo, index) in modulos.data" :key="modulo.id" class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 font-medium text-gray-900">{{ (modulos.meta.current_page - 1) * modulos.meta.per_page + index + 1 }}</td>
+                                <td class="px-6 py-4 font-semibold text-gray-800">{{ modulo.name }}</td>
+                                <td class="px-6 py-4 text-gray-600">{{ modulo.description }}</td>
+                                <td class="px-6 py-4 text-gray-600">{{ modulo.key }}</td>
+                                <td v-if="useCan('modules.edit') || useCan('modules.delete')" class="px-6 py-4 text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <Link v-if="useCan('modules.edit')" :href="route(`${routeName}edit`, modulo.id)" class="p-2 text-[#1B396A] border border-[#1B396A] rounded-full hover:bg-[#1B396A] hover:text-white transition group" title="Editar">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+                                        </Link>
+                                        <button v-if="useCan('modules.delete')" @click="deleteModule(modulo.id)" class="p-2 text-red-500 border border-red-500 rounded-full hover:bg-red-500 hover:text-white transition group" title="Eliminar">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr v-if="modulos.data.length === 0">
+                                <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                                    No se encontraron registros
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-
-                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500 hover:shadow-md transition">
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="p-3 bg-green-100 rounded-lg">
-                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                            </svg>
-                        </div>
-                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">Activo</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Usuarios</h3>
-                    <p class="text-sm text-gray-600 mb-4">Gestión de usuarios del sistema</p>
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-gray-500">12 permisos</span>
-                        <button class="text-[#1B396A] hover:text-[#002B5C] font-medium">Editar →</button>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-purple-500 hover:shadow-md transition">
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="p-3 bg-purple-100 rounded-lg">
-                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                        </div>
-                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">Activo</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Solicitudes</h3>
-                    <p class="text-sm text-gray-600 mb-4">Control de solicitudes de becas</p>
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-gray-500">18 permisos</span>
-                        <button class="text-[#1B396A] hover:text-[#002B5C] font-medium">Editar →</button>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-yellow-500 hover:shadow-md transition">
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="p-3 bg-yellow-100 rounded-lg">
-                            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
-                            </svg>
-                        </div>
-                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">Activo</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Convocatorias</h3>
-                    <p class="text-sm text-gray-600 mb-4">Administración de convocatorias</p>
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-gray-500">10 permisos</span>
-                        <button class="text-[#1B396A] hover:text-[#002B5C] font-medium">Editar →</button>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-red-500 hover:shadow-md transition">
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="p-3 bg-red-100 rounded-lg">
-                            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                            </svg>
-                        </div>
-                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">Activo</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Seguridad</h3>
-                    <p class="text-sm text-gray-600 mb-4">Módulo de seguridad y permisos</p>
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-gray-500">20 permisos</span>
-                        <button class="text-[#1B396A] hover:text-[#002B5C] font-medium">Editar →</button>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-indigo-500 hover:shadow-md transition">
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="p-3 bg-indigo-100 rounded-lg">
-                            <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                            </svg>
-                        </div>
-                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">Activo</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Catálogo</h3>
-                    <p class="text-sm text-gray-600 mb-4">Catálogos del sistema</p>
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-gray-500">8 permisos</span>
-                        <button class="text-[#1B396A] hover:text-[#002B5C] font-medium">Editar →</button>
-                    </div>
+                
+                 <!-- Pagination -->
+                <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                     <Pagination :links="modulos.meta.links" :total="modulos.meta.total" :from="modulos.meta.from" :to="modulos.meta.to" />
                 </div>
             </div>
         </div>

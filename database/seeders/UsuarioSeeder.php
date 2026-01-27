@@ -16,43 +16,43 @@ class UsuarioSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Crear Roles
-        $superAdmin = Role::create(['name' => 'Super Admin', 'description' => 'Super Administrador del Sistema']);
-        $admin = Role::create(['name' => 'Admin', 'description' => 'Administrador']);
-        $docente = Role::create(['name' => 'Docente', 'description' => 'Docente Solicitante de Beca']);
-        $evaluador = Role::create(['name' => 'Evaluador', 'description' => 'Evaluador de Becas']);
+        // Obtener Roles existentes (creados por RoleSeeder)
+        $superAdmin = Role::where('name', 'Super Admin')->first();
+        $admin = Role::where('name', 'Admin')->first();
+        $docente = Role::where('name', 'Docente')->first();
+        $evaluador = Role::where('name', 'Evaluador')->first();
 
         // 2. Crear Usuarios de prueba
         $userSuperAdmin = User::create([
-            'name' => 'Super Admin',
+            'name' => 'Dr. Diego Eduardo Jaimez Flores',
             'email' => 'superadmin@gmail.com',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
         ]);
-        $userSuperAdmin->assignRole($superAdmin);
+        if($superAdmin) $userSuperAdmin->assignRole($superAdmin);
 
         $userAdmin = User::create([
-            'name' => 'Administrador',
+            'name' => 'Dr. Abraham Avelino Pichardo',
             'email' => 'admin@gmail.com',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
         ]);
-        $userAdmin->assignRole($admin);
+        if($admin) $userAdmin->assignRole($admin);
 
         $userDocente = User::create([
-            'name' => 'Diego Eduardo Jaimez Flores',
-            'email' => 'diego@gmail.com',
+            'name' => 'Mta. Dulce María Gonzales Arellano',
+            'email' => 'docente@gmail.com',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
         ]);
-        $userDocente->assignRole($docente);
+        if($docente) $userDocente->assignRole($docente);
 
         $userEvaluador = User::create([
-            'name' => 'Abraham Avelino Pichardo',
-            'email' => 'abraham@gmail.com',
+            'name' => 'Dr. Maximiliano Carrera Oropeza',
+            'email' => 'evaluador@gmail.com',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
         ]);
-        $userEvaluador->assignRole($evaluador);
+        if($evaluador) $userEvaluador->assignRole($evaluador);
     }
 }

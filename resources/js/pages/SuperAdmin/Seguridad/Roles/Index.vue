@@ -7,7 +7,7 @@ import { debounce } from 'lodash';
 import { useCan } from '@/composables/usePermissions';
 
 const props = defineProps({
-    permisos: {
+    roles: {
         type: Object,
         required: true,
     },
@@ -46,8 +46,8 @@ const cleanFilters = () => {
     router.get(route(`${props.routeName}index`), {}, { preserveState: true, replace: true });
 };
 
-const deletePermission = (id) => {
-    if (confirm('¿Estás seguro de eliminar este permiso?')) {
+const deleteRole = (id) => {
+    if (confirm('¿Estás seguro de eliminar este rol?')) {
         router.delete(route(`${props.routeName}destroy`, id));
     }
 };
@@ -72,14 +72,13 @@ const deletePermission = (id) => {
                         <span>&gt;</span>
                         <span class="flex items-center gap-1 text-[#1B396A] font-semibold">
                              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
-                            </svg>
-                            Permisos
+                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                             </svg>
+                            Roles
                         </span>
                     </div>
                 </div>
-                <!-- v-if="useCan('permissions.create')" -->
-                <Link v-if="useCan('permissions.create')" :href="route(`${routeName}create`)" class="px-4 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#002B5C] transition flex items-center gap-2 shadow-lg">
+                <Link v-if="useCan('roles.create')" :href="route(`${routeName}create`)" class="px-4 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#002B5C] transition flex items-center gap-2 shadow-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
                     </svg>
@@ -103,7 +102,7 @@ const deletePermission = (id) => {
                         Limpiar Filtros
                     </button>
                 </div>
-                <div class="text-sm text-gray-500 mb-4">Buscar y filtrar permisos</div>
+                <div class="text-sm text-gray-500 mb-4">Buscar y filtrar roles</div>
                 <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
                     <div class="relative w-full md:w-1/2">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -132,7 +131,7 @@ const deletePermission = (id) => {
                                 <th scope="col" class="px-6 py-4 tracking-wider">ID</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">
                                     <div class="flex items-center gap-1 cursor-pointer">
-                                        Permisos
+                                        Roles
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
                                         </svg>
@@ -148,29 +147,29 @@ const deletePermission = (id) => {
                                 </th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">
                                     <div class="flex items-center gap-1 cursor-pointer">
-                                        Clave
+                                        Fecha
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
                                         </svg>
                                     </div>
                                 </th>
-                                <th v-if="useCan('permissions.edit') || useCan('permissions.delete')" scope="col" class="px-6 py-4 text-center tracking-wider">Acciones</th>
+                                <th v-if="useCan('roles.edit') || useCan('roles.delete')" scope="col" class="px-6 py-4 text-center tracking-wider">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                            <tr v-for="(permission, index) in permisos.data" :key="permission.id" class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 font-medium text-gray-900">{{ (permisos.meta.current_page - 1) * permisos.meta.per_page + index + 1 }}</td>
-                                <td class="px-6 py-4 font-semibold text-gray-800">{{ permission.name }}</td>
-                                <td class="px-6 py-4 text-gray-600">{{ permission.description }}</td>
-                                <td class="px-6 py-4 text-gray-600">{{ permission.module_key }}</td>
-                                <td v-if="useCan('permissions.edit') || useCan('permissions.delete')" class="px-6 py-4 text-center">
+                            <tr v-for="(role, index) in roles.data" :key="role.id" class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 font-medium text-gray-900">{{ (roles.meta.current_page - 1) * roles.meta.per_page + index + 1 }}</td>
+                                <td class="px-6 py-4 font-semibold text-gray-800">{{ role.name }}</td>
+                                <td class="px-6 py-4 text-gray-600">{{ role.description }}</td>
+                                <td class="px-6 py-4 text-gray-600 capitalize">{{ role.created_at }}</td>
+                                <td v-if="useCan('roles.edit') || useCan('roles.delete')" class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <Link v-if="useCan('permissions.edit')" :href="route(`${routeName}edit`, permission.id)" class="p-2 text-[#1B396A] border border-[#1B396A] rounded-full hover:bg-[#1B396A] hover:text-white transition group" title="Editar">
+                                        <Link v-if="useCan('roles.edit')" :href="route(`${routeName}edit`, role.id)" class="p-2 text-[#1B396A] border border-[#1B396A] rounded-full hover:bg-[#1B396A] hover:text-white transition group" title="Editar">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
                                         </Link>
-                                        <button v-if="useCan('permissions.delete')" @click="deletePermission(permission.id)" class="p-2 text-red-500 border border-red-500 rounded-full hover:bg-red-500 hover:text-white transition group" title="Eliminar">
+                                        <button v-if="useCan('roles.delete')" @click="deleteRole(role.id)" class="p-2 text-red-500 border border-red-500 rounded-full hover:bg-red-500 hover:text-white transition group" title="Eliminar">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
@@ -178,7 +177,7 @@ const deletePermission = (id) => {
                                     </div>
                                 </td>
                             </tr>
-                            <tr v-if="permisos.data.length === 0">
+                            <tr v-if="roles.data.length === 0">
                                 <td colspan="5" class="px-6 py-12 text-center text-gray-500">
                                     No se encontraron registros
                                 </td>
@@ -189,7 +188,7 @@ const deletePermission = (id) => {
                 
                  <!-- Pagination -->
                 <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                     <Pagination :links="permisos.meta.links" :total="permisos.meta.total" :from="permisos.meta.from" :to="permisos.meta.to" />
+                     <Pagination :links="roles.meta.links" :total="roles.meta.total" :from="roles.meta.from" :to="roles.meta.to" />
                 </div>
             </div>
         </div>

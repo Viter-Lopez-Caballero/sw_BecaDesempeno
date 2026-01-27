@@ -21,7 +21,11 @@ class UserResource extends JsonResource
             'id'            => $this->id,
             'name'          => $this->name,
             'email'         => $this->email,
+            'role'          => $this->getPrimaryRole(),
             'roles'         => RoleResource::collection($this->whenLoaded('roles')),
+            'roles_ids'     => $this->whenLoaded('roles', function () {
+                return $this->roles->pluck('id')->toArray();
+            }),
             'is_active'     => $this->is_active,
             'created_at'    => $this->textFormatDate($this->created_at),
             'deleted_at'    => $this->deleted_at ? $this->textFormatDate($this->deleted_at) : null,

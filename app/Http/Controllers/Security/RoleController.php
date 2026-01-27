@@ -11,23 +11,35 @@ use App\Models\Module;
 use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Cache;
+use App\Models\Role;
 
-class RoleController extends Controller
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+use App\Http\Controllers\SecurityController;
+
+class RoleController extends SecurityController
 {
     use Filterable;
     protected string $routeName;
+    protected string $permissionPrefix;
     protected string $source;
     protected Model $model;
 
     public function __construct()
     {
-        $this->routeName = "roles.";
-        $this->source    = "SuperAdmin/Seguridad/Perfiles/";
+        $this->routeName = "superadmin.seguridad.roles.";
+        $this->permissionPrefix = "roles.";
+        $this->source    = "SuperAdmin/Seguridad/Roles/";
         $this->model     = new Role();
+        
+        $this->middleware("permission:{$this->permissionPrefix}index")->only(['index', 'show']);
+        $this->middleware("permission:{$this->permissionPrefix}create")->only(['store', 'create']);
+        $this->middleware("permission:{$this->permissionPrefix}edit")->only(['update', 'edit']);
+        $this->middleware("permission:{$this->permissionPrefix}delete")->only(['destroy']);
     }
 
     /**
@@ -41,13 +53,13 @@ class RoleController extends Controller
                 ->orWhere('description', 'LIKE', '%' . $search . '%');
         });
 
-        $roles = $query->orderBy($filters->order, $filters->direction)
+        $roles = $query->orderBy('id', 'desc')
             ->paginate($filters->rows)
             ->withQueryString();
 
         return Inertia::render("{$this->source}Index", [
             'title'         => 'Gestión de Roles',
-            'perfiles'      => RoleResource::collection($roles),
+            'roles'      => RoleResource::collection($roles),
             'routeName'     => $this->routeName,
             'filters'       => $filters
         ]);
@@ -92,6 +104,7 @@ class RoleController extends Controller
         return Inertia::render("{$this->source}Edit", [
             'title'         => 'Editar Roles',
             'role'          => new RoleResource($role->load('permissions')),
+            'rolePermissions' => $role->permissions->pluck('id'),
             'modules'       => Module::orderBy('key')->get(['id', 'name', 'description', 'key']),
             'permissions'   => Permission::get(['id', 'name', 'description', 'module_key'])->groupBy('module_key')->toArray(),
             'routeName'     => $this->routeName,

@@ -13,18 +13,30 @@ use Illuminate\Http\Request;
 use Inertia\Response;
 use Inertia\Inertia;
 
-class ModuleController extends Controller
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
+
+use App\Http\Controllers\SecurityController;
+
+class ModuleController extends SecurityController
 {
     use Filterable;
     private Model $model;
     private string $source;
+    private string $permissionPrefix;
     private string $routeName;
 
     public function __construct()
     {
         $this->source = 'SuperAdmin/Seguridad/Modulos/';
         $this->model = new Module();
-        $this->routeName = 'modules.';
+        $this->routeName = 'superadmin.seguridad.modules.';
+        $this->permissionPrefix = 'modules.';
+
+        $this->middleware("permission:{$this->permissionPrefix}index")->only(['index', 'show']);
+        $this->middleware("permission:{$this->permissionPrefix}create")->only(['store', 'create']);
+        $this->middleware("permission:{$this->permissionPrefix}edit")->only(['update', 'edit']);
+        $this->middleware("permission:{$this->permissionPrefix}delete")->only(['destroy']);
     }
 
     /**
@@ -38,7 +50,7 @@ class ModuleController extends Controller
                 ->orWhere('description', 'LIKE', '%' . $search . '%');
         });
 
-        $modules = $query->orderBy($filters->order, $filters->direction)
+        $modules = $query->orderBy('id', 'desc')
             ->paginate($filters->rows)
             ->withQueryString();
 

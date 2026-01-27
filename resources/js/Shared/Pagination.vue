@@ -15,7 +15,14 @@
             </ul>
         </div>
         <div class="mt-4 md:mt-0">
-            <span v-if="total > 0" class="text-black-50 font-light">Usted tiene {{ useNFmt(total, 0) }} registros</span>
+            <span v-if="total > 0" class="text-black-50 font-light">
+                <template v-if="from && to">
+                    Mostrando {{ from }} a {{ to }} de {{ useNFmt(total, 0) }} registros
+                </template>
+                <template v-else>
+                    Usted tiene {{ useNFmt(total, 0) }} registros
+                </template>
+            </span>
         </div>
     </div>
     <div class="vl-parent">
@@ -30,7 +37,12 @@ import Loading from 'vue-loading-overlay';
 import { ref } from "vue";
 
 export default {
-    props: { links: Array, total: Number },
+    props: { 
+        links: Array, 
+        total: Number,
+        from: Number,
+        to: Number
+    },
     components: {
         Link,
         Loading,

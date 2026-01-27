@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Permission;
+use App\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class PermissionSeeder extends Seeder
@@ -12,66 +12,66 @@ class PermissionSeeder extends Seeder
     {
         // Definir permisos para cada recurso del módulo de seguridad
         $permissions = [
-            // Módulos
-            'modules.index' => 'Ver listado de módulos',
-            'modules.create' => 'Crear módulos',
-            'modules.edit' => 'Editar módulos',
-            'modules.delete' => 'Eliminar módulos',
+            // Seguridad (modules, permissions, roles, users)
+            ['name' => 'modules.index', 'description' => 'Ver listado de módulos', 'module_key' => 'seg'],
+            ['name' => 'modules.create', 'description' => 'Crear módulos', 'module_key' => 'seg'],
+            ['name' => 'modules.edit', 'description' => 'Editar módulos', 'module_key' => 'seg'],
+            ['name' => 'modules.delete', 'description' => 'Eliminar módulos', 'module_key' => 'seg'],
             
-            // Permisos
-            'permissions.index' => 'Ver listado de permisos',
-            'permissions.create' => 'Crear permisos',
-            'permissions.edit' => 'Editar permisos',
-            'permissions.delete' => 'Eliminar permisos',
-            
-            // Roles
-            'roles.index' => 'Ver listado de roles',
-            'roles.create' => 'Crear roles',
-            'roles.edit' => 'Editar roles',
-            'roles.delete' => 'Eliminar roles',
-            
-            // Usuarios
-            'users.index' => 'Ver listado de usuarios',
-            'users.create' => 'Crear usuarios',
-            'users.edit' => 'Editar usuarios',
-            'users.delete' => 'Eliminar usuarios',
-            
+            ['name' => 'permissions.index', 'description' => 'Ver listado de permisos', 'module_key' => 'seg'],
+            ['name' => 'permissions.create', 'description' => 'Crear permisos', 'module_key' => 'seg'],
+            ['name' => 'permissions.edit', 'description' => 'Editar permisos', 'module_key' => 'seg'],
+            ['name' => 'permissions.delete', 'description' => 'Eliminar permisos', 'module_key' => 'seg'],
+
+            ['name' => 'roles.index', 'description' => 'Ver listado de roles', 'module_key' => 'seg'],
+            ['name' => 'roles.create', 'description' => 'Crear roles', 'module_key' => 'seg'],
+            ['name' => 'roles.edit', 'description' => 'Editar roles', 'module_key' => 'seg'],
+            ['name' => 'roles.delete', 'description' => 'Eliminar roles', 'module_key' => 'seg'],
+
+            ['name' => 'users.index', 'description' => 'Ver listado de usuarios', 'module_key' => 'seg'],
+            ['name' => 'users.create', 'description' => 'Crear usuarios', 'module_key' => 'seg'],
+            ['name' => 'users.edit', 'description' => 'Editar usuarios', 'module_key' => 'seg'],
+            ['name' => 'users.delete', 'description' => 'Eliminar usuarios', 'module_key' => 'seg'],
+
             // Solicitudes
-            'solicitudes.index' => 'Ver listado de solicitudes',
-            'solicitudes.create' => 'Crear solicitudes',
-            'solicitudes.edit' => 'Editar solicitudes',
-            'solicitudes.delete' => 'Eliminar solicitudes',
-            'solicitudes.own' => 'Ver solo solicitudes propias',
-            
+            ['name' => 'solicitudes.index', 'description' => 'Ver listado de solicitudes', 'module_key' => 'controlsoli'],
+            ['name' => 'solicitudes.create', 'description' => 'Crear solicitudes', 'module_key' => 'controlsoli'],
+            ['name' => 'solicitudes.edit', 'description' => 'Editar solicitudes', 'module_key' => 'controlsoli'],
+            ['name' => 'solicitudes.delete', 'description' => 'Eliminar solicitudes', 'module_key' => 'controlsoli'],
+            ['name' => 'solicitudes.own', 'description' => 'Ver solo solicitudes propias', 'module_key' => 'controlsoli'],
+
             // Convocatorias
-            'convocatorias.index' => 'Ver listado de convocatorias',
-            'convocatorias.create' => 'Crear convocatorias',
-            'convocatorias.edit' => 'Editar convocatorias',
-            'convocatorias.delete' => 'Eliminar convocatorias',
-            
-            // Evaluaciones
-            'evaluaciones.index' => 'Ver listado de evaluaciones',
-            'evaluaciones.create' => 'Crear evaluaciones',
-            'evaluaciones.edit' => 'Editar evaluaciones',
-            'evaluaciones.delete' => 'Eliminar evaluaciones',
-            
-            // Reconocimiento
-            'reconocimiento.index' => 'Ver reconocimientos',
-            'reconocimiento.create' => 'Crear reconocimientos',
-            'reconocimiento.edit' => 'Editar reconocimientos',
-            
+            ['name' => 'convocatorias.index', 'description' => 'Ver listado de convocatorias', 'module_key' => 'convo'],
+            ['name' => 'convocatorias.create', 'description' => 'Crear convocatorias', 'module_key' => 'convo'],
+            ['name' => 'convocatorias.edit', 'description' => 'Editar convocatorias', 'module_key' => 'convo'],
+            ['name' => 'convocatorias.delete', 'description' => 'Eliminar convocatorias', 'module_key' => 'convo'],
+
+            // Evaluaciones (Asociado a controlsoli por ahora, o convo?)
+            ['name' => 'evaluaciones.index', 'description' => 'Ver listado de evaluaciones', 'module_key' => 'controlsoli'],
+            ['name' => 'evaluaciones.create', 'description' => 'Crear evaluaciones', 'module_key' => 'controlsoli'],
+            ['name' => 'evaluaciones.edit', 'description' => 'Editar evaluaciones', 'module_key' => 'controlsoli'],
+            ['name' => 'evaluaciones.delete', 'description' => 'Eliminar evaluaciones', 'module_key' => 'controlsoli'],
+
+            // Reconocimiento (cat o convo?)
+            ['name' => 'reconocimiento.index', 'description' => 'Ver reconocimientos', 'module_key' => 'convo'],
+            ['name' => 'reconocimiento.create', 'description' => 'Crear reconocimientos', 'module_key' => 'convo'],
+            ['name' => 'reconocimiento.edit', 'description' => 'Editar reconocimientos', 'module_key' => 'convo'],
+
             // Catálogo
-            'catalogo.index' => 'Ver catálogo',
-            'catalogo.create' => 'Crear en catálogo',
-            'catalogo.edit' => 'Editar catálogo',
-            'catalogo.delete' => 'Eliminar catálogo',
+            ['name' => 'catalogo.index', 'description' => 'Ver catálogo', 'module_key' => 'cat'],
+            ['name' => 'catalogo.create', 'description' => 'Crear en catálogo', 'module_key' => 'cat'],
+            ['name' => 'catalogo.edit', 'description' => 'Editar catálogo', 'module_key' => 'cat'],
+            ['name' => 'catalogo.delete', 'description' => 'Eliminar catálogo', 'module_key' => 'cat'],
         ];
 
         // Crear cada permiso
-        foreach ($permissions as $name => $description) {
-            Permission::firstOrCreate(
-                ['name' => $name],
-                ['description' => $description]
+        foreach ($permissions as $permission) {
+            Permission::updateOrCreate(
+                ['name' => $permission['name']],
+                [
+                    'description' => $permission['description'],
+                    'module_key' => $permission['module_key']
+                ]
             );
         }
 

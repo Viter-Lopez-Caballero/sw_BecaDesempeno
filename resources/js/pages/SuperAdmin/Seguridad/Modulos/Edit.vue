@@ -1,110 +1,110 @@
 <script setup>
-import CardBox from '@/Components/CardBox.vue';
-import LayoutMain from '@/Layouts/LayoutMain.vue';
-import SectionTitleLineWithButton from '@/Components/SectionTitleLineWithButton.vue';
-import { mdiBallotOutline, mdiInformation, mdiPlus, mdiPencil, mdiTrashCan, mdiContentSave, mdiClose  } from "@mdi/js";
-import NotificationBar from '@/Components/NotificationBar.vue';
-import BaseButton from '@/Components/BaseButton.vue';
-import BaseButtons from '@/Components/BaseButtons.vue';
-
-import { defineProps } from 'vue';
-import { Link, Head, router } from "@inertiajs/vue3";
-
-import JetInput from '@/Components/Input.vue';
-import JetInputError from '@/Components/InputError.vue';
-import JetButton from '@/Components/Button.vue';
-import { useForm } from "@inertiajs/vue3";
-
-import Swal from 'sweetalert2';
-import 'sweetalert2/dist/sweetalert2.min.css';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
 
 const props = defineProps({
-    name: 'Edit',
-    titulo: {
+    title: {
         type: String,
-        required: true
+        required: true,
     },
     routeName: {
         type: String,
-        required: true
+        required: true,
     },
-    modulo: { type: Object, required: true },
+    module: { // Controller passes 'module'
+        type: Object,
+        required: true,
+    }
 });
 
-const form = useForm({ ...props.modulo });
-const guardar = () => {
-    form.put(route("modulo.update", props.modulo.id));
-};
-const eliminar = () => {
-    Swal.fire({
-        title: "¿Esta seguro?",
-        text: "Esta acción no se puede revertir",
-        icon: "warning",
-        showCancelButton: true,
-        cancelButtonText: "Cancelar",
-        cancelButtonColor: "#d33",
-        confirmButtonColor: "#3085d6",
-        confirmButtonText: "Si!, eliminar registro!",
-    }).then((res) => {
-        if (res.isConfirmed) {
-            form.delete(route("modulo.destroy", props.modulo.id));
-        }
-    });
+const form = useForm({
+    id: props.module.id,
+    name: props.module.name,
+    key: props.module.key,
+    description: props.module.description,
+});
+
+const submit = () => {
+    form.put(route(`${props.routeName}update`, form.id));
 };
 </script>
 
-
 <template>
-    <Head :title="titulo">
-        <link rel="shortcut icon" type="image/png" href="/img/TecnmBlanco.png">
-    </Head>
-    <LayoutMain>
-        <SectionTitleLineWithButton :icon="mdiPencil" :title="titulo" main>
-            <a :href="route(`${routeName}index`)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-x"
-                    viewBox="0 0 16 16">
-                    <path
-                        d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
-                </svg>
-            </a>
-        </SectionTitleLineWithButton>
+    <LayoutAuthenticated>
+        <Head :title="title" />
 
-        <CardBox form @submit.prevent="guardar">
-            <div class="mb-6">
-                <label for="nombre" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                    <span class="text-red-600 mr-1">*</span>Nombre del módulo:
-                </label>
-                <jet-input id="nombre"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    v-model="form.nombre" required placeholder="Nombre del módulo" />
-                <jet-input-error :message="form.errors.nombre" />
+        <div class="max-w-4xl mx-auto space-y-6">
+            <!-- Header -->
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
+                     <div class="flex items-center gap-2 mt-2 text-sm text-gray-600">
+                        <span class="text-[#1B396A] font-semibold flex items-center gap-1">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            </svg>
+                            Seguridad
+                        </span>
+                        <span>&gt;</span>
+                        <Link :href="route(`${routeName}index`)" class="flex items-center gap-1 text-[#1B396A] font-semibold hover:underline">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a1 1 0 01-.15.53l-1.861 2.893A1 1 0 004 6.115V11a1 1 0 001.5 1A1 1 0 004 11V6.115l-1.861-2.893A1 1 0 004 4.101V3a1 1 0 011-1M16 2a1 1 0 011 1v2.101a1 1 0 01-.15.53l-1.861 2.893A1 1 0 0016 6.115V11a1 1 0 001.5 1A1 1 0 0016 11V6.115l-1.861-2.893A1 1 0 0016 4.101V3a1 1 0 011-1" clip-rule="evenodd" />
+                                <path d="M5 2a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H6a1 1 0 01-1-1V2z" />
+                                <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" clip-rule="evenodd" />
+                            </svg>
+                            Módulos
+                        </Link>
+                        <span>&gt;</span>
+                        <span class="text-gray-500">Editar Módulo</span>
+                    </div>
+                </div>
+                <Link :href="route(`${routeName}index`)" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                    </svg>
+                    Regresar
+                </Link>
             </div>
-            <div class="mb-6">
-                <label for="descripcion" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                    <span class="text-red-600 mr-1">*</span>Descripción:
-                </label>
-                <jet-input id="descripcion"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    v-model="form.descripcion" required placeholder="Descripción" />
-                <jet-input-error :message="form.errors.descripcion" />
+
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+                <form @submit.prevent="submit" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Nombre -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre: <span class="text-red-500">*</span></label>
+                            <input v-model="form.name" type="text" class="w-full rounded-lg border-gray-300 focus:border-[#1B396A] focus:ring-[#1B396A]" placeholder="Nombre del módulo" />
+                            <p v-if="form.errors.name" class="mt-1 text-sm text-red-600">{{ form.errors.name }}</p>
+                        </div>
+                        
+                         <!-- Clave -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Clave: <span class="text-red-500">*</span></label>
+                            <input v-model="form.key" type="text" class="w-full rounded-lg border-gray-300 focus:border-[#1B396A] focus:ring-[#1B396A]" placeholder="Clave del módulo" />
+                             <p v-if="form.errors.key" class="mt-1 text-sm text-red-600">{{ form.errors.key }}</p>
+                        </div>
+
+                         <!-- Description -->
+                        <div class="col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Descripción: <span class="text-red-500">*</span></label>
+                            <textarea v-model="form.description" rows="4" class="w-full rounded-lg border-gray-300 focus:border-[#1B396A] focus:ring-[#1B396A]" placeholder="Descripción del módulo"></textarea>
+                            <div class="flex justify-end mt-1">
+                                <span class="text-gray-400 text-sm">/255</span>
+                            </div>
+                            <p v-if="form.errors.description" class="mt-1 text-sm text-red-600">{{ form.errors.description }}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
+                        <Link :href="route(`${routeName}index`)" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition">
+                            Cancelar
+                        </Link>
+                        <button :disabled="form.processing" type="submit" class="px-6 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#002B5C] transition shadow-lg disabled:opacity-75 flex items-center gap-2 font-medium">
+                            <span v-if="!form.processing">Actualizar</span>
+                             <span v-else>Guardando...</span>
+                        </button>
+                    </div>
+                </form>
             </div>
-            <div class="">
-                <label for="key" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                    <span class="text-red-600 mr-1">*</span>Clave del Módulo:
-                </label>
-                <jet-input id="descripcion"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    v-model="form.key" required placeholder="Clave del Módulo" />
-                <jet-input-error :message="form.errors.key" />
-            </div>
-  
-            <template #footer>
-                <BaseButtons>
-                    <BaseButton :href="route(`${routeName}index`)" color="" label="Cancelar" />
-                    <BaseButton @click="guardar" :icon="mdiContentSave" type="submit" color="info" label="Guardar"/>
-                    <BaseButton color="danger" :icon="mdiTrashCan" @click="eliminar" label="Eliminar" />
-                </BaseButtons>
-            </template>
-        </CardBox>
-    </LayoutMain>
+        </div>
+    </LayoutAuthenticated>
 </template>

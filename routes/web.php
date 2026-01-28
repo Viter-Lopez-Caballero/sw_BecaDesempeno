@@ -6,9 +6,16 @@ use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
 Route::get('/', function () {
+    // Obtener las últimas convocatorias con paginación de 3 en 3
+    $convocatorias = \App\Models\Modulo::query()
+        ->latest('created_at')
+        ->paginate(3)
+        ->withQueryString();
+    
     return Inertia::render('Inicio', [
         'canLogin' => Route::has('login'),
         'canRegister' => Features::enabled(Features::registration()),
+        'convocatorias' => $convocatorias,
     ]);
 })->name('inicio');
 

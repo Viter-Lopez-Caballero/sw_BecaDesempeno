@@ -53,8 +53,14 @@ class RoleController extends SecurityController
                 ->orWhere('description', 'LIKE', '%' . $search . '%');
         });
 
-        $roles = $query->orderBy('id', 'desc')
-            ->paginate($filters->rows)
+        // Aplicar ordenamiento si existe
+        if (!empty($filters->sort_field) && !empty($filters->sort_direction)) {
+            $query->orderBy($filters->sort_field, $filters->sort_direction);
+        } else {
+            $query->orderBy('id', 'desc');
+        }
+
+        $roles = $query->paginate($filters->rows)
             ->withQueryString();
 
         return Inertia::render("{$this->source}Index", [

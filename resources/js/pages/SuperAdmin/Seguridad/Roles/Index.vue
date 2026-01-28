@@ -5,6 +5,9 @@ import Pagination from '@/Shared/Pagination.vue';
 import { ref, watch } from 'vue';
 import { debounce } from 'lodash';
 import { useCan } from '@/composables/usePermissions';
+import VueSelect from 'vue-select';
+import 'vue-select/dist/vue-select.css';
+import { mdiSecurity } from '@mdi/js';
 
 const props = defineProps({
     roles: {
@@ -27,13 +30,32 @@ const props = defineProps({
 
 const search = ref(props.filters.search);
 const rows = ref(props.filters.rows || 10);
+const sortField = ref(props.filters.sort_field || '');
+const sortDirection = ref(props.filters.sort_direction || 'asc');
+
+const rowOptions = [
+    { label: '5 Registros', value: 5 },
+    { label: '10 Registros', value: 10 },
+    { label: '25 Registros', value: 25 },
+    { label: '50 Registros', value: 50 },
+];
 
 const onSearch = debounce((value) => {
-    router.get(route(`${props.routeName}index`), { search: value, rows: rows.value }, { preserveState: true, replace: true });
+    router.get(route(`${props.routeName}index`), { 
+        search: value, 
+        rows: rows.value,
+        sort_field: sortField.value,
+        sort_direction: sortDirection.value
+    }, { preserveState: true, replace: true });
 }, 500);
 
 const onRowsChange = () => {
-    router.get(route(`${props.routeName}index`), { search: search.value, rows: rows.value }, { preserveState: true, replace: true });
+    router.get(route(`${props.routeName}index`), { 
+        search: search.value, 
+        rows: rows.value,
+        sort_field: sortField.value,
+        sort_direction: sortDirection.value
+    }, { preserveState: true, replace: true });
 };
 
 watch(search, (value) => {
@@ -43,7 +65,24 @@ watch(search, (value) => {
 const cleanFilters = () => {
     search.value = '';
     rows.value = 10;
+    sortField.value = '';
+    sortDirection.value = 'asc';
     router.get(route(`${props.routeName}index`), {}, { preserveState: true, replace: true });
+};
+
+const sortBy = (field) => {
+    if (sortField.value === field) {
+        sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortField.value = field;
+        sortDirection.value = 'asc';
+    }
+    router.get(route(`${props.routeName}index`), {
+        search: search.value,
+        rows: rows.value,
+        sort_field: sortField.value,
+        sort_direction: sortDirection.value
+    }, { preserveState: true, replace: true });
 };
 
 const deleteRole = (id) => {
@@ -62,94 +101,97 @@ const deleteRole = (id) => {
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
-                    <div class="flex items-center gap-2 mt-2 text-sm text-gray-600">
-                        <span class="text-[#1B396A] font-semibold flex items-center gap-1">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            Seguridad
-                        </span>
-                        <span>&gt;</span>
-                        <span class="flex items-center gap-1 text-[#1B396A] font-semibold">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
-                             </svg>
-                            Roles
-                        </span>
+                    <div class="flex items-center gap-2 mt-2 text-sm">
+                        <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
+                            <path :d="mdiSecurity"/>
+                        </svg>
+                        <span class="text-gray-700 font-medium">Seguridad</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
+                            <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
+                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
+                            <path d="M40-160v-112q0-34 17.5-62.5T104-378q62-31 126-46.5T360-440q66 0 130 15.5T616-378q29 15 46.5 43.5T680-272v112H40Zm720 0v-120q0-44-24.5-84.5T666-434q51 6 96 20.5t84 35.5q36 20 55 44.5t19 53.5v120H760ZM360-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47Zm400-160q0 66-47 113t-113 47q-11 0-28-2.5t-28-5.5q27-32 41.5-71t14.5-81q0-42-14.5-81T544-792q14-5 28-6.5t28-1.5q66 0 113 47t47 113Z"/>
+                        </svg>
+                        <span class="text-gray-900 font-semibold">Roles</span>
                     </div>
                 </div>
-                <Link v-if="useCan('roles.create')" :href="route(`${routeName}create`)" class="px-4 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#002B5C] transition flex items-center gap-2 shadow-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                <Link v-if="useCan('roles.create')" :href="route(`${routeName}create`)" class="px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                        <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
                     </svg>
                     Agregar
                 </Link>
             </div>
 
             <!-- Filter Card -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-                <div class="flex items-center justify-between mb-4">
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4">
+                <div class="flex items-center justify-between mb-2">
                     <div class="flex items-center gap-2">
-                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#374151">
+                            <path d="M440-160q-17 0-28.5-11.5T400-200v-240L168-736q-15-20-4.5-42t36.5-22h560q26 0 36.5 22t-4.5 42L560-440v240q0 17-11.5 28.5T520-160h-80Zm40-308 198-252H282l198 252Zm0 0Z"/>
                         </svg>
-                        <h2 class="text-lg font-semibold text-gray-800">Filtro de Búsqueda</h2>
+                        <h2 class="text-xl font-semibold text-gray-800">Filtro de Búsqueda</h2>
                     </div>
-                     <button @click="cleanFilters" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 flex items-center gap-2 text-sm font-medium transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    <button @click="cleanFilters" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-sm font-medium transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
+                            <path d="M400-240v-80h240v80H400Zm-158 0L15-467l57-57 170 170 366-366 57 57-423 423Zm318-160v-80h240v80H560Zm160-160v-80h240v80H720Z"/>
                         </svg>
                         Limpiar Filtros
                     </button>
                 </div>
                 <div class="text-sm text-gray-500 mb-4">Buscar y filtrar roles</div>
-                <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
-                    <div class="relative w-full md:w-1/2">
+                <div class="flex flex-col md:flex-row gap-4 items-end">
+                    <div class="relative w-full md:flex-1">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-5 w-5 text-[#1B396A]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#1B396A">
+                                <path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/>
                             </svg>
                         </div>
-                        <input v-model="search" type="text" placeholder="Buscar..." class="pl-10 w-full rounded-full border-gray-300 focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 shadow-sm" />
+                        <input v-model="search" type="text" placeholder="Buscar..." class="pl-10 w-full h-[45px] rounded-lg border border-gray-300 text-gray-700 focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition" />
                     </div>
-                    <div class="w-full md:w-auto">
-                        <select v-model="rows" @change="onRowsChange" class="rounded-lg border-gray-300 text-gray-700 text-sm focus:border-[#1B396A] focus:ring-[#1B396A] w-full md:w-48 shadow-sm">
-                            <option :value="10">10 Registros</option>
-                            <option :value="25">25 Registros</option>
-                            <option :value="50">50 Registros</option>
-                        </select>
+                    <div class="w-full md:w-52 flex-shrink-0">
+                        <VueSelect
+                            v-model="rows"
+                            :options="rowOptions"
+                            :reduce="option => option.value"
+                            :searchable="false"
+                            :clearable="false"
+                            placeholder="Registros"
+                            class="vue-select-custom"
+                            @option:selected="onRowsChange"
+                        />
                     </div>
                 </div>
             </div>
 
             <!-- Table -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
                                 <th scope="col" class="px-6 py-4 tracking-wider">ID</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">
-                                    <div class="flex items-center gap-1 cursor-pointer">
+                                    <div @click="sortBy('name')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
                                         Roles
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'name', 'opacity-50': sortField !== 'name' }">
+                                            <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/>
                                         </svg>
                                     </div>
                                 </th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">
-                                    <div class="flex items-center gap-1 cursor-pointer">
+                                    <div @click="sortBy('description')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
                                         Descripción
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'description', 'opacity-50': sortField !== 'description' }">
+                                            <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/>
                                         </svg>
                                     </div>
                                 </th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">
-                                    <div class="flex items-center gap-1 cursor-pointer">
+                                    <div @click="sortBy('created_at')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
                                         Fecha
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'created_at', 'opacity-50': sortField !== 'created_at' }">
+                                            <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/>
                                         </svg>
                                     </div>
                                 </th>
@@ -165,13 +207,13 @@ const deleteRole = (id) => {
                                 <td v-if="useCan('roles.edit') || useCan('roles.delete')" class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
                                         <Link v-if="useCan('roles.edit')" :href="route(`${routeName}edit`, role.id)" class="p-2 text-[#1B396A] border border-[#1B396A] rounded-full hover:bg-[#1B396A] hover:text-white transition group" title="Editar">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                                <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/>
                                             </svg>
                                         </Link>
-                                        <button v-if="useCan('roles.delete')" @click="deleteRole(role.id)" class="p-2 text-red-500 border border-red-500 rounded-full hover:bg-red-500 hover:text-white transition group" title="Eliminar">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        <button v-if="useCan('roles.delete')" @click="deleteRole(role.id)" class="p-2 text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition group" title="Eliminar">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                                <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
                                             </svg>
                                         </button>
                                     </div>
@@ -194,3 +236,47 @@ const deleteRole = (id) => {
         </div>
     </LayoutAuthenticated>
 </template>
+
+<style scoped>
+:deep(.vue-select-custom .vs__dropdown-toggle) {
+    background: linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%);
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    min-height: 42px;
+}
+
+:deep(.vue-select-custom .vs__selected) {
+    color: #374151;
+    font-weight: 500;
+}
+
+:deep(.vue-select-custom .vs__search::placeholder) {
+    color: #9ca3af;
+}
+
+:deep(.vue-select-custom .vs__dropdown-menu) {
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+:deep(.vue-select-custom .vs__dropdown-option) {
+    padding: 0.75rem 1rem;
+    color: #374151;
+}
+
+:deep(.vue-select-custom .vs__dropdown-option--highlight) {
+    background: #1B396A;
+    color: white;
+}
+
+:deep(.vue-select-custom .vs__open-indicator) {
+    fill: #1B396A;
+    transform: scale(0.85);
+}
+
+:deep(.vue-select-custom .vs__actions) {
+    padding-right: 4px;
+}
+</style>

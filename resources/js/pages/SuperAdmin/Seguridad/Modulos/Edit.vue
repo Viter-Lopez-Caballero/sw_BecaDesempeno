@@ -1,6 +1,7 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
+import { mdiSecurity, mdiViewModule } from '@mdi/js';
 
 const props = defineProps({
     title: {
@@ -33,62 +34,80 @@ const submit = () => {
     <LayoutAuthenticated>
         <Head :title="title" />
 
-        <div class="max-w-4xl mx-auto space-y-6">
+        <div class="space-y-6">
             <!-- Header -->
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
-                     <div class="flex items-center gap-2 mt-2 text-sm text-gray-600">
-                        <span class="text-[#1B396A] font-semibold flex items-center gap-1">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    <div class="flex items-center gap-2 mt-2 text-sm">
+                        <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
+                            <path :d="mdiSecurity"/>
+                        </svg>
+                        <span class="text-gray-700 font-medium">Seguridad</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
+                            <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
+                        </svg>
+                        <Link :href="route(`${routeName}index`)" class="flex items-center gap-2 hover:underline">
+                            <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
+                                <path :d="mdiViewModule"/>
                             </svg>
-                            Seguridad
-                        </span>
-                        <span>&gt;</span>
-                        <Link :href="route(`${routeName}index`)" class="flex items-center gap-1 text-[#1B396A] font-semibold hover:underline">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a1 1 0 01-.15.53l-1.861 2.893A1 1 0 004 6.115V11a1 1 0 001.5 1A1 1 0 004 11V6.115l-1.861-2.893A1 1 0 004 4.101V3a1 1 0 011-1M16 2a1 1 0 011 1v2.101a1 1 0 01-.15.53l-1.861 2.893A1 1 0 0016 6.115V11a1 1 0 001.5 1A1 1 0 0016 11V6.115l-1.861-2.893A1 1 0 0016 4.101V3a1 1 0 011-1" clip-rule="evenodd" />
-                                <path d="M5 2a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H6a1 1 0 01-1-1V2z" />
-                                <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" clip-rule="evenodd" />
-                            </svg>
-                            Módulos
+                            <span class="text-gray-700 font-medium">Módulos</span>
                         </Link>
-                        <span>&gt;</span>
-                        <span class="text-gray-500">Editar Módulo</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
+                            <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
+                        </svg>
+                        <span class="text-gray-900 font-semibold">Editar Módulo</span>
                     </div>
                 </div>
-                <Link :href="route(`${routeName}index`)" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                <Link :href="route(`${routeName}index`)" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                        <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
                     </svg>
                     Regresar
                 </Link>
             </div>
 
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 p-8">
                 <form @submit.prevent="submit" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Nombre -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre: <span class="text-red-500">*</span></label>
-                            <input v-model="form.name" type="text" class="w-full rounded-lg border-gray-300 focus:border-[#1B396A] focus:ring-[#1B396A]" placeholder="Nombre del módulo" />
+                            <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Nombre: <span class="text-red-500">*</span></label>
+                            <input v-model="form.name" type="text" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" placeholder="Nombre del módulo" />
+                            <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Por favor, introduce el nombre del módulo</span>
+                            </div>
                             <p v-if="form.errors.name" class="mt-1 text-sm text-red-600">{{ form.errors.name }}</p>
                         </div>
                         
                          <!-- Clave -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Clave: <span class="text-red-500">*</span></label>
-                            <input v-model="form.key" type="text" class="w-full rounded-lg border-gray-300 focus:border-[#1B396A] focus:ring-[#1B396A]" placeholder="Clave del módulo" />
+                            <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Clave: <span class="text-red-500">*</span></label>
+                            <input v-model="form.key" type="text" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" placeholder="Clave del módulo" />
+                            <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Por favor, introduce la clave del módulo</span>
+                            </div>
                              <p v-if="form.errors.key" class="mt-1 text-sm text-red-600">{{ form.errors.key }}</p>
                         </div>
 
                          <!-- Description -->
                         <div class="col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Descripción: <span class="text-red-500">*</span></label>
-                            <textarea v-model="form.description" rows="4" class="w-full rounded-lg border-gray-300 focus:border-[#1B396A] focus:ring-[#1B396A]" placeholder="Descripción del módulo"></textarea>
-                            <div class="flex justify-end mt-1">
-                                <span class="text-gray-400 text-sm">/255</span>
+                            <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Descripción: <span class="text-red-500">*</span></label>
+                            <textarea v-model="form.description" rows="4" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" placeholder="Descripción del módulo"></textarea>
+                            <div class="flex items-center justify-between mt-1">
+                                <div class="flex items-center gap-1 text-xs text-gray-500">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>Por favor, introduce la descripción del módulo</span>
+                                </div>
+                                <span class="text-gray-400 text-sm">{{ form.description?.length || 0 }}/255</span>
                             </div>
                             <p v-if="form.errors.description" class="mt-1 text-sm text-red-600">{{ form.errors.description }}</p>
                         </div>
@@ -98,9 +117,9 @@ const submit = () => {
                         <Link :href="route(`${routeName}index`)" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition">
                             Cancelar
                         </Link>
-                        <button :disabled="form.processing" type="submit" class="px-6 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#002B5C] transition shadow-lg disabled:opacity-75 flex items-center gap-2 font-medium">
+                        <button :disabled="form.processing" type="submit" class="px-6 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl disabled:opacity-75 flex items-center gap-2 font-medium">
                             <span v-if="!form.processing">Actualizar</span>
-                             <span v-else>Guardando...</span>
+                            <span v-else>Guardando...</span>
                         </button>
                     </div>
                 </form>

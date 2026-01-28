@@ -149,7 +149,7 @@
                             :href="route(item.route)"
                             :class="[
                                 'flex items-center px-4 py-2.5 pl-12 transition-colors duration-200',
-                                isActiveRoute(item.route)
+                                route().current(item.route) || route().current(item.route.replace('.index', '') + '.*')
                                     ? 'bg-[#1e3a5f] text-white font-medium'
                                     : 'text-gray-300 hover:bg-[#1e3a5f] hover:text-white'
                             ]"
@@ -216,7 +216,7 @@
                             :href="route(item.route)"
                             :class="[
                                 'flex items-center px-4 py-2.5 pl-12 transition-colors duration-200',
-                                isActiveRoute(item.route)
+                                route().current(item.route) || route().current(item.route.replace('.index', '') + '.*')
                                     ? 'bg-[#1e3a5f] text-white font-medium'
                                     : 'text-gray-300 hover:bg-[#1e3a5f] hover:text-white'
                             ]"
@@ -324,7 +324,7 @@
         <!-- Main Content -->
         <div class="flex-1 flex flex-col overflow-hidden">
             <!-- Page Content -->
-            <main class="flex-1 overflow-y-auto bg-gray-50 p-4">
+            <main class="flex-1 overflow-y-auto bg-gray-50 p-6">
                 <!-- Toggle Button -->
                 <div class="mb-4">
                     <!-- Mobile Menu Button -->
@@ -340,7 +340,7 @@
                     <!-- Desktop Toggle Button -->
                     <button
                         @click="sidebarCollapsed = !sidebarCollapsed"
-                        class="hidden lg:block p-1 rounded-md text-gray-900 hover:bg-gray-200 transition-colors duration-200"
+                        class="hidden lg:block rounded-md text-gray-900 hover:bg-gray-200 transition-colors duration-200"
                         :title="sidebarCollapsed ? 'Expandir sidebar' : 'Colapsar sidebar'"
                     >
                         <svg v-if="sidebarCollapsed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor" class="w-6 h-6">
@@ -461,11 +461,11 @@ const isActiveRoute = (routeName) => {
 };
 
 const isSecurityActive = () => {
-    return securityItems.some(item => isActiveRoute(item.route));
+    return route().current('superadmin.seguridad.*');
 };
 
 const isCatalogActive = () => {
-    return catalogItems.some(item => isActiveRoute(item.route));
+    return route().current('superadmin.catalogo.*');
 };
 
 // Initialize menu states based on active routes

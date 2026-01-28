@@ -58,7 +58,14 @@ class UserController extends SecurityController
                 $query->withTrashed();
             });
 
-        $this->applyOrdering($query, $filters->order ?? 'id', $filters->direction ?? 'desc');
+        // Aplicar ordenamiento si existe
+        if (!empty($filters->sort_field)) {
+            $sortDirection = !empty($filters->sort_direction) ? $filters->sort_direction : 'asc';
+            $query->orderBy($filters->sort_field, $sortDirection);
+        } else {
+            $query->orderBy('id', 'desc');
+        }
+
         $users = $query->paginate($filters->rows)->withQueryString();
 
         return Inertia::render("{$this->source}Index", [

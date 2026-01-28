@@ -18,6 +18,8 @@ trait Filterable
             'direction' => $queryParams['direction'] ?? 'desc',
             'rows' => (int) ($queryParams['rows'] ?? 10),
             'withTrashed' => $queryParams['withTrashed'] ?? false,
+            'sort_field' => $queryParams['sort_field'] ?? null,
+            'sort_direction' => $queryParams['sort_direction'] ?? 'asc',
         ];
     }
 }

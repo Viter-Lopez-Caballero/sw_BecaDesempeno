@@ -1,6 +1,9 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
+import { mdiSecurity, mdiLockCheckOutline } from '@mdi/js';
+import VueSelect from 'vue-select';
+import 'vue-select/dist/vue-select.css';
 
 const props = defineProps({
     title: {
@@ -33,66 +36,88 @@ const submit = () => {
     <LayoutAuthenticated>
         <Head :title="title" />
 
-        <div class="max-w-4xl mx-auto space-y-6">
+        <div class="space-y-6">
             <!-- Header -->
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
-                     <div class="flex items-center gap-2 mt-2 text-sm text-gray-600">
-                        <span class="text-[#1B396A] font-semibold flex items-center gap-1">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    <div class="flex items-center gap-2 mt-2 text-sm">
+                        <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
+                            <path :d="mdiSecurity"/>
+                        </svg>
+                        <span class="text-gray-700 font-medium">Seguridad</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
+                            <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
+                        </svg>
+                        <Link :href="route(`${routeName}index`)" class="flex items-center gap-2 hover:underline">
+                            <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
+                                <path :d="mdiLockCheckOutline"/>
                             </svg>
-                            Seguridad
-                        </span>
-                        <span>&gt;</span>
-                        <Link :href="route(`${routeName}index`)" class="flex items-center gap-1 text-[#1B396A] font-semibold hover:underline">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
-                             </svg>
-                            Permisos
+                            <span class="text-gray-700 font-medium">Permisos</span>
                         </Link>
-                        <span>&gt;</span>
-                        <span class="text-gray-500">Agregar Permiso</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
+                            <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
+                        </svg>
+                        <span class="text-gray-900 font-semibold">Agregar Permiso</span>
                     </div>
                 </div>
-                <Link :href="route(`${routeName}index`)" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                <Link :href="route(`${routeName}index`)" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                        <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
                     </svg>
                     Regresar
                 </Link>
             </div>
 
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 p-8">
                 <form @submit.prevent="submit" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Module Selector -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre: <span class="text-red-500">*</span></label>
-                            <select v-model="form.module_key" class="w-full rounded-lg border-gray-300 focus:border-[#1B396A] focus:ring-[#1B396A]">
-                                <option value="" disabled>Seleccione una Opción</option>
-                                <option v-for="modulo in modules" :key="modulo.id" :value="modulo.key">{{ modulo.name }}</option>
-                            </select>
-                            <p class="text-sm text-gray-500 mt-1">Selecciona un módulo disponible</p>
+                            <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Nombre: <span class="text-red-500">*</span></label>
+                            <VueSelect
+                                v-model="form.module_key"
+                                :options="modules.map(m => ({ label: m.name, value: m.key }))"
+                                :reduce="option => option.value"
+                                placeholder="Seleccione una Opción"
+                                :searchable="true"
+                                :clearable="true"
+                                class="vue-select-custom"
+                            />
+                            <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Selecciona un módulo disponible</span>
+                            </div>
                             <p v-if="form.errors.module_key" class="mt-1 text-sm text-red-600">{{ form.errors.module_key }}</p>
                         </div>
                         
                          <!-- Permission Name (Key) -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Clave: <span class="text-red-500">*</span></label>
-                            <input v-model="form.name" type="text" class="w-full rounded-lg border-gray-300 focus:border-[#1B396A] focus:ring-[#1B396A]" placeholder="Clave del permiso" />
-                            <p class="text-sm text-gray-500 mt-1">Ejemplos: nombre_modulo.index, nombre_modulo.store, ...</p>
+                            <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Clave: <span class="text-red-500">*</span></label>
+                            <input v-model="form.name" type="text" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" placeholder="Clave del permiso" />
+                            <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Ejemplos: nombre_modulo.index, nombre_modulo.store, ...</span>
+                            </div>
                             <p v-if="form.errors.name" class="mt-1 text-sm text-red-600">{{ form.errors.name }}</p>
                         </div>
 
                          <!-- Description -->
                         <div class="col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Descripción: <span class="text-red-500">*</span></label>
-                            <textarea v-model="form.description" rows="4" class="w-full rounded-lg border-gray-300 focus:border-[#1B396A] focus:ring-[#1B396A]" placeholder="Descripción"></textarea>
-                            <div class="flex justify-between mt-1">
-                                <p class="text-sm text-gray-500">Ejemplos: index=Leer Registros, store=Crear Registros...</p>
-                                <span class="text-gray-400 text-sm">/255</span>
+                            <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Descripción: <span class="text-red-500">*</span></label>
+                            <textarea v-model="form.description" rows="4" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" placeholder="Descripción"></textarea>
+                            <div class="flex items-center justify-between mt-1">
+                                <div class="flex items-center gap-1 text-xs text-gray-500">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>Ejemplos: index=Leer Registros, store=Crear Registros...</span>
+                                </div>
+                                <span class="text-gray-400 text-sm">{{ form.description?.length || 0 }}/255</span>
                             </div>
                             <p v-if="form.errors.description" class="mt-1 text-sm text-red-600">{{ form.errors.description }}</p>
                         </div>
@@ -102,7 +127,7 @@ const submit = () => {
                         <Link :href="route(`${routeName}index`)" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition">
                             Cancelar
                         </Link>
-                        <button :disabled="form.processing" type="submit" class="px-6 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#002B5C] transition shadow-lg disabled:opacity-75 flex items-center gap-2 font-medium">
+                        <button :disabled="form.processing" type="submit" class="px-6 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl disabled:opacity-75 flex items-center gap-2 font-medium">
                             <span v-if="!form.processing">Guardar</span>
                              <span v-else>Guardando...</span>
                         </button>
@@ -112,3 +137,88 @@ const submit = () => {
         </div>
     </LayoutAuthenticated>
 </template>
+
+<style scoped>
+:deep(.vue-select-custom .vs__dropdown-toggle) {
+    background: linear-gradient(to bottom right, #F3F4F6, #E5E7EB);
+    border: none;
+    border-bottom: 2px solid #D1D5DB;
+    border-radius: 0.5rem;
+    padding: 0.625rem 0.75rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
+}
+
+:deep(.vue-select-custom .vs__dropdown-toggle):hover {
+    border-bottom-color: rgba(27, 57, 106, 0.5);
+}
+
+:deep(.vue-select-custom .vs--open .vs__dropdown-toggle) {
+    background: linear-gradient(to bottom right, #EFF6FF, #DBEAFE);
+    border-bottom-color: #1B396A;
+}
+
+:deep(.vue-select-custom .vs__search) {
+    margin: 0;
+    padding: 0;
+    border: none;
+    font-size: 0.875rem;
+    color: #111827;
+}
+
+:deep(.vue-select-custom .vs__search::placeholder) {
+    color: #9CA3AF;
+}
+
+:deep(.vue-select-custom .vs__selected) {
+    margin: 0;
+    padding: 0;
+    border: none;
+    color: #111827;
+    font-size: 0.875rem;
+}
+
+:deep(.vue-select-custom .vs__actions) {
+    padding: 0 4px 0 6px;
+}
+
+:deep(.vue-select-custom .vs__clear),
+:deep(.vue-select-custom .vs__open-indicator) {
+    fill: #1B396A;
+    transition: transform 0.2s;
+}
+
+:deep(.vue-select-custom .vs__open-indicator) {
+    transform: scale(0.70);
+}
+
+:deep(.vue-select-custom .vs--open .vs__open-indicator) {
+    transform: rotate(180deg) scale(0.70);
+}
+
+:deep(.vue-select-custom .vs__dropdown-menu) {
+    border: 1px solid #E5E7EB;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    margin-top: 4px;
+}
+
+:deep(.vue-select-custom .vs__dropdown-option) {
+    padding: 0.625rem 0.75rem;
+    color: #374151;
+    font-size: 0.875rem;
+    transition: all 0.15s;
+}
+
+:deep(.vue-select-custom .vs__dropdown-option--highlight) {
+    background: #1B396A;
+    color: white;
+}
+
+:deep(.vue-select-custom .vs__no-options) {
+    padding: 0.75rem;
+    color: #6B7280;
+    font-size: 0.875rem;
+    text-align: center;
+}
+</style>

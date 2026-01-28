@@ -1,40 +1,113 @@
 <template>
-    <div class="flex flex-col md:flex-row items-center justify-between mt-6">
-        <div class="md:pr-2">
-            <ul class="pagination flex flex-wrap md:flex-nowrap">
-                <li v-for="(link, key) in links" :class="estatus(link)" :key="key">
-                    <Link :class="{
-                        'inline-block border border-slate-500 dark:border-slate-100 text-black px-3 py-1 mr-1 dark:text-white rounded hover:bg-slate-200 dark:hover:bg-slate-600':
-                            !link.active,
-                        'inline-block border border-blue-500 text-white px-3 py-1 mr-1 bg-blue-500 rounded':
-                            link.active,
-                    }" :href="link.url ? link.url : '#'" @click="isLoading = true">
-                    <span v-html="link.label"></span>
+    <div class="flex items-center justify-between">
+        <div class="w-[180px]"></div>
+        
+        <div class="flex items-center gap-1.5">
+            <ul class="flex items-center gap-1.5">
+                <!-- Primera página (doble flecha izquierda) -->
+                <li>
+                    <Link 
+                        :class="[
+                            'inline-flex items-center justify-center w-8 h-8 rounded-full transition-colors',
+                            firstPageUrl && !links[1]?.active
+                                ? 'text-gray-600 hover:bg-gray-100 cursor-pointer' 
+                                : 'text-gray-300 cursor-not-allowed'
+                        ]" 
+                        :href="firstPageUrl || '#'" 
+                        @click="firstPageUrl && (isLoading = true)"
+                        :disabled="!firstPageUrl || links[1]?.active"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                            <path d="M440-240 200-480l240-240 56 56-183 184 183 184-56 56Zm264 0L464-480l240-240 56 56-183 184 183 184-56 56Z"/>
+                        </svg>
+                    </Link>
+                </li>
+                
+                <!-- Página anterior (flecha izquierda simple) -->
+                <li>
+                    <Link 
+                        :class="[
+                            'inline-flex items-center justify-center w-8 h-8 rounded-full transition-colors',
+                            links[0].url 
+                                ? 'text-gray-600 hover:bg-gray-100 cursor-pointer' 
+                                : 'text-gray-300 cursor-not-allowed'
+                        ]" 
+                        :href="links[0].url || '#'" 
+                        @click="links[0].url && (isLoading = true)"
+                        :disabled="!links[0].url"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                            <path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z"/>
+                        </svg>
+                    </Link>
+                </li>
+
+                <!-- Números de página -->
+                <li v-for="(link, key) in links.slice(1, -1)" :key="key">
+                    <Link 
+                        :class="[
+                            'inline-flex items-center justify-center w-9 h-9 rounded-full font-medium text-sm transition-colors',
+                            link.active 
+                                ? 'bg-[#1B396A] text-white shadow-md' 
+                                : 'text-gray-700 hover:bg-gray-100 bg-gray-50'
+                        ]" 
+                        :href="link.url || '#'" 
+                        @click="link.url && (isLoading = true)"
+                    >
+                        {{ link.label }}
+                    </Link>
+                </li>
+
+                <!-- Página siguiente (flecha derecha simple) -->
+                <li>
+                    <Link 
+                        :class="[
+                            'inline-flex items-center justify-center w-8 h-8 rounded-full transition-colors',
+                            links[links.length - 1].url 
+                                ? 'text-gray-600 hover:bg-gray-100 cursor-pointer' 
+                                : 'text-gray-300 cursor-not-allowed'
+                        ]" 
+                        :href="links[links.length - 1].url || '#'" 
+                        @click="links[links.length - 1].url && (isLoading = true)"
+                        :disabled="!links[links.length - 1].url"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                            <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"/>
+                        </svg>
+                    </Link>
+                </li>
+
+                <!-- Última página (doble flecha derecha) -->
+                <li>
+                    <Link 
+                        :class="[
+                            'inline-flex items-center justify-center w-8 h-8 rounded-full transition-colors',
+                            lastPageUrl && !links[links.length - 2]?.active
+                                ? 'text-gray-600 hover:bg-gray-100 cursor-pointer' 
+                                : 'text-gray-300 cursor-not-allowed'
+                        ]" 
+                        :href="lastPageUrl || '#'" 
+                        @click="lastPageUrl && (isLoading = true)"
+                        :disabled="!lastPageUrl || links[links.length - 2]?.active"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                            <path d="M383-480 200-664l56-56 240 240-240 240-56-56 183-184Zm264 0L464-664l56-56 240 240-240 240-56-56 183-184Z"/>
+                        </svg>
                     </Link>
                 </li>
             </ul>
         </div>
-        <div class="mt-4 md:mt-0">
-            <span v-if="total > 0" class="text-black-50 font-light">
-                <template v-if="from && to">
-                    Mostrando {{ from }} a {{ to }} de {{ useNFmt(total, 0) }} registros
-                </template>
-                <template v-else>
-                    Usted tiene {{ useNFmt(total, 0) }} registros
-                </template>
-            </span>
+
+        <div class="w-[180px] text-sm text-gray-600 text-right">
+            <span class="font-medium">Total de registros: {{ total }}</span>
         </div>
-    </div>
-    <div class="vl-parent">
-        <loading v-model:active="isLoading" :can-cancel="false" :is-full-page="true" />
     </div>
 </template>
 
 <script>
-import { useNFmt } from '@/composables/useFormato';
 import { Link } from '@inertiajs/vue3';
 import Loading from 'vue-loading-overlay';
-import { ref } from "vue";
+import { ref, computed } from "vue";
 
 export default {
     props: { 
@@ -47,14 +120,35 @@ export default {
         Link,
         Loading,
     },
-    setup() {
+    setup(props) {
         const isLoading = ref(false)
-
-        const estatus = (link) => {
-            if (link.url === null) return "disabled";
-            if (link.active) return "active";
-        };
-        return { useNFmt, estatus, isLoading };
+        
+        // Obtener URL de primera página
+        const firstPageUrl = computed(() => {
+            if (!props.links || props.links.length === 0) return null;
+            const firstPageLink = props.links[1]; // El primer número de página
+            if (!firstPageLink || !firstPageLink.url) return null;
+            
+            // Extraer la URL base y cambiar el parámetro page a 1
+            const url = new URL(firstPageLink.url, window.location.origin);
+            url.searchParams.set('page', '1');
+            return url.toString();
+        });
+        
+        // Obtener URL de última página
+        const lastPageUrl = computed(() => {
+            if (!props.links || props.links.length === 0) return null;
+            const lastPageLink = props.links[props.links.length - 2]; // El último número de página
+            if (!lastPageLink || !lastPageLink.url) return null;
+            
+            // Extraer el número de la última página desde el label
+            const lastPageNumber = lastPageLink.label;
+            const url = new URL(lastPageLink.url, window.location.origin);
+            url.searchParams.set('page', lastPageNumber);
+            return url.toString();
+        });
+        
+        return { isLoading, firstPageUrl, lastPageUrl };
     },
 };
 </script>

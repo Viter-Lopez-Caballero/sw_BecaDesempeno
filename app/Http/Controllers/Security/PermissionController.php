@@ -52,8 +52,15 @@ class PermissionController extends SecurityController
                 ->orWhere('module_key', 'LIKE', '%' . $search . '%');
         });
 
-        $permissions = $query->orderBy('id', 'desc')
-            ->paginate($filters->rows)
+        // Aplicar ordenamiento si existe
+        if (!empty($filters->sort_field)) {
+            $sortDirection = !empty($filters->sort_direction) ? $filters->sort_direction : 'asc';
+            $query->orderBy($filters->sort_field, $sortDirection);
+        } else {
+            $query->orderBy('id', 'desc');
+        }
+
+        $permissions = $query->paginate($filters->rows)
             ->withQueryString();
 
         return Inertia::render("{$this->source}Index", [

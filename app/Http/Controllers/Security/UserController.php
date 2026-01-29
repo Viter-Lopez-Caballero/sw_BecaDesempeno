@@ -31,7 +31,7 @@ class UserController extends SecurityController
 
     public function __construct()
     {
-        $this->routeName = "superadmin.seguridad.users.";
+        $this->routeName = "seguridad.users.";
         $this->permissionPrefix = "users.";
         $this->source    = "SuperAdmin/Seguridad/Usuarios/";
         $this->model     = new User();
@@ -45,32 +45,23 @@ class UserController extends SecurityController
     public function index(Request $request): Response
     {
         $filters = $this->getFiltersBase($request->query());
-        $query = $this->model->with('roles')
+        
+        $query = $this->model->query()
+            ->with('roles')
             ->whereDoesntHave('roles', function ($q) {
                 $q->where('id', 3); 
             })
-            ->when($filters->search, function ($query, $search) {
-                $query->where('users.name', 'LIKE', '%' . $search . '%')
-                    ->orWhere('users.email', 'LIKE', '%' . $search . '%')
-                    ->orWhereRelation('roles', 'name', 'LIKE', '%' . $search . '%');
-            })
-            ->when($filters->withTrashed, function ($query) {
-                $query->withTrashed();
-            });
+            ->buscarGlobal($filters->search)
+            ->when($filters->withTrashed, fn($q) => $q->withTrashed());
 
-        // Aplicar ordenamiento si existe
-        if (!empty($filters->sort_field)) {
-            $sortDirection = !empty($filters->sort_direction) ? $filters->sort_direction : 'asc';
-            $query->orderBy($filters->sort_field, $sortDirection);
-        } else {
-            $query->orderBy('id', 'desc');
-        }
-
-        $users = $query->paginate($filters->rows)->withQueryString();
+        // Ordenamiento dinámico usando los filtros del trait
+        $users = $query->orderBy($filters->order, $filters->direction ?? 'desc')
+            ->paginate($filters->rows)
+            ->withQueryString();
 
         return Inertia::render("{$this->source}Index", [
-            'title'     => 'Gestión de Usuarios',
             'usuarios'  => UserResource::collection($users),
+            'title'     => 'Gestión de Usuarios',
             'routeName' => $this->routeName,
             'filters'   => $filters
         ]);

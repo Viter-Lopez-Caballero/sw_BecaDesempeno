@@ -2,21 +2,32 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Auth;
 
-class Module extends Model
+use App\Models\Estado;
+
+class Institucion extends Model
 {
-    use HasFactory, SoftDeletes;
+    use SoftDeletes;
+
+    protected $table = 'instituciones';
 
     protected $fillable = [
-        'name',
-        'description',
-        'key'
+        'nombre',
+        'estado_id'
     ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relaciones
+    |--------------------------------------------------------------------------
+    */
+
+    public function estado()
+    {
+        return $this->belongsTo(Estado::class);
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -31,27 +42,15 @@ class Module extends Model
         }
 
         return $query->where(function ($q) use ($search) {
-            $q->where('name', 'LIKE', "%{$search}%")
-              ->orWhere('description', 'LIKE', "%{$search}%")
-              ->orWhere('key', 'LIKE', "%{$search}%");
+            $q->where('nombre', 'LIKE', "%{$search}%")
+              ->orWhereHas('estado', function ($qEstado) use ($search) {
+                  $qEstado->where('nombre', 'LIKE', "%{$search}%");
+              });
         });
     }
 
     public function scopeOrdenado($query, $sortField = 'id', $sortDirection = 'desc')
     {
         return $query->orderBy($sortField, $sortDirection);
-    }
-
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    protected static function boot()
-    {
-        parent::boot();
-        static::saving(function ($rec) {
-            $rec->user_id = Auth::id();
-        });
     }
 }

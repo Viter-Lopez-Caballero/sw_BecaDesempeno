@@ -10,7 +10,7 @@ use App\Http\Resources\PermissionResource;
 use App\Models\Module;
 use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Permission\Models\Permission;
+use App\Models\Permission;
 use Inertia\Response;
 use Inertia\Inertia;
 use Illuminate\Http\RedirectResponse;
@@ -32,7 +32,7 @@ class PermissionController extends SecurityController
 
     public function __construct()
     {
-        $this->routeName = "superadmin.seguridad.permissions.";
+        $this->routeName = "seguridad.permissions.";
         $this->permissionPrefix = "permissions.";
         $this->source    = "SuperAdmin/Seguridad/Permisos/";
         $this->model     = new Permission();
@@ -46,26 +46,18 @@ class PermissionController extends SecurityController
     public function index(Request $request): Response
     {
         $filters = $this->getFiltersBase($request->query());
-        $query = $this->model->query()->when($filters->search, function ($query, $search) {
-            $query->where('name', 'LIKE', '%' . $search . '%')
-                ->orWhere('description', 'LIKE', '%' . $search . '%')
-                ->orWhere('module_key', 'LIKE', '%' . $search . '%');
-        });
+        
+        $query = $this->model->query()
+            ->buscarGlobal($filters->search);
 
-        // Aplicar ordenamiento si existe
-        if (!empty($filters->sort_field)) {
-            $sortDirection = !empty($filters->sort_direction) ? $filters->sort_direction : 'asc';
-            $query->orderBy($filters->sort_field, $sortDirection);
-        } else {
-            $query->orderBy('id', 'desc');
-        }
-
-        $permissions = $query->paginate($filters->rows)
+        // Ordenamiento dinámico
+        $permissions = $query->orderBy($filters->order, $filters->direction ?? 'desc')
+            ->paginate($filters->rows)
             ->withQueryString();
 
         return Inertia::render("{$this->source}Index", [
-            'title'         => 'Gestión de Permisos',
             'permisos'      => PermissionResource::collection($permissions),
+            'title'         => 'Gestión de Permisos',
             'routeName'     => $this->routeName,
             'filters'       => $filters
         ]);

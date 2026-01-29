@@ -30,7 +30,7 @@ class ModuleController extends SecurityController
     {
         $this->source = 'SuperAdmin/Seguridad/Modulos/';
         $this->model = new Module();
-        $this->routeName = 'superadmin.seguridad.modules.';
+        $this->routeName = 'seguridad.modules.';
         $this->permissionPrefix = 'modules.';
 
         $this->middleware("permission:{$this->permissionPrefix}index")->only(['index', 'show']);
@@ -45,20 +45,13 @@ class ModuleController extends SecurityController
     public function index(Request $request): Response
     {
         $filters = $this->getFiltersBase($request->query());
-        $query = $this->model->query()->when($filters->search, function ($query, $search) {
-            $query->where('name', 'LIKE', '%' . $search . '%')
-                ->orWhere('description', 'LIKE', '%' . $search . '%');
-        });
+        
+        $query = $this->model->query()
+            ->buscarGlobal($filters->search);
 
-        // Aplicar ordenamiento si existe
-        if (!empty($filters->sort_field)) {
-            $sortDirection = !empty($filters->sort_direction) ? $filters->sort_direction : 'asc';
-            $query->orderBy($filters->sort_field, $sortDirection);
-        } else {
-            $query->orderBy('id', 'desc');
-        }
-
-        $modules = $query->paginate($filters->rows)
+        // Ordenamiento dinámico
+        $modules = $query->orderBy($filters->order, $filters->direction ?? 'desc')
+            ->paginate($filters->rows)
             ->withQueryString();
 
         return Inertia::render("{$this->source}Index", [

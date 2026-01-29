@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
@@ -32,11 +31,12 @@ use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EvaluadorController;
 use App\Http\Controllers\DocenteController;
+use App\Http\Controllers\Catalogos\InstitutionController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Ruta de inicio genérica (redirige según rol)
     Route::get('inicio', function () {
-        $role = Auth::user()->getPrimaryRole();
+        $role = auth()->user()->getPrimaryRole();
         
         return match ($role) {
             'Super Admin' => redirect()->route('superadmin.inicio'),
@@ -48,156 +48,94 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('inicio.dashboard');
 
     // ========================
-    // RUTAS SUPER ADMIN
+    // RUTAS SUPER ADMIN DASHBOARD
     // ========================
+    // Mantenemos el dashboard principal exclusivo por Rol si se desea, 
+    // o podríamos protegerlo con un permiso especial. Por ahora lo dejamos por rol para no romper el inicio.
     Route::middleware(['role:Super Admin'])->prefix('superadmin')->name('superadmin.')->group(function () {
         Route::get('inicio', [SuperAdminController::class, 'inicio'])->name('inicio');
-        
-        // Security Module - Solo Super Admin con middleware de permisos
-        Route::prefix('seguridad')->name('seguridad.')->group(function () {
-            Route::resource('modules', ModuleController::class)
-                ->middleware([
-                    'permission:modules.index|modules.create|modules.edit|modules.delete'
-                ]);
-            
-            Route::resource('permissions', PermissionController::class)
-                ->middleware([
-                    'permission:permissions.index|permissions.create|permissions.edit|permissions.delete'
-                ]);
-            
-            Route::resource('roles', RoleController::class)
-                ->middleware([
-                    'permission:roles.index|roles.create|roles.edit|roles.delete'
-                ]);
-            
-            Route::resource('users', UserController::class)
-                ->middleware([
-                    'permission:users.index|users.create|users.edit|users.delete'
-                ]);
-        });
-        
-        // Control de Solicitudes - SuperAdmin
-        Route::get('solicitudes', function () {
-            return Inertia::render('SuperAdmin/Solicitudes/Index', [
-                'title' => 'Control de Solicitudes'
-            ]);
-        })->name('solicitudes.index');
-
-        // Convocatorias - SuperAdmin
-        Route::get('convocatorias', function () {
-            return Inertia::render('SuperAdmin/Convocatorias/Index', [
-                'title' => 'Gestión de Convocatorias'
-            ]);
-        })->name('convocatorias.index');
-
-        // Catálogo - SuperAdmin
-        Route::get('catalogo/campus', function () {
-            return Inertia::render('SuperAdmin/Catalogo/Catalogo/Campus', [
-                'title' => 'Catálogo de Campus'
-            ]);
-        })->name('catalogo.campus');
-
-        Route::get('catalogo/areas-prioritarias', function () {
-            return Inertia::render('SuperAdmin/Catalogo/Catalogo/AreasPrioritarias', [
-                'title' => 'Áreas Prioritarias'
-            ]);
-        })->name('catalogo.areas');
-
-        Route::get('catalogo/documentos', function () {
-            return Inertia::render('SuperAdmin/Catalogo/Catalogo/Documentos', [
-                'title' => 'Documentos'
-            ]);
-        })->name('catalogo.documentos');
-
-        Route::get('catalogo/calendario', function () {
-            return Inertia::render('SuperAdmin/Catalogo/Catalogo/Calendario', [
-                'title' => 'Calendario'
-            ]);
-        })->name('catalogo.calendario');
-
-        Route::get('catalogo/rubrica', function () {
-            return Inertia::render('SuperAdmin/Catalogo/Catalogo/Rubrica', [
-                'title' => 'Rúbrica de Evaluación'
-            ]);
-        })->name('catalogo.rubrica');
     });
 
-    // ========================
-    // RUTAS ADMIN
-    // ========================
     Route::middleware(['role:Admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('inicio', [AdminController::class, 'inicio'])->name('inicio');
-        
-        // Usuarios - Admin puede gestionar usuarios
-        Route::prefix('usuarios')->name('usuarios.')->group(function () {
-            Route::get('/', function () {
-                return Inertia::render('Admin/Usuarios/Index', [
-                    'title' => 'Gestión de Usuarios'
-                ]);
-            })->name('index');
-            
-            Route::get('crear', function () {
-                return Inertia::render('Admin/Usuarios/Create', [
-                    'title' => 'Crear Usuario'
-                ]);
-            })->name('create');
-            
-            Route::get('{id}/editar', function ($id) {
-                return Inertia::render('Admin/Usuarios/Edit', [
-                    'title' => 'Editar Usuario',
-                    'userId' => $id
-                ]);
-            })->name('edit');
-        });
-        
-        // Solicitudes - Admin
-        Route::get('solicitudes', function () {
-            return Inertia::render('Admin/Solicitudes/Index', [
-                'title' => 'Control de Solicitudes'
-            ]);
-        })->name('solicitudes.index');
-
-        // Reconocimiento - Admin
-        Route::get('reconocimiento', function () {
-            return Inertia::render('Admin/Reconocimiento/Index', [
-                'title' => 'Reconocimientos'
-            ]);
-        })->name('reconocimiento.index');
     });
 
-    // ========================
-    // RUTAS EVALUADOR
-    // ========================
     Route::middleware(['role:Evaluador'])->prefix('evaluador')->name('evaluador.')->group(function () {
         Route::get('inicio', [EvaluadorController::class, 'inicio'])->name('inicio');
-        
-        // Evaluaciones - Evaluador
-        Route::get('evaluaciones', function () {
-            return Inertia::render('Evaluador/Evaluaciones/Index', [
-                'title' => 'Mis Evaluaciones'
-            ]);
-        })->name('evaluaciones.index');
+    });
 
-        // Reconocimiento - Evaluador
-        Route::get('reconocimiento', function () {
-            return Inertia::render('Evaluador/Reconocimiento/Index', [
-                'title' => 'Reconocimientos'
-            ]);
-        })->name('reconocimiento.index');
+    Route::middleware(['role:Docente'])->prefix('docente')->name('docente.')->group(function () {
+        Route::get('inicio', [DocenteController::class, 'inicio'])->name('inicio');
     });
 
     // ========================
-    // RUTAS DOCENTE
+    // MÓDULO DE SEGURIDAD
     // ========================
-    Route::middleware(['role:Docente'])->prefix('docente')->name('docente.')->group(function () {
-        Route::get('inicio', [DocenteController::class, 'inicio'])->name('inicio');
-        
-        // Convocatorias - Docente (solo ver)
-        Route::get('convocatorias', function () {
-            return Inertia::render('Docente/Convocatorias/Index', [
-                'title' => 'Convocatorias Disponibles'
-            ]);
-        })->name('convocatorias.index');
+    // Protegido por permisos específicos. 
+    // Nota: Los controladores ya deberían verificar permisos independientemente.
+    
+    Route::prefix('seguridad')->name('seguridad.')->group(function () {
+        Route::resource('modules', ModuleController::class);
+        // ->middleware('can:modules.index'); // Opcional si el controlador ya gestiona
+
+        Route::resource('permissions', PermissionController::class);
+        // ->middleware('can:permissions.index');
+
+        Route::resource('roles', RoleController::class);
+        // ->middleware('can:roles.index');
+
+        Route::resource('users', UserController::class);
+        // ->middleware('can:users.index');
+    });
+
+
+    // ========================
+    // MÓDULOS COMPARTIDOS
+    // ========================
+    
+    // Control de Solicitudes
+    Route::get('solicitudes', function () {
+        return Inertia::render('Solicitudes/Index');
+    })->name('solicitudes.index')->middleware('can:solicitudes.index');
+
+    // Convocatorias
+    Route::get('convocatorias', function () {
+        return Inertia::render('Convocatorias/Index');
+    })->name('convocatorias.index')->middleware('can:convocatorias.index');
+
+    // Reconocimiento
+    Route::get('reconocimiento', function () {
+        return Inertia::render('Reconocimiento/Index');
+    })->name('reconocimiento.index')->middleware('can:reconocimiento.index');
+
+    // Evaluaciones
+    Route::get('evaluaciones', function () {
+        return Inertia::render('Evaluaciones/Index');
+    })->name('evaluaciones.index')->middleware('can:evaluaciones.index');
+
+    // Catálogo
+    Route::prefix('catalogo')->name('catalogo.')->group(function() {
+        Route::get('campus', function () {
+            return Inertia::render('Catalogo/Campus');
+        })->name('campus')->middleware('can:catalogo.index');
+
+        Route::get('areas-prioritarias', function () {
+            return Inertia::render('Catalogo/AreasPrioritarias');
+        })->name('areas')->middleware('can:catalogo.index');
+
+        Route::get('documentos', function () {
+            return Inertia::render('Catalogo/Documentos');
+        })->name('documentos')->middleware('can:catalogo.index');
+
+        Route::get('calendario', function () {
+            return Inertia::render('Catalogo/Calendario');
+        })->name('calendario')->middleware('can:catalogo.index');
+
+        Route::get('rubrica', function () {
+            return Inertia::render('Catalogo/Rubrica');
+        })->name('rubrica')->middleware('can:catalogo.index');
+
+        Route::resource('institutions', InstitutionController::class);
     });
 });
 

@@ -104,8 +104,37 @@ class User extends Authenticatable
     /**
      * Check if user has specific permission
      */
+    /**
+     * Check if user has specific permission
+     */
     public function canPermission(string $permission): bool
     {
         return $this->hasPermissionTo($permission);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Scopes
+    |--------------------------------------------------------------------------
+    */
+
+    public function scopeBuscarGlobal($query, $search)
+    {
+        if (empty($search)) {
+            return $query;
+        }
+
+        return $query->where(function ($q) use ($search) {
+            $q->where('name', 'LIKE', "%{$search}%")
+              ->orWhere('email', 'LIKE', "%{$search}%")
+              ->orWhereHas('roles', function ($qRole) use ($search) {
+                  $qRole->where('name', 'LIKE', "%{$search}%");
+              });
+        });
+    }
+
+    public function scopeOrdenado($query, $sortField = 'id', $sortDirection = 'desc')
+    {
+        return $query->orderBy($sortField, $sortDirection);
     }
 }

@@ -1,46 +1,184 @@
 import {
+    mdiHome,
+    mdiSecurity,
     mdiViewModule,
     mdiLockCheckOutline,
     mdiAccountSupervisor,
     mdiAccount,
-    mdiSecurity,
-    mdiMonitorDashboard,
+    mdiFileDocumentMultiple,
+    mdiBullhorn,
+    mdiBookOpenPageVariant,
+    mdiOfficeBuilding,
+    mdiLightbulbOnOutline,
+    mdiCalendar,
+    mdiClipboardTextOutline,
+    mdiSchool,
+    mdiStar,
 } from "@mdi/js";
 
-export const menuItems = [
+// Helper to create consistent security items with dynamic route prefix
+const getSecurityItems = (routePrefix) => [
     {
-        label: "Inicio",
-        items: [
-            {
-                label: "Dashboard",
-                route: "dashboard",
-                icon: mdiMonitorDashboard,
-            },
-        ],
+        label: "Módulos",
+        route: `${routePrefix}modules.index`,
+        icon: mdiViewModule,
+        permission: "modules.index",
     },
     {
-        label: "Seguridad",
-        items: [
-            {
-                label: "Módulos",
-                route: "modules.index",
-                icon: mdiViewModule,
-            },
-            {
-                label: "Permisos",
-                route: "permissions.index",
-                icon: mdiLockCheckOutline,
-            },
-            {
-                label: "Roles",
-                route: "roles.index",
-                icon: mdiAccountSupervisor,
-            },
-            {
-                label: "Usuarios",
-                route: "users.index",
-                icon: mdiAccount,
-            },
-        ],
+        label: "Permisos",
+        route: `${routePrefix}permissions.index`,
+        icon: mdiLockCheckOutline,
+        permission: "permissions.index",
+    },
+    {
+        label: "Roles",
+        route: `${routePrefix}roles.index`,
+        icon: mdiAccountSupervisor,
+        permission: "roles.index",
+    },
+    {
+        label: "Usuarios",
+        route: `${routePrefix}users.index`,
+        icon: mdiAccount,
+        permission: "users.index",
     },
 ];
+
+// Helper for Catalog items
+const getCatalogItems = (routePrefix) => [
+    {
+        label: "Instituciones",
+        route: `${routePrefix}institutions.index`,
+        icon: mdiOfficeBuilding,
+        permission: "instituciones.index",
+    },
+    {
+        label: "Áreas Prioritarias",
+        route: `${routePrefix}areas`,
+        icon: mdiLightbulbOnOutline,
+        permission: "catalogo.index",
+    },
+    {
+        label: "Documentos",
+        route: `${routePrefix}documentos`,
+        icon: mdiFileDocumentMultiple,
+        permission: "catalogo.index",
+    },
+    {
+        label: "Calendario",
+        route: `${routePrefix}calendario`,
+        icon: mdiCalendar,
+        permission: "catalogo.index",
+    },
+    {
+        label: "Rúbrica",
+        route: `${routePrefix}rubrica`,
+        icon: mdiClipboardTextOutline,
+        permission: "catalogo.index",
+    },
+];
+
+export const menuConfigs = {
+    superAdmin: [
+        {
+            label: "Inicio",
+            route: "superadmin.inicio",
+            icon: mdiHome,
+        },
+        {
+            label: "Control de Solicitudes",
+            route: "solicitudes.index",
+            icon: mdiFileDocumentMultiple,
+            permission: "solicitudes.index",
+        },
+        {
+            label: "Convocatorias",
+            route: "convocatorias.index",
+            icon: mdiBullhorn,
+            permission: "convocatorias.index",
+        },
+        {
+            label: "Seguridad",
+            icon: mdiSecurity,
+            items: getSecurityItems("seguridad."),
+        },
+        {
+            label: "Catálogo",
+            icon: mdiBookOpenPageVariant,
+            items: getCatalogItems("catalogo."),
+        },
+    ],
+    admin: [
+        {
+            label: "Inicio",
+            route: "inicio.dashboard",
+            icon: mdiHome,
+        },
+        {
+            label: "Solicitudes",
+            route: "solicitudes.index",
+            icon: mdiFileDocumentMultiple,
+            permission: "solicitudes.index",
+        },
+        {
+            label: "Seguridad",
+            icon: mdiSecurity,
+            items: [
+                {
+                    label: "Usuarios",
+                    route: "seguridad.users.index",
+                    icon: mdiAccount,
+                    permission: "users.index",
+                }
+            ]
+        },
+        {
+            label: "Reconocimiento",
+            route: "reconocimiento.index",
+            icon: mdiStar,
+            permission: "reconocimiento.index",
+        }
+    ],
+    docente: [
+        {
+            label: "Inicio",
+            route: "inicio.dashboard",
+            icon: mdiHome,
+        },
+        {
+            label: "Convocatorias",
+            route: "convocatorias.index",
+            icon: mdiBullhorn,
+            permission: "convocatorias.index",
+        },
+        {
+            label: "Seguridad",
+            icon: mdiSecurity,
+            items: getSecurityItems("seguridad."),
+        },
+        {
+            label: "Catálogo",
+            icon: mdiBookOpenPageVariant,
+            items: getCatalogItems("catalogo."),
+        },
+    ],
+    evaluador: [
+        {
+            label: "Inicio",
+            route: "inicio.dashboard",
+            icon: mdiHome,
+        },
+        {
+            label: "Evaluaciones",
+            route: "evaluaciones.index",
+            icon: mdiSchool,
+            permission: "evaluaciones.index",
+        },
+        {
+            label: "Reconocimiento",
+            route: "reconocimiento.index",
+            icon: mdiStar,
+            permission: "reconocimiento.index",
+        }
+    ]
+};

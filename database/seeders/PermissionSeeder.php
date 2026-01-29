@@ -62,6 +62,12 @@ class PermissionSeeder extends Seeder
             ['name' => 'catalogo.create', 'description' => 'Crear en catálogo', 'module_key' => 'cat'],
             ['name' => 'catalogo.edit', 'description' => 'Editar catálogo', 'module_key' => 'cat'],
             ['name' => 'catalogo.delete', 'description' => 'Eliminar catálogo', 'module_key' => 'cat'],
+
+            // Instituciones
+            ['name' => 'instituciones.index', 'description' => 'Ver instituciones', 'module_key' => 'cat'],
+            ['name' => 'instituciones.create', 'description' => 'Crear instituciones', 'module_key' => 'cat'],
+            ['name' => 'instituciones.edit', 'description' => 'Editar instituciones', 'module_key' => 'cat'],
+            ['name' => 'instituciones.delete', 'description' => 'Eliminar instituciones', 'module_key' => 'cat'],
         ];
 
         // Crear cada permiso
@@ -98,6 +104,7 @@ class PermissionSeeder extends Seeder
                 'convocatorias.index', 'convocatorias.create', 'convocatorias.edit', 'convocatorias.delete',
                 'reconocimiento.index', 'reconocimiento.create', 'reconocimiento.edit',
                 'catalogo.index', 'catalogo.create', 'catalogo.edit', 'catalogo.delete',
+                'instituciones.index', 'instituciones.create', 'instituciones.edit', 'instituciones.delete',
             ])->get();
             $admin->syncPermissions($adminPermissions);
             $this->command->info("✅ {$adminPermissions->count()} permisos asignados al Admin.");

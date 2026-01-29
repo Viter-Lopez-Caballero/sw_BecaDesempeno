@@ -110,6 +110,7 @@ import Loading from 'vue-loading-overlay';
 import { ref, computed } from "vue";
 
 export default {
+    inheritAttrs: false,
     props: { 
         links: Array, 
         total: Number,

@@ -10,7 +10,7 @@ use App\Http\Resources\RoleResource;
 use App\Models\Module;
 use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Permission\Models\Permission;
+use App\Models\Permission;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Cache;
@@ -31,7 +31,7 @@ class RoleController extends SecurityController
 
     public function __construct()
     {
-        $this->routeName = "superadmin.seguridad.roles.";
+        $this->routeName = "seguridad.roles.";
         $this->permissionPrefix = "roles.";
         $this->source    = "SuperAdmin/Seguridad/Roles/";
         $this->model     = new Role();
@@ -48,24 +48,18 @@ class RoleController extends SecurityController
     public function index(Request $request): Response
     {
         $filters = $this->getFiltersBase($request->query());
-        $query = $this->model->query()->when($filters->search, function ($query, $search) {
-            $query->where('name', 'LIKE', '%' . $search . '%')
-                ->orWhere('description', 'LIKE', '%' . $search . '%');
-        });
+        
+        $query = $this->model->query()
+            ->buscarGlobal($filters->search);
 
-        // Aplicar ordenamiento si existe
-        if (!empty($filters->sort_field) && !empty($filters->sort_direction)) {
-            $query->orderBy($filters->sort_field, $filters->sort_direction);
-        } else {
-            $query->orderBy('id', 'desc');
-        }
-
-        $roles = $query->paginate($filters->rows)
+        // Ordenamiento dinámico
+        $roles = $query->orderBy($filters->order, $filters->direction ?? 'desc')
+            ->paginate($filters->rows)
             ->withQueryString();
 
         return Inertia::render("{$this->source}Index", [
+            'roles'         => RoleResource::collection($roles),
             'title'         => 'Gestión de Roles',
-            'roles'      => RoleResource::collection($roles),
             'routeName'     => $this->routeName,
             'filters'       => $filters
         ]);

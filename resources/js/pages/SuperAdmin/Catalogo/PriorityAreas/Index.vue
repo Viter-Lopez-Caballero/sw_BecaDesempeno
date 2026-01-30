@@ -9,6 +9,12 @@ import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
 import { mdiLabel } from '@mdi/js';
 
+import { useForm } from '@inertiajs/vue3';
+import DialogModal from '@/Components/DialogModal.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
+import PrimaryButton from '@/Components/PrimaryButton.vue';
+import InputLabel from '@/Components/InputLabel.vue';
+
 const props = defineProps({
     priorityAreas: {
         type: Object,
@@ -32,6 +38,27 @@ const search = ref(props.filters.search);
 const rows = ref(props.filters.rows || 10);
 const sortField = ref(props.filters.order || 'nombre');
 const sortDirection = ref(props.filters.direction || 'asc');
+const isImportModalOpen = ref(false);
+const importForm = useForm({
+    file: null,
+});
+
+const openImportModal = () => {
+    isImportModalOpen.value = true;
+};
+
+const closeImportModal = () => {
+    isImportModalOpen.value = false;
+    importForm.reset();
+};
+
+const submitImport = () => {
+    importForm.post(route('catalogo.priority-areas.import'), {
+        preserveScroll: true,
+        onSuccess: () => closeImportModal(),
+        onFinish: () => importForm.reset(),
+    });
+};
 
 const rowOptions = [
     { label: '5 Registros', value: 5 },
@@ -112,12 +139,26 @@ const deleteItem = (id) => {
                         <span class="text-gray-900 font-semibold">Areas Prioritarias</span>
                     </div>
                 </div>
-                <Link v-if="useCan('priority_areas.create')" :href="route(`${routeName}create`)" class="px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
-                        <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
-                    </svg>
-                    Agregar
-                </Link>
+                <div class="flex items-center gap-2">
+                    <a :href="route('catalogo.priority-areas.export')" class="px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2 font-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                            <path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
+                        </svg>
+                        Exportar
+                    </a>
+                    <button @click="openImportModal" class="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2 font-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                            <path d="M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
+                        </svg>
+                        Importar
+                    </button>
+                    <Link v-if="useCan('priority_areas.create')" :href="route(`${routeName}create`)" class="px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                            <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
+                        </svg>
+                        Agregar
+                    </Link>
+                </div>
             </div>
 
             <!-- Filter Card -->
@@ -213,6 +254,35 @@ const deleteItem = (id) => {
                 </div>
             </div>
         </div>
+        <!-- Import Modal -->
+        <DialogModal :show="isImportModalOpen" @close="closeImportModal">
+            <template #title>
+                Importar Áreas Prioritarias
+            </template>
+            <template #content>
+                <div class="space-y-4">
+                    <p class="text-sm text-gray-600">
+                        Selecciona un archivo Excel (.xlsx, .xls) o CSV para importar. Columnas esperadas: nombre.
+                    </p>
+                    <div>
+                        <InputLabel for="file" value="Archivo" />
+                        <input id="file" type="file" @change="e => importForm.file = e.target.files[0]" class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:border-indigo-500 focus:ring-indigo-500 shadow-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#1B396A] file:text-white hover:file:bg-[#0f2347] transition" accept=".xlsx, .xls, .csv"/>
+                        <div v-if="importForm.errors.file" class="text-red-600 text-sm mt-1">{{ importForm.errors.file }}</div>
+                    </div>
+                </div>
+            </template>
+            <template #footer>
+                <SecondaryButton @click="closeImportModal" class="mr-2">Cancelar</SecondaryButton>
+                <button
+                    @click="submitImport"
+                    class="inline-flex items-center px-4 py-2 bg-[#1B396A] border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-[#0f2347] focus:bg-[#0f2347] active:bg-[#0a1b3d] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                    :class="{ 'opacity-25': importForm.processing }"
+                    :disabled="importForm.processing"
+                >
+                    Importar
+                </button>
+            </template>
+        </DialogModal>
     </LayoutAuthenticated>
 </template>
 

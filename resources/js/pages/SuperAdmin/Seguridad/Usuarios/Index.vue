@@ -1,5 +1,5 @@
 <script setup>
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
 import Pagination from '@/Shared/Pagination.vue';
 import { ref, watch } from 'vue';
@@ -8,6 +8,11 @@ import { useCan } from '@/composables/usePermissions';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
 import { mdiSecurity } from '@mdi/js';
+import DialogModal from '@/Components/DialogModal.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
+import PrimaryButton from '@/Components/PrimaryButton.vue';
+import InputLabel from '@/Components/InputLabel.vue';
+import TextInput from '@/Components/TextInput.vue';
 
 const props = defineProps({
     usuarios: {
@@ -26,12 +31,39 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    roles: {
+        type: Array, // Received from controller
+        default: () => [],
+    }
 });
 
 const search = ref(props.filters.search);
 const rows = ref(props.filters.rows || 10);
 const sortField = ref(props.filters.sort_field || '');
 const sortDirection = ref(props.filters.sort_direction || 'asc');
+const isImportModalOpen = ref(false);
+const importForm = useForm({
+    file: null,
+    role_id: '',
+});
+
+const openImportModal = () => {
+    isImportModalOpen.value = true;
+};
+
+const closeImportModal = () => {
+    isImportModalOpen.value = false;
+    importForm.reset();
+};
+
+const submitImport = () => {
+    importForm.post(route('seguridad.users.import'), {
+        preserveScroll: true,
+        onSuccess: () => closeImportModal(),
+        onFinish: () => importForm.reset(),
+    });
+};
+
 
 const rowOptions = [
     { label: '5 Registros', value: 5 },
@@ -115,12 +147,30 @@ const deleteUser = (id) => {
                         <span class="text-gray-900 font-semibold">Usuarios</span>
                     </div>
                 </div>
-                <Link v-if="useCan('users.create')" :href="route(`${routeName}create`)" class="px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
-                        <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
-                    </svg>
-                    Agregar
-                </Link>
+                <div class="flex items-center gap-2">
+                     <a :href="route('seguridad.users.export')" class="px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2 font-medium">
+                        <!-- Icono Excel export -->
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                            <path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
+                        </svg>
+                        Exportar
+                    </a>
+
+                    <button @click="openImportModal" class="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2 font-medium">
+                        <!-- Icono Import -->
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                            <path d="M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
+                        </svg>
+                        Importar
+                    </button>
+
+                    <Link v-if="useCan('users.create')" :href="route(`${routeName}create`)" class="px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                            <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
+                        </svg>
+                        Agregar
+                    </Link>
+                </div>
             </div>
 
             <!-- Filter Card -->
@@ -227,8 +277,74 @@ const deleteUser = (id) => {
                 </div>
             </div>
         </div>
+        
+        <!-- Import Modal -->
+        <DialogModal :show="isImportModalOpen" @close="closeImportModal">
+            <template #title>
+                Importar Usuarios
+            </template>
+            <template #content>
+                <div class="space-y-4">
+                    <p class="text-sm text-gray-600">
+                        Selecciona un archivo Excel (.xlsx, .xls) o CSV para importar usuarios. Asegúrate de que el archivo tenga las columnas: nombre, email, password.
+                    </p>
+                    
+                    <div>
+                        <InputLabel for="role_id" value="Rol para los usuarios importados" />
+                        <VueSelect
+                            id="role_id"
+                            v-model="importForm.role_id"
+                            :options="roles"
+                            :reduce="rol => rol.id"
+                            label="name"
+                            placeholder="Selecciona un rol"
+                            class="vue-select-form"
+                            teleport="body"
+                        />
+                        <div v-if="importForm.errors.role_id" class="text-red-600 text-sm mt-1">{{ importForm.errors.role_id }}</div>
+                    </div>
+
+                    <div>
+                        <InputLabel for="file" value="Archivo" />
+                        <input id="file" type="file" @change="e => importForm.file = e.target.files[0]" class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:border-indigo-500 focus:ring-indigo-500 shadow-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#1B396A] file:text-white hover:file:bg-[#0f2347] transition" accept=".xlsx, .xls, .csv"/>
+                        <div v-if="importForm.errors.file" class="text-red-600 text-sm mt-1">{{ importForm.errors.file }}</div>
+                    </div>
+                </div>
+            </template>
+            <template #footer>
+                <SecondaryButton @click="closeImportModal" class="mr-2">Cancelar</SecondaryButton>
+                <button
+                    @click="submitImport"
+                    class="inline-flex items-center px-4 py-2 bg-[#1B396A] border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-[#0f2347] focus:bg-[#0f2347] active:bg-[#0a1b3d] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                    :class="{ 'opacity-25': importForm.processing }"
+                    :disabled="importForm.processing"
+                >
+                    Importar
+                </button>
+            </template>
+        </DialogModal>
     </LayoutAuthenticated>
 </template>
+
+<style scoped>
+:deep(.vue-select-custom .vs__dropdown-toggle) {
+    background: linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%);
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    min-height: 42px;
+}
+
+:deep(.vue-select-custom .vs__selected) {
+    color: #374151;
+    font-weight: 500;
+}
+
+:deep(.vue-select-custom .vs__search::placeholder) {
+    color: #9ca3af;
+}
+
+</style>
 
 <style scoped>
 :deep(.vue-select-custom .vs__dropdown-toggle) {
@@ -271,5 +387,66 @@ const deleteUser = (id) => {
 
 :deep(.vue-select-custom .vs__actions) {
     padding-right: 4px;
+}
+
+/* Styles for the form selector in the modal (gray bg, different border) */
+:deep(.vue-select-form .vs__dropdown-toggle) {
+    background: #F3F4F6;
+    border: none;
+    border-bottom: 2px solid #d1d5db;
+    border-radius: 0.5rem;
+    padding: 0.625rem 0.75rem;
+    min-height: 42px;
+}
+
+:deep(.vue-select-form .vs__selected) {
+    color: #111827;
+    font-weight: 400;
+    margin: 0;
+    padding: 0;
+}
+
+:deep(.vue-select-form .vs__search) {
+    margin: 0;
+    padding: 0;
+    color: #111827;
+}
+
+:deep(.vue-select-form .vs__search::placeholder) {
+    color: #9ca3af;
+}
+
+:deep(.vue-select-form .vs__dropdown-toggle:focus-within) {
+    border-bottom-color: #1B396A;
+}
+
+:deep(.vue-select-form .vs__dropdown-menu) {
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    z-index: 9999 !important;
+}
+
+:deep(.vue-select-form .vs__dropdown-option) {
+    padding: 0.75rem 1rem;
+    color: #374151;
+}
+
+:deep(.vue-select-form .vs__dropdown-option--highlight) {
+    background: #1B396A;
+    color: white;
+}
+
+:deep(.vue-select-form .vs__open-indicator) {
+    fill: #1B396A;
+    transform: scale(0.85);
+}
+
+:deep(.vue-select-form .vs__actions) {
+    padding-right: 4px;
+}
+
+:deep(.vue-select-form .vs__clear) {
+    display: none;
 }
 </style>

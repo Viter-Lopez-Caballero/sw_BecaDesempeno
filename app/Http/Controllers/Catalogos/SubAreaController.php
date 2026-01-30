@@ -96,4 +96,9 @@ class SubAreaController extends Controller
         $subArea->delete();
         return redirect()->route("{$this->routeName}index")->with('success', 'Sub Área eliminada con éxito');
     }
+
+    public function export()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\SubAreasExport, 'sub-areas.xlsx');
+    }
 }

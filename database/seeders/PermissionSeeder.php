@@ -85,6 +85,15 @@ class PermissionSeeder extends Seeder
             ['name' => 'rubrics.create', 'description' => 'Crear rúbricas', 'module_key' => 'cat'],
             ['name' => 'rubrics.edit', 'description' => 'Editar rúbricas', 'module_key' => 'cat'],
             ['name' => 'rubrics.delete', 'description' => 'Eliminar rúbricas', 'module_key' => 'cat'],
+
+            // Documents Module (Admin)
+            ['name' => 'documents.index', 'description' => 'Ver documentos admin', 'module_key' => 'cat'],
+            ['name' => 'documents.show', 'description' => 'Ver detalles de documentos', 'module_key' => 'cat'],
+            ['name' => 'documents.download', 'description' => 'Descargar documentos admin', 'module_key' => 'cat'],
+
+            // Request Control Module
+            ['name' => 'requests.index', 'description' => 'Ver control de solicitudes', 'module_key' => 'controlsoli'],
+            ['name' => 'requests.show', 'description' => 'Ver detalles de control de solicitudes', 'module_key' => 'controlsoli'],
         ];
 
         // Crear cada permiso
@@ -144,6 +153,11 @@ class PermissionSeeder extends Seeder
                 'rubrics.create',
                 'rubrics.edit',
                 'rubrics.delete',
+
+                // Documents
+                'documents.index',
+                'documents.show',
+                'documents.download',
             ])->get();
             $admin->syncPermissions($adminPermissions);
             $this->command->info("✅ {$adminPermissions->count()} permisos asignados al Admin.");

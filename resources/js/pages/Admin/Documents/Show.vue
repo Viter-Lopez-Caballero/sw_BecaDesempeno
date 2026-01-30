@@ -30,14 +30,18 @@ const getFileIcon = (type) => {
                         <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
                             <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
                         </svg>
+                        <span class="text-gray-700 font-medium" v-if="solicitud.user?.institucion">{{ solicitud.user?.institucion?.nombre }}</span>
+                        <svg v-if="solicitud.user?.institucion" xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
+                            <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
+                        </svg>
                         <span class="text-gray-900 font-semibold">{{ solicitud.user?.name }}</span>
                     </div>
                 </div>
-                 <Link :href="route('catalogo.documentos')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition flex items-center gap-2 font-medium">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                 <Link :href="route('catalogo.documentos')" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                        <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
                     </svg>
-                    Volver
+                    Regresar
                 </Link>
             </div>
             
@@ -74,34 +78,51 @@ const getFileIcon = (type) => {
                 <div class="bg-white overflow-hidden shadow-md rounded-lg border border-gray-200 p-6">
                     <h3 class="text-lg font-bold text-[#1B396A] mb-6 border-b pb-2 flex justify-between items-center">
                         Documentos Cargados
-                        <span class="text-sm font-normal text-white bg-[#1B396A] px-3 py-1 rounded-full">{{ solicitud.documentos.length }} archivos</span>
+                        <span class="text-sm font-normal text-white bg-[#1B396A] px-3 py-1 rounded-full">{{ solicitud.documentos?.length || 0 }} archivos</span>
                     </h3>
 
-                    <div v-if="solicitud.documentos.length === 0" class="text-center py-12 text-gray-500">
-                        No hay documentos cargados para esta solicitud.
+                <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
+                                <tr>
+                                    <th scope="col" class="px-6 py-4 tracking-wider">#</th>
+                                    <th scope="col" class="px-6 py-4 tracking-wider">Documento</th>
+                                    <th scope="col" class="px-6 py-4 tracking-wider">Fecha de Carga</th>
+                                    <th scope="col" class="px-6 py-4 text-center tracking-wider">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                <tr v-for="(doc, index) in solicitud.documentos" :key="doc.id" class="hover:bg-gray-50 transition">
+                                    <td class="px-6 py-4 text-gray-900 font-medium">{{ index + 1 }}</td>
+                                    <td class="px-6 py-4 text-gray-900 font-semibold flex items-center gap-2">
+                                        <div class="p-1 rounded bg-blue-50 text-[#1B396A]">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" :d="getFileIcon(doc.file_type)" />
+                                            </svg>
+                                        </div>
+                                        {{ doc.name }}
+                                    </td>
+                                    <td class="px-6 py-4 text-gray-600">{{ new Date(doc.created_at).toLocaleDateString() }}</td>
+                                    <td class="px-6 py-4 text-center">
+                                        <a :href="route('admin.documents.download', doc.id)" 
+                                           class="inline-flex items-center px-3 py-1.5 bg-[#1B396A] text-white rounded-md hover:bg-[#0f2347] transition text-xs font-medium uppercase gap-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                            </svg>
+                                            Descargar
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr v-if="!solicitud.documentos || solicitud.documentos.length === 0">
+                                    <td colspan="4" class="px-6 py-12 text-center text-gray-500">
+                                        No hay documentos cargados para esta solicitud.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-
-                    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div v-for="doc in solicitud.documentos" :key="doc.id" class="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow bg-gray-50">
-                            <div class="flex flex-col items-center text-center">
-                                <div class="bg-blue-100 p-3 rounded-full mb-3 text-[#1B396A]">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
-                                        <path stroke-linecap="round" stroke-linejoin="round" :d="getFileIcon(doc.file_type)" />
-                                    </svg>
-                                </div>
-                                <h4 class="font-medium text-gray-900 mb-1 truncate w-full" :title="doc.name">{{ doc.name }}</h4>
-                                <p class="text-xs text-gray-500 mb-4">{{ doc.created_at.split('T')[0] }}</p>
-                                
-                                <a :href="route('admin.documents.download', doc.id)" 
-                                   class="w-full inline-flex justify-center items-center px-4 py-2 bg-[#1B396A] border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-[#0f2347] transition ease-in-out duration-150">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                                    </svg>
-                                    Descargar
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                </div>
                 </div>
 
             </div>

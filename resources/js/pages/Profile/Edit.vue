@@ -53,7 +53,7 @@ const updatePassword = () => {
     <DynamicLayout>
         <Head title="Perfil" />
 
-        <div class="max-w-4xl mx-auto space-y-6">
+        <div class="space-y-6">
             <!-- Profile Information -->
             <div class="bg-white rounded-lg shadow-md p-6">
                 <div class="border-b border-gray-200 pb-4 mb-6">

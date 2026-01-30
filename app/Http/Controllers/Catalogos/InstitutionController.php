@@ -26,7 +26,7 @@ class InstitutionController extends Controller
 
     public function __construct()
     {
-        $this->source = 'Catalogos/Institutions/';
+        $this->source = 'SuperAdmin/Catalogo/Institutions/';
         $this->model = new Institucion();
         $this->routeName = 'catalogo.institutions.';
         $this->permissionPrefix = 'instituciones.';

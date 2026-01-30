@@ -26,7 +26,7 @@ class PriorityAreaController extends Controller
 
     public function __construct()
     {
-        $this->source = 'Catalogos/PriorityAreas/';
+        $this->source = 'SuperAdmin/Catalogo/PriorityAreas/';
         $this->model = new PriorityArea();
         $this->routeName = 'catalogo.priority-areas.';
         $this->permissionPrefix = 'priority_areas.';

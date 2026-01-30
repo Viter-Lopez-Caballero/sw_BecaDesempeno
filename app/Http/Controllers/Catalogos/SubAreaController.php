@@ -27,7 +27,7 @@ class SubAreaController extends Controller
 
     public function __construct()
     {
-        $this->source = 'Catalogos/SubAreas/';
+        $this->source = 'SuperAdmin/Catalogo/SubAreas/';
         $this->model = new SubArea();
         $this->routeName = 'catalogo.sub-areas.';
         $this->permissionPrefix = 'sub_areas.';

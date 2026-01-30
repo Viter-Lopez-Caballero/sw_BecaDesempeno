@@ -12,6 +12,8 @@ use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
+use App\Models\Institucion;
+use App\Models\PriorityArea;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -77,7 +79,12 @@ class FortifyServiceProvider extends ServiceProvider
             'status' => $request->session()->get('status'),
         ]));
 
-        Fortify::registerView(fn () => Inertia::render('auth/Register'));
+        Fortify::registerView(function () {
+            return Inertia::render('auth/Register', [
+                'instituciones' => Institucion::all(['id', 'nombre']),
+                'priorityAreas' => PriorityArea::all(['id', 'name']),
+            ]);
+        });
 
         Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/TwoFactorChallenge'));
 

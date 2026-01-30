@@ -68,6 +68,23 @@ class PermissionSeeder extends Seeder
             ['name' => 'instituciones.create', 'description' => 'Crear instituciones', 'module_key' => 'cat'],
             ['name' => 'instituciones.edit', 'description' => 'Editar instituciones', 'module_key' => 'cat'],
             ['name' => 'instituciones.delete', 'description' => 'Eliminar instituciones', 'module_key' => 'cat'],
+
+            // Priority Areas
+            ['name' => 'priority_areas.index', 'description' => 'Ver áreas prioritarias', 'module_key' => 'cat'],
+            ['name' => 'priority_areas.create', 'description' => 'Crear áreas prioritarias', 'module_key' => 'cat'],
+            ['name' => 'priority_areas.edit', 'description' => 'Editar áreas prioritarias', 'module_key' => 'cat'],
+            ['name' => 'priority_areas.delete', 'description' => 'Eliminar áreas prioritarias', 'module_key' => 'cat'],
+
+            // Sub Areas
+            ['name' => 'sub_areas.index', 'description' => 'Ver sub áreas', 'module_key' => 'cat'],
+            ['name' => 'sub_areas.create', 'description' => 'Crear sub áreas', 'module_key' => 'cat'],
+            ['name' => 'sub_areas.edit', 'description' => 'Editar sub áreas', 'module_key' => 'cat'],
+            ['name' => 'sub_areas.delete', 'description' => 'Eliminar sub áreas', 'module_key' => 'cat'],
+            // Rubrics
+            ['name' => 'rubrics.index', 'description' => 'Ver rúbricas', 'module_key' => 'cat'],
+            ['name' => 'rubrics.create', 'description' => 'Crear rúbricas', 'module_key' => 'cat'],
+            ['name' => 'rubrics.edit', 'description' => 'Editar rúbricas', 'module_key' => 'cat'],
+            ['name' => 'rubrics.delete', 'description' => 'Eliminar rúbricas', 'module_key' => 'cat'],
         ];
 
         // Crear cada permiso
@@ -104,7 +121,29 @@ class PermissionSeeder extends Seeder
                 'convocatorias.index', 'convocatorias.create', 'convocatorias.edit', 'convocatorias.delete',
                 'reconocimiento.index', 'reconocimiento.create', 'reconocimiento.edit',
                 'catalogo.index', 'catalogo.create', 'catalogo.edit', 'catalogo.delete',
-                'instituciones.index', 'instituciones.create', 'instituciones.edit', 'instituciones.delete',
+                // Instituciones
+                'instituciones.index',
+                'instituciones.create',
+                'instituciones.edit',
+                'instituciones.delete',
+
+                // Priority Areas
+                'priority_areas.index',
+                'priority_areas.create',
+                'priority_areas.edit',
+                'priority_areas.delete',
+
+                // Sub Areas
+                'sub_areas.index',
+                'sub_areas.create',
+                'sub_areas.edit',
+                'sub_areas.delete',
+
+                // Rubrics
+                'rubrics.index',
+                'rubrics.create',
+                'rubrics.edit',
+                'rubrics.delete',
             ])->get();
             $admin->syncPermissions($adminPermissions);
             $this->command->info("✅ {$adminPermissions->count()} permisos asignados al Admin.");

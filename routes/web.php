@@ -23,6 +23,10 @@ Route::get('/contacto', function () {
     return Inertia::render('Contacto');
 })->name('contacto');
 
+Route::get('api/sub-areas/{priority_area_id}', function ($priority_area_id) {
+    return \App\Models\SubArea::where('priority_area_id', $priority_area_id)->get(['id', 'name']);
+});
+
 use App\Http\Controllers\Security\ModuleController;
 use App\Http\Controllers\Security\PermissionController;
 use App\Http\Controllers\Security\RoleController;
@@ -32,6 +36,9 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EvaluadorController;
 use App\Http\Controllers\DocenteController;
 use App\Http\Controllers\Catalogos\InstitutionController;
+use App\Http\Controllers\Catalogos\PriorityAreaController;
+use App\Http\Controllers\Catalogos\SubAreaController;
+use App\Http\Controllers\Catalogos\RubricController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Ruta de inicio genérica (redirige según rol)
@@ -136,6 +143,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         })->name('rubrica')->middleware('can:catalogo.index');
 
         Route::resource('institutions', InstitutionController::class);
+        Route::resource('priority-areas', PriorityAreaController::class);
+        Route::resource('sub-areas', SubAreaController::class);
+        Route::resource('rubrics', RubricController::class);
+        Route::post('rubrics/{rubric}/toggle-active', [RubricController::class, 'toggleActive'])->name('rubrics.toggle-active');
     });
 });
 

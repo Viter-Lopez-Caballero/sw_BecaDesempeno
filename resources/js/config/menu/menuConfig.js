@@ -54,9 +54,15 @@ const getCatalogItems = (routePrefix) => [
     },
     {
         label: "Áreas Prioritarias",
-        route: `${routePrefix}areas`,
+        route: `${routePrefix}priority-areas.index`,
         icon: mdiLightbulbOnOutline,
-        permission: "catalogo.index",
+        permission: "priority_areas.index",
+    },
+    {
+        label: "Sub Áreas",
+        route: `${routePrefix}sub-areas.index`,
+        icon: mdiBookOpenPageVariant,
+        permission: "sub_areas.index",
     },
     {
         label: "Documentos",
@@ -72,9 +78,9 @@ const getCatalogItems = (routePrefix) => [
     },
     {
         label: "Rúbrica",
-        route: `${routePrefix}rubrica`,
+        route: `${routePrefix}rubrics.index`,
         icon: mdiClipboardTextOutline,
-        permission: "catalogo.index",
+        permission: "rubrics.index",
     },
 ];
 

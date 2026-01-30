@@ -1,53 +1,58 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import LandingLayout from '@/layouts/LandingLayout.vue';
 import EyeIcon from '@/components/icons/EyeIcon.vue';
 import EyeOffIcon from '@/components/icons/EyeOffIcon.vue';
 import LupaIcon from '@/components/icons/LupaIcon.vue';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
+import axios from 'axios';
+
+const props = defineProps({
+    instituciones: {
+        type: Array,
+        default: () => [],
+    },
+    priorityAreas: {
+        type: Array,
+        default: () => [],
+    },
+});
 
 const form = useForm({
     curp: '',
-    nombre_completo: '',
+    name: '', // Changed from nombre_completo to name to match User model and Fortify
     email: '',
     password: '',
     password_confirmation: '',
-    institucion_id: '',
-    area_prioritaria_id: '',
-    subarea_prioritaria_id: ''
+    institucion_id: '', // Not in User model yet? Wait, user asked for priority/sub area. I will assume institution_id is handled or ignore if not in User model. (User model has name, email, password, priority_area_id, sub_area_id). I will map 'nombre_completo' to 'name'.
+    priority_area_id: '',
+    sub_area_id: ''
 });
 
-const instituciones = [
-    { label: 'Institución 1', value: '1' },
-    { label: 'Institución 2', value: '2' },
-    { label: 'Institución 3', value: '3' },
-    { label: 'Universidad Nacional Autónoma de México', value: '4' },
-    { label: 'Instituto Politécnico Nacional', value: '5' },
-    { label: 'Universidad Autónoma Metropolitana', value: '6' },
-];
-
-const areasPrioritarias = [
-    { label: 'Ciencias Exactas y Naturales', value: '1' },
-    { label: 'Ciencias Sociales y Humanidades', value: '2' },
-    { label: 'Ingeniería y Tecnología', value: '3' },
-    { label: 'Ciencias de la Salud', value: '4' },
-    { label: 'Ciencias Agropecuarias', value: '5' },
-    { label: 'Educación y Pedagogía', value: '6' },
-];
-
-const subareasPrioritarias = [
-    { label: 'Matemáticas', value: '1' },
-    { label: 'Física', value: '2' },
-    { label: 'Química', value: '3' },
-    { label: 'Biología', value: '4' },
-    { label: 'Computación e Informática', value: '5' },
-    { label: 'Inteligencia Artificial', value: '6' },
-];
+// Map props to dropdown options
+const institucionesOptions = props.instituciones;
+const areasPrioritariasOptions = props.priorityAreas;
+const subareasPrioritariasOptions = ref([]);
 
 const showPassword = ref(false);
 const showPasswordConfirmation = ref(false);
+
+// Watch for Priority Area change to fetch Sub Areas
+watch(() => form.priority_area_id, async (newValue) => {
+    form.sub_area_id = ''; // Reset sub area
+    subareasPrioritariasOptions.value = [];
+    
+    if (newValue) {
+        try {
+            const response = await axios.get(`/api/sub-areas/${newValue}`);
+            subareasPrioritariasOptions.value = response.data;
+        } catch (error) {
+            console.error('Error fetching subareas:', error);
+        }
+    }
+});
 
 const submit = () => {
     form.post(route('register'), {
@@ -116,12 +121,12 @@ const buscarCurp = () => {
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <!-- Nombre Completo -->
                             <div>
-                                <label for="nombre_completo" class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">
+                                <label for="name" class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">
                                     Nombre Completo:
                                 </label>
                                 <input
-                                    id="nombre_completo"
-                                    v-model="form.nombre_completo"
+                                    id="name"
+                                    v-model="form.name"
                                     type="text"
                                     required
                                     class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
@@ -133,8 +138,8 @@ const buscarCurp = () => {
                                     </svg>
                                     <span>Por favor, introduce tu nombre completo</span>
                                 </div>
-                                <div v-if="form.errors.nombre_completo" class="mt-1 text-sm text-red-600">
-                                    {{ form.errors.nombre_completo }}
+                                <div v-if="form.errors.name" class="mt-1 text-sm text-red-600">
+                                    {{ form.errors.name }}
                                 </div>
                             </div>
 
@@ -238,8 +243,9 @@ const buscarCurp = () => {
                             </label>
                             <VueSelect
                                 v-model="form.institucion_id"
-                                :options="instituciones"
-                                :reduce="option => option.value"
+                                :options="institucionesOptions"
+                                :reduce="option => option.id"
+                                label="nombre"
                                 placeholder="Buscar o seleccionar una institución..."
                                 :searchable="true"
                                 :clearable="true"
@@ -267,13 +273,14 @@ const buscarCurp = () => {
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <!-- Área Prioritaria -->
                             <div>
-                                <label for="area_prioritaria_id" class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">
+                                <label for="priority_area_id" class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">
                                     Área Prioritaria:
                                 </label>
                                 <VueSelect
-                                    v-model="form.area_prioritaria_id"
-                                    :options="areasPrioritarias"
-                                    :reduce="option => option.value"
+                                    v-model="form.priority_area_id"
+                                    :options="areasPrioritariasOptions"
+                                    :reduce="option => option.id"
+                                    label="name"
                                     placeholder="Buscar o seleccionar un área..."
                                     :searchable="true"
                                     :clearable="true"
@@ -292,20 +299,21 @@ const buscarCurp = () => {
                                     </svg>
                                     <span>Por favor, selecciona el área prioritaria</span>
                                 </div>
-                                <div v-if="form.errors.area_prioritaria_id" class="mt-1 text-sm text-red-600">
-                                    {{ form.errors.area_prioritaria_id }}
+                                <div v-if="form.errors.priority_area_id" class="mt-1 text-sm text-red-600">
+                                    {{ form.errors.priority_area_id }}
                                 </div>
                             </div>
 
                             <!-- SubÁrea Prioritaria -->
                             <div>
-                                <label for="subarea_prioritaria_id" class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">
+                                <label for="sub_area_id" class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">
                                     SubÁrea Prioritaria:
                                 </label>
                                 <VueSelect
-                                    v-model="form.subarea_prioritaria_id"
-                                    :options="subareasPrioritarias"
-                                    :reduce="option => option.value"
+                                    v-model="form.sub_area_id"
+                                    :options="subareasPrioritariasOptions"
+                                    :reduce="option => option.id"
+                                    label="name"
                                     placeholder="Buscar o seleccionar una subárea..."
                                     :searchable="true"
                                     :clearable="true"
@@ -315,7 +323,7 @@ const buscarCurp = () => {
                                         <template v-if="searching">
                                             No se encontraron resultados para <em>{{ search }}</em>.
                                         </template>
-                                        <em v-else>Comienza a escribir para buscar...</em>
+                                        <em v-else>Selecciona un Área Prioritaria primero...</em>
                                     </template>
                                 </VueSelect>
                                 <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
@@ -324,8 +332,8 @@ const buscarCurp = () => {
                                     </svg>
                                     <span>Por favor, selecciona la subárea prioritaria</span>
                                 </div>
-                                <div v-if="form.errors.subarea_prioritaria_id" class="mt-1 text-sm text-red-600">
-                                    {{ form.errors.subarea_prioritaria_id }}
+                                <div v-if="form.errors.sub_area_id" class="mt-1 text-sm text-red-600">
+                                    {{ form.errors.sub_area_id }}
                                 </div>
                             </div>
                         </div>

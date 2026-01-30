@@ -10,6 +10,8 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Support\Collection;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -25,6 +27,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'institucion_id',
+        'priority_area_id',
+        'sub_area_id',
     ];
 
     /**
@@ -56,6 +61,21 @@ class User extends Authenticatable
     public function isSuperAdmin(): bool
     {
         return $this->hasRole('Super Admin');
+    }
+
+    public function institucion(): BelongsTo
+    {
+        return $this->belongsTo(Institucion::class);
+    }
+
+    public function priorityArea(): BelongsTo
+    {
+        return $this->belongsTo(PriorityArea::class);
+    }
+
+    public function subArea(): BelongsTo
+    {
+        return $this->belongsTo(SubArea::class);
     }
 
     public function getAllowedViews($module): Collection

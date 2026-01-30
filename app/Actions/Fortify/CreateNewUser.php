@@ -28,12 +28,22 @@ class CreateNewUser implements CreatesNewUsers
                 Rule::unique(User::class),
             ],
             'password' => $this->passwordRules(),
+            'institucion_id' => ['required', 'exists:instituciones,id'],
+            'priority_area_id' => ['required', 'exists:priority_areas,id'],
+            'sub_area_id' => ['required', 'exists:sub_areas,id'],
         ])->validate();
 
-        return User::create([
+        $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => $input['password'],
+            'institucion_id' => $input['institucion_id'],
+            'priority_area_id' => $input['priority_area_id'],
+            'sub_area_id' => $input['sub_area_id'],
         ]);
+
+        $user->assignRole('Docente');
+
+        return $user;
     }
 }

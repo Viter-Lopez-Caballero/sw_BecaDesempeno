@@ -29,6 +29,11 @@ class Institucion extends Model
         return $this->belongsTo(Estado::class);
     }
 
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Scopes

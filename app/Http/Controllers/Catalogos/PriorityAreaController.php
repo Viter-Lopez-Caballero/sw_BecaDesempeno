@@ -93,4 +93,20 @@ class PriorityAreaController extends Controller
         $priorityArea->delete();
         return redirect()->route("{$this->routeName}index")->with('success', 'Área Prioritaria eliminada con éxito');
     }
+
+    public function export()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\PriorityAreasExport, 'areas-prioritarias.xlsx');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv',
+        ]);
+
+        \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\PriorityAreasImport, $request->file('file'));
+
+        return redirect()->back()->with('success', 'Áreas Prioritarias importadas correctamente.');
+    }
 }

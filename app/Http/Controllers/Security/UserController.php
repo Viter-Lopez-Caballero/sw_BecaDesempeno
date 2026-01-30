@@ -59,11 +59,14 @@ class UserController extends SecurityController
             ->paginate($filters->rows)
             ->withQueryString();
 
+        $roles = Role::orderBy('name')->where('id', '!=', 3)->get();
+
         return Inertia::render("{$this->source}Index", [
             'usuarios'  => UserResource::collection($users),
             'title'     => 'Gestión de Usuarios',
             'routeName' => $this->routeName,
-            'filters'   => $filters
+            'filters'   => $filters,
+            'roles'     => $roles,
         ]);
     }
 
@@ -138,5 +141,22 @@ class UserController extends SecurityController
         return [
             'roles' => ['roles', 'id', 'name'],
         ];
+    }
+    
+    public function export() 
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\UsersExport, 'usuarios.xlsx');
+    }
+    
+    public function import(Request $request) 
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv',
+            'role_id' => 'required|exists:roles,id',
+        ]);
+        
+        \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\UsersImport($request->role_id), $request->file('file'));
+        
+        return redirect()->back()->with('success', 'Usuarios importados correctamente.');
     }
 }

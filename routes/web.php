@@ -39,6 +39,9 @@ use App\Http\Controllers\Security\PermissionController;
 use App\Http\Controllers\Security\RoleController;
 use App\Http\Controllers\Security\UserController;
 use App\Http\Controllers\SuperAdminController;
+use App\Http\Controllers\Admin\DocumentController;
+use App\Http\Controllers\Admin\RequestControlController;
+use App\Http\Controllers\Admin\ConvocatoriaController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EvaluadorController;
 use App\Http\Controllers\DocenteController;
@@ -92,12 +95,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('modules', ModuleController::class);
         // ->middleware('can:modules.index'); // Opcional si el controlador ya gestiona
 
+     // Documents Module Routes
+    Route::get('documentos', [DocumentController::class, 'index'])->name('documents.index')->middleware('can:documents.index');
+    Route::get('documentos/{id}', [DocumentController::class, 'show'])->name('documents.show')->middleware('can:documents.show');
+    Route::get('documentos/download/{documento}', [DocumentController::class, 'download'])->name('documents.download')->middleware('can:documents.download');
+
         Route::resource('permissions', PermissionController::class);
         // ->middleware('can:permissions.index');
 
         Route::resource('roles', RoleController::class);
         // ->middleware('can:roles.index');
 
+        Route::get('users/export', [UserController::class, 'export'])->name('users.export'); // ->middleware('can:users.index');
+        Route::post('users/import', [UserController::class, 'import'])->name('users.import'); // ->middleware('can:users.create');
         Route::resource('users', UserController::class);
         // ->middleware('can:users.index');
     });
@@ -108,9 +118,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ========================
     
     // Control de Solicitudes
-    Route::get('solicitudes', function () {
-        return Inertia::render('Solicitudes/Index');
-    })->name('solicitudes.index')->middleware('can:solicitudes.index');
+    Route::get('control-solicitudes', [RequestControlController::class, 'index'])->name('solicitudes.index')->middleware('can:requests.index');
+    Route::get('control-solicitudes/{id}', [RequestControlController::class, 'show'])->name('solicitudes.show')->middleware('can:requests.show');
 
     // Convocatorias
     Route::get('convocatorias', function () {
@@ -137,9 +146,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return Inertia::render('Catalogo/AreasPrioritarias');
         })->name('areas')->middleware('can:catalogo.index');
 
-        Route::get('documentos', function () {
-            return Inertia::render('Catalogo/Documentos');
-        })->name('documentos')->middleware('can:catalogo.index');
+        Route::get('documentos', [\App\Http\Controllers\Admin\DocumentController::class, 'index'])
+            ->name('documentos')
+            ->middleware('can:documents.index');
 
         Route::get('calendario', function () {
             return Inertia::render('Catalogo/Calendario');
@@ -149,11 +158,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return Inertia::render('Catalogo/Rubrica');
         })->name('rubrica')->middleware('can:catalogo.index');
 
+        Route::get('institutions/export', [InstitutionController::class, 'export'])->name('institutions.export'); // ->middleware('can:catalogo.index');
+        Route::post('institutions/import', [InstitutionController::class, 'import'])->name('institutions.import'); // ->middleware('can:catalogo.index');
         Route::resource('institutions', InstitutionController::class);
+
+        Route::get('priority-areas/export', [PriorityAreaController::class, 'export'])->name('priority-areas.export'); // ->middleware('can:catalogo.index');
+        Route::post('priority-areas/import', [PriorityAreaController::class, 'import'])->name('priority-areas.import'); // ->middleware('can:catalogo.index');
         Route::resource('priority-areas', PriorityAreaController::class);
+        
+        Route::get('sub-areas/export', [SubAreaController::class, 'export'])->name('sub-areas.export'); // ->middleware('can:catalogo.index');
+        // No import for sub-areas as requested
         Route::resource('sub-areas', SubAreaController::class);
+
         Route::resource('rubrics', RubricController::class);
         Route::post('rubrics/{rubric}/toggle-active', [RubricController::class, 'toggleActive'])->name('rubrics.toggle-active');
+    });
+
+    // Modules accessible by permission (Admin/SuperAdmin)
+    Route::middleware(['can:documents.index'])->prefix('admin')->name('admin.')->group(function () {
+        Route::resource('documents', \App\Http\Controllers\Admin\DocumentController::class)->only(['index', 'show']);
+        Route::get('documents/{documento}/download', [\App\Http\Controllers\Admin\DocumentController::class, 'download'])->name('documents.download');
     });
 });
 

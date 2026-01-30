@@ -3,10 +3,161 @@ import { Head, Link } from '@inertiajs/vue3';
 import LandingLayout from '@/layouts/LandingLayout.vue';
 import Pagination from '@/Shared/Pagination.vue';
 import { CheckCircle, Clock, AlertCircle, Calendar, ClipboardCheck, Award } from 'lucide-vue-next';
+import { ref, computed } from 'vue';
+import { router } from '@inertiajs/vue3';
 
 defineProps({
     convocatorias: Object,
 });
+
+const etapas = ref([
+    {
+        id: 1,
+        numero: '01',
+        titulo: 'Publicación',
+        descripcion: 'Publicación de la Convocatoria.',
+        fechas: '12 Dic - 12 Ene 2025',
+        color: '#1B396A',
+        icono: 'CheckCircle',
+        isActive: true
+    },
+    {
+        id: 2,
+        numero: '02',
+        titulo: 'Registro',
+        descripcion: 'Periodo para Inscribirse.',
+        fechas: '20 Dic - 05 Ene 2025',
+        color: '#10A558',
+        icono: 'Clock',
+        isActive: true
+    },
+    {
+        id: 3,
+        numero: '03',
+        titulo: 'Evaluación',
+        descripcion: 'Periodo de Revisión de Solicitudes.',
+        fechas: '06 Ene - 11 Ene 2026',
+        color: '#E9C81F',
+        icono: 'ClipboardCheck',
+        isActive: true
+    },
+    {
+        id: 4,
+        numero: '04',
+        titulo: 'Resultados',
+        descripcion: 'Publicación de Resultados.',
+        fechas: '12 Ene - 13 Ene 2026',
+        color: '#0F172A',
+        icono: 'Award',
+        isActive: true
+    }
+]);
+
+const getIconComponent = (iconName) => {
+    const icons = {
+        CheckCircle,
+        Clock,
+        ClipboardCheck,
+        Award
+    };
+    return icons[iconName];
+};
+
+const convocatoriasEjemplo = ref([
+    {
+        id: 1,
+        titulo: 'Convocatoria de Estímulos al Desempeño Docente 2026',
+        nombre: 'Convocatoria de Estímulos al Desempeño Docente 2026',
+        descripcion: 'Programa diseñado para reconocer y estimular la excelencia académica, dedicación y permanencia de los profesores del Tecnológico Nacional de México.',
+        anio: 2026,
+        estado: 'activa',
+        imagen: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600&h=400&fit=crop'
+    },
+    {
+        id: 2,
+        titulo: 'Convocatoria de Estímulos 2025',
+        nombre: 'Convocatoria de Estímulos 2025',
+        descripcion: 'Reconocimiento al desempeño docente durante el año 2025. Esta convocatoria ya fue cerrada y se publicaron los resultados.',
+        anio: 2025,
+        estado: 'cerrada',
+        imagen: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600&h=400&fit=crop'
+    },
+    {
+        id: 3,
+        titulo: 'Convocatoria de Estímulos 2024',
+        nombre: 'Convocatoria de Estímulos 2024',
+        descripcion: 'Programa de reconocimiento a la excelencia docente 2024. Convocatoria finalizada con resultados publicados.',
+        anio: 2024,
+        estado: 'cerrada',
+        imagen: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=600&h=400&fit=crop'
+    },
+    {
+        id: 4,
+        titulo: 'Convocatoria Especial Investigación 2024',
+        nombre: 'Convocatoria Especial Investigación 2024',
+        descripcion: 'Estímulos especiales para docentes con proyectos de investigación destacados. Convocatoria cerrada.',
+        anio: 2024,
+        estado: 'cerrada',
+        imagen: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=400&fit=crop'
+    },
+    {
+        id: 5,
+        titulo: 'Convocatoria de Estímulos 2023',
+        nombre: 'Convocatoria de Estímulos 2023',
+        descripcion: 'Reconocimiento al desempeño docente del año 2023. Proceso completado con resultados oficiales publicados.',
+        anio: 2023,
+        estado: 'cerrada',
+        imagen: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&h=400&fit=crop'
+    }
+]);
+
+// Paginación
+const currentPage = ref(1);
+const perPage = 3;
+
+const totalPages = computed(() => Math.ceil(convocatoriasEjemplo.value.length / perPage));
+
+const convocatoriasPaginadas = computed(() => {
+    const start = (currentPage.value - 1) * perPage;
+    const end = start + perPage;
+    return convocatoriasEjemplo.value.slice(start, end);
+});
+
+const paginationLinks = computed(() => {
+    const links = [];
+    
+    // Link anterior
+    links.push({
+        url: currentPage.value > 1 ? `?page=${currentPage.value - 1}` : null,
+        label: '&laquo; Previous',
+        active: false
+    });
+    
+    // Links de páginas
+    for (let i = 1; i <= totalPages.value; i++) {
+        links.push({
+            url: `?page=${i}`,
+            label: i.toString(),
+            active: i === currentPage.value
+        });
+    }
+    
+    // Link siguiente
+    links.push({
+        url: currentPage.value < totalPages.value ? `?page=${currentPage.value + 1}` : null,
+        label: 'Next &raquo;',
+        active: false
+    });
+    
+    return links;
+});
+
+// Detectar cambios en la URL
+if (typeof window !== 'undefined') {
+    const urlParams = new URLSearchParams(window.location.search);
+    const page = parseInt(urlParams.get('page')) || 1;
+    currentPage.value = page;
+}
 </script>
 
 <template>
@@ -37,8 +188,44 @@ defineProps({
             </div>
         </section>
 
+        <!-- Sección de Estadísticas -->
+        <!-- <section class="py-16 px-4 sm:px-6 lg:px-8 bg-white border-b border-gray-100">
+            <div class="max-w-7xl mx-auto">
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-8">
+                    <div class="text-center">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#2c5282] to-[#3d5a80] mb-4 shadow-lg">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-4xl font-bold text-gray-900 mb-2">1,500+</h3>
+                        <p class="text-gray-600 text-sm">Docentes Participantes</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#10A558] to-[#0d8847] mb-4 shadow-lg">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-4xl font-bold text-gray-900 mb-2">126</h3>
+                        <p class="text-gray-600 text-sm">Instituciones del TecNM</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#E9C81F] to-[#d4b41a] mb-4 shadow-lg">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-4xl font-bold text-gray-900 mb-2">98%</h3>
+                        <p class="text-gray-600 text-sm">Tasa de Satisfacción</p>
+                    </div>
+                </div>
+            </div>
+        </section> -->
+
         <!-- Sección Sobre el Programa -->
-        <section class="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 to-white">
+        <!-- <section class="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 to-white"> -->
+        <section class="py-20 px-4 sm:px-6 lg:px-8 bg-white">
             <div class="max-w-7xl mx-auto">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <!-- Texto -->
@@ -52,15 +239,28 @@ defineProps({
                         <p class="text-lg text-gray-700 leading-relaxed">
                             El Programa de Estímulos al Desempeño del Personal Docente, tiene como propósito, impulsar y reconocer a los profesores de los Institutos Tecnológicos y Centros Especializados del Sistema Nacional de Institutos Tecnológicos, por la calidad en el desempeño, la dedicación y la permanencia en las actividades de la docencia.
                         </p>
-                        <div class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-md border-l-4 border-[#2c5282]">
-                            <div class="flex-shrink-0">
-                                <svg class="w-8 h-8 text-[#2c5282]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
+                        <div class="space-y-4">
+                            <div class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-md border-l-4 border-[#2c5282]">
+                                <div class="flex-shrink-0">
+                                    <svg class="w-8 h-8 text-[#2c5282]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900 mb-1">Reconocimiento a la Excelencia</h3>
+                                    <p class="text-gray-600 text-sm">Valoramos y premiamos el compromiso y dedicación de nuestros docentes.</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 class="font-semibold text-gray-900 mb-1">Reconocimiento a la Excelencia</h3>
-                                <p class="text-gray-600 text-sm">Valoramos y premiamos el compromiso y dedicación de nuestros docentes.</p>
+                            <div class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-md border-l-4 border-[#10A558]">
+                                <div class="flex-shrink-0">
+                                    <svg class="w-8 h-8 text-[#10A558]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900 mb-1">Impulso al Desarrollo Profesional</h3>
+                                    <p class="text-gray-600 text-sm">Promovemos la formación continua y mejora de competencias docentes.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -83,10 +283,10 @@ defineProps({
         </section>
 
         <!-- Sección de Etapas con fondo tecnológico -->
-        <section class="relative py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-[#2B4A7E] via-[#3d6398] to-[#4e6b91] overflow-hidden">
+        <section class="relative py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-[#1B396A] via-[#2B4A7E] to-[#3B5C92] overflow-hidden">
             <!-- Patrón de fondo tecnológico -->
             <div class="absolute inset-0 opacity-10">
-                <div class="absolute inset-0" style="background-image: linear-gradient(#4a90e2 1px, transparent 1px), linear-gradient(90deg, #4a90e2 1px, transparent 1px); background-size: 50px 50px;"></div>
+                <div class="absolute inset-0" style="background-image: linear-gradient(#5B8DEE 2px, transparent 2px), linear-gradient(90deg, #5B8DEE 2px, transparent 2px); background-size: 40px 40px;"></div>
                 <div class="absolute top-10 left-10 w-64 h-64 bg-blue-400 rounded-full blur-3xl opacity-20"></div>
                 <div class="absolute bottom-10 right-10 w-96 h-96 bg-cyan-400 rounded-full blur-3xl opacity-20"></div>
             </div>
@@ -94,70 +294,34 @@ defineProps({
             <div class="max-w-7xl mx-auto relative z-10">
                 <h2 class="text-3xl font-bold text-center mb-12 text-white">Etapas de la Convocatoria Activa</h2>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-lg border-l-4 border-[#10A558] hover:shadow-xl transition-all duration-300">
+                    <div 
+                        v-for="etapa in etapas" 
+                        :key="etapa.id"
+                        class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-lg border-l-4 hover:shadow-xl transition-all duration-300"
+                        :class="etapa.isActive ? `border-[${etapa.color}]` : 'border-[#AEAEAE]'"
+                        :style="{ borderLeftColor: etapa.isActive ? etapa.color : '#AEAEAE' }"
+                    >
                         <div class="flex-shrink-0">
-                            <CheckCircle class="w-8 h-8 text-[#10A558]" />
+                            <component 
+                                :is="getIconComponent(etapa.icono)" 
+                                class="w-8 h-8" 
+                                :style="{ color: etapa.isActive ? etapa.color : '#AEAEAE' }"
+                            />
                         </div>
                         <div class="flex-1">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="text-[#10A558] font-bold text-2xl">01</span>
+                                <span 
+                                    class="font-bold text-2xl" 
+                                    :style="{ color: etapa.isActive ? etapa.color : '#AEAEAE' }"
+                                >
+                                    {{ etapa.numero }}
+                                </span>
                             </div>
-                            <h3 class="font-bold text-base text-gray-900 mb-2">Publicación</h3>
-                            <p class="text-xs text-gray-600 mb-3">Publicación de la Convocatoria.</p>
-                            <div class="flex items-center text-xs text-gray-500">
+                            <h3 class="font-bold text-base mb-2" :class="etapa.isActive ? 'text-gray-900' : 'text-[#AEAEAE]'">{{ etapa.titulo }}</h3>
+                            <p class="text-xs mb-3" :class="etapa.isActive ? 'text-gray-600' : 'text-[#AEAEAE]'">{{ etapa.descripcion }}</p>
+                            <div class="flex items-center text-xs" :class="etapa.isActive ? 'text-gray-500' : 'text-[#AEAEAE]'">
                                 <Calendar class="w-3 h-3 mr-1" />
-                                <span>12 Dic - 12 Ene 2025</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-lg border-l-4 border-[#E9C81F] hover:shadow-xl transition-all duration-300">
-                        <div class="flex-shrink-0">
-                            <Clock class="w-8 h-8 text-[#E9C81F]" />
-                        </div>
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="text-[#E9C81F] font-bold text-2xl">02</span>
-                            </div>
-                            <h3 class="font-bold text-base text-gray-900 mb-2">Registro</h3>
-                            <p class="text-xs text-gray-600 mb-3">Periodo para Inscribirse.</p>
-                            <div class="flex items-center text-xs text-gray-500">
-                                <Calendar class="w-3 h-3 mr-1" />
-                                <span>20 Dic - 05 Ene 2025</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-lg border-l-4 border-[#B03A2E] hover:shadow-xl transition-all duration-300">
-                        <div class="flex-shrink-0">
-                            <ClipboardCheck class="w-8 h-8 text-[#B03A2E]" />
-                        </div>
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="text-[#B03A2E] font-bold text-2xl">03</span>
-                            </div>
-                            <h3 class="font-bold text-base text-gray-900 mb-2">Evaluación</h3>
-                            <p class="text-xs text-gray-600 mb-3">Periodo de Revisión de Solicitudes.</p>
-                            <div class="flex items-center text-xs text-gray-500">
-                                <Calendar class="w-3 h-3 mr-1" />
-                                <span>06 Ene - 11 Ene 2026</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-lg border-l-4 border-[#1B396A] hover:shadow-xl transition-all duration-300">
-                        <div class="flex-shrink-0">
-                            <Award class="w-8 h-8 text-[#1B396A]" />
-                        </div>
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="text-[#1B396A] font-bold text-2xl">04</span>
-                            </div>
-                            <h3 class="font-bold text-base text-gray-900 mb-2">Resultados</h3>
-                            <p class="text-xs text-gray-600 mb-3">Publicación de Resultados.</p>
-                            <div class="flex items-center text-xs text-gray-500">
-                                <Calendar class="w-3 h-3 mr-1" />
-                                <span>12 Ene - 13 Ene 2026</span>
+                                <span>{{ etapa.fechas }}</span>
                             </div>
                         </div>
                     </div>
@@ -173,9 +337,9 @@ defineProps({
                     Consulta las convocatorias disponibles y mantente informado sobre los procesos de estímulos al desempeño docente.
                 </p>
                 
-                <div v-if="convocatorias?.data?.length" class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
                     <div 
-                        v-for="convocatoria in convocatorias.data" 
+                        v-for="convocatoria in convocatoriasPaginadas" 
                         :key="convocatoria.id"
                         :class="[
                             'rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col',
@@ -255,20 +419,61 @@ defineProps({
                     </div>
                 </div>
                 
-                <!-- Mensaje cuando no hay convocatorias -->
-                <div v-else class="text-center py-12">
-                    <p class="text-gray-500 text-lg">No hay convocatorias disponibles en este momento.</p>
-                </div>
-                
                 <!-- Paginación -->
-                <div v-if="convocatorias?.data?.length" class="mt-8">
+                <div class="mt-8">
                     <Pagination 
-                        :links="convocatorias.links" 
-                        :total="convocatorias.total"
-                        :from="convocatorias.from"
-                        :to="convocatorias.to"
+                        :links="paginationLinks" 
+                        :total="convocatoriasEjemplo.length"
+                        :from="(currentPage - 1) * perPage + 1"
+                        :to="Math.min(currentPage * perPage, convocatoriasEjemplo.length)"
                         :show-total="false"
                     />
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de Beneficios -->
+        <section class="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-12">
+                    <span class="text-[#2c5282] font-semibold text-sm uppercase tracking-wider">Ventajas del Programa</span>
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mt-3">
+                        Beneficios para los Participantes
+                    </h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Beneficio 1 -->
+                    <div class="group relative bg-gradient-to-br from-blue-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-blue-100 hover:border-[#2c5282]">
+                        <div class="absolute -top-6 left-8 inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-[#2c5282] to-[#3d5a80] shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mt-8 mb-3 group-hover:text-[#2c5282] transition-colors">Estímulos Económicos</h3>
+                        <p class="text-gray-600 leading-relaxed">Reconocimiento monetario proporcional a tu desempeño y dedicación académica.</p>
+                    </div>
+
+                    <!-- Beneficio 2 -->
+                    <div class="group relative bg-gradient-to-br from-green-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-green-100 hover:border-[#10A558]">
+                        <div class="absolute -top-6 left-8 inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-[#10A558] to-[#0d8847] shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mt-8 mb-3 group-hover:text-[#10A558] transition-colors">Reconocimiento Institucional</h3>
+                        <p class="text-gray-600 leading-relaxed">Prestigio y valoración oficial por tu contribución al sistema educativo nacional.</p>
+                    </div>
+
+                    <!-- Beneficio 3 -->
+                    <div class="group relative bg-gradient-to-br from-yellow-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-yellow-100 hover:border-[#E9C81F]">
+                        <div class="absolute -top-6 left-8 inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-[#E9C81F] to-[#d4b41a] shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mt-8 mb-3 group-hover:text-[#E9C81F] transition-colors">Desarrollo Profesional</h3>
+                        <p class="text-gray-600 leading-relaxed">Incentivo para formación continua, investigación y actividades de mejora educativa.</p>
+                    </div>
                 </div>
             </div>
         </section>

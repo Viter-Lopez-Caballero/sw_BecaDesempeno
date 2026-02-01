@@ -49,7 +49,7 @@ const etapas = ref([
         fechas: '12 Ene - 13 Ene 2026',
         color: '#0F172A',
         icono: 'Award',
-        isActive: true
+        isActive: false
     }
 ]);
 
@@ -187,41 +187,6 @@ if (typeof window !== 'undefined') {
                 </div>
             </div>
         </section>
-
-        <!-- Sección de Estadísticas -->
-        <!-- <section class="py-16 px-4 sm:px-6 lg:px-8 bg-white border-b border-gray-100">
-            <div class="max-w-7xl mx-auto">
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-8">
-                    <div class="text-center">
-                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#2c5282] to-[#3d5a80] mb-4 shadow-lg">
-                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-4xl font-bold text-gray-900 mb-2">1,500+</h3>
-                        <p class="text-gray-600 text-sm">Docentes Participantes</p>
-                    </div>
-                    <div class="text-center">
-                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#10A558] to-[#0d8847] mb-4 shadow-lg">
-                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-4xl font-bold text-gray-900 mb-2">126</h3>
-                        <p class="text-gray-600 text-sm">Instituciones del TecNM</p>
-                    </div>
-                    <div class="text-center">
-                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#E9C81F] to-[#d4b41a] mb-4 shadow-lg">
-                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-4xl font-bold text-gray-900 mb-2">98%</h3>
-                        <p class="text-gray-600 text-sm">Tasa de Satisfacción</p>
-                    </div>
-                </div>
-            </div>
-        </section> -->
 
         <!-- Sección Sobre el Programa -->
         <!-- <section class="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 to-white"> -->
@@ -428,52 +393,6 @@ if (typeof window !== 'undefined') {
                         :to="Math.min(currentPage * perPage, convocatoriasEjemplo.length)"
                         :show-total="false"
                     />
-                </div>
-            </div>
-        </section>
-
-        <!-- Sección de Beneficios -->
-        <section class="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-            <div class="max-w-7xl mx-auto">
-                <div class="text-center mb-12">
-                    <span class="text-[#2c5282] font-semibold text-sm uppercase tracking-wider">Ventajas del Programa</span>
-                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mt-3">
-                        Beneficios para los Participantes
-                    </h2>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <!-- Beneficio 1 -->
-                    <div class="group relative bg-gradient-to-br from-blue-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-blue-100 hover:border-[#2c5282]">
-                        <div class="absolute -top-6 left-8 inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-[#2c5282] to-[#3d5a80] shadow-lg">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-900 mt-8 mb-3 group-hover:text-[#2c5282] transition-colors">Estímulos Económicos</h3>
-                        <p class="text-gray-600 leading-relaxed">Reconocimiento monetario proporcional a tu desempeño y dedicación académica.</p>
-                    </div>
-
-                    <!-- Beneficio 2 -->
-                    <div class="group relative bg-gradient-to-br from-green-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-green-100 hover:border-[#10A558]">
-                        <div class="absolute -top-6 left-8 inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-[#10A558] to-[#0d8847] shadow-lg">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-900 mt-8 mb-3 group-hover:text-[#10A558] transition-colors">Reconocimiento Institucional</h3>
-                        <p class="text-gray-600 leading-relaxed">Prestigio y valoración oficial por tu contribución al sistema educativo nacional.</p>
-                    </div>
-
-                    <!-- Beneficio 3 -->
-                    <div class="group relative bg-gradient-to-br from-yellow-50 to-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-yellow-100 hover:border-[#E9C81F]">
-                        <div class="absolute -top-6 left-8 inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-[#E9C81F] to-[#d4b41a] shadow-lg">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-900 mt-8 mb-3 group-hover:text-[#E9C81F] transition-colors">Desarrollo Profesional</h3>
-                        <p class="text-gray-600 leading-relaxed">Incentivo para formación continua, investigación y actividades de mejora educativa.</p>
-                    </div>
                 </div>
             </div>
         </section>

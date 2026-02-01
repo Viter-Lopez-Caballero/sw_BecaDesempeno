@@ -146,7 +146,7 @@ const submit = () => {
                             </button>
 
                             <!-- Register Link -->
-                            <div v-if="canRegister" class="text-center pt-4 border-t border-gray-200">
+                            <!-- <div class="text-center pt-4 border-t border-gray-200">
                                 <p class="text-sm text-gray-600">
                                     ¿No tienes una cuenta?
                                     <Link
@@ -156,7 +156,7 @@ const submit = () => {
                                         Regístrate
                                     </Link>
                                 </p>
-                            </div>
+                            </div> -->
                         </form>
                     </div>
 
@@ -176,18 +176,18 @@ const submit = () => {
                                 <p class="text-lg text-blue-100 leading-relaxed drop-shadow-md">
                                     Tecnológico Nacional de México - Reconociendo la excelencia académica y el compromiso de nuestros docentes.
                                 </p>
-                                <div class="grid grid-cols-3 gap-4 mt-6">
-                                    <div class="text-center bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                                        <div class="text-2xl font-bold">1,500+</div>
-                                        <div class="text-xs text-blue-100 mt-1">Docentes</div>
-                                    </div>
-                                    <div class="text-center bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                                        <div class="text-2xl font-bold">126</div>
-                                        <div class="text-xs text-blue-100 mt-1">Instituciones</div>
-                                    </div>
-                                    <div class="text-center bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                                        <div class="text-2xl font-bold">98%</div>
-                                        <div class="text-xs text-blue-100 mt-1">Satisfacción</div>
+                                <div v-if="canRegister" class="rounded-xl p-6 mt-6">
+                                    <div class="text-center space-y-4">
+                                        <div>
+                                            <p class="text-xl font-bold text-white mb-2">¿No tienes una cuenta?</p>
+                                            <p class="text-sm text-blue-100">Únete a la comunidad docente del TecNM</p>
+                                        </div>
+                                        <Link
+                                            :href="route('register')"
+                                            class="inline-block bg-white text-[#1B396A] font-bold px-8 py-3 rounded-lg hover:bg-gray-100 transition shadow-lg transform hover:-translate-y-1 hover:shadow-xl"
+                                        >
+                                            Regístrate
+                                        </Link>
                                     </div>
                                 </div>
                             </div>

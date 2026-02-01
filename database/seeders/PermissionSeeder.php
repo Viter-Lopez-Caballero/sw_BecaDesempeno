@@ -85,6 +85,12 @@ class PermissionSeeder extends Seeder
             ['name' => 'rubrics.create', 'description' => 'Crear rúbricas', 'module_key' => 'cat'],
             ['name' => 'rubrics.edit', 'description' => 'Editar rúbricas', 'module_key' => 'cat'],
             ['name' => 'rubrics.delete', 'description' => 'Eliminar rúbricas', 'module_key' => 'cat'],
+
+            // Calendario
+            ['name' => 'calendario.index', 'description' => 'Ver calendario', 'module_key' => 'cat'],
+            ['name' => 'calendario.create', 'description' => 'Crear calendario', 'module_key' => 'cat'],
+            ['name' => 'calendario.edit', 'description' => 'Editar calendario', 'module_key' => 'cat'],
+            ['name' => 'calendario.delete', 'description' => 'Eliminar calendario', 'module_key' => 'cat'],
         ];
 
         // Crear cada permiso

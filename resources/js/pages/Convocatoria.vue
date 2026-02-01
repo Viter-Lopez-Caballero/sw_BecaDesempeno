@@ -1,6 +1,23 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
 import LandingLayout from '@/layouts/LandingLayout.vue';
+import { ref } from 'vue';
+
+const showModal = ref(false);
+const currentPdfUrl = ref('');
+const currentPdfTitle = ref('');
+
+const openPdfModal = (url, title) => {
+    currentPdfUrl.value = url;
+    currentPdfTitle.value = title;
+    showModal.value = true;
+};
+
+const closeModal = () => {
+    showModal.value = false;
+    currentPdfUrl.value = '';
+    currentPdfTitle.value = '';
+};
 </script>
 
 <template>
@@ -131,8 +148,9 @@ import LandingLayout from '@/layouts/LandingLayout.vue';
                             </p>
                             <div class="flex items-center justify-center gap-2">
                                 <button
+                                    @click="openPdfModal('https://edd.tecnm.mx/formatos/2025/CONVOCATORIA_EDD_2025.pdf', 'Convocatoria 2026')"
                                     class="cursor-pointer px-6 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 hover:bg-gray-100 font-medium transition shadow-lg transform hover:-translate-y-1">
-                                    Descargar Convocatoria PDF
+                                    Ver Convocatoria PDF
                                 </button>
                             </div>
                         </div>
@@ -152,10 +170,8 @@ import LandingLayout from '@/layouts/LandingLayout.vue';
                                     </div>
                                     <div class="ml-4 flex-1">
                                         <p class="text-xs text-gray-500 mb-1">Fase 1</p>
-                                        <h4 class="text-lg font-bold text-gray-900 mb-1">Publicación de Convocatoria
-                                        </h4>
-                                        <p class="text-sm text-gray-600">Difusión oficial de las bases y lineamientos
-                                            del programa.</p>
+                                        <h4 class="text-lg font-bold text-gray-900 mb-1">Publicación de Convocatoria</h4>
+                                        <p class="text-sm text-gray-500">12 Dic - 12 Ene 2025</p>
                                     </div>
                                 </div>
                             </div>
@@ -172,10 +188,8 @@ import LandingLayout from '@/layouts/LandingLayout.vue';
                                     </div>
                                     <div class="ml-4 flex-1">
                                         <p class="text-xs text-gray-500 mb-1">Fase 2</p>
-                                        <h4 class="text-lg font-bold text-gray-900 mb-1">Registro y Carga de Documentos
-                                        </h4>
-                                        <p class="text-sm text-gray-600">Período para registro en el sistema y carga de
-                                            evidencias.</p>
+                                        <h4 class="text-lg font-bold text-gray-900 mb-1">Registro y Carga de Documentos</h4>
+                                        <p class="text-sm text-gray-500">20 Dic - 05 Ene 2025</p>
                                     </div>
                                 </div>
                             </div>
@@ -193,8 +207,7 @@ import LandingLayout from '@/layouts/LandingLayout.vue';
                                     <div class="ml-4 flex-1">
                                         <p class="text-xs text-gray-500 mb-1">Fase 3</p>
                                         <h4 class="text-lg font-bold text-gray-900 mb-1">Evaluación y Dictaminación</h4>
-                                        <p class="text-sm text-gray-600">Comisiones evaluadoras revisan y valoran las
-                                            solicitudes.</p>
+                                        <p class="text-sm text-gray-500">06 Ene - 11 Ene 2026</p>
                                     </div>
                                 </div>
                             </div>
@@ -212,8 +225,7 @@ import LandingLayout from '@/layouts/LandingLayout.vue';
                                     <div class="ml-4 flex-1">
                                         <p class="text-xs text-gray-500 mb-1">Fase 4</p>
                                         <h4 class="text-lg font-bold text-gray-900 mb-1">Publicación de Resultados</h4>
-                                        <p class="text-sm text-gray-600">Anuncio oficial de docentes beneficiados con el
-                                            estímulo.</p>
+                                        <p class="text-sm text-gray-500">12 Ene - 13 Ene 2026</p>
                                     </div>
                                 </div>
                             </div>
@@ -222,5 +234,55 @@ import LandingLayout from '@/layouts/LandingLayout.vue';
                 </div>
             </div>
         </section>
+
+        <!-- PDF Modal -->
+        <Teleport to="body">
+            <Transition name="modal">
+                <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <!-- Backdrop -->
+                    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                    
+                    <!-- Modal Content -->
+                    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col">
+                        <!-- Modal Header -->
+                        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                            <h2 class="text-lg font-semibold text-gray-900">{{ currentPdfTitle }}</h2>
+                            <button @click="closeModal" class="text-gray-400 hover:text-gray-800 transition-colors cursor-pointer">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <!-- PDF Viewer -->
+                        <div class="flex-1 overflow-hidden">
+                            <iframe :src="currentPdfUrl" class="w-full h-full" frameborder="0"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
     </LandingLayout>
 </template>
+
+<style scoped>
+.modal-enter-active,
+.modal-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+    opacity: 0;
+}
+
+.modal-enter-active .relative,
+.modal-leave-active .relative {
+    transition: transform 0.3s ease;
+}
+
+.modal-enter-from .relative,
+.modal-leave-to .relative {
+    transform: scale(0.95);
+}
+</style>

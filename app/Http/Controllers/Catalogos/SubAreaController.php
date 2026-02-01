@@ -27,7 +27,7 @@ class SubAreaController extends Controller
 
     public function __construct()
     {
-        $this->source = 'Catalogos/SubAreas/';
+        $this->source = 'SuperAdmin/Catalogo/SubAreas/';
         $this->model = new SubArea();
         $this->routeName = 'catalogo.sub-areas.';
         $this->permissionPrefix = 'sub_areas.';
@@ -95,5 +95,10 @@ class SubAreaController extends Controller
     {
         $subArea->delete();
         return redirect()->route("{$this->routeName}index")->with('success', 'Sub Área eliminada con éxito');
+    }
+
+    public function export()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\SubAreasExport, 'sub-areas.xlsx');
     }
 }

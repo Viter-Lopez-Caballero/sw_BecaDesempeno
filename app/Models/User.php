@@ -78,6 +78,11 @@ class User extends Authenticatable
         return $this->belongsTo(SubArea::class);
     }
 
+    public function solicitudes()
+    {
+        return $this->hasMany(Solicitud::class);
+    }
+
     public function getAllowedViews($module): Collection
     {
         return $this->getAllPermissions()->where('module_key', $module)->pluck('arg');

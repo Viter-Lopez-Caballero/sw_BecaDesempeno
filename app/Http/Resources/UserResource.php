@@ -29,6 +29,9 @@ class UserResource extends JsonResource
             'is_active'     => $this->is_active,
             'created_at'    => $this->textFormatDate($this->created_at),
             'deleted_at'    => $this->deleted_at ? $this->textFormatDate($this->deleted_at) : null,
+            'institucion'   => $this->whenLoaded('institucion'),
+            'priority_area' => $this->whenLoaded('priorityArea'),
+            'sub_area'      => $this->whenLoaded('subArea'),
         ];
     }
 }

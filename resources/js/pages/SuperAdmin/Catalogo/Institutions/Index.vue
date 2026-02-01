@@ -7,10 +7,16 @@ import { debounce } from 'lodash';
 import { useCan } from '@/composables/usePermissions';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
-import { mdiLabel } from '@mdi/js';
+import { mdiDomain } from '@mdi/js';
+
+import { useForm } from '@inertiajs/vue3';
+import DialogModal from '@/Components/DialogModal.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
+import PrimaryButton from '@/Components/PrimaryButton.vue';
+import InputLabel from '@/Components/InputLabel.vue';
 
 const props = defineProps({
-    subAreas: {
+    instituciones: {
         type: Object,
         required: true,
     },
@@ -30,8 +36,29 @@ const props = defineProps({
 
 const search = ref(props.filters.search);
 const rows = ref(props.filters.rows || 10);
-const sortField = ref(props.filters.order || 'nombre');
+const sortField = ref(props.filters.order || 'id');
 const sortDirection = ref(props.filters.direction || 'asc');
+const isImportModalOpen = ref(false);
+const importForm = useForm({
+    file: null,
+});
+
+const openImportModal = () => {
+    isImportModalOpen.value = true;
+};
+
+const closeImportModal = () => {
+    isImportModalOpen.value = false;
+    importForm.reset();
+};
+
+const submitImport = () => {
+    importForm.post(route('catalogo.institutions.import'), {
+        preserveScroll: true,
+        onSuccess: () => closeImportModal(),
+        onFinish: () => importForm.reset(),
+    });
+};
 
 const rowOptions = [
     { label: '5 Registros', value: 5 },
@@ -86,7 +113,7 @@ const sortBy = (field) => {
 };
 
 const deleteItem = (id) => {
-    if (confirm('¿Estás seguro de eliminar esta sub área?')) {
+    if (confirm('¿Estás seguro de eliminar esta institución?')) {
         router.delete(route(`${props.routeName}destroy`, id));
     }
 };
@@ -103,21 +130,35 @@ const deleteItem = (id) => {
                     <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
-                            <path :d="mdiLabel"/>
+                            <path :d="mdiDomain"/>
                         </svg>
                         <span class="text-gray-700 font-medium">Catálogo</span>
                         <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
                             <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
                         </svg>
-                        <span class="text-gray-900 font-semibold">Sub Áreas</span>
+                        <span class="text-gray-900 font-semibold">Instituciones</span>
                     </div>
                 </div>
-                <Link v-if="useCan('sub_areas.create')" :href="route(`${routeName}create`)" class="px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
-                        <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
-                    </svg>
-                    Agregar
-                </Link>
+                <div class="flex items-center gap-2">
+                    <a :href="route('catalogo.institutions.export')" class="px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2 font-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                            <path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
+                        </svg>
+                        Exportar
+                    </a>
+                    <button @click="openImportModal" class="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2 font-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                            <path d="M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
+                        </svg>
+                        Importar
+                    </button>
+                    <Link v-if="useCan('instituciones.create')" :href="route(`${routeName}create`)" class="px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                            <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
+                        </svg>
+                        Agregar
+                    </Link>
+                </div>
             </div>
 
             <!-- Filter Card -->
@@ -136,7 +177,7 @@ const deleteItem = (id) => {
                         Limpiar Filtros
                     </button>
                 </div>
-                <div class="text-sm text-gray-500 mb-4">Buscar y filtrar sub áreas por nombre o área prioritaria</div>
+                <div class="text-sm text-gray-500 mb-4">Buscar y filtrar instituciones por nombre o estado</div>
                 <div class="flex flex-col md:flex-row gap-4 items-end">
                     <div class="relative w-full md:flex-1">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -177,24 +218,24 @@ const deleteItem = (id) => {
                                     </div>
                                 </th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">
-                                    Área Prioritaria
+                                    Estado
                                 </th>
-                                <th v-if="useCan('sub_areas.edit') || useCan('sub_areas.delete')" scope="col" class="px-6 py-4 text-center tracking-wider">Acciones</th>
+                                <th v-if="useCan('instituciones.edit') || useCan('instituciones.delete')" scope="col" class="px-6 py-4 text-center tracking-wider">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                            <tr v-for="(subArea, index) in subAreas.data" :key="subArea.id" class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 font-medium text-gray-900">{{ (subAreas.meta.current_page - 1) * subAreas.meta.per_page + index + 1 }}</td>
-                                <td class="px-6 py-4 font-semibold text-gray-800">{{ subArea.name }}</td>
-                                <td class="px-6 py-4 text-gray-600">{{ subArea.priority_area?.name || 'N/A' }}</td>
-                                <td v-if="useCan('sub_areas.edit') || useCan('sub_areas.delete')" class="px-6 py-4 text-center">
+                            <tr v-for="(institucion, index) in instituciones.data" :key="institucion.id" class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 font-medium text-gray-900">{{ (instituciones.meta.current_page - 1) * instituciones.meta.per_page + index + 1 }}</td>
+                                <td class="px-6 py-4 font-semibold text-gray-800">{{ institucion.nombre }}</td>
+                                <td class="px-6 py-4 text-gray-600">{{ institucion.estado?.nombre || 'N/A' }}</td>
+                                <td v-if="useCan('instituciones.edit') || useCan('instituciones.delete')" class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <Link v-if="useCan('sub_areas.edit')" :href="route(`${routeName}edit`, subArea.id)" class="p-2 text-[#1B396A] border border-[#1B396A] rounded-full hover:bg-[#1B396A] hover:text-white transition group" title="Editar">
+                                        <Link v-if="useCan('instituciones.edit')" :href="route(`${routeName}edit`, institucion.id)" class="p-2 text-[#1B396A] border border-[#1B396A] rounded-full hover:bg-[#1B396A] hover:text-white transition group" title="Editar">
                                             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                                                 <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/>
                                             </svg>
                                         </Link>
-                                        <button v-if="useCan('sub_areas.delete')" @click="deleteItem(subArea.id)" class="p-2 text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition group" title="Eliminar">
+                                        <button v-if="useCan('instituciones.delete')" @click="deleteItem(institucion.id)" class="p-2 text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition group" title="Eliminar">
                                             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                                                 <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
                                             </svg>
@@ -202,7 +243,7 @@ const deleteItem = (id) => {
                                     </div>
                                 </td>
                             </tr>
-                            <tr v-if="subAreas.data.length === 0">
+                            <tr v-if="instituciones.data.length === 0">
                                 <td colspan="4" class="px-6 py-12 text-center text-gray-500">
                                     No se encontraron registros
                                 </td>
@@ -213,10 +254,39 @@ const deleteItem = (id) => {
                 
                  <!-- Pagination -->
                 <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                     <Pagination :links="subAreas.meta.links" :total="subAreas.meta.total" :from="subAreas.meta.from" :to="subAreas.meta.to" />
+                     <Pagination :links="instituciones.meta.links" :total="instituciones.meta.total" :from="instituciones.meta.from" :to="instituciones.meta.to" />
                 </div>
             </div>
         </div>
+        <!-- Import Modal -->
+        <DialogModal :show="isImportModalOpen" @close="closeImportModal">
+            <template #title>
+                Importar Instituciones
+            </template>
+            <template #content>
+                <div class="space-y-4">
+                    <p class="text-sm text-gray-600">
+                        Selecciona un archivo Excel (.xlsx, .xls) o CSV para importar. Columnas esperadas: nombre, estado.
+                    </p>
+                    <div>
+                        <InputLabel for="file" value="Archivo" />
+                        <input id="file" type="file" @change="e => importForm.file = e.target.files[0]" class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:border-indigo-500 focus:ring-indigo-500 shadow-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#1B396A] file:text-white hover:file:bg-[#0f2347] transition" accept=".xlsx, .xls, .csv"/>
+                        <div v-if="importForm.errors.file" class="text-red-600 text-sm mt-1">{{ importForm.errors.file }}</div>
+                    </div>
+                </div>
+            </template>
+            <template #footer>
+                <SecondaryButton @click="closeImportModal" class="mr-2">Cancelar</SecondaryButton>
+                <button
+                    @click="submitImport"
+                    class="inline-flex items-center px-4 py-2 bg-[#1B396A] border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-[#0f2347] focus:bg-[#0f2347] active:bg-[#0a1b3d] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                    :class="{ 'opacity-25': importForm.processing }"
+                    :disabled="importForm.processing"
+                >
+                    Importar
+                </button>
+            </template>
+        </DialogModal>
     </LayoutAuthenticated>
 </template>
 

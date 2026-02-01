@@ -10,7 +10,7 @@ import 'vue-select/dist/vue-select.css';
 import { mdiLabel } from '@mdi/js';
 
 const props = defineProps({
-    priorityAreas: {
+    subAreas: {
         type: Object,
         required: true,
     },
@@ -86,7 +86,7 @@ const sortBy = (field) => {
 };
 
 const deleteItem = (id) => {
-    if (confirm('¿Estás seguro de eliminar esta área prioritaria?')) {
+    if (confirm('¿Estás seguro de eliminar esta sub área?')) {
         router.delete(route(`${props.routeName}destroy`, id));
     }
 };
@@ -109,15 +109,23 @@ const deleteItem = (id) => {
                         <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
                             <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
                         </svg>
-                        <span class="text-gray-900 font-semibold">Areas Prioritarias</span>
+                        <span class="text-gray-900 font-semibold">Sub Áreas</span>
                     </div>
                 </div>
-                <Link v-if="useCan('priority_areas.create')" :href="route(`${routeName}create`)" class="px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
-                        <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
-                    </svg>
-                    Agregar
-                </Link>
+                <div class="flex items-center gap-2">
+                    <a :href="route('catalogo.sub-areas.export')" class="px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2 font-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                            <path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
+                        </svg>
+                        Exportar
+                    </a>
+                    <Link v-if="useCan('sub_areas.create')" :href="route(`${routeName}create`)" class="px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                            <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
+                        </svg>
+                        Agregar
+                    </Link>
+                </div>
             </div>
 
             <!-- Filter Card -->
@@ -136,7 +144,7 @@ const deleteItem = (id) => {
                         Limpiar Filtros
                     </button>
                 </div>
-                <div class="text-sm text-gray-500 mb-4">Buscar y filtrar áreas prioritarias por nombre</div>
+                <div class="text-sm text-gray-500 mb-4">Buscar y filtrar sub áreas por nombre o área prioritaria</div>
                 <div class="flex flex-col md:flex-row gap-4 items-end">
                     <div class="relative w-full md:flex-1">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -176,21 +184,25 @@ const deleteItem = (id) => {
                                         </svg>
                                     </div>
                                 </th>
-                                <th v-if="useCan('priority_areas.edit') || useCan('priority_areas.delete')" scope="col" class="px-6 py-4 text-center tracking-wider">Acciones</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">
+                                    Área Prioritaria
+                                </th>
+                                <th v-if="useCan('sub_areas.edit') || useCan('sub_areas.delete')" scope="col" class="px-6 py-4 text-center tracking-wider">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                            <tr v-for="(area, index) in priorityAreas.data" :key="area.id" class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 font-medium text-gray-900">{{ (priorityAreas.meta.current_page - 1) * priorityAreas.meta.per_page + index + 1 }}</td>
-                                <td class="px-6 py-4 font-semibold text-gray-800">{{ area.name }}</td>
-                                <td v-if="useCan('priority_areas.edit') || useCan('priority_areas.delete')" class="px-6 py-4 text-center">
+                            <tr v-for="(subArea, index) in subAreas.data" :key="subArea.id" class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 font-medium text-gray-900">{{ (subAreas.meta.current_page - 1) * subAreas.meta.per_page + index + 1 }}</td>
+                                <td class="px-6 py-4 font-semibold text-gray-800">{{ subArea.name }}</td>
+                                <td class="px-6 py-4 text-gray-600">{{ subArea.priority_area?.name || 'N/A' }}</td>
+                                <td v-if="useCan('sub_areas.edit') || useCan('sub_areas.delete')" class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <Link v-if="useCan('priority_areas.edit')" :href="route(`${routeName}edit`, area.id)" class="p-2 text-[#1B396A] border border-[#1B396A] rounded-full hover:bg-[#1B396A] hover:text-white transition group" title="Editar">
+                                        <Link v-if="useCan('sub_areas.edit')" :href="route(`${routeName}edit`, subArea.id)" class="p-2 text-[#1B396A] border border-[#1B396A] rounded-full hover:bg-[#1B396A] hover:text-white transition group" title="Editar">
                                             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                                                 <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/>
                                             </svg>
                                         </Link>
-                                        <button v-if="useCan('priority_areas.delete')" @click="deleteItem(area.id)" class="p-2 text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition group" title="Eliminar">
+                                        <button v-if="useCan('sub_areas.delete')" @click="deleteItem(subArea.id)" class="p-2 text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition group" title="Eliminar">
                                             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                                                 <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
                                             </svg>
@@ -198,8 +210,8 @@ const deleteItem = (id) => {
                                     </div>
                                 </td>
                             </tr>
-                            <tr v-if="priorityAreas.data.length === 0">
-                                <td colspan="3" class="px-6 py-12 text-center text-gray-500">
+                            <tr v-if="subAreas.data.length === 0">
+                                <td colspan="4" class="px-6 py-12 text-center text-gray-500">
                                     No se encontraron registros
                                 </td>
                             </tr>
@@ -209,7 +221,7 @@ const deleteItem = (id) => {
                 
                  <!-- Pagination -->
                 <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                     <Pagination :links="priorityAreas.meta.links" :total="priorityAreas.meta.total" :from="priorityAreas.meta.from" :to="priorityAreas.meta.to" />
+                     <Pagination :links="subAreas.meta.links" :total="subAreas.meta.total" :from="subAreas.meta.from" :to="subAreas.meta.to" />
                 </div>
             </div>
         </div>

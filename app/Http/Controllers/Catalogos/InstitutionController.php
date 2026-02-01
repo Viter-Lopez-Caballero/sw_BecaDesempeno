@@ -26,7 +26,7 @@ class InstitutionController extends Controller
 
     public function __construct()
     {
-        $this->source = 'Catalogos/Institutions/';
+        $this->source = 'SuperAdmin/Catalogo/Institutions/';
         $this->model = new Institucion();
         $this->routeName = 'catalogo.institutions.';
         $this->permissionPrefix = 'instituciones.';
@@ -123,5 +123,21 @@ class InstitutionController extends Controller
     {
         $institution->delete();
         return redirect()->route("{$this->routeName}index")->with('success', 'Institución eliminada con éxito');
+    }
+
+    public function export()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\InstitutionsExport, 'instituciones.xlsx');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv',
+        ]);
+
+        \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\InstitutionsImport, $request->file('file'));
+
+        return redirect()->back()->with('success', 'Instituciones importadas correctamente.');
     }
 }

@@ -2,30 +2,52 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Convocatoria extends Model
 {
-    use HasFactory, SoftDeletes;
+    use SoftDeletes;
+
+    protected $table = 'convocatorias';
 
     protected $fillable = [
-        'name',
-        'start_date',
-        'end_date',
-        'is_active',
+        'nombre',
+        'descripcion',
+        'anio',
+        'estado',
     ];
 
-    protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
-        'is_active' => 'boolean',
-    ];
+    /*
+    |--------------------------------------------------------------------------
+    | Relaciones
+    |--------------------------------------------------------------------------
+    */
 
-    public function solicitudes(): HasMany
+    public function calendario()
     {
-        return $this->hasMany(Solicitud::class);
+        return $this->hasOne(Calendario::class);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Scopes
+    |--------------------------------------------------------------------------
+    */
+
+    public function scopeBuscarGlobal($query, $search)
+    {
+        if (empty($search)) {
+            return $query;
+        }
+
+        return $query->where('nombre', 'LIKE', "%{$search}%")
+            ->orWhere('anio', 'LIKE', "%{$search}%")
+            ->orWhere('estado', 'LIKE', "%{$search}%");
+    }
+
+    public function scopeOrdenado($query, $sortField = 'id', $sortDirection = 'desc')
+    {
+        return $query->orderBy($sortField, $sortDirection);
     }
 }

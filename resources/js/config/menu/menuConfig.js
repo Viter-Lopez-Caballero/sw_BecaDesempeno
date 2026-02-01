@@ -72,9 +72,9 @@ const getCatalogItems = (routePrefix) => [
     },
     {
         label: "Calendario",
-        route: `${routePrefix}calendario`,
+        route: `${routePrefix}calendario.index`,
         icon: mdiCalendar,
-        permission: "catalogo.index",
+        permission: "calendario.index",
     },
     {
         label: "Rúbrica",

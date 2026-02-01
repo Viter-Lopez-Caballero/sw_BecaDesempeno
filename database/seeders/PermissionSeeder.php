@@ -86,6 +86,12 @@ class PermissionSeeder extends Seeder
             ['name' => 'rubrics.edit', 'description' => 'Editar rúbricas', 'module_key' => 'cat'],
             ['name' => 'rubrics.delete', 'description' => 'Eliminar rúbricas', 'module_key' => 'cat'],
 
+            // Calendario
+            ['name' => 'calendario.index', 'description' => 'Ver calendario', 'module_key' => 'cat'],
+            ['name' => 'calendario.create', 'description' => 'Crear calendario', 'module_key' => 'cat'],
+            ['name' => 'calendario.edit', 'description' => 'Editar calendario', 'module_key' => 'cat'],
+            ['name' => 'calendario.delete', 'description' => 'Eliminar calendario', 'module_key' => 'cat'],
+          
             // Documents Module (Admin)
             ['name' => 'documents.index', 'description' => 'Ver documentos admin', 'module_key' => 'cat'],
             ['name' => 'documents.show', 'description' => 'Ver detalles de documentos', 'module_key' => 'cat'],
@@ -94,6 +100,7 @@ class PermissionSeeder extends Seeder
             // Request Control Module
             ['name' => 'requests.index', 'description' => 'Ver control de solicitudes', 'module_key' => 'controlsoli'],
             ['name' => 'requests.show', 'description' => 'Ver detalles de control de solicitudes', 'module_key' => 'controlsoli'],
+
         ];
 
         // Crear cada permiso

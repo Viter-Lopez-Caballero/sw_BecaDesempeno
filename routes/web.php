@@ -18,6 +18,8 @@ Route::get('/', function () {
     ]);
 })->name('inicio');
 
+// (visits endpoint removed)
+
 Route::get('/convocatoria', function () {
     return Inertia::render('Convocatoria');
 })->name('convocatoria');
@@ -49,6 +51,8 @@ use App\Http\Controllers\Catalogos\InstitutionController;
 use App\Http\Controllers\Catalogos\PriorityAreaController;
 use App\Http\Controllers\Catalogos\SubAreaController;
 use App\Http\Controllers\Catalogos\RubricController;
+use App\Http\Controllers\Catalogos\CalendarioController;
+use App\Http\Controllers\Catalogos\ConvocatoriaController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Ruta de inicio genérica (redirige según rol)
@@ -122,9 +126,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('control-solicitudes/{id}', [RequestControlController::class, 'show'])->name('solicitudes.show')->middleware('can:requests.show');
 
     // Convocatorias
-    Route::get('convocatorias', function () {
-        return Inertia::render('Convocatorias/Index');
-    })->name('convocatorias.index')->middleware('can:convocatorias.index');
+    Route::resource('convocatorias', ConvocatoriaController::class)->names([
+        'index' => 'convocatorias.index',
+        'create' => 'convocatorias.create',
+        'store' => 'convocatorias.store',
+        'edit' => 'convocatorias.edit',
+        'update' => 'convocatorias.update',
+        'destroy' => 'convocatorias.destroy',
+    ]);
 
     // Reconocimiento
     Route::get('reconocimiento', function () {
@@ -150,10 +159,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('documentos')
             ->middleware('can:documents.index');
 
-        Route::get('calendario', function () {
-            return Inertia::render('Catalogo/Calendario');
-        })->name('calendario')->middleware('can:catalogo.index');
-
         Route::get('rubrica', function () {
             return Inertia::render('Catalogo/Rubrica');
         })->name('rubrica')->middleware('can:catalogo.index');
@@ -172,6 +177,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::resource('rubrics', RubricController::class);
         Route::post('rubrics/{rubric}/toggle-active', [RubricController::class, 'toggleActive'])->name('rubrics.toggle-active');
+        Route::resource('calendario', CalendarioController::class);
     });
 
     // Modules accessible by permission (Admin/SuperAdmin)

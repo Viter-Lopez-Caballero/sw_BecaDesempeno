@@ -43,7 +43,6 @@ use App\Http\Controllers\Security\UserController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\Admin\DocumentController;
 use App\Http\Controllers\Admin\RequestControlController;
-use App\Http\Controllers\Admin\ConvocatoriaController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EvaluadorController;
 use App\Http\Controllers\DocenteController;

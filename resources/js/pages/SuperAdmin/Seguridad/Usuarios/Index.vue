@@ -148,15 +148,14 @@ const deleteUser = (id) => {
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                     <a :href="route('seguridad.users.export')" class="px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2 font-medium">
-                        <!-- Icono Excel export -->
+                     <a :href="route('seguridad.users.export')" class="px-4 py-2.5 bg-[#0D7239] text-white rounded-lg hover:bg-green-800 transition flex items-center gap-2 font-medium">
                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                             <path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
                         </svg>
                         Exportar
                     </a>
 
-                    <button @click="openImportModal" class="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2 font-medium">
+                    <button @click="openImportModal" class="px-4 py-2.5 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition flex items-center gap-2 font-medium cursor-pointer">
                         <!-- Icono Import -->
                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                             <path d="M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>

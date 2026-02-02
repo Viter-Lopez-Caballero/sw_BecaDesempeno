@@ -32,8 +32,33 @@ Route::get('/contacto', function () {
     return Inertia::render('Contacto');
 })->name('contacto');
 
-Route::get('api/sub-areas/{priority_area_id}', function ($priority_area_id) {
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\CurpController;
+
+// API para buscar CURP (usado por Register.vue) - Sin CSRF
+Route::post('/api/buscar-curp', [CurpController::class, 'buscar'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+
+// API para obtener sub-áreas - Sin CSRF
+Route::get('/api/sub-areas/{priority_area_id}', function ($priority_area_id) {
     return \App\Models\SubArea::where('priority_area_id', $priority_area_id)->get(['id', 'name']);
+})->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+
+// Rutas de registro personalizadas (sobrescriben Fortify)
+Route::middleware('guest')->group(function () {
+    Route::get('/register', [RegisterController::class, 'create'])->name('register');
+    Route::post('/register', [RegisterController::class, 'store']);
+});
+
+// Rutas de verificación de email
+Route::middleware('guest')->group(function () {
+    Route::get('/verification/notice', function () {
+        return \Inertia\Inertia::render('Auth/VerifyEmail', [
+            'email' => session('email'),
+        ]);
+    })->name('verification.notice');
+    
+    Route::post('/verification/verify', [CurpController::class, 'verificarCodigo'])->name('verification.verify');
+    Route::post('/verification/resend', [CurpController::class, 'reenviarCodigo'])->name('verification.resend');
 });
 
 use App\Http\Controllers\Security\ModuleController;

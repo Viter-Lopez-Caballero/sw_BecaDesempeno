@@ -41,7 +41,8 @@ class FortifyServiceProvider extends ServiceProvider
     private function configureActions(): void
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
-        Fortify::createUsersUsing(CreateNewUser::class);
+        // CreateNewUser no se usa porque tenemos controlador personalizado
+        // Fortify::createUsersUsing(CreateNewUser::class);
         
         // Configurar redirección por rol después del login
         Fortify::authenticateUsing(function (Request $request) {
@@ -79,12 +80,13 @@ class FortifyServiceProvider extends ServiceProvider
             'status' => $request->session()->get('status'),
         ]));
 
-        Fortify::registerView(function () {
-            return Inertia::render('Auth/Register', [
-                'instituciones' => Institucion::all(['id', 'nombre']),
-                'priorityAreas' => PriorityArea::all(['id', 'name']),
-            ]);
-        });
+        // Comentamos el registerView porque usamos controlador personalizado
+        // Fortify::registerView(function () {
+        //     return Inertia::render('Auth/Register', [
+        //         'instituciones' => Institucion::all(['id', 'nombre']),
+        //         'priorityAreas' => PriorityArea::all(['id', 'name']),
+        //     ]);
+        // });
 
         Fortify::twoFactorChallengeView(fn () => Inertia::render('Auth/TwoFactorChallenge'));
 

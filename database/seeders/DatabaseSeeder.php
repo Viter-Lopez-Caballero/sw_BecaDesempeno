@@ -27,6 +27,8 @@ class DatabaseSeeder extends Seeder
             UsuarioSeeder::class,
             EstadoSeeder::class,
             InstitucionSeeder::class,
+            PriorityAreaSeeder::class,
+            SubAreaSeeder::class,
         ]);
     }
 }

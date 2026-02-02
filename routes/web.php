@@ -5,7 +5,20 @@ use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
 Route::get('/', function () {
-    // Obtener las últimas convocatorias con paginación de 3 en 3
+    // Si el usuario está autenticado, redirigir a su dashboard
+    if (auth()->check()) {
+        $role = auth()->user()->getPrimaryRole();
+        
+        return match ($role) {
+            'Super Admin' => redirect()->route('superadmin.inicio'),
+            'Admin' => redirect()->route('admin.inicio'),
+            'Evaluador' => redirect()->route('evaluador.inicio'),
+            'Docente' => redirect()->route('docente.inicio'),
+            default => redirect()->route('inicio.dashboard'),
+        };
+    }
+    
+    // Si no está autenticado, mostrar la página pública
     $convocatorias = \App\Models\Modulo::query()
         ->latest('created_at')
         ->paginate(3)
@@ -44,22 +57,18 @@ Route::get('/api/sub-areas/{priority_area_id}', function ($priority_area_id) {
 })->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 
 // Rutas de registro personalizadas (sobrescriben Fortify)
-Route::middleware('guest')->group(function () {
-    Route::get('/register', [RegisterController::class, 'create'])->name('register');
-    Route::post('/register', [RegisterController::class, 'store']);
-});
+Route::get('/register', [RegisterController::class, 'create'])->name('register');
+Route::post('/register', [RegisterController::class, 'store']);
 
 // Rutas de verificación de email
-Route::middleware('guest')->group(function () {
-    Route::get('/verification/notice', function () {
-        return \Inertia\Inertia::render('Auth/VerifyEmail', [
-            'email' => session('email'),
-        ]);
-    })->name('verification.notice');
-    
-    Route::post('/verification/verify', [CurpController::class, 'verificarCodigo'])->name('verification.verify');
-    Route::post('/verification/resend', [CurpController::class, 'reenviarCodigo'])->name('verification.resend');
-});
+Route::get('/verification/notice', function () {
+    return \Inertia\Inertia::render('Auth/VerifyEmail', [
+        'email' => session('email'),
+    ]);
+})->name('verification.notice');
+
+Route::post('/verification/verify', [CurpController::class, 'verificarCodigo'])->name('verification.verify');
+Route::post('/verification/resend', [CurpController::class, 'reenviarCodigo'])->name('verification.resend');
 
 use App\Http\Controllers\Security\ModuleController;
 use App\Http\Controllers\Security\PermissionController;

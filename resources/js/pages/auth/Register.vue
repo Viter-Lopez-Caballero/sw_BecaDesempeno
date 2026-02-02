@@ -22,11 +22,11 @@ const props = defineProps({
 
 const form = useForm({
     curp: '',
-    name: '', // Changed from nombre_completo to name to match User model and Fortify
+    name: '',
     email: '',
     password: '',
     password_confirmation: '',
-    institucion_id: '', // Not in User model yet? Wait, user asked for priority/sub area. I will assume institution_id is handled or ignore if not in User model. (User model has name, email, password, priority_area_id, sub_area_id). I will map 'nombre_completo' to 'name'.
+    institucion_id: '',
     priority_area_id: '',
     sub_area_id: ''
 });
@@ -38,6 +38,9 @@ const subareasPrioritariasOptions = ref([]);
 
 const showPassword = ref(false);
 const showPasswordConfirmation = ref(false);
+const buscandoCurp = ref(false);
+const curpEncontrado = ref(false);
+const errorCurp = ref('');
 
 // Watch for Priority Area change to fetch Sub Areas
 watch(() => form.priority_area_id, async (newValue) => {
@@ -60,9 +63,41 @@ const submit = () => {
     });
 };
 
-const buscarCurp = () => {
-    // Lógica para buscar CURP
-    console.log('Buscando CURP:', form.curp);
+const buscarCurp = async () => {
+    if (!form.curp || form.curp.length !== 18) {
+        errorCurp.value = 'El CURP debe tener 18 caracteres';
+        return;
+    }
+
+    buscandoCurp.value = true;
+    errorCurp.value = '';
+    curpEncontrado.value = false;
+
+    try {
+        const response = await axios.post('/api/buscar-curp', {
+            curp: form.curp.toUpperCase()
+        });
+
+        if (response.data.success) {
+            // Auto-completar el campo de nombre completo
+            const { nombres, apellidoPaterno, apellidoMaterno } = response.data.data;
+            form.name = `${nombres} ${apellidoPaterno} ${apellidoMaterno}`.trim();
+            curpEncontrado.value = true;
+        }
+    } catch (error) {
+        if (error.response?.status === 404) {
+            errorCurp.value = 'CURP no encontrado en el sistema RENAPO';
+        } else if (error.response?.status === 422) {
+            errorCurp.value = error.response.data.message || 'Este CURP ya está registrado';
+        } else {
+            errorCurp.value = 'Error al buscar el CURP. Por favor intenta de nuevo.';
+        }
+        
+        form.name = '';
+        curpEncontrado.value = false;
+    } finally {
+        buscandoCurp.value = false;
+    }
 };
 </script>
 
@@ -94,26 +129,40 @@ const buscarCurp = () => {
                                     required
                                     autofocus
                                     maxlength="18"
-                                    class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
+                                    :disabled="curpEncontrado"
+                                    class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A] disabled:bg-gray-100"
+                                    :class="{ 'border-b-red-500': form.errors.curp || errorCurp, 'border-b-green-500': curpEncontrado }"
                                     placeholder="Tu curp"
+                                    @input="form.curp = form.curp.toUpperCase()"
                                 />
                                 <button
                                     type="button"
                                     @click="buscarCurp"
-                                    class="bg-[#1B396A] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0f2347] transition whitespace-nowrap flex items-center gap-2"
+                                    :disabled="buscandoCurp || curpEncontrado"
+                                    class="bg-[#1B396A] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0f2347] transition whitespace-nowrap flex items-center gap-2 disabled:bg-gray-400"
                                 >
-                                    <LupaIcon size="16" />
-                                    Buscar CURP
+                                    <svg v-if="buscandoCurp" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <LupaIcon v-else size="16" />
+                                    {{ buscandoCurp ? 'Buscando...' : 'Buscar CURP' }}
                                 </button>
-                            </div>
-                            <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span>Por favor, introduce tu CURP</span>
                             </div>
                             <div v-if="form.errors.curp" class="mt-1 text-sm text-red-600">
                                 {{ form.errors.curp }}
+                            </div>
+                            <div v-else-if="errorCurp" class="mt-1 text-sm text-red-600">
+                                {{ errorCurp }}
+                            </div>
+                            <div v-else-if="curpEncontrado" class="mt-1 text-sm text-green-600">
+                                ✓ CURP válido encontrado
+                            </div>
+                            <div v-else class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Por favor, introduce tu CURP y haz clic en buscar</span>
                             </div>
                         </div>
 
@@ -129,14 +178,16 @@ const buscarCurp = () => {
                                     v-model="form.name"
                                     type="text"
                                     required
+                                    :readonly="curpEncontrado"
                                     class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
+                                    :class="{ 'bg-gray-100': curpEncontrado }"
                                     placeholder="Tu nombre"
                                 />
                                 <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    <span>Por favor, introduce tu nombre completo</span>
+                                    <span>{{ curpEncontrado ? 'Nombre obtenido del CURP' : 'Por favor, introduce tu nombre completo' }}</span>
                                 </div>
                                 <div v-if="form.errors.name" class="mt-1 text-sm text-red-600">
                                     {{ form.errors.name }}

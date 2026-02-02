@@ -29,6 +29,13 @@ class Convocatoria extends Model
         return $this->hasOne(Calendario::class);
     }
 
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'convocatoria_user')
+            ->withPivot('estado', 'fecha_inscripcion')
+            ->withTimestamps();
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Scopes

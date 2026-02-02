@@ -24,12 +24,17 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'curp',
         'name',
+        'apellido_paterno',
+        'apellido_materno',
         'email',
         'password',
         'institucion_id',
         'priority_area_id',
         'sub_area_id',
+        'email_verification_code',
+        'email_verification_code_expires_at',
     ];
 
     /**
@@ -53,6 +58,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'email_verification_code_expires_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
         ];
@@ -81,6 +87,13 @@ class User extends Authenticatable
     public function solicitudes()
     {
         return $this->hasMany(Solicitud::class);
+    }
+
+    public function convocatorias()
+    {
+        return $this->belongsToMany(Convocatoria::class, 'convocatoria_user')
+            ->withPivot('estado', 'fecha_inscripcion')
+            ->withTimestamps();
     }
 
     public function getAllowedViews($module): Collection

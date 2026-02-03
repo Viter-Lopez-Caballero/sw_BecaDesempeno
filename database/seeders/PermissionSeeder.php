@@ -101,6 +101,9 @@ class PermissionSeeder extends Seeder
             ['name' => 'requests.index', 'description' => 'Ver control de solicitudes', 'module_key' => 'controlsoli'],
             ['name' => 'requests.show', 'description' => 'Ver detalles de control de solicitudes', 'module_key' => 'controlsoli'],
 
+            // Docente Specific
+            ['name' => 'docente.inicio', 'description' => 'Ver inicio docente', 'module_key' => 'docente'],
+            ['name' => 'docente.solicitudes.show', 'description' => 'Ver detalle de solicitud docente', 'module_key' => 'docente'],
         ];
 
         // Crear cada permiso
@@ -179,6 +182,8 @@ class PermissionSeeder extends Seeder
                 'solicitudes.edit',
                 'convocatorias.index',
                 'reconocimiento.index',
+                'docente.inicio',
+                'docente.solicitudes.show',
             ])->get();
             $docente->syncPermissions($docentePermissions);
             $this->command->info("✅ {$docentePermissions->count()} permisos asignados al Docente.");

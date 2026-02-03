@@ -37,6 +37,11 @@ class ModuleSeeder extends Seeder
                 'name' => 'Catálogo',
                 'description' => 'Módulo de catálogo',
                 'key' => 'cat',
+            ],
+            [
+                'name' => 'Docente',
+                'description' => 'Módulo exclusivo para docentes',
+                'key' => 'docente',
             ]
         ];
 

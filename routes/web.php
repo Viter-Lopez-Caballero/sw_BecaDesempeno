@@ -121,6 +121,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware(['role:Docente'])->prefix('docente')->name('docente.')->group(function () {
         Route::get('inicio', [DocenteController::class, 'inicio'])->name('inicio');
+        Route::get('solicitudes/{id}', [DocenteController::class, 'show'])->name('solicitudes.show');
+        Route::get('solicitudes/download/{id}', [DocenteController::class, 'download'])->name('solicitudes.download');
+        Route::get('solicitudes/stream/{id}', [DocenteController::class, 'stream'])->name('solicitudes.stream');
+        
+        // Convocatorias Docente
+        Route::get('convocatorias', [DocenteController::class, 'convocatorias'])->name('convocatorias.index');
+        Route::get('convocatorias/{id}/solicitar', [DocenteController::class, 'solicitar'])->name('convocatorias.solicitar');
+        Route::post('convocatorias/solicitar', [DocenteController::class, 'storeSolicitud'])->name('solicitudes.store');
     });
 
     // ========================
@@ -218,6 +226,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['can:documents.index'])->prefix('admin')->name('admin.')->group(function () {
         Route::resource('documents', \App\Http\Controllers\Admin\DocumentController::class)->only(['index', 'show']);
         Route::get('documents/{documento}/download', [\App\Http\Controllers\Admin\DocumentController::class, 'download'])->name('documents.download');
+        Route::get('documents/{documento}/stream', [\App\Http\Controllers\Admin\DocumentController::class, 'stream'])->name('documents.stream');
     });
 });
 

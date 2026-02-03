@@ -148,24 +148,14 @@ export const menuConfigs = {
     docente: [
         {
             label: "Inicio",
-            route: "inicio.dashboard",
+            route: "docente.inicio",
             icon: mdiHome,
         },
         {
             label: "Convocatorias",
-            route: "convocatorias.index",
+            route: "docente.convocatorias.index",
             icon: mdiBullhorn,
-            permission: "convocatorias.index",
-        },
-        {
-            label: "Seguridad",
-            icon: mdiSecurity,
-            items: getSecurityItems("seguridad."),
-        },
-        {
-            label: "Catálogo",
-            icon: mdiBookOpenPageVariant,
-            items: getCatalogItems("catalogo."),
+            permission: "convocatorias.index", // Permission remains same or I can assume generic Index permission is enough or 'docente.inicio' covers it if I remove permission check.
         },
     ],
     evaluador: [

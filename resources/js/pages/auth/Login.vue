@@ -4,6 +4,7 @@ import { ref } from 'vue';
 import LandingLayout from '@/layouts/LandingLayout.vue';
 import EyeOffIcon from '@/components/icons/EyeIcon.vue';
 import EyeIcon from '@/components/icons/EyeOffIcon.vue';
+import { alertaExito, alertaError, alertaCargando, cerrarAlerta } from '@/utils/alerts.js';
 
 defineProps({
     canResetPassword: {
@@ -29,7 +30,17 @@ const form = useForm({
 const showPassword = ref(false);
 
 const submit = () => {
+    alertaCargando('Iniciando sesión', 'Por favor espera...');
+    
     form.post(route('login'), {
+        onSuccess: () => {
+            cerrarAlerta();
+            alertaExito('¡Bienvenido!', 'Sesión iniciada correctamente');
+        },
+        onError: () => {
+            cerrarAlerta();
+            alertaError('Error de autenticación', 'Credenciales incorrectas. Por favor verifica tus datos');
+        },
         onFinish: () => form.reset('password'),
     });
 };
@@ -133,7 +144,7 @@ const submit = () => {
                             <button
                                 type="submit"
                                 :disabled="form.processing"
-                                class="w-full bg-[#002B5C] text-white py-2.5 px-4 rounded font-medium hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-800 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                class="w-full bg-[#002B5C] cursor-pointer text-white py-2.5 px-4 rounded font-medium hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-800 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <span v-if="!form.processing">Ingresar</span>
                                 <span v-else class="flex items-center justify-center">

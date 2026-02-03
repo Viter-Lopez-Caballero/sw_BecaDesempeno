@@ -31,7 +31,7 @@ class VerificationCode extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Confirma tu Correo Electrónico - Sistema de Becas',
+            subject: 'Confirma tu Correo Electrónico - Programa de Estímulos al Desempeño del Personal Docente',
         );
     }
 

@@ -22,7 +22,11 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Registrar la respuesta personalizada de login
+        $this->app->singleton(
+            \Laravel\Fortify\Contracts\LoginResponse::class,
+            \App\Http\Responses\LoginResponse::class
+        );
     }
 
     /**
@@ -44,7 +48,7 @@ class FortifyServiceProvider extends ServiceProvider
         // CreateNewUser no se usa porque tenemos controlador personalizado
         // Fortify::createUsersUsing(CreateNewUser::class);
         
-        // Configurar redirección por rol después del login
+        // Configurar autenticación básica
         Fortify::authenticateUsing(function (Request $request) {
             $user = \App\Models\User::where('email', $request->email)->first();
             

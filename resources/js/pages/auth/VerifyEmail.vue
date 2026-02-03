@@ -1,6 +1,8 @@
 <script setup>
-import { ref } from 'vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import { ref, onMounted } from 'vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import LandingLayout from '@/layouts/LandingLayout.vue';
+import { alertaExito, alertaError, alertaAdvertencia, alertaCargando, cerrarAlerta } from '@/utils/alerts.js';
 
 const props = defineProps({
     email: String,
@@ -76,9 +78,17 @@ const handlePaste = (event) => {
 };
 
 const submit = () => {
-    form.post(route('verification.verify'), {
+    alertaCargando('Verificando código', 'Por favor espera...');
+    
+    form.post('/email/verify/code', {
         preserveScroll: true,
+        onSuccess: () => {
+            cerrarAlerta();
+            alertaExito('¡Código verificado!', 'Tu cuenta ha sido activada exitosamente');
+        },
         onError: () => {
+            cerrarAlerta();
+            alertaError('Código inválido', 'El código ingresado es incorrecto o ha expirado');
             // Limpiar inputs en caso de error
             codeInputs.value.forEach(input => input.value = '');
             form.code = '';
@@ -89,8 +99,18 @@ const submit = () => {
 
 const resendCode = () => {
     isResending.value = true;
-    resendForm.post(route('verification.resend'), {
+    alertaCargando('Reenviando código', 'Por favor espera...');
+    
+    resendForm.post('/email/verify/resend', {
         preserveScroll: true,
+        onSuccess: () => {
+            cerrarAlerta();
+            alertaExito('¡Código reenviado!', 'Revisa tu bandeja de entrada');
+        },
+        onError: () => {
+            cerrarAlerta();
+            alertaError('Error al reenviar', 'No se pudo reenviar el código. Inténtalo de nuevo');
+        },
         onFinish: () => {
             isResending.value = false;
         },
@@ -99,52 +119,37 @@ const resendCode = () => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <LandingLayout>
         <Head title="Verificar Correo Electrónico" />
 
-        <div class="w-full max-w-md">
-            <!-- Card Principal -->
-            <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
-                <!-- Header con logos -->
-                <div class="bg-white border-b border-gray-200 p-6">
-                    <div class="flex justify-center items-center gap-6 mb-4">
-                        <img src="/img/logo-sep.png" alt="SEP" class="h-16 w-auto">
-                        <img src="/img/logo-cenidet.png" alt="CENIDET" class="h-16 w-auto">
-                    </div>
-                </div>
-
-                <!-- Contenido -->
-                <div class="p-8">
-                    <!-- Icono de email -->
-                    <div class="flex justify-center mb-6">
-                        <div class="bg-blue-100 rounded-full p-4">
-                            <svg class="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                            </svg>
-                        </div>
+        <div class="flex items-center justify-center min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-xl w-full">
+                <!-- Card Principal -->
+                <div class="bg-white rounded-lg shadow-xl p-10 space-y-6">
+                    <!-- Título -->
+                    <div class="text-center">
+                        <h2 class="text-3xl font-semibold text-[#1B396A] mb-3">Confirma tu Correo Electrónico</h2>
+                        <p class="text-gray-600 text-sm text-left">
+                            Hemos enviado un código de verificación de 6 dígitos a tu dirección de email.
+                            Por favor revisa tu bandeja de entrada e ingrésalo a continuación para activar tu cuenta.<br>
+                            <br>
+                            Si no encuentras el correo, revisa la carpeta de spam o correo no deseado.
+                        </p>
                     </div>
 
-                    <h1 class="text-2xl font-bold text-gray-900 text-center mb-2">
-                        Confirma tu Correo Electrónico
-                    </h1>
-
-                    <p class="text-gray-600 text-center text-sm mb-8">
-                        Hemos enviado un código de confirmación a tu dirección de email.<br>
-                        Por favor revisa tu bandeja de entrada y haz clic en el enlace para activar tu cuenta.
-                    </p>
-
-                    <div v-if="email" class="bg-blue-50 rounded-lg p-3 mb-6 text-center">
+                    <!-- Email destacado -->
+                    <div v-if="email" class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 text-center border border-blue-200">
                         <p class="text-sm text-gray-700">
-                            Código enviado a:<br>
-                            <span class="font-semibold text-blue-600">{{ email }}</span>
+                            Código enviado a:
+                            <span class="font-semibold text-[#1B396A]">{{ email }}</span>
                         </p>
                     </div>
 
                     <!-- Inputs del código -->
-                    <form @submit.prevent="submit">
-                        <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 text-center mb-3">
-                                Ingresa el código de 6 dígitos
+                    <form @submit.prevent="submit" class="space-y-6">
+                        <div>
+                            <label class="block mb-3 text-base text-[#1B396A] font-medium text-center">
+                                Ingresa el Código de 6 dígitos
                             </label>
                             
                             <div class="flex justify-center gap-2">
@@ -156,12 +161,19 @@ const resendCode = () => {
                                     maxlength="1"
                                     inputmode="numeric"
                                     pattern="[0-9]"
-                                    class="w-12 h-14 text-center text-2xl font-bold border-2 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
-                                    :class="{ 'border-red-500': form.errors.code }"
+                                    class="w-12 h-14 text-center text-2xl font-bold bg-[#F3F4F6] border-t-0 border-x-0 rounded-lg focus:ring-0 border-b-2 border-b-gray-300 focus:border-b-[#1B396A] transition-all"
+                                    :class="{ 'border-b-red-500': form.errors.code }"
                                     @input="handleInput(index - 1, $event)"
                                     @keydown="handleKeydown(index - 1, $event)"
                                     @paste="handlePaste"
                                 />
+                            </div>
+
+                            <div class="flex items-center gap-1 mt-2 text-xs text-gray-500 justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Ingresa los 6 dígitos que recibiste por correo</span>
                             </div>
 
                             <p v-if="form.errors.code" class="mt-2 text-sm text-red-600 text-center">
@@ -172,58 +184,66 @@ const resendCode = () => {
                         <button
                             type="submit"
                             :disabled="form.processing || form.code.length !== 6"
-                            class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                            class="w-full bg-[#1B396A] text-white py-2.5 px-4 rounded font-medium hover:bg-[#0f2347] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B396A] transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <svg v-if="form.processing" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            Verificar Código
+                            <span v-if="!form.processing">Verificar Código</span>
+                            <span v-else class="flex items-center justify-center">
+                                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Verificando...
+                            </span>
                         </button>
                     </form>
 
                     <!-- Reenviar código -->
-                    <div class="mt-6 text-center">
+                    <div class="text-center">
                         <p class="text-sm text-gray-600 mb-2">
                             ¿No recibiste el código?
                         </p>
                         <button
                             @click="resendCode"
                             :disabled="resendForm.processing || isResending"
-                            class="text-blue-600 hover:text-blue-800 font-medium text-sm disabled:text-gray-400 disabled:cursor-not-allowed"
+                            class="text-[#1B396A] hover:text-[#0f2347] cursor-pointer font-medium text-sm disabled:text-gray-400 disabled:cursor-not-allowed hover:underline transition"
                         >
                             {{ isResending ? 'Reenviando...' : 'Reenviar código' }}
                         </button>
                     </div>
 
-                    <!-- Mensaje de éxito al reenviar -->
-                    <div v-if="$page.props.flash?.success" class="mt-4 bg-green-50 border border-green-200 rounded-lg p-3">
+                    <!-- Mensajes de estado -->
+                    <div v-if="status" class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <p class="text-sm text-blue-800 text-center">
+                            {{ status }}
+                        </p>
+                    </div>
+                    
+                    <div v-if="$page.props.flash?.success" class="bg-green-50 border border-green-200 rounded-lg p-3">
                         <p class="text-sm text-green-800 text-center">
                             {{ $page.props.flash.success }}
                         </p>
                     </div>
-
-                    <!-- Advertencia de spam -->
-                    <div class="mt-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-                        <p class="text-xs text-yellow-800">
-                            Si no encontrarás el correo, revisa la carpeta de spam o correo no deseado.
+                    
+                    <div v-if="$page.props.flash?.warning" class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                        <p class="text-sm text-yellow-800 text-center">
+                            {{ $page.props.flash.warning }}
                         </p>
                     </div>
 
                     <!-- Volver al login -->
-                    <div class="mt-6 text-center">
-                        <a
-                            href="/login"
-                            class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm"
+                    <div class="text-center">
+                        <Link
+                            :href="route('login')"
+                            class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm transition"
                         >
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                             </svg>
                             Volver e Iniciar Sesión
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </LandingLayout>
 </template>

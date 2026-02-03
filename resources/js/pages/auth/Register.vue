@@ -8,6 +8,7 @@ import LupaIcon from '@/components/icons/LupaIcon.vue';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
 import axios from 'axios';
+import { alertaExito, alertaError, alertaAdvertencia, alertaCargando, cerrarAlerta } from '@/utils/alerts.js';
 
 const props = defineProps({
     instituciones: {
@@ -58,13 +59,24 @@ watch(() => form.priority_area_id, async (newValue) => {
 });
 
 const submit = () => {
+    alertaCargando('Registrando cuenta', 'Por favor espera...');
+    
     form.post(route('register'), {
+        onSuccess: () => {
+            cerrarAlerta();
+            alertaExito('¡Registro exitoso!', 'Revisa tu correo para verificar tu cuenta');
+        },
+        onError: () => {
+            cerrarAlerta();
+            alertaError('Error en el registro', 'Por favor verifica los datos ingresados');
+        },
         onFinish: () => form.reset('password', 'password_confirmation'),
     });
 };
 
 const buscarCurp = async () => {
     if (!form.curp || form.curp.length !== 18) {
+        alertaAdvertencia('CURP incompleto', 'El CURP debe tener 18 caracteres');
         errorCurp.value = 'El CURP debe tener 18 caracteres';
         return;
     }
@@ -72,6 +84,7 @@ const buscarCurp = async () => {
     buscandoCurp.value = true;
     errorCurp.value = '';
     curpEncontrado.value = false;
+    alertaCargando('Buscando CURP', 'Consultando en el sistema RENAPO...');
 
     try {
         const response = await axios.post('/api/buscar-curp', {
@@ -79,18 +92,24 @@ const buscarCurp = async () => {
         });
 
         if (response.data.success) {
+            cerrarAlerta();
             // Auto-completar el campo de nombre completo
             const { nombres, apellidoPaterno, apellidoMaterno } = response.data.data;
             form.name = `${nombres} ${apellidoPaterno} ${apellidoMaterno}`.trim();
             curpEncontrado.value = true;
+            alertaExito('¡CURP encontrado!', 'Datos cargados correctamente');
         }
     } catch (error) {
+        cerrarAlerta();
         if (error.response?.status === 404) {
             errorCurp.value = 'CURP no encontrado en el sistema RENAPO';
+            alertaError('CURP no encontrado', 'No se encontró el CURP en el sistema RENAPO');
         } else if (error.response?.status === 422) {
             errorCurp.value = error.response.data.message || 'Este CURP ya está registrado';
+            alertaError('CURP ya registrado', 'Este CURP ya está registrado en el sistema');
         } else {
             errorCurp.value = 'Error al buscar el CURP. Por favor intenta de nuevo.';
+            alertaError('Error', 'Error al buscar el CURP. Por favor intenta de nuevo');
         }
         
         form.name = '';
@@ -139,7 +158,7 @@ const buscarCurp = async () => {
                                     type="button"
                                     @click="buscarCurp"
                                     :disabled="buscandoCurp || curpEncontrado"
-                                    class="bg-[#1B396A] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0f2347] transition whitespace-nowrap flex items-center gap-2 disabled:bg-gray-400"
+                                    class="bg-[#1B396A] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0f2347] transition whitespace-nowrap flex items-center gap-2 disabled:bg-gray-400 cursor-pointer"
                                 >
                                     <svg v-if="buscandoCurp" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -393,7 +412,7 @@ const buscarCurp = async () => {
                         <button
                             type="submit"
                             :disabled="form.processing"
-                            class="w-full bg-[#1B396A] text-white py-2.5 px-4 rounded font-medium hover:bg-[#0f2347] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B396A] transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+                            class="w-full bg-[#1B396A] text-white py-2.5 px-4 rounded font-medium hover:bg-[#0f2347] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B396A] transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-6 cursor-pointer"
                         >
                             <span v-if="!form.processing">Crear una cuenta</span>
                             <span v-else class="flex items-center justify-center">

@@ -31,6 +31,8 @@ class RegisterController extends Controller
      */
     public function store(Request $request)
     {
+        \Log::info('📝 RegisterController::store - Inicio del registro');
+        
         $request->validate([
             'curp' => 'required|string|size:18|unique:users,curp',
             'name' => 'required|string|max:255',
@@ -43,6 +45,8 @@ class RegisterController extends Controller
 
         // Generar código de verificación de 6 dígitos
         $verificationCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        
+        \Log::info('🔐 Código generado: ' . $verificationCode);
 
         // Crear el usuario sin iniciar sesión
         $user = User::create([
@@ -56,16 +60,27 @@ class RegisterController extends Controller
             'email_verification_code' => $verificationCode,
             'email_verification_code_expires_at' => now()->addHours(24),
         ]);
+        
+        \Log::info('👤 Usuario creado: ' . $user->email);
 
         // Asignar rol de Docente
         $user->assignRole('Docente');
 
         // Enviar correo de verificación
-        Mail::to($user->email)->send(new VerificationCode($user, $verificationCode));
+        try {
+            Mail::to($user->email)->send(new VerificationCode($user, $verificationCode));
+            \Log::info('📧 Correo enviado exitosamente a: ' . $user->email);
+            $mailStatus = 'Código de verificación enviado a tu correo electrónico.';
+        } catch (\Exception $e) {
+            \Log::error('❌ Error al enviar correo de verificación: ' . $e->getMessage());
+            $mailStatus = 'Registro exitoso. Revisa tu correo (puede tardar unos minutos).';
+        }
+
+        \Log::info('🔄 Redirigiendo a verification.notice con email: ' . $user->email);
 
         // Redirigir a verificación sin iniciar sesión
         return redirect()->route('verification.notice')
             ->with('email', $user->email)
-            ->with('success', 'Registro exitoso. Por favor verifica tu correo electrónico.');
+            ->with('status', $mailStatus);
     }
 }

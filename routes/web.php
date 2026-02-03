@@ -58,17 +58,18 @@ Route::get('/api/sub-areas/{priority_area_id}', function ($priority_area_id) {
 
 // Rutas de registro personalizadas (sobrescriben Fortify)
 Route::get('/register', [RegisterController::class, 'create'])->name('register');
-Route::post('/register', [RegisterController::class, 'store']);
+Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
 
 // Rutas de verificación de email
-Route::get('/verification/notice', function () {
+Route::get('/email/verify', function () {
     return \Inertia\Inertia::render('Auth/VerifyEmail', [
         'email' => session('email'),
+        'status' => session('status'),
     ]);
 })->name('verification.notice');
 
-Route::post('/verification/verify', [CurpController::class, 'verificarCodigo'])->name('verification.verify');
-Route::post('/verification/resend', [CurpController::class, 'reenviarCodigo'])->name('verification.resend');
+Route::post('/email/verify/code', [CurpController::class, 'verificarCodigo'])->name('verification.verify');
+Route::post('/email/verify/resend', [CurpController::class, 'reenviarCodigo'])->name('verification.resend');
 
 use App\Http\Controllers\Security\ModuleController;
 use App\Http\Controllers\Security\PermissionController;

@@ -84,8 +84,19 @@ class CurpController extends Controller
         // Iniciar sesión automáticamente
         auth()->login($user);
 
-        return redirect()->route('dashboard')
-            ->with('success', '¡Cuenta verificada exitosamente!');
+        // Redirigir según el rol
+        $role = $user->getPrimaryRole();
+        
+        $redirectRoute = match ($role) {
+            'Super Admin' => 'superadmin.inicio',
+            'Admin' => 'admin.inicio',
+            'Evaluador' => 'evaluador.inicio',
+            'Docente' => 'docente.inicio',
+            default => 'inicio',
+        };
+
+        return redirect()->route($redirectRoute)
+            ->with('success', '¡Cuenta verificada exitosamente! Bienvenido al sistema.');
     }
 
     /**
@@ -93,11 +104,16 @@ class CurpController extends Controller
      */
     public function reenviarCodigo(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email|exists:users,email',
-        ]);
+        // Obtener email de la sesión o del request
+        $email = $request->email ?? session('email');
+        
+        if (!$email) {
+            return back()->withErrors([
+                'email' => 'No se pudo determinar el correo electrónico.'
+            ]);
+        }
 
-        $user = User::where('email', $request->email)
+        $user = User::where('email', $email)
             ->whereNull('email_verified_at')
             ->first();
 
@@ -118,6 +134,8 @@ class CurpController extends Controller
         // Reenviar correo
         \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\VerificationCode($user, $verificationCode));
 
-        return back()->with('success', 'Código de verificación reenviado exitosamente.');
+        return back()
+            ->with('email', $user->email)
+            ->with('success', 'Código de verificación reenviado exitosamente. Revisa tu bandeja de entrada.');
     }
 }

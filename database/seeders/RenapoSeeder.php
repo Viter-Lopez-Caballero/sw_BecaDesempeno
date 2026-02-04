@@ -16,16 +16,16 @@ class RenapoSeeder extends Seeder
     {
         $renapos = [
             [
-                'curp' => 'JAFD040301HMSMLGA3',
+                'curp' => 'OAMB460801MJCZCU84',
                 'nombres' => 'DIEGO EDUARDO',
                 'apellidoPaterno' => 'JAIMEZ',
                 'apellidoMaterno' => 'FLORES',
             ],
             [
-                'curp' => 'JAFM110120MMSMLRA8',
-                'nombres' => 'MARIANA',
-                'apellidoPaterno' => 'JAIMEZ',
-                'apellidoMaterno' => 'FLORES',
+                'curp' => 'JXSI331110HCMMEC58',
+                'nombres' => 'ABRAHAM',
+                'apellidoPaterno' => 'AVELINO',
+                'apellidoMaterno' => 'PICHARDO',
             ],
         ];
 

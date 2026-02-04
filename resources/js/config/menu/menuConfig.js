@@ -117,12 +117,13 @@ export const menuConfigs = {
     admin: [
         {
             label: "Inicio",
-            route: "inicio.dashboard",
+            route: "admin.inicio",
             icon: mdiHome,
+            permission: "admin.inicio",
         },
         {
             label: "Solicitudes",
-            route: "solicitudes.index",
+            route: "admin.solicitudes.index",
             icon: mdiFileDocumentMultiple,
             permission: "solicitudes.index",
         },
@@ -132,7 +133,7 @@ export const menuConfigs = {
             items: [
                 {
                     label: "Usuarios",
-                    route: "seguridad.users.index",
+                    route: "admin.evaluadores.index",
                     icon: mdiAccount,
                     permission: "users.index",
                 }
@@ -140,7 +141,7 @@ export const menuConfigs = {
         },
         {
             label: "Reconocimiento",
-            route: "reconocimiento.index",
+            route: "admin.reconocimientos.index",
             icon: mdiStar,
             permission: "reconocimiento.index",
         }

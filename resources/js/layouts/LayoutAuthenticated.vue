@@ -57,7 +57,7 @@ provide('sidebarCollapsed', sidebarCollapsed);
 provide('isMobile', isMobile);
 
 const currentMenu = computed(() => {
-    const userRole = page.props.auth.user?.role; // Ensure 'role' is passed in HandleInertiaRequests or UserResource
+    const userRole = page.props.auth.primaryRole; // Use the shared prop 'primaryRole'
     // Assuming backend passes roles or we check permissions. 
     // Wait, UserResource provided 'role' (singular primary role).
     

@@ -33,12 +33,14 @@ class PermissionSeeder extends Seeder
             ['name' => 'users.edit', 'description' => 'Editar usuarios', 'module_key' => 'seg'],
             ['name' => 'users.delete', 'description' => 'Eliminar usuarios', 'module_key' => 'seg'],
 
-            // Solicitudes
-            ['name' => 'solicitudes.index', 'description' => 'Ver listado de solicitudes', 'module_key' => 'controlsoli'],
-            ['name' => 'solicitudes.create', 'description' => 'Crear solicitudes', 'module_key' => 'controlsoli'],
-            ['name' => 'solicitudes.edit', 'description' => 'Editar solicitudes', 'module_key' => 'controlsoli'],
-            ['name' => 'solicitudes.delete', 'description' => 'Eliminar solicitudes', 'module_key' => 'controlsoli'],
-            ['name' => 'solicitudes.own', 'description' => 'Ver solo solicitudes propias', 'module_key' => 'controlsoli'],
+            // Solicitudes (Admin - Gestión Individual)
+            ['name' => 'solicitudes.index', 'description' => 'Ver listado de solicitudes', 'module_key' => 'adminsoli'],
+            ['name' => 'solicitudes.create', 'description' => 'Crear solicitudes', 'module_key' => 'adminsoli'],
+            ['name' => 'solicitudes.edit', 'description' => 'Editar solicitudes', 'module_key' => 'adminsoli'],
+            ['name' => 'solicitudes.delete', 'description' => 'Eliminar solicitudes', 'module_key' => 'adminsoli'],
+            ['name' => 'solicitudes.own', 'description' => 'Ver solo solicitudes propias', 'module_key' => 'adminsoli'],
+            ['name' => 'solicitudes.assign', 'description' => 'Asignar evaluadores a solicitudes', 'module_key' => 'adminsoli'],
+            ['name' => 'solicitudes.verdict', 'description' => 'Emitir veredicto final en solicitudes', 'module_key' => 'adminsoli'],
 
             // Convocatorias
             ['name' => 'convocatorias.index', 'description' => 'Ver listado de convocatorias', 'module_key' => 'convo'],
@@ -46,16 +48,17 @@ class PermissionSeeder extends Seeder
             ['name' => 'convocatorias.edit', 'description' => 'Editar convocatorias', 'module_key' => 'convo'],
             ['name' => 'convocatorias.delete', 'description' => 'Eliminar convocatorias', 'module_key' => 'convo'],
 
-            // Evaluaciones (Asociado a controlsoli por ahora, o convo?)
-            ['name' => 'evaluaciones.index', 'description' => 'Ver listado de evaluaciones', 'module_key' => 'controlsoli'],
-            ['name' => 'evaluaciones.create', 'description' => 'Crear evaluaciones', 'module_key' => 'controlsoli'],
-            ['name' => 'evaluaciones.edit', 'description' => 'Editar evaluaciones', 'module_key' => 'controlsoli'],
-            ['name' => 'evaluaciones.delete', 'description' => 'Eliminar evaluaciones', 'module_key' => 'controlsoli'],
+            // Evaluaciones (Asociado a adminsoli)
+            ['name' => 'evaluaciones.index', 'description' => 'Ver listado de evaluaciones', 'module_key' => 'adminsoli'],
+            ['name' => 'evaluaciones.create', 'description' => 'Crear evaluaciones', 'module_key' => 'adminsoli'],
+            ['name' => 'evaluaciones.edit', 'description' => 'Editar evaluaciones', 'module_key' => 'adminsoli'],
+            ['name' => 'evaluaciones.delete', 'description' => 'Eliminar evaluaciones', 'module_key' => 'adminsoli'],
 
-            // Reconocimiento (cat o convo?)
-            ['name' => 'reconocimiento.index', 'description' => 'Ver reconocimientos', 'module_key' => 'convo'],
-            ['name' => 'reconocimiento.create', 'description' => 'Crear reconocimientos', 'module_key' => 'convo'],
-            ['name' => 'reconocimiento.edit', 'description' => 'Editar reconocimientos', 'module_key' => 'convo'],
+            // Reconocimiento
+            ['name' => 'reconocimiento.index', 'description' => 'Ver reconocimientos', 'module_key' => 'reconocimiento'],
+            ['name' => 'reconocimiento.create', 'description' => 'Crear reconocimientos', 'module_key' => 'reconocimiento'],
+            ['name' => 'reconocimiento.edit', 'description' => 'Editar reconocimientos', 'module_key' => 'reconocimiento'],
+            ['name' => 'reconocimiento.toggle', 'description' => 'Activar/Desactivar reconocimientos', 'module_key' => 'reconocimiento'],
 
             // Catálogo
             ['name' => 'catalogo.index', 'description' => 'Ver catálogo', 'module_key' => 'cat'],
@@ -97,13 +100,16 @@ class PermissionSeeder extends Seeder
             ['name' => 'documents.show', 'description' => 'Ver detalles de documentos', 'module_key' => 'cat'],
             ['name' => 'documents.download', 'description' => 'Descargar documentos admin', 'module_key' => 'cat'],
 
-            // Request Control Module
-            ['name' => 'requests.index', 'description' => 'Ver control de solicitudes', 'module_key' => 'controlsoli'],
+            // Control de Solicitudes (Resumen por Instituciones)
+            ['name' => 'requests.index', 'description' => 'Ver control de solicitudes (resumen instituciones)', 'module_key' => 'controlsoli'],
             ['name' => 'requests.show', 'description' => 'Ver detalles de control de solicitudes', 'module_key' => 'controlsoli'],
 
             // Docente Specific
-            ['name' => 'docente.inicio', 'description' => 'Ver inicio docente', 'module_key' => 'docente'],
-            ['name' => 'docente.solicitudes.show', 'description' => 'Ver detalle de solicitud docente', 'module_key' => 'docente'],
+            ['name' => 'docente.inicio', 'description' => 'Ver inicio docente', 'module_key' => 'dashboard'],
+            ['name' => 'docente.solicitudes.show', 'description' => 'Ver detalle de solicitud docente', 'module_key' => 'dashboard'],
+
+            // Admin Dashboard
+            ['name' => 'admin.inicio', 'description' => 'Ver dashboard de administrador', 'module_key' => 'dashboard'],
         ];
 
         // Crear cada permiso
@@ -131,43 +137,37 @@ class PermissionSeeder extends Seeder
             $this->command->info("✅ {$allPermissions->count()} permisos asignados al Super Admin.");
         }
 
-        // Admin - Permisos de gestión (sin roles/permisos/módulos)
+        // Admin - Permisos de gestión
         $admin = Role::where('name', 'Admin')->first();
         if ($admin) {
             $adminPermissions = Permission::whereIn('name', [
-                'users.index', 'users.create', 'users.edit', 'users.delete',
-                'solicitudes.index', 'solicitudes.create', 'solicitudes.edit', 'solicitudes.delete',
-                'convocatorias.index', 'convocatorias.create', 'convocatorias.edit', 'convocatorias.delete',
-                'reconocimiento.index', 'reconocimiento.create', 'reconocimiento.edit',
-                'catalogo.index', 'catalogo.create', 'catalogo.edit', 'catalogo.delete',
-                // Instituciones
-                'instituciones.index',
-                'instituciones.create',
-                'instituciones.edit',
-                'instituciones.delete',
-
-                // Priority Areas
-                'priority_areas.index',
-                'priority_areas.create',
-                'priority_areas.edit',
-                'priority_areas.delete',
-
-                // Sub Areas
-                'sub_areas.index',
-                'sub_areas.create',
-                'sub_areas.edit',
-                'sub_areas.delete',
-
-                // Rubrics
-                'rubrics.index',
-                'rubrics.create',
-                'rubrics.edit',
-                'rubrics.delete',
-
-                // Documents
-                'documents.index',
-                'documents.show',
-                'documents.download',
+                // Dashboard
+                'admin.inicio',
+                
+                // Usuarios (Evaluadores Management)
+                'users.index',
+                'users.delete',
+                
+                // Solicitudes (Gestión Individual)
+                'solicitudes.index',
+                'solicitudes.create',
+                'solicitudes.edit',
+                'solicitudes.delete',
+                'solicitudes.own',
+                'solicitudes.assign',
+                'solicitudes.verdict',
+                
+                // Evaluaciones
+                'evaluaciones.index',
+                'evaluaciones.create',
+                'evaluaciones.edit',
+                'evaluaciones.delete',
+                
+                // Reconocimientos
+                'reconocimiento.index',
+                'reconocimiento.create',
+                'reconocimiento.edit',
+                'reconocimiento.toggle',
             ])->get();
             $admin->syncPermissions($adminPermissions);
             $this->command->info("✅ {$adminPermissions->count()} permisos asignados al Admin.");
@@ -177,12 +177,18 @@ class PermissionSeeder extends Seeder
         $docente = Role::where('name', 'Docente')->first();
         if ($docente) {
             $docentePermissions = Permission::whereIn('name', [
+                // Dashboard
+                'docente.inicio',
+                
+                // Convocatorias (Vista Docente)
+                'convocatorias.index',
+                
+                // Solicitudes (Solo propias)
                 'solicitudes.own',
                 'solicitudes.create',
                 'solicitudes.edit',
-                'convocatorias.index',
-                'reconocimiento.index',
-                'docente.inicio',
+                
+                // Documentos
                 'docente.solicitudes.show',
             ])->get();
             $docente->syncPermissions($docentePermissions);

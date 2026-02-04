@@ -19,8 +19,13 @@ class ModuleSeeder extends Seeder
                 'key' => 'dashboard',
             ],
             [
+                'name' => 'Solicitudes',
+                'description' => 'Gestión individual de solicitudes de becas y estímulos',
+                'key' => 'adminsoli',
+            ],
+            [
                 'name' => 'Control de solicitudes',
-                'description' => 'Gestión y seguimiento de solicitudes de becas',
+                'description' => 'Resumen y control de solicitudes por institución',
                 'key' => 'controlsoli',
             ],
             [
@@ -39,10 +44,11 @@ class ModuleSeeder extends Seeder
                 'key' => 'cat',
             ],
             [
-                'name' => 'Docente',
-                'description' => 'Módulo exclusivo para docentes',
-                'key' => 'docente',
-            ]
+                'name' => 'Reconocimientos',
+                'description' => 'Gestión de reconocimientos para evaluadores',
+                'key' => 'reconocimiento',
+            ],
+
         ];
 
         foreach ($modules as $module) {

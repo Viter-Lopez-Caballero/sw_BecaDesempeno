@@ -27,6 +27,17 @@ class RegisterController extends Controller
     }
 
     /**
+     * Muestra el formulario de registro para evaluadores
+     */
+    public function createEvaluador()
+    {
+        return Inertia::render('Auth/RegisterEvaluador', [
+            'instituciones' => Institucion::ordenado('nombre')->get(['id', 'nombre']),
+            'priorityAreas' => PriorityArea::with('subAreas')->orderBy('name')->get(['id', 'name']),
+        ]);
+    }
+
+    /**
      * Maneja el registro del usuario
      */
     public function store(Request $request)
@@ -41,6 +52,7 @@ class RegisterController extends Controller
             'institucion_id' => 'required|exists:instituciones,id',
             'priority_area_id' => 'required|exists:priority_areas,id',
             'sub_area_id' => 'required|exists:sub_areas,id',
+            'role_type' => 'sometimes|string|in:evaluador,docente', // Optional parameter to determine role
         ]);
 
         // Generar código de verificación de 6 dígitos
@@ -63,8 +75,15 @@ class RegisterController extends Controller
         
         \Log::info('👤 Usuario creado: ' . $user->email);
 
-        // Asignar rol de Docente
-        $user->assignRole('Docente');
+        // Asignar rol según el tipo de registro
+        $roleType = $request->input('role_type', 'docente');
+        if ($roleType === 'evaluador') {
+            $user->assignRole('Evaluador');
+            \Log::info('👨‍🏫 Rol asignado: Evaluador');
+        } else {
+            $user->assignRole('Docente');
+            \Log::info('👨‍🏫 Rol asignado: Docente');
+        }
 
         // Enviar correo de verificación
         try {

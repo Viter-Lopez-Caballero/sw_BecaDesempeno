@@ -26,6 +26,7 @@ class SolicitudResource extends JsonResource
             'user' => new UserResource($this->whenLoaded('user')),
             'convocatoria' => $this->whenLoaded('convocatoria'), // Or ConvocatoriaResource if it exists
             'documentos' => DocumentoResource::collection($this->whenLoaded('documentos')),
+            'evaluaciones' => $this->whenLoaded('evaluaciones'),
             
             // Computeds
             'documentos_count' => $this->whenCounted('documentos'),

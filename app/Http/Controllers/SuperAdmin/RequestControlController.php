@@ -1,22 +1,27 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\RequestControlSummaryResource;
-use App\Http\Resources\SolicitudResource;
 use App\Models\Institucion;
 use App\Models\Solicitud;
+use App\Http\Resources\RequestControlSummaryResource;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class RequestControlController extends Controller
 {
-    /**
-     * Display a listing of institutions with approved/rejected counts.
-     */
     public function index(Request $request)
     {
+        // Global Statistics
+        $stats = [
+            'total' => Solicitud::count(),
+            'pending' => Solicitud::where('status', 'pending')->count(),
+            'approved' => Solicitud::where('status', 'approved')->count(),
+            'rejected' => Solicitud::where('status', 'rejected')->count(),
+        ];
+
+        // Main Table: Institutions with Approved/Rejected counts (filterable)
         $search = $request->input('search');
         $estado = $request->input('estado');
         $rows = $request->input('rows', 10);
@@ -52,31 +57,11 @@ class RequestControlController extends Controller
         // Get unique estados for filter dropdown
         $estados = \App\Models\Estado::orderBy('nombre')->get(['id', 'nombre']);
 
-        return Inertia::render('Admin/RequestControl/Index', [
+        return Inertia::render('SuperAdmin/Solicitudes/Index', [
+            'stats' => $stats,
             'institutions' => RequestControlSummaryResource::collection($institutions),
             'estados' => $estados,
             'filters' => $request->all(['search', 'estado', 'rows']),
-        ]);
-    }
-
-    /**
-     * Display the specified resource details (list of requests for a campus).
-     */
-    public function show($id)
-    {
-        $institution = Institucion::with('estado')->findOrFail($id);
-
-        $solicitudes = Solicitud::whereHas('user', function ($q) use ($id) {
-                $q->where('institucion_id', $id);
-            })
-            ->whereIn('status', ['approved', 'rejected'])
-            ->with(['user', 'convocatoria'])
-            ->orderByDesc('created_at')
-            ->paginate(15);
-
-        return Inertia::render('Admin/RequestControl/Show', [
-            'institution' => $institution,
-            'solicitudes' => SolicitudResource::collection($solicitudes),
         ]);
     }
 }

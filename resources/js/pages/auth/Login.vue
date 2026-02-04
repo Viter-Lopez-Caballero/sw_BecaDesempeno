@@ -81,9 +81,10 @@ const submit = () => {
                                     autofocus
                                     autocomplete="email"
                                     class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
+                                    :class="{ 'border-b-red-500': form.errors.email }"
                                     placeholder="admin@example.com"
                                 />
-                                <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                <div v-if="!form.errors.email" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
@@ -107,6 +108,7 @@ const submit = () => {
                                         required
                                         autocomplete="current-password"
                                         class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 pr-10 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
+                                        :class="{ 'border-b-red-500': form.errors.password }"
                                         placeholder="••••••••"
                                     />
                                     <button
@@ -118,7 +120,7 @@ const submit = () => {
                                         <EyeOffIcon v-else size="20" class="text-gray-600" />
                                     </button>
                                 </div>
-                                <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                <div v-if="!form.errors.password" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
@@ -148,10 +150,6 @@ const submit = () => {
                             >
                                 <span v-if="!form.processing">Ingresar</span>
                                 <span v-else class="flex items-center justify-center">
-                                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
                                     Ingresando...
                                 </span>
                             </button>

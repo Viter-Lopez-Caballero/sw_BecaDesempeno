@@ -202,7 +202,7 @@ if (typeof window !== 'undefined') {
                             </h2>
                         </div>
                         <p class="text-lg text-gray-700 leading-relaxed">
-                            El Programa de Estímulos al Desempeño del Personal Docente, tiene como propósito, impulsar y reconocer a los profesores de los Institutos Tecnológicos y Centros Especializados del Sistema Nacional de Institutos Tecnológicos, por la calidad en el desempeño, la dedicación y la permanencia en las actividades de la docencia.
+                            El Programa de Estímulos al Desempeño del Personal Docente, tiene como propósito, impulsar y reconocer a los profesores de los Institutos Tecnológicos y Centros Especializados del Tecnológico Nacional de México, por la excelencia en el desempeño, la dedicación y la permanencia en las actividades de la docencia.
                         </p>
                         <div class="space-y-4">
                             <div class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-md border-l-4 border-[#2c5282]">

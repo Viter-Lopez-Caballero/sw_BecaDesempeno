@@ -1,9 +1,11 @@
 <script setup>
 import { Head } from '@inertiajs/vue3';
 import LandingLayout from '@/layouts/LandingLayout.vue';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
+import axios from 'axios';
+import { alertaExito, alertaError, alertaCargando, cerrarAlerta } from '@/utils/alerts.js';
 
 const contactForm = ref({
     name: '',
@@ -12,19 +14,78 @@ const contactForm = ref({
     message: ''
 });
 
-const instituciones = [
-    { label: 'Instituto Tecnológico de Aguascalientes', value: '1' },
-    { label: 'Instituto Tecnológico de Tijuana', value: '2' },
-    { label: 'Instituto Tecnológico de Monterrey', value: '3' },
-    { label: 'Instituto Tecnológico de Puebla', value: '4' },
-    { label: 'Instituto Tecnológico de Querétaro', value: '5' },
-    { label: 'Instituto Tecnológico de Mérida', value: '6' },
-];
+const instituciones = ref([]);
+const loading = ref(false);
+const errors = ref({});
 
-const submitContact = () => {
-    // Placeholder for form submission
-    console.log('Form submitted', contactForm.value);
-    alert('Mensaje enviado (simulación)');
+const clearError = (field) => {
+    if (errors.value[field]) {
+        delete errors.value[field];
+    }
+};
+
+onMounted(async () => {
+    try {
+        const response = await axios.get('/api/instituciones');
+        instituciones.value = response.data;
+    } catch (error) {
+        console.error('Error al cargar instituciones:', error);
+        alertaError('Error', 'No se pudieron cargar las instituciones');
+    }
+});
+
+const submitContact = async () => {
+    errors.value = {};
+    
+    // Validación básica
+    if (!contactForm.value.name) {
+        errors.value.name = 'El nombre es obligatorio';
+        return;
+    }
+    if (!contactForm.value.email) {
+        errors.value.email = 'El correo electrónico es obligatorio';
+        return;
+    }
+    if (!contactForm.value.institucion_id) {
+        errors.value.institucion_id = 'Debes seleccionar una institución';
+        return;
+    }
+    if (!contactForm.value.message) {
+        errors.value.message = 'El mensaje es obligatorio';
+        return;
+    }
+    if (contactForm.value.message.length > 1000) {
+        errors.value.message = 'El mensaje no puede exceder 1000 caracteres';
+        return;
+    }
+
+    loading.value = true;
+    alertaCargando('Enviando mensaje', 'Por favor espera...');
+
+    try {
+        const response = await axios.post('/api/contacto', contactForm.value);
+        
+        cerrarAlerta();
+        alertaExito('¡Mensaje enviado!', response.data.message);
+        
+        // Limpiar formulario
+        contactForm.value = {
+            name: '',
+            email: '',
+            institucion_id: '',
+            message: ''
+        };
+    } catch (error) {
+        cerrarAlerta();
+        if (error.response?.status === 422) {
+            errors.value = error.response.data.errors || {};
+            alertaError('Error de validación', 'Por favor verifica los datos ingresados');
+        } else {
+            alertaError('Error', error.response?.data?.message || 'Error al enviar el mensaje');
+        }
+    } finally {
+        loading.value = false;
+    }
 };
 </script>
 
@@ -66,13 +127,18 @@ const submitContact = () => {
                                     type="text"
                                     id="name"
                                     class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
-                                    placeholder="Juan Pérez"
+                                    :class="{ 'border-b-red-500': errors.name }"
+                                    placeholder="Tu Nombre Completo"
+                                    @input="clearError('name')"
                                 />
-                                <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                <div v-if="!errors.name" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                     <span>Por favor, introduce tu nombre completo</span>
+                                </div>
+                                <div v-if="errors.name" class="mt-1 text-sm text-red-600">
+                                    {{ errors.name }}
                                 </div>
                             </div>
 
@@ -86,14 +152,19 @@ const submitContact = () => {
                                     type="email"
                                     id="email"
                                     class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
-                                    placeholder="juan@ejemplo.com"
+                                    :class="{ 'border-b-red-500': errors.email }"
+                                    @input="clearError('email')"
+                                    placeholder="admin@ejemplo.com"
                                 />
-                                <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                <div v-if="!errors.email" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                     <span>Por favor, introduce tu correo electrónico</span>
                                 </div>
+                                    <div v-if="errors.email" class="mt-1 text-sm text-red-600">
+                                        {{ errors.email }}
+                                    </div>
                             </div>
                         </div>
 
@@ -105,23 +176,29 @@ const submitContact = () => {
                             <VueSelect
                                 v-model="contactForm.institucion_id"
                                 :options="instituciones"
-                                label="label"
-                                :reduce="option => option.value"
-                                placeholder="Selecciona tu institución"
-                                class="vue-select-custom"
+                                :reduce="option => option.id"
+                                label="nombre"
+                                placeholder="Buscar o seleccionar una institución..."
+                                :searchable="true"
+                                :clearable="true"
+                                @input="clearError('institucion_id')"
+                                :class="['vue-select-custom', { 'vue-select-error': errors.institucion_id }]"
                             >
                                 <template #no-options="{ search, searching }">
                                     <template v-if="searching">
                                         No se encontraron resultados para <em>{{ search }}</em>.
                                     </template>
-                                    <em v-else style="opacity: 0.5">Comienza a escribir para buscar.</em>
+                                    <em v-else>Comienza a escribir para buscar...</em>
                                 </template>
                             </VueSelect>
-                            <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <div v-if="!errors.institucion_id" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 <span>Por favor, selecciona tu institución</span>
+                            </div>
+                            <div v-if="errors.institucion_id" class="mt-1 text-sm text-red-600">
+                                {{ errors.institucion_id }}
                             </div>
                         </div>
 
@@ -135,16 +212,22 @@ const submitContact = () => {
                                 id="message"
                                 rows="5"
                                 class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
+                                :class="{ 'border-b-red-500': errors.message }"
+                                @input="clearError('message')"
                                 placeholder="Escribe tu mensaje aquí..."
+                                maxlength="1000"
                             ></textarea>
                             <div class="flex items-center justify-between mt-1">
-                                <div class="flex items-center gap-1 text-xs text-gray-500">
+                                <div v-if="!errors.message" class="flex items-center gap-1 text-xs text-gray-500">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                     <span>Por favor, escribe tu mensaje</span>
                                 </div>
-                                <span class="text-gray-400 text-sm">{{ contactForm.message?.length || 0 }}/255</span>
+                                <div v-if="errors.message" class="text-sm text-red-600">
+                                    {{ errors.message }}
+                                </div>
+                                <span class="text-gray-400 text-sm">{{ contactForm.message?.length || 0 }}/1000</span>
                             </div>
                         </div>
 
@@ -152,9 +235,11 @@ const submitContact = () => {
                         <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
                             <button
                                 type="submit"
-                                class="px-6 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl font-medium"
+                                :disabled="loading"
+                                class="px-6 py-2 bg-[#1B396A] cursor-pointer text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                             >
-                                Enviar mensaje
+                                <span v-if="!loading">Enviar mensaje</span>
+                                <span v-else>Enviando...</span>
                             </button>
                         </div>
 
@@ -184,6 +269,13 @@ const submitContact = () => {
 .vue-select-custom :deep(.vs--open .vs__dropdown-toggle) {
     background: linear-gradient(to bottom right, #EFF6FF, #DBEAFE);
     border-bottom-color: #1B396A;
+}
+
+/* Error state - mayor especificidad */
+.vue-select-error :deep(.vs__dropdown-toggle),
+.vue-select-error :deep(.vs--open .vs__dropdown-toggle),
+.vue-select-error :deep(.vs__dropdown-toggle):hover {
+    border-bottom-color: #EF4444 !important;
 }
 
 .vue-select-custom :deep(.vs__search) {

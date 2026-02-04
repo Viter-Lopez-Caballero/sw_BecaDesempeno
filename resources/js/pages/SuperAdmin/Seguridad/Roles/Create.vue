@@ -18,7 +18,7 @@ const props = defineProps({
         required: true,
     },
     permissions: {
-        type: Object, // Grouped by module_key
+        type: Object, 
         required: true,
     },
 });
@@ -218,17 +218,26 @@ const submit = () => {
                                         <label 
                                             v-for="permission in filteredPermissions" 
                                             :key="permission.id" 
-                                            class="flex items-start gap-3 p-3 bg-white border border-gray-200 rounded-lg cursor-pointer hover:border-[#1B396A] transition group"
-                                            :class="{'ring-2 ring-[#1B396A] border-[#1B396A]': form.permissions.includes(permission.id)}"
+                                            :for="`permission-${permission.id}`"
+                                            class="flex items-center ps-4 bg-white rounded-lg shadow-sm cursor-pointer transition"
+                                            :class="form.permissions.includes(permission.id) ? 'border-[#1B396A]' : 'border-gray-50'"
                                         >
-                                            <input 
-                                                type="checkbox" 
-                                                :value="permission.id" 
-                                                v-model="form.permissions"
-                                                class="mt-1 h-4 w-4 text-[#1B396A] border-gray-300 rounded focus:ring-[#1B396A]"
-                                            >
-                                            <div class="flex-1">
-                                                <div class="font-medium text-gray-900 group-hover:text-[#1B396A]">{{ permission.id }} {{ permission.name }}</div>
+                                            <div class="relative flex items-center justify-center">
+                                                <input 
+                                                    :id="`permission-${permission.id}`"
+                                                    type="checkbox" 
+                                                    :value="permission.id" 
+                                                    v-model="form.permissions"
+                                                    class="custom-checkbox"
+                                                >
+                                                <div class="checkbox-custom">
+                                                    <svg v-if="form.permissions.includes(permission.id)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5">
+                                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                            <div class="w-full py-4 ps-3 select-none">
+                                                <div class="font-medium text-gray-900 text-sm">{{ permission.name }}</div>
                                                 <div class="text-xs text-gray-500 mt-0.5">{{ permission.description }}</div>
                                             </div>
                                         </label>
@@ -261,3 +270,44 @@ const submit = () => {
         </div>
     </LayoutAuthenticated>
 </template>
+
+<style scoped>
+/* Ocultar el checkbox nativo */
+.custom-checkbox {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* Checkbox personalizado */
+.checkbox-custom {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #D1D5DB;
+    border-radius: 4px;
+    background-color: white;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Cuando está checked */
+.custom-checkbox:checked + .checkbox-custom {
+    background-color: #1B396A;
+    border-color: #1B396A;
+}
+
+/* Hover */
+label:hover .checkbox-custom {
+    border-color: #1B396A;
+}
+
+/* Focus visible */
+.custom-checkbox:focus-visible + .checkbox-custom {
+    outline: 2px solid #1B396A;
+    outline-offset: 2px;
+}
+</style>

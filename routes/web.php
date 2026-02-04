@@ -45,6 +45,12 @@ Route::get('/contacto', function () {
     return Inertia::render('Contacto');
 })->name('contacto');
 
+// API para obtener instituciones (contacto)
+Route::get('/api/instituciones', [App\Http\Controllers\ContactController::class, 'getInstituciones'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+
+// API para enviar formulario de contacto
+Route::post('/api/contacto', [App\Http\Controllers\ContactController::class, 'sendContact'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\CurpController;
 

@@ -1,19 +1,20 @@
 <script setup>
-import { Head, Link, router } from '@inertiajs/vue3';
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
-import Pagination from '@/Shared/Pagination.vue';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
-import { debounce } from 'lodash';
+import Pagination from '@/Shared/Pagination.vue';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
-import { mdiFileDocumentMultiple } from '@mdi/js';
+import debounce from 'lodash/debounce';
 
 const props = defineProps({
     institutions: Object,
+    estados: Array,
     filters: Object,
 });
 
 const search = ref(props.filters?.search || '');
+const estado = ref(props.filters?.estado || '');
 const rows = ref(props.filters?.rows || 10);
 
 const rowOptions = [
@@ -23,15 +24,19 @@ const rowOptions = [
     { label: '50 Registros', value: 50 },
 ];
 
+const estadoOptions = props.estados ? props.estados.map(e => ({ label: e.nombre, value: e.nombre })) : [];
+
 const onSearch = debounce((value) => {
     router.get(route('solicitudes.index'), {
         search: value,
+        estado: estado.value,
         rows: rows.value,
     }, { preserveState: true, replace: true, preserveScroll: true });
 }, 500);
 
 const cleanFilters = () => {
     search.value = '';
+    estado.value = '';
     rows.value = 10;
     router.get(route('solicitudes.index'), {}, { preserveState: true, replace: true });
 };
@@ -39,6 +44,15 @@ const cleanFilters = () => {
 const onRowsChange = () => {
     router.get(route('solicitudes.index'), {
         search: search.value,
+        estado: estado.value,
+        rows: rows.value,
+    }, { preserveState: true, replace: true, preserveScroll: true });
+};
+
+const onEstadoChange = () => {
+    router.get(route('solicitudes.index'), {
+        search: search.value,
+        estado: estado.value,
         rows: rows.value,
     }, { preserveState: true, replace: true, preserveScroll: true });
 };
@@ -46,10 +60,6 @@ const onRowsChange = () => {
 watch(search, (value) => {
     onSearch(value);
 });
-
-const viewDetails = (id) => {
-    router.get(route('solicitudes.show', id));
-};
 </script>
 
 <style scoped>
@@ -90,28 +100,51 @@ const viewDetails = (id) => {
 </style>
 
 <template>
-    <LayoutAuthenticated>
-        <Head title="Control de Solicitudes" />
+    <Head title="Control de Solicitudes" />
 
+    <LayoutAuthenticated>
         <div class="space-y-6">
+            <!-- Header -->
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Control de Solicitudes</h1>
+                    <div class="flex items-center gap-2 mt-2 text-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="#1B396A">
+                            <path d="M240-200h120v-240h240v240h120v-360L480-740 240-560v360Zm-80 80v-480l320-240 320 240v480H520v-240h-80v240H160Zm320-350Z"/>
+                        </svg>
+                        <span class="text-gray-900 font-semibold">Control de Solicitudes</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Filter Card -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4">
-                <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#374151">
                             <path d="M440-160q-17 0-28.5-11.5T400-200v-240L168-736q-15-20-4.5-42t36.5-22h560q26 0 36.5 22t-4.5 42L560-440v240q0 17-11.5 28.5T520-160h-80Zm40-308 198-252H282l198 252Zm0 0Z"/>
                         </svg>
-                        <h2 class="text-xl font-semibold text-gray-800">Filtro de Solicitudes</h2>
+                        <h2 class="text-xl font-semibold text-gray-800">Filtro de Búsqueda</h2>
                     </div>
-                    <button @click="cleanFilters" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-sm font-medium transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
-                            <path d="M400-240v-80h240v80H400Zm-158 0L15-467l57-57 170 170 366-366 57 57-423 423Zm318-160v-80h240v80H560Zm160-160v-80h240v80H720Z"/>
-                        </svg>
-                        Limpiar Filtros
-                    </button>
+                    <div class="flex items-center gap-3">
+                        <button @click="cleanFilters" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-sm font-medium transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
+                                <path d="M400-240v-80h240v80H400Zm-158 0L15-467l57-57 170 170 366-366 57 57-423 423Zm318-160v-80h240v80H560Zm160-160v-80h240v80H720Z"/>
+                            </svg>
+                            Limpiar Filtros
+                        </button>
+                        <button class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 text-sm font-medium transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
+                                <path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
+                            </svg>
+                            Exportar
+                        </button>
+                    </div>
                 </div>
-                <div class="text-sm text-gray-500 mb-4">Buscar por nombre de campus o ID</div>
-                 <div class="flex flex-col md:flex-row gap-4 items-end">
+                
+                <div class="text-sm text-gray-500 mb-4">Buscar y filtrar</div>
+                
+                <div class="flex flex-col md:flex-row gap-4 items-end mb-6">
                     <div class="relative w-full md:flex-1">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#1B396A">
@@ -125,36 +158,34 @@ const viewDetails = (id) => {
                             class="pl-10 w-full h-[45px] rounded-lg border border-gray-300 text-gray-700 focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition"
                         />
                     </div>
-                     <div class="w-full md:w-52 flex-shrink-0">
+                    <div class="w-full md:w-52 flex-shrink-0" v-if="estadoOptions.length > 0">
                         <VueSelect 
-                            v-model="rows" 
-                            :options="rowOptions" 
+                            v-model="estado" 
+                            :options="estadoOptions" 
                             :reduce="option => option.value" 
-                            :searchable="false" 
-                            :clearable="false" 
-                            placeholder="Registros"
+                            :searchable="true" 
+                            :clearable="true" 
+                            placeholder="Estado"
                             class="vue-select-custom"
-                            @option:selected="onRowsChange"
+                            @option:selected="onEstadoChange"
+                            @option:deselected="onEstadoChange"
                         />
                     </div>
                 </div>
-            </div>
 
-            <!-- Table -->
-            <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="overflow-x-auto">
+                <!-- Table -->
+                <div class="overflow-x-auto rounded-lg border border-gray-200">
                     <table class="w-full text-sm text-left">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
                                 <th scope="col" class="px-6 py-4 tracking-wider">ID</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Estado</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Campus</th>
-                                <th scope="col" class="px-6 py-4 text-center tracking-wider">Aprobadas</th>
-                                <th scope="col" class="px-6 py-4 text-center tracking-wider">Rechazadas</th>
-                                <th scope="col" class="px-6 py-4 text-center tracking-wider">Acciones</th>
+                                <th scope="col" class="px-6 py-4 text-center tracking-wider">Aprobados</th>
+                                <th scope="col" class="px-6 py-4 text-center tracking-wider">Rechazados</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200">
+                        <tbody class="divide-y divide-gray-200 bg-white">
                             <tr v-for="institution in institutions.data" :key="institution.id" class="hover:bg-gray-50 transition">
                                 <td class="px-6 py-4 font-medium text-gray-900">{{ institution.id }}</td>
                                 <td class="px-6 py-4 font-medium text-gray-900">{{ institution.estado }}</td>
@@ -169,21 +200,10 @@ const viewDetails = (id) => {
                                         {{ institution.rejected_count }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-center">
-                                    <div class="flex items-center justify-center">
-                                        <button @click="viewDetails(institution.id)" class="text-[#1B396A] hover:text-[#0f2347] font-medium flex items-center gap-1 transition">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                            </svg>
-                                            Ver Detalles
-                                        </button>
-                                    </div>
-                                </td>
                             </tr>
-                            <tr v-if="institutions.data.length === 0">
-                                <td colspan="6" class="px-6 py-12 text-center text-gray-500">
-                                    No se encontraron registros de actividad.
+                            <tr v-if="!institutions.data || institutions.data.length === 0">
+                                <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                                    No se encontraron registros.
                                 </td>
                             </tr>
                         </tbody>
@@ -191,8 +211,8 @@ const viewDetails = (id) => {
                 </div>
 
                 <!-- Pagination -->
-                <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                     <Pagination :links="institutions.meta.links" :total="institutions.meta.total" :from="institutions.meta.from" :to="institutions.meta.to" />
+                <div class="border-t border-gray-100 bg-gray-50 px-6 py-4" v-if="institutions.meta?.links">
+                     <Pagination :links="institutions.meta.links" :total="institutions.meta.total" />
                 </div>
             </div>
         </div>

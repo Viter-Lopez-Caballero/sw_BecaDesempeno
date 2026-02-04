@@ -58,6 +58,7 @@ Route::get('/api/sub-areas/{priority_area_id}', function ($priority_area_id) {
 
 // Rutas de registro personalizadas (sobrescriben Fortify)
 Route::get('/register', [RegisterController::class, 'create'])->name('register');
+Route::get('/register/evaluador', [RegisterController::class, 'createEvaluador'])->name('register.evaluador');
 Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
 
 // Rutas de verificación de email
@@ -78,6 +79,7 @@ use App\Http\Controllers\Security\UserController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\Admin\DocumentController;
 use App\Http\Controllers\Admin\RequestControlController;
+use App\Http\Controllers\Admin\SolicitudController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EvaluadorController;
 use App\Http\Controllers\DocenteController;
@@ -109,10 +111,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // o podríamos protegerlo con un permiso especial. Por ahora lo dejamos por rol para no romper el inicio.
     Route::middleware(['role:Super Admin'])->prefix('superadmin')->name('superadmin.')->group(function () {
         Route::get('inicio', [SuperAdminController::class, 'inicio'])->name('inicio');
+        Route::get('control-solicitudes', [\App\Http\Controllers\SuperAdmin\RequestControlController::class, 'index'])->name('control-solicitudes');
     });
 
     Route::middleware(['role:Admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('inicio', [AdminController::class, 'inicio'])->name('inicio');
+        
+        // Evaluadores Management
+        Route::get('evaluadores', [\App\Http\Controllers\Admin\EvaluadorController::class, 'index'])->name('evaluadores.index');
+        Route::delete('evaluadores/{id}', [\App\Http\Controllers\Admin\EvaluadorController::class, 'destroy'])->name('evaluadores.destroy');
+        
+        // Reconocimientos
+        Route::get('reconocimientos', [\App\Http\Controllers\Admin\ReconocimientoController::class, 'index'])->name('reconocimientos.index');
+        Route::post('reconocimientos/toggle', [\App\Http\Controllers\Admin\ReconocimientoController::class, 'toggle'])->name('reconocimientos.toggle');
     });
 
     Route::middleware(['role:Evaluador'])->prefix('evaluador')->name('evaluador.')->group(function () {
@@ -163,9 +174,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // MÓDULOS COMPARTIDOS
     // ========================
     
-    // Control de Solicitudes
     Route::get('control-solicitudes', [RequestControlController::class, 'index'])->name('solicitudes.index')->middleware('can:requests.index');
     Route::get('control-solicitudes/{id}', [RequestControlController::class, 'show'])->name('solicitudes.show')->middleware('can:requests.show');
+
+    // Admin Specific Solicitudes Logic
+    Route::middleware(['role:Admin'])->prefix('admin')->name('admin.')->group(function () {
+        Route::get('inicio', [AdminController::class, 'inicio'])->name('inicio');
+        // Admin Solicitudes (List, Assign, Verdict)
+        Route::get('solicitudes', [SolicitudController::class, 'index'])->name('solicitudes.index');
+        Route::get('solicitudes/{id}/assign', [SolicitudController::class, 'assignView'])->name('solicitudes.assign_view');
+        Route::post('solicitudes/assign', [SolicitudController::class, 'assignEvaluator'])->name('solicitudes.assign');
+        Route::delete('solicitudes/evaluador', [SolicitudController::class, 'removeEvaluator'])->name('solicitudes.remove-evaluator');
+        Route::get('solicitudes/{id}', [SolicitudController::class, 'show'])->name('solicitudes.show');
+        Route::post('solicitudes/{id}/verdict', [SolicitudController::class, 'verdict'])->name('solicitudes.verdict');
+        // Documents (Existing?)
+        // ...
+    });
 
     // Convocatorias
     Route::resource('convocatorias', ConvocatoriaController::class)->names([

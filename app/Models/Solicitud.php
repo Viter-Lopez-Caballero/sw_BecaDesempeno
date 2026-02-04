@@ -34,4 +34,9 @@ class Solicitud extends Model
     {
         return $this->hasMany(Documento::class);
     }
+
+    public function evaluaciones(): HasMany
+    {
+        return $this->hasMany(Evaluacion::class);
+    }
 }

@@ -16,6 +16,10 @@ class Convocatoria extends Model
         'descripcion',
         'anio',
         'estado',
+        'archivo_path',
+        'archivo_nombre',
+        'archivo_tipo',
+        'archivo_size',
     ];
 
     /*

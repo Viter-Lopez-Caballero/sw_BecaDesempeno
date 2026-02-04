@@ -13,15 +13,39 @@ use App\Http\Resources\SolicitudResource;
 
 class DocumentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->input('search');
+        $rows = $request->input('rows', 10);
+        $order = $request->input('order', 'created_at');
+        $direction = $request->input('direction', 'desc');
+
         $solicitudes = Solicitud::with(['user.institucion', 'convocatoria'])
             ->withCount('documentos')
-            ->orderByDesc('created_at')
-            ->paginate(10);
+            ->when($search, function ($query, $search) {
+                $query->whereHas('user', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%");
+                })
+                ->orWhereHas('convocatoria', function ($q) use ($search) {
+                    $q->where('nombre', 'like', "%{$search}%");
+                })
+                ->orWhere('id', 'like', "%{$search}%");
+            })
+            ->when($order, function ($query, $order) use ($direction) {
+                // Handle relationship sorting if needed, but basic sorting first
+                if (in_array($order, ['id', 'created_at'])) {
+                    $query->orderBy($order, $direction);
+                }
+            }, function ($query) {
+                $query->orderBy('created_at', 'desc');
+            })
+            ->paginate($rows)
+            ->withQueryString();
 
         return Inertia::render('Admin/Documents/Index', [
             'solicitudes' => SolicitudResource::collection($solicitudes),
+            'filters' => $request->all(['search', 'rows', 'order', 'direction']),
         ]);
     }
 
@@ -31,7 +55,7 @@ class DocumentController extends Controller
             ->findOrFail($id);
 
         return Inertia::render('Admin/Documents/Show', [
-            'solicitud' => new SolicitudResource($solicitud),
+            'solicitud' => (new SolicitudResource($solicitud))->resolve(),
         ]);
     }
 
@@ -39,11 +63,24 @@ class DocumentController extends Controller
     {
         // For dummy files in seeding, we might need a visual check or ensure they exist.
         // In production, this would serve valid files.
-        if (!Storage::exists($documento->file_path)) {
+        if (!Storage::disk('public')->exists($documento->file_path)) {
             // Fallback for demo purposes if using dummy paths
             return back()->with('error', 'El archivo no existe.');
         }
 
-        return Storage::download($documento->file_path, $documento->name);
+        return Storage::disk('public')->download($documento->file_path, $documento->name);
+    }
+
+    public function stream(Documento $documento)
+    {
+        // Add check if admin can view this document?
+        // Documents are generally viewable by admin if they can view the solicitud.
+        // Assuming Middleware handles Solicitud permissions, checking file existence is enough here.
+
+        if (!Storage::disk('public')->exists($documento->file_path)) {
+            return back()->with('error', 'El archivo no existe.');
+        }
+
+        return response()->file(Storage::disk('public')->path($documento->file_path));
     }
 }

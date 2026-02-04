@@ -34,7 +34,7 @@ class RegisterController extends Controller
         \Log::info('📝 RegisterController::store - Inicio del registro');
         
         $request->validate([
-            'curp' => 'required|string|size:18|unique:users,curp',
+            'curp' => 'required|string|size:18',
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:users,email',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],

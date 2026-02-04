@@ -15,8 +15,11 @@ class RequestControlController extends Controller
     /**
      * Display a listing of institutions with approved/rejected counts.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->input('search');
+        $rows = $request->input('rows', 10);
+        
         $institutions = Institucion::with('estado')
             ->withCount([
                 'users as approved_count' => function ($query) {
@@ -30,17 +33,19 @@ class RequestControlController extends Controller
                     });
                 }
             ])
-            // Optimization: Only load institutions that have at least one request (optional, but good for summary)
-            // or just list all. Let's list all for now or filter where approved_count + rejected_count > 0?
-            // User requested "all applications of all teachers... but only shows accepted and rejected".
-            // So we should probably filter institutions that have activity.
+            ->when($search, function ($query, $search) {
+                 $query->where('nombre', 'like', "%{$search}%")
+                       ->orWhere('id', 'like', "%{$search}%");
+            })
             ->whereHas('users.solicitudes', function($q) {
                 $q->whereIn('status', ['approved', 'rejected']);
             })
-            ->paginate(10);
+            ->paginate($rows)
+            ->withQueryString();
 
         return Inertia::render('Admin/RequestControl/Index', [
             'institutions' => RequestControlSummaryResource::collection($institutions),
+            'filters' => $request->all(['search', 'rows']),
         ]);
     }
 

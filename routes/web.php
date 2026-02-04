@@ -62,6 +62,19 @@ Route::post('/register', [RegisterController::class, 'store'])->name('register.s
 
 // Rutas de verificación de email
 Route::get('/email/verify', function () {
+    // Si el usuario está autenticado y ya verificó su email, redirigir a su dashboard
+    if (auth()->check() && auth()->user()->hasVerifiedEmail()) {
+        $role = auth()->user()->getPrimaryRole();
+        
+        return match ($role) {
+            'Super Admin' => redirect()->route('superadmin.inicio'),
+            'Admin' => redirect()->route('admin.inicio'),
+            'Evaluador' => redirect()->route('evaluador.inicio'),
+            'Docente' => redirect()->route('docente.inicio'),
+            default => redirect()->route('inicio'),
+        };
+    }
+    
     return \Inertia\Inertia::render('Auth/VerifyEmail', [
         'email' => session('email'),
         'status' => session('status'),
@@ -121,6 +134,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware(['role:Docente'])->prefix('docente')->name('docente.')->group(function () {
         Route::get('inicio', [DocenteController::class, 'inicio'])->name('inicio');
+        Route::get('solicitudes/{id}', [DocenteController::class, 'show'])->name('solicitudes.show');
+        Route::get('solicitudes/download/{id}', [DocenteController::class, 'download'])->name('solicitudes.download');
+        Route::get('solicitudes/stream/{id}', [DocenteController::class, 'stream'])->name('solicitudes.stream');
+        
+        // Convocatorias Docente
+        Route::get('convocatorias', [DocenteController::class, 'convocatorias'])->name('convocatorias.index');
+        Route::get('convocatorias/{id}/solicitar', [DocenteController::class, 'solicitar'])->name('convocatorias.solicitar');
+        Route::post('convocatorias/solicitar', [DocenteController::class, 'storeSolicitud'])->name('solicitudes.store');
     });
 
     // ========================
@@ -160,6 +181,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('control-solicitudes/{id}', [RequestControlController::class, 'show'])->name('solicitudes.show')->middleware('can:requests.show');
 
     // Convocatorias
+    Route::get('convocatorias/{convocatoria}/download', [ConvocatoriaController::class, 'download'])->name('convocatorias.download');
     Route::resource('convocatorias', ConvocatoriaController::class)->names([
         'index' => 'convocatorias.index',
         'create' => 'convocatorias.create',
@@ -218,6 +240,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['can:documents.index'])->prefix('admin')->name('admin.')->group(function () {
         Route::resource('documents', \App\Http\Controllers\Admin\DocumentController::class)->only(['index', 'show']);
         Route::get('documents/{documento}/download', [\App\Http\Controllers\Admin\DocumentController::class, 'download'])->name('documents.download');
+        Route::get('documents/{documento}/stream', [\App\Http\Controllers\Admin\DocumentController::class, 'stream'])->name('documents.stream');
     });
 });
 

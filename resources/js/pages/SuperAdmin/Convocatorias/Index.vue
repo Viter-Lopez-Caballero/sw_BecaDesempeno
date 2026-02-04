@@ -29,6 +29,8 @@ const props = defineProps({
 });
 
 const search = ref(props.filters.search);
+const showViewer = ref(false);
+const currentFile = ref(null);
 const rows = ref(props.filters.rows || 10);
 const sortField = ref(props.filters.order || 'id');
 const sortDirection = ref(props.filters.direction || 'asc');
@@ -98,6 +100,23 @@ const getEstadoBadge = (estado) => {
         pendiente: 'bg-yellow-100 text-yellow-800'
     };
     return badges[estado] || 'bg-gray-100 text-gray-800';
+};
+
+const viewFile = (convocatoria) => {
+    if (convocatoria.archivo_path) {
+        currentFile.value = {
+            url: `/storage/${convocatoria.archivo_path}`,
+            nombre: convocatoria.archivo_nombre,
+            tipo: convocatoria.archivo_tipo,
+            convocatoria: convocatoria.nombre
+        };
+        showViewer.value = true;
+    }
+};
+
+const closeViewer = () => {
+    showViewer.value = false;
+    currentFile.value = null;
 };
 </script>
 
@@ -267,6 +286,7 @@ const getEstadoBadge = (estado) => {
                                         </svg>
                                     </button>
                                 </th>
+                                <th scope="col" class="px-6 py-4 text-center" style="width: 120px;">Archivo</th>
                                 <th scope="col" class="px-6 py-4 text-center" style="width: 150px;">Acciones</th>
                             </tr>
                         </thead>
@@ -296,6 +316,26 @@ const getEstadoBadge = (estado) => {
                                         class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
                                         Pendiente
                                     </span>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <div v-if="convocatoria.archivo_path" class="flex items-center justify-center gap-2">
+                                        <button @click="viewFile(convocatoria)"
+                                            class="inline-flex items-center gap-1 text-green-600 hover:text-green-800 font-medium transition"
+                                            title="Ver archivo">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                            </svg>
+                                        </button>
+                                        <a :href="route('convocatorias.download', convocatoria.id)"
+                                            class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium transition"
+                                            title="Descargar archivo">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                            </svg>
+                                        </a>
+                                    </div>
+                                    <span v-else class="text-gray-400 text-xs">Sin archivo</span>
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-center gap-2">
@@ -330,6 +370,51 @@ const getEstadoBadge = (estado) => {
                         :from="convocatorias.meta.from" :to="convocatorias.meta.to" />
                 </div>
             </div>
+
+            <!-- Visor de Archivos -->
+            <Transition name="slide-up">
+                <div v-if="showViewer" class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+                    <div class="bg-gradient-to-r from-[#1B396A] to-[#2B4A7E] px-6 py-4 flex items-center justify-between">
+                        <div class="text-white">
+                            <h3 class="text-lg font-bold">{{ currentFile?.convocatoria }}</h3>
+                            <p class="text-sm text-blue-100 mt-1">{{ currentFile?.nombre }}</p>
+                        </div>
+                        <button @click="closeViewer" class="text-white hover:text-gray-200 transition">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <div class="bg-gray-100 rounded-lg overflow-hidden" style="height: 600px;">
+                            <iframe v-if="currentFile?.tipo?.includes('pdf')" 
+                                :src="currentFile?.url" 
+                                class="w-full h-full border-0"
+                                title="Visor de archivo">
+                            </iframe>
+                            <div v-else-if="currentFile?.tipo?.startsWith('image/')" class="h-full flex items-center justify-center bg-gray-900">
+                                <img :src="currentFile?.url" :alt="currentFile?.nombre" class="max-h-full max-w-full object-contain" />
+                            </div>
+                            <div v-else class="h-full flex items-center justify-center">
+                                <div class="text-center">
+                                    <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    <p class="text-gray-600 font-medium mb-2">Vista previa no disponible</p>
+                                    <p class="text-sm text-gray-500 mb-4">Este tipo de archivo no se puede visualizar en el navegador</p>
+                                    <a :href="route('convocatorias.download', currentFile?.id)" 
+                                        class="inline-flex items-center gap-2 px-4 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                        Descargar Archivo
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
         </div>
     </LayoutAuthenticated>
 </template>
@@ -375,5 +460,20 @@ const getEstadoBadge = (estado) => {
 
 :deep(.vue-select-custom .vs__actions) {
     padding-right: 4px;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+    transition: all 0.3s ease;
+}
+
+.slide-up-enter-from {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.slide-up-leave-to {
+    opacity: 0;
+    transform: translateY(-20px);
 }
 </style>

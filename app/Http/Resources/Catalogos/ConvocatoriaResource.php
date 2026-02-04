@@ -20,6 +20,10 @@ class ConvocatoriaResource extends JsonResource
             'descripcion' => $this->descripcion,
             'anio' => $this->anio,
             'estado' => $this->estado,
+            'archivo_path' => $this->archivo_path,
+            'archivo_nombre' => $this->archivo_nombre,
+            'archivo_tipo' => $this->archivo_tipo,
+            'archivo_size' => $this->archivo_size,
             'calendario' => $this->whenLoaded('calendario'),
             'created_at' => $this->created_at->toDateTimeString(),
         ];

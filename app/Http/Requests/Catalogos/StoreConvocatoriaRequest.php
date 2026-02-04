@@ -21,6 +21,7 @@ class StoreConvocatoriaRequest extends FormRequest
             'descripcion' => ['nullable', 'string'],
             'anio' => ['required', 'integer', 'min:2000', 'max:2100'],
             'estado' => ['required', 'in:activa,cerrada,pendiente'],
+            'archivo' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,doc,docx', 'max:30720'], // 30MB
         ];
     }
 
@@ -35,6 +36,9 @@ class StoreConvocatoriaRequest extends FormRequest
             'anio.max' => 'El año debe ser menor o igual a 2100.',
             'estado.required' => 'El estado es obligatorio.',
             'estado.in' => 'El estado debe ser activa, cerrada o pendiente.',
+            'archivo.file' => 'El archivo debe ser un archivo válido.',
+            'archivo.mimes' => 'El archivo debe ser de tipo: PDF, JPG, JPEG, PNG, DOC o DOCX.',
+            'archivo.max' => 'El archivo no puede exceder 30MB.',
         ];
     }
 }

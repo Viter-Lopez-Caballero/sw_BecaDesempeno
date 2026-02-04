@@ -1,6 +1,6 @@
 <template>
     <div class="flex h-screen bg-gray-50 overflow-hidden">
-        <AppSidebar :menu="menuConfigs.superAdmin" />
+        <AppSidebar :menu="currentMenu" />
 
         <!-- Main Content -->
         <div class="flex-1 flex flex-col overflow-hidden">
@@ -41,10 +41,12 @@
 
 <script setup>
 // import AppSidebar from '@/Components/Sidebar/AppSidebar.vue';
-import { ref, onMounted, onUnmounted, provide } from 'vue';
+import { ref, onMounted, onUnmounted, provide, computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { menuConfigs } from '@/config/menu/menuConfig';
 import AppSidebar from '@/Components/Sidebar/AppSidebar.vue';
 
+const page = usePage();
 const sidebarOpen = ref(false);
 const sidebarCollapsed = ref(false);
 const isMobile = ref(false);
@@ -53,6 +55,26 @@ const isMobile = ref(false);
 provide('sidebarOpen', sidebarOpen);
 provide('sidebarCollapsed', sidebarCollapsed);
 provide('isMobile', isMobile);
+
+const currentMenu = computed(() => {
+    const userRole = page.props.auth.user?.role; // Ensure 'role' is passed in HandleInertiaRequests or UserResource
+    // Assuming backend passes roles or we check permissions. 
+    // Wait, UserResource provided 'role' (singular primary role).
+    
+    // If 'role' is not directly available on user object (it usually is if using Jetstream/Fortify/Inertia shared props)
+    // Check if roles array exists or checks permissions.
+    
+    // Let's assume we can get the primary role name. 
+    // In previous `UserResource.php` we added `role` field.
+    
+    // Mapping:
+    if (userRole === 'Super Admin') return menuConfigs.superAdmin;
+    if (userRole === 'Admin') return menuConfigs.admin;
+    if (userRole === 'Docente') return menuConfigs.docente;
+    if (userRole === 'Evaluador') return menuConfigs.evaluador;
+    
+    return menuConfigs.superAdmin; // Default fallback
+});
 
 const checkMobile = () => {
     isMobile.value = window.innerWidth < 1024;

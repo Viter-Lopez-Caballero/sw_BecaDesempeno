@@ -18,10 +18,15 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $user = $request->user();
+        
         return Inertia::render('Profile/Edit', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
-            'user' => $request->user(),
+            'user' => $user->load(['priorityArea', 'subArea', 'institucion']),
+            'priorityAreas' => \App\Models\PriorityArea::all(),
+            'subAreas' => \App\Models\SubArea::all(),
+            'instituciones' => \App\Models\Institucion::all(),
         ]);
     }
 

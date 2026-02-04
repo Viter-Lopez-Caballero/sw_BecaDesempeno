@@ -62,6 +62,19 @@ Route::post('/register', [RegisterController::class, 'store'])->name('register.s
 
 // Rutas de verificación de email
 Route::get('/email/verify', function () {
+    // Si el usuario está autenticado y ya verificó su email, redirigir a su dashboard
+    if (auth()->check() && auth()->user()->hasVerifiedEmail()) {
+        $role = auth()->user()->getPrimaryRole();
+        
+        return match ($role) {
+            'Super Admin' => redirect()->route('superadmin.inicio'),
+            'Admin' => redirect()->route('admin.inicio'),
+            'Evaluador' => redirect()->route('evaluador.inicio'),
+            'Docente' => redirect()->route('docente.inicio'),
+            default => redirect()->route('inicio'),
+        };
+    }
+    
     return \Inertia\Inertia::render('Auth/VerifyEmail', [
         'email' => session('email'),
         'status' => session('status'),
@@ -168,6 +181,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('control-solicitudes/{id}', [RequestControlController::class, 'show'])->name('solicitudes.show')->middleware('can:requests.show');
 
     // Convocatorias
+    Route::get('convocatorias/{convocatoria}/download', [ConvocatoriaController::class, 'download'])->name('convocatorias.download');
     Route::resource('convocatorias', ConvocatoriaController::class)->names([
         'index' => 'convocatorias.index',
         'create' => 'convocatorias.create',

@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             InstitucionSeeder::class,
             PriorityAreaSeeder::class,
             SubAreaSeeder::class,
+            RenapoSeeder::class,
         ]);
     }
 }

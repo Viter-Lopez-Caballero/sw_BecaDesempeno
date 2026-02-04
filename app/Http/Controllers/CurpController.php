@@ -39,14 +39,8 @@ class CurpController extends Controller
             ], 404);
         }
 
-        // Verificar si el CURP ya está registrado
-        $usuarioExistente = User::where('curp', $request->curp)->first();
-        if ($usuarioExistente) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Este CURP ya está registrado en el sistema'
-            ], 422);
-        }
+        // No validamos si el CURP existe en el sistema
+        // La validación de duplicados se hará por correo electrónico durante el registro
 
         return response()->json([
             'success' => true,
@@ -75,14 +69,16 @@ class CurpController extends Controller
         }
 
         // Marcar el email como verificado
-        $user->update([
-            'email_verified_at' => now(),
-            'email_verification_code' => null,
-            'email_verification_code_expires_at' => null,
-        ]);
+        $user->email_verified_at = now();
+        $user->email_verification_code = null;
+        $user->email_verification_code_expires_at = null;
+        $user->save();
 
-        // Iniciar sesión automáticamente
-        auth()->login($user);
+        // Iniciar sesión usando el ID para forzar una recarga limpia del usuario
+        \Illuminate\Support\Facades\Auth::loginUsingId($user->id, true);
+        
+        // Regenerar la sesión para seguridad
+        request()->session()->regenerate();
 
         // Redirigir según el rol
         $role = $user->getPrimaryRole();

@@ -11,8 +11,10 @@ use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ConvocatoriaController extends Controller
 {
@@ -77,7 +79,21 @@ class ConvocatoriaController extends Controller
      */
     public function store(StoreConvocatoriaRequest $request): RedirectResponse
     {
-        Convocatoria::create($request->validated());
+        $data = $request->validated();
+        
+        // Manejar la subida del archivo
+        if ($request->hasFile('archivo')) {
+            $file = $request->file('archivo');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $filePath = $file->storeAs('convocatorias', $fileName, 'public');
+            
+            $data['archivo_path'] = $filePath;
+            $data['archivo_nombre'] = $file->getClientOriginalName();
+            $data['archivo_tipo'] = $file->getClientMimeType();
+            $data['archivo_size'] = $file->getSize();
+        }
+
+        Convocatoria::create($data);
         return redirect()->route("{$this->routeName}index")->with('success', 'Convocatoria creada con éxito!');
     }
 
@@ -106,7 +122,26 @@ class ConvocatoriaController extends Controller
      */
     public function update(UpdateConvocatoriaRequest $request, Convocatoria $convocatoria): RedirectResponse
     {
-        $convocatoria->update($request->validated());
+        $data = $request->validated();
+        
+        // Manejar nuevo archivo
+        if ($request->hasFile('archivo')) {
+            // Eliminar archivo anterior si existe
+            if ($convocatoria->archivo_path) {
+                Storage::disk('public')->delete($convocatoria->archivo_path);
+            }
+            
+            $file = $request->file('archivo');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $filePath = $file->storeAs('convocatorias', $fileName, 'public');
+            
+            $data['archivo_path'] = $filePath;
+            $data['archivo_nombre'] = $file->getClientOriginalName();
+            $data['archivo_tipo'] = $file->getClientMimeType();
+            $data['archivo_size'] = $file->getSize();
+        }
+
+        $convocatoria->update($data);
         return redirect()->route("{$this->routeName}index")->with('success', 'Convocatoria actualizada con éxito!');
     }
 
@@ -115,7 +150,27 @@ class ConvocatoriaController extends Controller
      */
     public function destroy(Convocatoria $convocatoria): RedirectResponse
     {
+        // Eliminar archivo si existe
+        if ($convocatoria->archivo_path) {
+            Storage::disk('public')->delete($convocatoria->archivo_path);
+        }
+        
         $convocatoria->delete();
         return redirect()->route("{$this->routeName}index")->with('success', 'Convocatoria eliminada con éxito');
+    }
+
+    /**
+     * Download the convocatoria file.
+     */
+    public function download(Convocatoria $convocatoria)
+    {
+        if (!$convocatoria->archivo_path || !Storage::disk('public')->exists($convocatoria->archivo_path)) {
+            abort(404, 'Archivo no encontrado');
+        }
+        
+        return Storage::disk('public')->download(
+            $convocatoria->archivo_path,
+            $convocatoria->archivo_nombre
+        );
     }
 }

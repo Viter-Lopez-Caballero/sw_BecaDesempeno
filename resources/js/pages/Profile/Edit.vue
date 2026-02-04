@@ -1,9 +1,11 @@
 <script setup>
 import { Head, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, computed, watch } from 'vue';
 import DynamicLayout from '@/layouts/DynamicLayout.vue';
 import EyeOffIcon from '@/components/icons/EyeIcon.vue';
 import EyeIcon from '@/components/icons/EyeOffIcon.vue';
+import VueSelect from 'vue-select';
+import 'vue-select/dist/vue-select.css';
 
 const props = defineProps({
     mustVerifyEmail: {
@@ -17,12 +19,46 @@ const props = defineProps({
     user: {
         type: Object,
         required: true
+    },
+    priorityAreas: {
+        type: Array,
+        default: () => []
+    },
+    subAreas: {
+        type: Array,
+        default: () => []
+    },
+    instituciones: {
+        type: Array,
+        default: () => []
     }
 });
 
 const profileForm = useForm({
     name: props.user.name,
     email: props.user.email,
+    institucion_id: props.user.institucion_id,
+    priority_area_id: props.user.priority_area_id,
+    sub_area_id: props.user.sub_area_id,
+});
+
+const isSuperAdmin = computed(() => {
+    return props.user.roles && props.user.roles.some(role => role.name === 'Super Admin');
+});
+
+const filteredSubAreas = computed(() => {
+    if (!profileForm.priority_area_id) return [];
+    return props.subAreas.filter(subArea => subArea.priority_area_id === profileForm.priority_area_id);
+});
+
+watch(() => profileForm.priority_area_id, (newValue) => {
+    // Reset sub area when priority area changes
+    if (profileForm.sub_area_id) {
+        const subAreaExists = filteredSubAreas.value.some(sa => sa.id === profileForm.sub_area_id);
+        if (!subAreaExists) {
+            profileForm.sub_area_id = null;
+        }
+    }
 });
 
 const passwordForm = useForm({
@@ -95,6 +131,61 @@ const updatePassword = () => {
                         />
                         <div v-if="profileForm.errors.email" class="mt-1 text-sm text-red-600">
                             {{ profileForm.errors.email }}
+                        </div>
+                    </div>
+
+                    <!-- Institution (only for non-SuperAdmin) -->
+                    <div v-if="!isSuperAdmin">
+                        <label for="institucion" class="block mb-2 text-base text-[#1B396A] font-medium">
+                            Institución
+                        </label>
+                        <VueSelect
+                            v-model="profileForm.institucion_id"
+                            :options="instituciones"
+                            :reduce="institucion => institucion.id"
+                            label="nombre"
+                            placeholder="Selecciona una institución"
+                            class="vue-select-custom"
+                        />
+                        <div v-if="profileForm.errors.institucion_id" class="mt-1 text-sm text-red-600">
+                            {{ profileForm.errors.institucion_id }}
+                        </div>
+                    </div>
+
+                    <!-- Priority Area (only for non-SuperAdmin) -->
+                    <div v-if="!isSuperAdmin">
+                        <label for="priority_area" class="block mb-2 text-base text-[#1B396A] font-medium">
+                            Área Prioritaria
+                        </label>
+                        <VueSelect
+                            v-model="profileForm.priority_area_id"
+                            :options="priorityAreas"
+                            :reduce="area => area.id"
+                            label="name"
+                            placeholder="Selecciona un área prioritaria"
+                            class="vue-select-custom"
+                        />
+                        <div v-if="profileForm.errors.priority_area_id" class="mt-1 text-sm text-red-600">
+                            {{ profileForm.errors.priority_area_id }}
+                        </div>
+                    </div>
+
+                    <!-- Sub Area (only for non-SuperAdmin) -->
+                    <div v-if="!isSuperAdmin">
+                        <label for="sub_area" class="block mb-2 text-base text-[#1B396A] font-medium">
+                            Sub Área
+                        </label>
+                        <VueSelect
+                            v-model="profileForm.sub_area_id"
+                            :options="filteredSubAreas"
+                            :reduce="subArea => subArea.id"
+                            label="name"
+                            placeholder="Selecciona una sub área"
+                            :disabled="!profileForm.priority_area_id"
+                            class="vue-select-custom"
+                        />
+                        <div v-if="profileForm.errors.sub_area_id" class="mt-1 text-sm text-red-600">
+                            {{ profileForm.errors.sub_area_id }}
                         </div>
                     </div>
 
@@ -246,3 +337,55 @@ const updatePassword = () => {
         </div>
     </DynamicLayout>
 </template>
+
+<style scoped>
+:deep(.vue-select-custom .vs__dropdown-toggle) {
+    background: #F3F4F6;
+    border-top: 0;
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 2px solid #d1d5db;
+    border-radius: 0.5rem;
+    padding: 0.625rem 0.75rem;
+    min-height: 42px;
+}
+
+:deep(.vue-select-custom .vs__dropdown-toggle:focus-within) {
+    border-bottom-color: #1B396A;
+}
+
+:deep(.vue-select-custom .vs__selected) {
+    color: #111827;
+    font-size: 0.875rem;
+}
+
+:deep(.vue-select-custom .vs__search::placeholder) {
+    color: #9ca3af;
+}
+
+:deep(.vue-select-custom .vs__dropdown-menu) {
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+:deep(.vue-select-custom .vs__dropdown-option) {
+    padding: 0.75rem 1rem;
+    color: #374151;
+}
+
+:deep(.vue-select-custom .vs__dropdown-option--highlight) {
+    background: #1B396A;
+    color: white;
+}
+
+:deep(.vue-select-custom .vs__open-indicator) {
+    fill: #1B396A;
+}
+
+:deep(.vue-select-custom.vs--disabled .vs__dropdown-toggle) {
+    background-color: #e5e7eb;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+</style>

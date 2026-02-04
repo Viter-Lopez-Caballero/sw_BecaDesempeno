@@ -37,4 +37,17 @@ class UpdatePermissionRequest extends FormRequest
             'module_key'  => "nombre del módulo",
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'name.required'         => 'El nombre es obligatorio',
+            'name.max'              => 'El nombre no puede exceder 50 caracteres',
+            'name.unique'           => 'Este nombre ya está en uso',
+            'guard_name.required'   => 'El guard name es obligatorio',
+            'description.required'  => 'La descripción es obligatoria',
+            'module_key.required'   => 'Debes seleccionar un módulo',
+            'module_key.exists'     => 'El módulo seleccionado no existe',
+        ];
+    }
 }

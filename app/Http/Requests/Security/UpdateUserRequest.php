@@ -36,8 +36,24 @@ class UpdateUserRequest extends FormRequest
             'name'              => 'nombre',
             'email'             => 'correo electrónico',
             'password'          => 'contraseña',
-            'roles.*'           => 'roles',
+            'roles'             => 'roles',
             'roles.*'           => 'rol',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.required'         => 'El nombre completo es obligatorio',
+            'name.max'              => 'El nombre no puede exceder 255 caracteres',
+            'email.required'        => 'El correo electrónico es obligatorio',
+            'email.email'           => 'El correo electrónico debe ser válido',
+            'email.max'             => 'El correo electrónico no puede exceder 255 caracteres',
+            'email.unique'          => 'Este correo electrónico ya está registrado',
+            'password.max'          => 'La contraseña no puede exceder 20 caracteres',
+            'roles.required'        => 'Debes asignar al menos un rol',
+            'roles.array'           => 'Los roles deben ser un arreglo',
+            'roles.*.exists'        => 'Uno de los roles seleccionados no existe',
         ];
     }
 }

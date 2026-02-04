@@ -1,9 +1,10 @@
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
 import { mdiSecurity } from '@mdi/js';
+import { alertaExito, alertaError, alertaCargando, cerrarAlerta } from '@/utils/alerts.js';
 
 const props = defineProps({
     title: {
@@ -32,8 +33,43 @@ const form = useForm({
     roles: props.user.data.roles_ids || [], 
 });
 
+const clearError = (field) => {
+    if (form.errors[field]) {
+        delete form.errors[field];
+    }
+};
+
 const submit = () => {
-    form.put(route(`${props.routeName}update`, form.id));
+    // Limpiar errores previos
+    form.clearErrors();
+    
+    // Validación del lado del cliente
+    if (!form.name) {
+        form.errors.name = 'El nombre completo es obligatorio';
+        return;
+    }
+    if (!form.email) {
+        form.errors.email = 'El correo electrónico es obligatorio';
+        return;
+    }
+    if (!form.roles || form.roles.length === 0) {
+        form.errors.roles = 'Debes asignar al menos un rol';
+        return;
+    }
+    
+    // Si todo está correcto, mostrar alerta de cargando y enviar
+    alertaCargando('Actualizando', 'Por favor espera...');
+    
+    form.put(route(`${props.routeName}update`, form.id), {
+        onSuccess: () => {
+            cerrarAlerta();
+            alertaExito('¡Éxito!', 'Usuario actualizado correctamente');
+        },
+        onError: () => {
+            cerrarAlerta();
+            alertaError('Error', 'Por favor verifica los datos ingresados');
+        }
+    });
 };
 </script>
 
@@ -80,8 +116,8 @@ const submit = () => {
                         <!-- Nombre -->
                         <div>
                             <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Nombre Completo: <span class="text-red-500">*</span></label>
-                            <input v-model="form.name" type="text" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" placeholder="Nombre completo del usuario" />
-                            <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <input v-model="form.name" type="text" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors.name }" placeholder="Nombre completo del usuario" @input="clearError('name')" />
+                            <div v-if="!form.errors.name" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
@@ -93,8 +129,8 @@ const submit = () => {
                          <!-- Correo -->
                         <div>
                             <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Correo Electrónico: <span class="text-red-500">*</span></label>
-                            <input v-model="form.email" type="email" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" placeholder="correo@ejemplo.com" />
-                            <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <input v-model="form.email" type="email" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors.email }" placeholder="correo@ejemplo.com" @input="clearError('email')" />
+                            <div v-if="!form.errors.email" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
@@ -106,8 +142,8 @@ const submit = () => {
                          <!-- Contraseña -->
                         <div>
                             <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Contraseña: <span class="text-gray-500">(Opcional)</span></label>
-                            <input v-model="form.password" type="password" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" placeholder="Dejar en blanco para mantener actual" />
-                            <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <input v-model="form.password" type="password" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors.password }" placeholder="Dejar en blanco para mantener actual" @input="clearError('password')" />
+                            <div v-if="!form.errors.password" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
@@ -125,9 +161,10 @@ const submit = () => {
                                 :reduce="rol => rol.id"
                                 label="name"
                                 placeholder="Selecciona un rol"
-                                class="vue-select-custom"
+                                :class="['vue-select-custom', { 'vue-select-error': form.errors.roles }]"
+                                @input="clearError('roles')"
                             />
-                            <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <div v-if="!form.errors.roles" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>

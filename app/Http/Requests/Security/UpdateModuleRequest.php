@@ -37,4 +37,17 @@ class UpdateModuleRequest extends FormRequest
             'key'           => 'clave'
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'name.required'         => 'El nombre es obligatorio',
+            'name.max'              => 'El nombre no puede exceder 255 caracteres',
+            'description.required'  => 'La descripción es obligatoria',
+            'description.max'       => 'La descripción no puede exceder 255 caracteres',
+            'key.required'          => 'La clave es obligatoria',
+            'key.max'               => 'La clave no puede exceder 255 caracteres',
+            'key.unique'            => 'Esta clave ya está en uso',
+        ];
+    }
 }

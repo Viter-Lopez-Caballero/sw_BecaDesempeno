@@ -1,8 +1,9 @@
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
 import { ref, computed } from 'vue';
 import { mdiSecurity } from '@mdi/js';
+import { alertaExito, alertaError, alertaCargando, cerrarAlerta } from '@/utils/alerts.js';
 
 const props = defineProps({
     title: {
@@ -78,8 +79,39 @@ const selectNone = () => {
     form.permissions = form.permissions.filter(id => !currentIds.includes(id));
 };
 
+const clearError = (field) => {
+    if (form.errors[field]) {
+        delete form.errors[field];
+    }
+};
+
 const submit = () => {
-    form.put(route(`${props.routeName}update`, form.id));
+    // Limpiar errores previos
+    form.clearErrors();
+    
+    // Validación del lado del cliente
+    if (!form.name) {
+        form.errors.name = 'El nombre del rol es obligatorio';
+        return;
+    }
+    if (!form.description) {
+        form.errors.description = 'La descripción es obligatoria';
+        return;
+    }
+    
+    // Si todo está correcto, mostrar alerta de cargando y enviar
+    alertaCargando('Actualizando', 'Por favor espera...');
+    
+    form.put(route(`${props.routeName}update`, form.id), {
+        onSuccess: () => {
+            cerrarAlerta();
+            alertaExito('¡Éxito!', 'Rol actualizado correctamente');
+        },
+        onError: () => {
+            cerrarAlerta();
+            alertaError('Error', 'Por favor verifica los datos ingresados');
+        }
+    });
 };
 </script>
 
@@ -126,8 +158,8 @@ const submit = () => {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Nombre del Rol: <span class="text-red-500">*</span></label>
-                            <input v-model="form.name" type="text" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" placeholder="Ej: Editor" />
-                            <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <input v-model="form.name" type="text" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors.name }" placeholder="Ej: Editor" @input="clearError('name')" />
+                            <div v-if="!form.errors.name" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
@@ -137,8 +169,8 @@ const submit = () => {
                         </div>
                         <div>
                             <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Descripción: <span class="text-red-500">*</span></label>
-                            <input v-model="form.description" type="text" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" placeholder="Descripción del rol" />
-                            <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <input v-model="form.description" type="text" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors.description }" placeholder="Descripción del rol" @input="clearError('description')" />
+                            <div v-if="!form.errors.description" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
@@ -227,17 +259,26 @@ const submit = () => {
                                         <label 
                                             v-for="permission in filteredPermissions" 
                                             :key="permission.id" 
-                                            class="flex items-start gap-3 p-3 bg-white border border-gray-200 rounded-lg cursor-pointer hover:border-[#1B396A] transition group"
-                                            :class="{'ring-2 ring-[#1B396A] border-[#1B396A]': form.permissions.includes(permission.id)}"
+                                            :for="`permission-${permission.id}`"
+                                            class="flex items-center ps-4 bg-white rounded-lg shadow-sm cursor-pointer transition"
+                                            :class="form.permissions.includes(permission.id) ? 'border-[#1B396A]' : 'border-gray-50'"
                                         >
-                                            <input 
-                                                type="checkbox" 
-                                                :value="permission.id" 
-                                                v-model="form.permissions"
-                                                class="mt-1 h-4 w-4 text-[#1B396A] border-gray-300 rounded focus:ring-[#1B396A]"
-                                            >
-                                            <div class="flex-1">
-                                                <div class="font-medium text-gray-900 group-hover:text-[#1B396A]">{{ permission.id }} {{ permission.name }}</div>
+                                            <div class="relative flex items-center justify-center">
+                                                <input 
+                                                    :id="`permission-${permission.id}`"
+                                                    type="checkbox" 
+                                                    :value="permission.id" 
+                                                    v-model="form.permissions"
+                                                    class="custom-checkbox"
+                                                >
+                                                <div class="checkbox-custom">
+                                                    <svg v-if="form.permissions.includes(permission.id)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5">
+                                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                            <div class="w-full py-4 ps-3 select-none">
+                                                <div class="font-medium text-gray-900 text-sm">{{ permission.name }}</div>
                                                 <div class="text-xs text-gray-500 mt-0.5">{{ permission.description }}</div>
                                             </div>
                                         </label>
@@ -260,7 +301,7 @@ const submit = () => {
                         <Link :href="route(`${routeName}index`)" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition">
                             Cancelar
                         </Link>
-                        <button :disabled="form.processing" type="submit" class="px-6 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl disabled:opacity-75 flex items-center gap-2 font-medium">
+                        <button :disabled="form.processing" type="submit" class="px-6 py-2 cursor-pointer bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl disabled:opacity-75 flex items-center gap-2 font-medium cursor-pointer">
                             <span v-if="!form.processing">Actualizar</span>
                             <span v-else>Guardando...</span>
                         </button>
@@ -270,3 +311,44 @@ const submit = () => {
         </div>
     </LayoutAuthenticated>
 </template>
+
+<style scoped>
+/* Ocultar el checkbox nativo */
+.custom-checkbox {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* Checkbox personalizado */
+.checkbox-custom {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #D1D5DB;
+    border-radius: 4px;
+    background-color: white;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Cuando está checked */
+.custom-checkbox:checked + .checkbox-custom {
+    background-color: #1B396A;
+    border-color: #1B396A;
+}
+
+/* Hover */
+label:hover .checkbox-custom {
+    border-color: #1B396A;
+}
+
+/* Focus visible */
+.custom-checkbox:focus-visible + .checkbox-custom {
+    outline: 2px solid #1B396A;
+    outline-offset: 2px;
+}
+</style>

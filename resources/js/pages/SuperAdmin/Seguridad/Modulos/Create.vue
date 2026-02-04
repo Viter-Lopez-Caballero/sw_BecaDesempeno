@@ -1,7 +1,8 @@
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
 import { mdiSecurity, mdiViewModule } from '@mdi/js';
+import { alertaExito, alertaError, alertaCargando, cerrarAlerta } from '@/utils/alerts.js';
 
 const props = defineProps({
     title: {
@@ -20,8 +21,43 @@ const form = useForm({
     description: '',
 });
 
+const clearError = (field) => {
+    if (form.errors[field]) {
+        delete form.errors[field];
+    }
+};
+
 const submit = () => {
-    form.post(route(`${props.routeName}store`));
+    // Limpiar errores previos
+    form.clearErrors();
+    
+    // Validación del lado del cliente
+    if (!form.name) {
+        form.errors.name = 'El nombre es obligatorio';
+        return;
+    }
+    if (!form.key) {
+        form.errors.key = 'La clave es obligatoria';
+        return;
+    }
+    if (!form.description) {
+        form.errors.description = 'La descripción es obligatoria';
+        return;
+    }
+    
+    // Si todo está correcto, mostrar alerta de cargando y enviar
+    alertaCargando('Guardando', 'Por favor espera...');
+    
+    form.post(route(`${props.routeName}store`), {
+        onSuccess: () => {
+            cerrarAlerta();
+            alertaExito('¡Éxito!', 'Módulo creado correctamente');
+        },
+        onError: () => {
+            cerrarAlerta();
+            alertaError('Error', 'Por favor verifica los datos ingresados');
+        }
+    });
 };
 </script>
 
@@ -68,8 +104,8 @@ const submit = () => {
                         <!-- Nombre -->
                         <div>
                             <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Nombre: <span class="text-red-500">*</span></label>
-                            <input v-model="form.name" type="text" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" placeholder="Nombre del módulo" />
-                            <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <input v-model="form.name" type="text" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors.name }" placeholder="Nombre del módulo" @input="clearError('name')" />
+                            <div v-if="!form.errors.name" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
@@ -81,8 +117,8 @@ const submit = () => {
                          <!-- Clave -->
                         <div>
                             <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Clave: <span class="text-red-500">*</span></label>
-                            <input v-model="form.key" type="text" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" placeholder="Clave del módulo" />
-                            <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <input v-model="form.key" type="text" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors.key }" placeholder="Clave del módulo" @input="clearError('key')" />
+                            <div v-if="!form.errors.key" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
@@ -94,17 +130,19 @@ const submit = () => {
                          <!-- Description -->
                         <div class="col-span-2">
                             <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Descripción: <span class="text-red-500">*</span></label>
-                            <textarea v-model="form.description" rows="4" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" placeholder="Descripción del módulo"></textarea>
+                            <textarea v-model="form.description" rows="4" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors.description }" placeholder="Descripción del módulo" @input="clearError('description')"></textarea>
                             <div class="flex items-center justify-between mt-1">
-                                <div class="flex items-center gap-1 text-xs text-gray-500">
+                                <div v-if="!form.errors.description" class="flex items-center gap-1 text-xs text-gray-500">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                     <span>Por favor, introduce la descripción del módulo</span>
                                 </div>
+                                <div v-if="form.errors.description" class="text-sm text-red-600">
+                                    {{ form.errors.description }}
+                                </div>
                                 <span class="text-gray-400 text-sm">{{ form.description?.length || 0 }}/255</span>
                             </div>
-                            <p v-if="form.errors.description" class="mt-1 text-sm text-red-600">{{ form.errors.description }}</p>
                         </div>
                     </div>
 
@@ -112,7 +150,7 @@ const submit = () => {
                         <Link :href="route(`${routeName}index`)" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition">
                             Cancelar
                         </Link>
-                        <button :disabled="form.processing" type="submit" class="px-6 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl disabled:opacity-75 flex items-center gap-2 font-medium">
+                        <button :disabled="form.processing" type="submit" class="px-6 py-2 cursor-pointer bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl disabled:opacity-75 flex items-center gap-2 font-medium">
                             <span v-if="!form.processing">Guardar</span>
                              <span v-else>Guardando...</span>
                         </button>

@@ -132,7 +132,7 @@ class UserController extends SecurityController
      */
     public function destroy(User $user)
     {
-        $user->delete();
+        $user->forceDelete(); // Eliminación permanente
         return redirect()->route("{$this->routeName}index")->with('success', 'Usuario eliminado con éxito');
     }
 

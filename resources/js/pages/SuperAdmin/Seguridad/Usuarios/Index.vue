@@ -8,6 +8,7 @@ import { useCan } from '@/composables/usePermissions';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
 import { mdiSecurity } from '@mdi/js';
+import { alertaPregunta, alertaExito } from '@/utils/alerts.js';
 import DialogModal from '@/Components/DialogModal.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
@@ -117,9 +118,18 @@ const sortBy = (field) => {
     }, { preserveState: true, replace: true });
 };
 
-const deleteUser = (id) => {
-    if (confirm('¿Estás seguro de eliminar este usuario?')) {
-        router.delete(route(`${props.routeName}destroy`, id));
+const deleteUser = async (id) => {
+    const confirmed = await alertaPregunta(
+        '¿Eliminar usuario?',
+        'Esta acción no se puede deshacer'
+    );
+    
+    if (confirmed) {
+        router.delete(route(`${props.routeName}destroy`, id), {
+            onSuccess: () => {
+                alertaExito('¡Eliminado!', 'Usuario eliminado correctamente');
+            }
+        });
     }
 };
 </script>

@@ -129,7 +129,7 @@ class RoleController extends SecurityController
     public function destroy(role $role)
     {
         Cache::forget("role.{$role->id}");
-        $role->delete();
+        $role->forceDelete(); // Eliminación permanente
         return redirect()->route("{$this->routeName}index")->with('success', 'Rol eliminado con éxito!');
     }
 }

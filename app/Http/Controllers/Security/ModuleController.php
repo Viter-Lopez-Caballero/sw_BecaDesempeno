@@ -116,7 +116,7 @@ class ModuleController extends SecurityController
      */
     public function destroy(Module $module)
     {
-        $module->delete();
+        $module->forceDelete(); // Eliminación permanente
         return redirect()->route("{$this->routeName}index")->with('success', 'Módulo eliminado con éxito');
     }
 }

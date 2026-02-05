@@ -126,7 +126,7 @@ class PermissionController extends SecurityController
      */
     public function destroy(Permission $permission)
     {
-        $permission->delete();
+        $permission->forceDelete(); // Eliminación permanente
         return redirect()->route("{$this->routeName}index")->with('success', 'Permiso eliminado con éxito');
     }
 }

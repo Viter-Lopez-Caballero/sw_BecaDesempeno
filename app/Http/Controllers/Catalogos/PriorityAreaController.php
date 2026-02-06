@@ -48,7 +48,7 @@ class PriorityAreaController extends Controller
 
         return Inertia::render("{$this->source}Index", [
             'priorityAreas' => PriorityAreaResource::collection($priorityAreas),
-            'title'         => 'Catálogo de Áreas Prioritarias',
+            'title'         => 'Áreas Prioritarias',
             'routeName'     => $this->routeName,
             'filters'       => $filters
         ]);
@@ -88,8 +88,9 @@ class PriorityAreaController extends Controller
         return redirect()->route("{$this->routeName}index")->with('success', 'Área Prioritaria actualizada con éxito!');
     }
 
-    public function destroy(PriorityArea $priorityArea): RedirectResponse
+    public function destroy($id): RedirectResponse
     {
+        $priorityArea = PriorityArea::findOrFail($id);
         $priorityArea->delete();
         return redirect()->route("{$this->routeName}index")->with('success', 'Área Prioritaria eliminada con éxito');
     }
@@ -97,6 +98,11 @@ class PriorityAreaController extends Controller
     public function export()
     {
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\PriorityAreasExport, 'areas-prioritarias.xlsx');
+    }
+
+    public function downloadTemplate()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\PriorityAreasTemplateExport, 'plantilla_areas_prioritarias.xlsx');
     }
 
     public function import(Request $request)

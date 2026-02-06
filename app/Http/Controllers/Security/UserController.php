@@ -45,6 +45,7 @@ class UserController extends SecurityController
     public function index(Request $request): Response
     {
         $filters = $this->getFiltersBase($request->query());
+        $roleFilter = $request->query('role_id');
         
         $query = $this->model->query()
             ->with('roles')
@@ -52,14 +53,24 @@ class UserController extends SecurityController
                 $q->where('id', 3); 
             })
             ->buscarGlobal($filters->search)
+            ->when($roleFilter, function($q) use ($roleFilter) {
+                $q->whereHas('roles', function($query) use ($roleFilter) {
+                    $query->where('roles.id', $roleFilter);
+                });
+            })
             ->when($filters->withTrashed, fn($q) => $q->withTrashed());
 
-        // Ordenamiento dinámico usando los filtros del trait
-        $users = $query->orderBy($filters->order, $filters->direction ?? 'desc')
+        // Ordenamiento dinámico
+        $sortField = $filters->sort_field ?: 'id';
+        $sortDirection = $filters->sort_direction ?: 'desc';
+        
+        $users = $query->orderBy($sortField, $sortDirection)
             ->paginate($filters->rows)
-            ->withQueryString();
+            ->withQueryString()
+            ->appends(['role_id' => $roleFilter]);
 
         $roles = Role::orderBy('name')->where('id', '!=', 3)->get();
+        $rolesForImport = Role::whereIn('name', ['Admin', 'Evaluador'])->orderBy('name')->get();
 
         return Inertia::render("{$this->source}Index", [
             'usuarios'  => UserResource::collection($users),
@@ -67,6 +78,8 @@ class UserController extends SecurityController
             'routeName' => $this->routeName,
             'filters'   => $filters,
             'roles'     => $roles,
+            'rolesForImport' => $rolesForImport,
+            'roleFilter' => $roleFilter,
         ]);
     }
 
@@ -146,6 +159,11 @@ class UserController extends SecurityController
     public function export() 
     {
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\UsersExport, 'usuarios.xlsx');
+    }
+    
+    public function template()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\UsersTemplateExport, 'plantilla_usuarios.xlsx');
     }
     
     public function import(Request $request) 

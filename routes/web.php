@@ -183,6 +183,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // ->middleware('can:roles.index');
 
         Route::get('users/export', [UserController::class, 'export'])->name('users.export'); // ->middleware('can:users.index');
+        Route::get('users/template', [UserController::class, 'template'])->name('users.template'); // ->middleware('can:users.index');
         Route::post('users/import', [UserController::class, 'import'])->name('users.import'); // ->middleware('can:users.create');
         Route::resource('users', UserController::class);
         // ->middleware('can:users.index');
@@ -241,9 +242,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return Inertia::render('Catalogo/AreasPrioritarias');
         })->name('areas')->middleware('can:catalogo.index');
 
-        Route::get('documentos', [\App\Http\Controllers\Admin\DocumentController::class, 'index'])
-            ->name('documentos')
-            ->middleware('can:documents.index');
+        Route::get('documentos', function () {
+            return Inertia::render('SuperAdmin/Catalogo/Documentos/Index');
+        })->name('documentos')->middleware('can:documents.index');
 
         Route::get('rubrica', function () {
             return Inertia::render('Catalogo/Rubrica');
@@ -251,10 +252,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('institutions/export', [InstitutionController::class, 'export'])->name('institutions.export'); // ->middleware('can:catalogo.index');
         Route::post('institutions/import', [InstitutionController::class, 'import'])->name('institutions.import'); // ->middleware('can:catalogo.index');
+        Route::get('institutions/template', [InstitutionController::class, 'downloadTemplate'])->name('institutions.template'); // ->middleware('can:catalogo.index');
         Route::resource('institutions', InstitutionController::class);
 
         Route::get('priority-areas/export', [PriorityAreaController::class, 'export'])->name('priority-areas.export'); // ->middleware('can:catalogo.index');
         Route::post('priority-areas/import', [PriorityAreaController::class, 'import'])->name('priority-areas.import'); // ->middleware('can:catalogo.index');
+        Route::get('priority-areas/template', [PriorityAreaController::class, 'downloadTemplate'])->name('priority-areas.template'); // ->middleware('can:catalogo.index');
         Route::resource('priority-areas', PriorityAreaController::class);
         
         Route::get('sub-areas/export', [SubAreaController::class, 'export'])->name('sub-areas.export'); // ->middleware('can:catalogo.index');

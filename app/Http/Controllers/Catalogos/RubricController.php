@@ -19,14 +19,14 @@ class RubricController extends Controller
             ->orderBy('id', 'desc')
             ->paginate(10);
 
-        return Inertia::render('Catalogos/Rubrics/Index', [
+        return Inertia::render('SuperAdmin/Catalogo/Rubrics/Index', [
             'rubrics' => $rubrics,
         ]);
     }
 
     public function create()
     {
-        return Inertia::render('Catalogos/Rubrics/Create', [
+        return Inertia::render('SuperAdmin/Catalogo/Rubrics/Create', [
             'title' => 'Crear Rúbrica',
             'routeName' => 'catalogo.rubrics.',
         ]);
@@ -70,7 +70,7 @@ class RubricController extends Controller
     {
         $rubric->load('questions.options');
 
-        return Inertia::render('Catalogos/Rubrics/Edit', [
+        return Inertia::render('SuperAdmin/Catalogo/Rubrics/Edit', [
             'title' => 'Editar Rúbrica',
             'routeName' => 'catalogo.rubrics.',
             'rubric' => new RubricResource($rubric),

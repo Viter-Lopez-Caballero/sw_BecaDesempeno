@@ -14,6 +14,7 @@ import {
     mdiClipboardTextOutline,
     mdiSchool,
     mdiStar,
+    mdiFileTree,
 } from "@mdi/js";
 
 // Helper to create consistent security items with dynamic route prefix
@@ -61,7 +62,7 @@ const getCatalogItems = (routePrefix) => [
     {
         label: "Sub Áreas",
         route: `${routePrefix}sub-areas.index`,
-        icon: mdiBookOpenPageVariant,
+        icon: mdiFileTree,
         permission: "sub_areas.index",
     },
     {

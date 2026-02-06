@@ -51,7 +51,10 @@ class PermissionController extends SecurityController
             ->buscarGlobal($filters->search);
 
         // Ordenamiento dinámico
-        $permissions = $query->orderBy($filters->order, $filters->direction ?? 'desc')
+        $sortField = $filters->sort_field ?: 'id';
+        $sortDirection = $filters->sort_direction ?: 'desc';
+        
+        $permissions = $query->orderBy($sortField, $sortDirection)
             ->paginate($filters->rows)
             ->withQueryString();
 

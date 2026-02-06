@@ -120,7 +120,10 @@ const showingNavigationDropdown = ref(false);
                                 Av. Universidad 1200, Col. Xoco, Ciudad de México, Alcaldía Benito Juárez C.P. 03330
                             </p>
                         </div>
+                    </div>
 
+                    <!-- Columna Centro: Contacto -->
+                    <div class="space-y-6">
                         <!-- Contacto -->
                         <div>
                             <h3 class="text-lg font-bold mb-3">Contacto</h3>
@@ -133,9 +136,8 @@ const showingNavigationDropdown = ref(false);
                         </div>
                     </div>
 
-                    <!-- Columna Centro: Contacto -->
-                    <div class="space-y-6">
-                        <!-- Redes Sociales -->
+                    <!-- Columna Derecha: Mapa -->
+                    <div>
                         <div>
                             <h3 class="text-lg font-bold mb-3">Síguenos En</h3>
                             <div class="py-4 rounded-lg">
@@ -156,26 +158,7 @@ const showingNavigationDropdown = ref(false);
                                         </svg>
                                     </a>
                                 </div>
-                            </div>
                         </div>
-                        
-                        <!-- Número de visitas -->
-                        <!-- Visitas removidas -->
-                    </div>
-
-                    <!-- Columna Derecha: Mapa -->
-                    <div>
-                        <div class="rounded-lg overflow-hidden shadow-lg h-[200px]">
-                            <iframe 
-                                src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d3764.2075687263937!2d-99.165505!3d19.360163!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x85d1ff758ac697bf%3A0x6a92c70db2edc680!2sTecnol%C3%B3gico%20Nacional%20de%20M%C3%A9xico!5e0!3m2!1ses-419!2smx!4v1769817814911!5m2!1ses-419!2smx"
-                                width="100%" 
-                                height="200" 
-                                style="border:0;" 
-                                allowfullscreen="" 
-                                loading="lazy" 
-                                referrerpolicy="no-referrer-when-downgrade"
-                                class="w-full h-full"
-                            ></iframe>
                         </div>
                     </div>
                 </div>

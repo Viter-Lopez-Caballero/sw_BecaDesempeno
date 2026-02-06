@@ -24,11 +24,34 @@ class StoreUserRequest extends FormRequest
     {
         return [
             'name'              => 'required|max:255',
-            'email'             => 'required|email|max:255|unique:users,email',
+            'email'             => 'required|email|max:255',
             'password'          => 'required|max:20',
             'roles'             => 'required|array',
             'roles.*'           => 'exists:roles,id',
         ];
+    }
+
+    /**
+     * Configure the validator instance.
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $email = $this->input('email');
+            $roleIds = $this->input('roles', []);
+
+            // Verificar si el email ya existe con alguno de los roles asignados
+            $existingUser = \App\Models\User::where('email', $email)
+                ->whereHas('roles', function ($query) use ($roleIds) {
+                    $query->whereIn('roles.id', $roleIds);
+                })
+                ->first();
+
+            if ($existingUser) {
+                $roleName = $existingUser->getPrimaryRole();
+                $validator->errors()->add('email', "Este correo ya está registrado con el rol de {$roleName}");
+            }
+        });
     }
     public function attributes(): array
     {

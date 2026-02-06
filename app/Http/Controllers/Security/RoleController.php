@@ -53,7 +53,10 @@ class RoleController extends SecurityController
             ->buscarGlobal($filters->search);
 
         // Ordenamiento dinámico
-        $roles = $query->orderBy($filters->order, $filters->direction ?? 'desc')
+        $sortField = $filters->sort_field ?: 'id';
+        $sortDirection = $filters->sort_direction ?: 'desc';
+        
+        $roles = $query->orderBy($sortField, $sortDirection)
             ->paginate($filters->rows)
             ->withQueryString();
 

@@ -3,7 +3,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
 import Pagination from '@/Shared/Pagination.vue';
 import { ref } from 'vue';
-import { mdiClipboardTextOutline } from '@mdi/js';
+import { mdiBookOpenPageVariant, mdiClipboardTextOutline } from '@mdi/js';
 import { useCan } from '@/composables/usePermissions';
 
 const props = defineProps({
@@ -50,11 +50,14 @@ const deleteItem = (id) => {
                     <h1 class="text-3xl font-bold text-gray-900">Rúbricas</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
-                            <path :d="mdiClipboardTextOutline"/>
+                            <path :d="mdiBookOpenPageVariant"/>
                         </svg>
                         <span class="text-gray-700 font-medium">Catálogo</span>
                         <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
                             <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
+                        </svg>
+                        <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
+                            <path :d="mdiClipboardTextOutline"/>
                         </svg>
                         <span class="text-gray-900 font-semibold">Rúbricas</span>
                     </div>

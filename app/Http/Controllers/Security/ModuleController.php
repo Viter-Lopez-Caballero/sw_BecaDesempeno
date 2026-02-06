@@ -50,7 +50,10 @@ class ModuleController extends SecurityController
             ->buscarGlobal($filters->search);
 
         // Ordenamiento dinámico
-        $modules = $query->orderBy($filters->order, $filters->direction ?? 'desc')
+        $sortField = $filters->sort_field ?: 'id';
+        $sortDirection = $filters->sort_direction ?: 'desc';
+        
+        $modules = $query->orderBy($sortField, $sortDirection)
             ->paginate($filters->rows)
             ->withQueryString();
 

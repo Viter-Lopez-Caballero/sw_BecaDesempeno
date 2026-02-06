@@ -49,7 +49,7 @@ class SubAreaController extends Controller
 
         return Inertia::render("{$this->source}Index", [
             'subAreas'  => SubAreaResource::collection($subAreas),
-            'title'     => 'Catálogo de Sub Áreas',
+            'title'     => 'Sub Áreas',
             'routeName' => $this->routeName,
             'filters'   => $filters
         ]);
@@ -91,8 +91,9 @@ class SubAreaController extends Controller
         return redirect()->route("{$this->routeName}index")->with('success', 'Sub Área actualizada con éxito!');
     }
 
-    public function destroy(SubArea $subArea): RedirectResponse
+    public function destroy($id): RedirectResponse
     {
+        $subArea = SubArea::findOrFail($id);
         $subArea->delete();
         return redirect()->route("{$this->routeName}index")->with('success', 'Sub Área eliminada con éxito');
     }

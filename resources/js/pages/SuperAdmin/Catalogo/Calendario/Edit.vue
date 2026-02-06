@@ -1,9 +1,10 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
-import { mdiCalendar, mdiCalendarClock } from '@mdi/js';
+import { mdiBookOpenPageVariant, mdiCalendar, mdiCalendarClock } from '@mdi/js';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
+import { alertaExito, alertaError, alertaCargando, cerrarAlerta } from '@/utils/alerts.js';
 
 const props = defineProps({
     title: {
@@ -37,8 +38,25 @@ const form = useForm({
     resultados_fin: props.calendario.resultados_fin,
 });
 
+const clearError = (field) => {
+    if (form.errors[field]) {
+        delete form.errors[field];
+    }
+};
+
 const submit = () => {
-    form.put(route(`${props.routeName}update`, { calendario: form.id }));
+    alertaCargando('Actualizando', 'Por favor espera...');
+    
+    form.put(route(`${props.routeName}update`, { calendario: form.id }), {
+        onSuccess: () => {
+            cerrarAlerta();
+            alertaExito('¡Éxito!', 'Calendario actualizado correctamente');
+        },
+        onError: () => {
+            cerrarAlerta();
+            alertaError('Error', 'Por favor verifica los datos ingresados');
+        }
+    });
 };
 </script>
 
@@ -53,15 +71,15 @@ const submit = () => {
                     <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
-                            <path :d="mdiCalendar"/>
+                            <path :d="mdiBookOpenPageVariant"/>
                         </svg>
-                        <span class="text-gray-700 font-medium">Catálogos</span>
+                        <span class="text-gray-700 font-medium">Catálogo</span>
                         <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
                             <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
                         </svg>
                         <Link :href="route(`${routeName}index`)" class="flex items-center gap-2 hover:underline">
                             <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
-                                <path :d="mdiCalendarClock"/>
+                                <path :d="mdiCalendar"/>
                             </svg>
                             <span class="text-gray-700 font-medium">Calendario</span>
                         </Link>
@@ -71,7 +89,7 @@ const submit = () => {
                         <span class="text-gray-900 font-semibold">Editar Calendario</span>
                     </div>
                 </div>
-                <Link :href="route(`${routeName}index`)" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium">
+                <Link :href="route(`${routeName}index`)" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
                     </svg>
@@ -83,14 +101,18 @@ const submit = () => {
                 <form @submit.prevent="submit" class="space-y-6">
                     <!-- Convocatoria -->
                     <div>
-                        <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Convocatoria: <span class="text-red-500">*</span></label>
+                        <label class="block mb-2 text-sm font-medium text-gray-900">Convocatoria <span class="text-red-500">*</span></label>
                         <VueSelect 
                             v-model="form.convocatoria_id" 
                             :options="convocatorias" 
                             :reduce="option => option.id"
                             label="nombre"
                             placeholder="Selecciona una convocatoria"
+                            :searchable="true"
+                            :clearable="true"
+                            :class="{ 'vue-select-error': form.errors.convocatoria_id }"
                             class="vue-select-custom"
+                            @update:modelValue="clearError('convocatoria_id')"
                         >
                             <template #option="option">
                                 <div class="flex flex-col">
@@ -98,13 +120,13 @@ const submit = () => {
                                     <span class="text-xs text-gray-500">Año {{ option.anio }}</span>
                                 </div>
                             </template>
+                            <template #no-options="{ search, searching }">
+                                <template v-if="searching">
+                                    No se encontraron resultados para <em>{{ search }}</em>.
+                                </template>
+                                <em v-else>Comienza a escribir para buscar...</em>
+                            </template>
                         </VueSelect>
-                        <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>Selecciona la convocatoria a la que pertenece este calendario</span>
-                        </div>
                         <p v-if="form.errors.convocatoria_id" class="mt-1 text-sm text-red-600">{{ form.errors.convocatoria_id }}</p>
                     </div>
 
@@ -189,10 +211,10 @@ const submit = () => {
                     </div>
 
                     <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
-                        <Link :href="route(`${routeName}index`)" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition">
+                        <Link :href="route(`${routeName}index`)" class="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition cursor-pointer">
                             Cancelar
                         </Link>
-                        <button :disabled="form.processing" type="submit" class="px-6 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl disabled:opacity-75 flex items-center gap-2 font-medium">
+                        <button :disabled="form.processing" type="submit" class="px-6 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl disabled:opacity-75 flex items-center gap-2 font-medium cursor-pointer">
                             <svg v-if="form.processing" class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -208,32 +230,74 @@ const submit = () => {
 
 <style scoped>
 :deep(.vue-select-custom .vs__dropdown-toggle) {
-    background: #F3F4F6;
+    background: linear-gradient(to bottom right, #F3F4F6, #E5E7EB);
     border: none;
-    border-bottom: 2px solid #d1d5db;
+    border-bottom: 2px solid #D1D5DB;
     border-radius: 0.5rem;
     padding: 0.625rem 0.75rem;
-    min-height: 42px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
 }
 
-:deep(.vue-select-custom .vs__selected) {
+:deep(.vue-select-custom .vs__dropdown-toggle):hover {
+    border-bottom-color: rgba(27, 57, 106, 0.5);
+}
+
+:deep(.vue-select-custom .vs--open .vs__dropdown-toggle) {
+    background: linear-gradient(to bottom right, #EFF6FF, #DBEAFE);
+    border-bottom-color: #1B396A;
+}
+
+:deep(.vue-select-custom .vs__search) {
+    margin: 0;
+    padding: 0;
+    border: none;
+    font-size: 0.875rem;
     color: #111827;
-    font-weight: 500;
 }
 
 :deep(.vue-select-custom .vs__search::placeholder) {
-    color: #9ca3af;
+    color: #9CA3AF;
+}
+
+:deep(.vue-select-custom .vs__selected) {
+    margin: 0;
+    padding: 0;
+    border: none;
+    color: #111827;
+    font-size: 0.875rem;
+}
+
+:deep(.vue-select-custom .vs__actions) {
+    padding: 0 4px 0 6px;
+}
+
+:deep(.vue-select-custom .vs__clear),
+:deep(.vue-select-custom .vs__open-indicator) {
+    fill: #1B396A;
+    transition: transform 0.2s;
+}
+
+:deep(.vue-select-custom .vs__open-indicator) {
+    transform: scale(0.70);
+}
+
+:deep(.vue-select-custom .vs--open .vs__open-indicator) {
+    transform: rotate(180deg) scale(0.70);
 }
 
 :deep(.vue-select-custom .vs__dropdown-menu) {
-    border: 1px solid #d1d5db;
+    border: 1px solid #E5E7EB;
     border-radius: 0.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    margin-top: 4px;
 }
 
 :deep(.vue-select-custom .vs__dropdown-option) {
-    padding: 0.75rem 1rem;
+    padding: 0.625rem 0.75rem;
     color: #374151;
+    font-size: 0.875rem;
+    transition: all 0.15s;
 }
 
 :deep(.vue-select-custom .vs__dropdown-option--highlight) {
@@ -241,11 +305,17 @@ const submit = () => {
     color: white;
 }
 
-:deep(.vue-select-custom .vs__open-indicator) {
-    fill: #1B396A;
+:deep(.vue-select-custom .vs__no-options) {
+    padding: 0.75rem;
+    color: #6B7280;
+    font-size: 0.875rem;
+    text-align: center;
 }
 
-:deep(.vue-select-custom .vs__dropdown-toggle):focus-within {
-    border-bottom-color: #1B396A;
+/* Error state */
+.vue-select-error :deep(.vs__dropdown-toggle),
+.vue-select-error :deep(.vs--open .vs__dropdown-toggle),
+.vue-select-error :deep(.vs__dropdown-toggle):hover {
+    border-bottom-color: #EF4444 !important;
 }
 </style>

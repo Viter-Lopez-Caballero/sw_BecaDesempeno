@@ -7,7 +7,8 @@ import { debounce } from 'lodash';
 import { useCan } from '@/composables/usePermissions';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
-import { mdiCalendar, mdiCalendarClock } from '@mdi/js';
+import { mdiBookOpenPageVariant, mdiCalendar, mdiCalendarClock } from '@mdi/js';
+import { alertaPregunta, alertaExito } from '@/utils/alerts.js';
 
 const props = defineProps({
     calendarios: {
@@ -85,9 +86,18 @@ const sortBy = (field) => {
     }, { preserveState: true, replace: true });
 };
 
-const deleteCalendario = (id) => {
-    if (confirm('¿Estás seguro de eliminar este calendario?')) {
-        router.delete(route(`${props.routeName}destroy`, { calendario: id }));
+const deleteCalendario = async (id) => {
+    const confirmed = await alertaPregunta(
+        '¿Eliminar calendario?',
+        'Esta acción no se puede deshacer'
+    );
+    
+    if (confirmed) {
+        router.delete(route(`${props.routeName}destroy`, { calendario: id }), {
+            onSuccess: () => {
+                alertaExito('¡Eliminado!', 'Calendario eliminado correctamente');
+            }
+        });
     }
 };
 
@@ -109,11 +119,14 @@ const formatDate = (date) => {
                     <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
-                            <path :d="mdiCalendar"/>
+                            <path :d="mdiBookOpenPageVariant"/>
                         </svg>
-                        <span class="text-gray-700 font-medium">Catálogos</span>
+                        <span class="text-gray-700 font-medium">Catálogo</span>
                         <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
                             <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
+                        </svg>
+                        <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
+                            <path :d="mdiCalendar"/>
                         </svg>
                         <span class="text-gray-900 font-semibold">Calendario</span>
                     </div>
@@ -130,30 +143,39 @@ const formatDate = (date) => {
             <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4">
                 <div class="flex items-center justify-between mb-2">
                     <div class="flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#1B396A">
-                            <path d="M440-120v-240h80v80h320v80H520v80h-80Zm-320-80v-80h240v80H120Zm160-160v-80H120v-80h160v-80h80v240h-80Zm160-80v-80h400v80H440Zm160-160v-240h80v80h160v80H680v80h-80Zm-480-80v-80h400v80H120Z"/>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#374151">
+                            <path d="M440-160q-17 0-28.5-11.5T400-200v-240L168-736q-15-20-4.5-42t36.5-22h560q26 0 36.5 22t-4.5 42L560-440v240q0 17-11.5 28.5T520-160h-80Zm40-308 198-252H282l198 252Zm0 0Z"/>
                         </svg>
-                        <span class="font-semibold text-gray-900">Filtros</span>
+                        <h2 class="text-xl font-semibold text-gray-800">Filtro de Búsqueda</h2>
                     </div>
-                    <button @click="cleanFilters" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-sm font-medium transition">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
-                            <path d="M440-122q-121-15-200.5-105.5T160-440q0-66 26-126.5T260-672l57 57q-38 34-57.5 79T240-440q0 88 56 155.5T440-202v80Zm80 0v-80q87-16 143.5-83T720-440q0-100-70-170t-170-70h-3l44 44-56 56-140-140 140-140 56 56-44 44h3q134 0 227 93t93 227q0 121-79.5 211.5T520-122Z"/>
+                    <button @click="cleanFilters" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-sm font-medium transition cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
+                            <path d="M400-240v-80h240v80H400Zm-158 0L15-467l57-57 170 170 366-366 57 57-423 423Zm318-160v-80h240v80H560Zm160-160v-80h240v80H720Z"/>
                         </svg>
-                        Limpiar
+                        Limpiar Filtros
                     </button>
                 </div>
                 <div class="text-sm text-gray-500 mb-4">Buscar y filtrar calendarios</div>
                 <div class="flex flex-col md:flex-row gap-4 items-end">
                     <div class="relative w-full md:flex-1">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Buscar</label>
-                        <input v-model="search" type="text" placeholder="Buscar por convocatoria..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B396A] focus:border-transparent"/>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3 top-9 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#1B396A">
+                                <path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/>
+                            </svg>
+                        </div>
+                        <input v-model="search" type="text" placeholder="Buscar..." class="pl-10 w-full h-[45px] rounded-lg border border-gray-300 text-gray-700 focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition" />
                     </div>
-                    <div class="w-full md:w-48">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Mostrar</label>
-                        <VueSelect v-model="rows" :options="rowOptions" :clearable="false" :searchable="false" @update:modelValue="onRowsChange" class="vue-select-custom" placeholder="Seleccionar"/>
+                    <div class="w-full md:w-52 flex-shrink-0">
+                        <VueSelect
+                            v-model="rows"
+                            :options="rowOptions"
+                            :reduce="option => option.value"
+                            :searchable="false"
+                            :clearable="false"
+                            placeholder="Registros"
+                            class="vue-select-custom"
+                            @option:selected="onRowsChange"
+                        />
                     </div>
                 </div>
             </div>
@@ -161,72 +183,58 @@ const formatDate = (date) => {
             <!-- Table -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" @click="sortBy('id')">
-                                    <div class="flex items-center gap-2">
+                                <th scope="col" class="px-6 py-4 tracking-wider">
+                                    <div @click="sortBy('id')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
                                         ID
-                                        <svg v-if="sortField === 'id'" xmlns="http://www.w3.org/2000/svg" :class="sortDirection === 'asc' ? 'rotate-180' : ''" class="h-4 w-4 transition-transform" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'id', 'opacity-50': sortField !== 'id' }">
+                                            <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/>
                                         </svg>
                                     </div>
                                 </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Convocatoria
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Publicación
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Registro
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Evaluación
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Resultados
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Acciones
-                                </th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">Convocatoria</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">Publicación</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">Registro</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">Evaluación</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">Resultados</th>
+                                <th v-if="useCan('calendario.edit') || useCan('calendario.delete')" scope="col" class="px-6 py-4 text-center tracking-wider">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody class="divide-y divide-gray-200">
                             <tr v-for="calendario in calendarios.data" :key="calendario.id" class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    {{ calendario.id }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">{{ calendario.convocatoria?.nombre }}</div>
+                                <td class="px-6 py-4 font-medium text-gray-900">{{ calendario.id }}</td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm font-semibold text-gray-800">{{ calendario.convocatoria?.nombre }}</div>
                                     <div class="text-xs text-gray-500">Año {{ calendario.convocatoria?.anio }}</div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4">
                                     <div class="text-sm text-gray-900">{{ formatDate(calendario.publicacion_inicio) }}</div>
                                     <div class="text-xs text-gray-500">al {{ formatDate(calendario.publicacion_fin) }}</div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4">
                                     <div class="text-sm text-gray-900">{{ formatDate(calendario.registro_inicio) }}</div>
                                     <div class="text-xs text-gray-500">al {{ formatDate(calendario.registro_fin) }}</div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4">
                                     <div class="text-sm text-gray-900">{{ formatDate(calendario.evaluacion_inicio) }}</div>
                                     <div class="text-xs text-gray-500">al {{ formatDate(calendario.evaluacion_fin) }}</div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4">
                                     <div class="text-sm text-gray-900">{{ formatDate(calendario.resultados_inicio) }}</div>
                                     <div class="text-xs text-gray-500">al {{ formatDate(calendario.resultados_fin) }}</div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                <td v-if="useCan('calendario.edit') || useCan('calendario.delete')" class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <Link v-if="useCan('calendario.edit')" :href="route(`${routeName}edit`, { calendario: calendario.id })" class="text-blue-600 hover:text-blue-900 transition">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        <Link v-if="useCan('calendario.edit')" :href="route(`${routeName}edit`, { calendario: calendario.id })" class="p-2 text-[#1B396A] border border-[#1B396A] rounded-full hover:bg-[#1B396A] hover:text-white transition group" title="Editar">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                                <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/>
                                             </svg>
                                         </Link>
-                                        <button v-if="useCan('calendario.delete')" @click="deleteCalendario(calendario.id)" class="text-red-600 hover:text-red-900 transition">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        <button v-if="useCan('calendario.delete')" @click="deleteCalendario(calendario.id)" class="p-2 text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition group cursor-pointer" title="Eliminar">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                                <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
                                             </svg>
                                         </button>
                                     </div>
@@ -234,11 +242,7 @@ const formatDate = (date) => {
                             </tr>
                             <tr v-if="calendarios.data.length === 0">
                                 <td colspan="7" class="px-6 py-12 text-center text-gray-500">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
-                                    </svg>
-                                    <p class="text-lg font-medium">No se encontraron calendarios</p>
-                                    <p class="text-sm mt-1">Intenta ajustar tus filtros o agrega un nuevo calendario</p>
+                                    No se encontraron registros
                                 </td>
                             </tr>
                         </tbody>

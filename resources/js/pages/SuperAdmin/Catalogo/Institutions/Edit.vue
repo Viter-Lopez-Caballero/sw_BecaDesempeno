@@ -3,7 +3,8 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
-import { mdiDomain } from '@mdi/js';
+import { mdiBookOpenPageVariant, mdiOfficeBuilding } from '@mdi/js';
+import { alertaExito, alertaError, alertaCargando, cerrarAlerta } from '@/utils/alerts.js';
 
 const props = defineProps({
     title: {
@@ -30,8 +31,24 @@ const form = useForm({
     estado_id: props.institucion.data.estado_id,
 });
 
+const clearError = (field) => {
+    if (form.errors[field]) {
+        delete form.errors[field];
+    }
+};
+
 const submit = () => {
-    form.put(route(`${props.routeName}update`, form.id));
+    alertaCargando('Actualizando...', 'Por favor espera mientras se actualiza la institución');
+    form.put(route(`${props.routeName}update`, form.id), {
+        onSuccess: () => {
+            cerrarAlerta();
+            alertaExito('¡Actualizado!', 'La institución ha sido actualizada exitosamente');
+        },
+        onError: () => {
+            cerrarAlerta();
+            alertaError('Error', 'Hubo un problema al actualizar la institución');
+        }
+    });
 };
 </script>
 
@@ -46,13 +63,16 @@ const submit = () => {
                     <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
-                            <path :d="mdiDomain"/>
+                            <path :d="mdiBookOpenPageVariant"/>
                         </svg>
                         <span class="text-gray-700 font-medium">Catálogo</span>
                         <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
                             <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
                         </svg>
                         <Link :href="route(`${routeName}index`)" class="flex items-center gap-2 hover:underline">
+                            <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
+                                <path :d="mdiOfficeBuilding"/>
+                            </svg>
                              <span class="text-gray-700 font-medium">Instituciones</span>
                         </Link>
                         <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
@@ -61,7 +81,7 @@ const submit = () => {
                         <span class="text-gray-900 font-semibold">Editar Institución</span>
                     </div>
                 </div>
-                <Link :href="route(`${routeName}index`)" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium">
+                <Link :href="route(`${routeName}index`)" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
                     </svg>
@@ -75,7 +95,7 @@ const submit = () => {
                         <!-- Nombre -->
                         <div>
                             <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Nombre de la Institución: <span class="text-red-500">*</span></label>
-                            <input v-model="form.nombre" type="text" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" placeholder="Nombre de la institución" />
+                            <input v-model="form.nombre" @input="clearError('nombre')" type="text" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" placeholder="Nombre de la institución" />
                             <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -94,7 +114,11 @@ const submit = () => {
                                 :reduce="estado => estado.id"
                                 label="nombre"
                                 placeholder="Selecciona un estado"
+                                :searchable="true"
+                                :clearable="true"
+                                :class="{ 'vue-select-error': form.errors.estado_id }"
                                 class="vue-select-custom"
+                                @update:modelValue="clearError('estado_id')"
                             />
                             <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -107,10 +131,10 @@ const submit = () => {
                     </div>
 
                     <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
-                        <Link :href="route(`${routeName}index`)" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition">
+                        <Link :href="route(`${routeName}index`)" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition cursor-pointer">
                             Cancelar
                         </Link>
-                        <button :disabled="form.processing" type="submit" class="px-6 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl disabled:opacity-75 flex items-center gap-2 font-medium">
+                        <button :disabled="form.processing" type="submit" class="px-6 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl disabled:opacity-75 flex items-center gap-2 font-medium cursor-pointer">
                             <span v-if="!form.processing">Actualizar</span>
                              <span v-else>Guardando...</span>
                         </button>
@@ -123,12 +147,13 @@ const submit = () => {
 
 <style scoped>
 :deep(.vue-select-custom .vs__dropdown-toggle) {
-    background: #F3F4F6;
+    background: linear-gradient(to bottom right, #F3F4F6, #E5E7EB);
     border: none;
-    border-bottom: 2px solid #d1d5db;
+    border-bottom: 2px solid #D1D5DB;
     border-radius: 0.5rem;
     padding: 0.625rem 0.75rem;
-    min-height: 42px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
 }
 
 :deep(.vue-select-custom .vs__selected) {
@@ -150,6 +175,7 @@ const submit = () => {
 
 :deep(.vue-select-custom .vs__dropdown-toggle:focus-within) {
     border-bottom-color: #1B396A;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05), 0 0 0 3px rgba(27, 57, 106, 0.1);
 }
 
 :deep(.vue-select-custom .vs__dropdown-menu) {
@@ -170,7 +196,7 @@ const submit = () => {
 
 :deep(.vue-select-custom .vs__open-indicator) {
     fill: #1B396A;
-    transform: scale(0.85);
+    transform: scale(0.70);
 }
 
 :deep(.vue-select-custom .vs__actions) {
@@ -178,6 +204,11 @@ const submit = () => {
 }
 
 :deep(.vue-select-custom .vs__clear) {
-    display: none;
+    fill: #6B7280;
+    transform: scale(0.70);
+}
+
+.vue-select-error :deep(.vs__dropdown-toggle) {
+    border-bottom-color: #EF4444 !important;
 }
 </style>

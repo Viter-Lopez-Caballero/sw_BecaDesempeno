@@ -56,7 +56,7 @@ class InstitutionController extends Controller
 
         return Inertia::render("{$this->source}Index", [
             'instituciones' => InstitutionResource::collection($instituciones),
-            'title'         => 'Catálogo de Instituciones',
+            'title'         => 'Instituciones',
             'routeName'     => $this->routeName,
             'filters'       => $filters
         ]);
@@ -119,8 +119,9 @@ class InstitutionController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Institucion $institution): RedirectResponse
+    public function destroy($id): RedirectResponse
     {
+        $institution = Institucion::findOrFail($id);
         $institution->delete();
         return redirect()->route("{$this->routeName}index")->with('success', 'Institución eliminada con éxito');
     }
@@ -128,6 +129,11 @@ class InstitutionController extends Controller
     public function export()
     {
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\InstitutionsExport, 'instituciones.xlsx');
+    }
+
+    public function downloadTemplate()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\InstitutionsTemplateExport, 'plantilla_instituciones.xlsx');
     }
 
     public function import(Request $request)

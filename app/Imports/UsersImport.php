@@ -24,15 +24,23 @@ class UsersImport implements ToModel, WithHeadingRow
     */
     public function model(array $row)
     {
-        // Simple validation or skip existing emails?
-        if (User::where('email', $row['email'])->exists()) {
+        // Los encabezados de la plantilla son: "Nombre Completo", "Correo Electrónico", "Contraseña"
+        // WithHeadingRow los convierte en: "nombre_completo", "correo_electronico", "contrasena"
+        
+        // Skip empty rows
+        if (empty($row['nombre_completo']) || empty($row['correo_electronico'])) {
+            return null;
+        }
+
+        // Simple validation or skip existing emails
+        if (User::where('email', $row['correo_electronico'])->exists()) {
             return null;
         }
 
         $user = User::create([
-            'name'     => $row['nombre'], // Assuming headings match Spanish or English? Let's assume Spanish 'nombre', 'email', 'password'
-            'email'    => $row['email'],
-            'password' => Hash::make($row['password'] ?? 'password'), // Default password if missing
+            'name'     => $row['nombre_completo'],
+            'email'    => $row['correo_electronico'],
+            'password' => Hash::make($row['contrasena'] ?? 'password'), // Default password if missing
         ]);
 
         // Assign selected Role

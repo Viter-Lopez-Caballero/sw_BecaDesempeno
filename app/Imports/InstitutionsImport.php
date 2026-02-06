@@ -11,17 +11,16 @@ class InstitutionsImport implements ToModel, WithHeadingRow
 {
     public function model(array $row)
     {
-        // Try to find state by name or ID if provided, otherwise default or null
-        // Assuming Excel has 'nombre', 'estado' columns.
+        // Las columnas del Excel son: 'nombre_de_la_institucion', 'ciudad', 'estado'
         $estadoId = null;
         if (!empty($row['estado'])) {
-            $estado = Estado::where('nombre', 'LIKE', '%' . $row['estado'] . '%')->first();
+            $estado = Estado::where('nombre', 'LIKE', '%' . trim($row['estado']) . '%')->first();
             $estadoId = $estado ? $estado->id : null;
         }
 
         return new Institucion([
-            'nombre'     => $row['nombre'], 
-            'estado_id'  => $estadoId ?? 1, // Defaulting to 1 if not found, or nullable? Model says nullable? No, likely required.
+            'nombre'     => $row['nombre_de_la_institucion'] ?? $row['nombre'], 
+            'estado_id'  => $estadoId ?? 1,
         ]);
     }
 }

@@ -10,14 +10,16 @@ class PriorityAreasImport implements ToModel, WithHeadingRow
 {
     public function model(array $row)
     {
-        // Assuming 'nombre' or 'name' column
-        // Check for duplicates?
-        if (PriorityArea::where('name', $row['nombre'] ?? $row['name'])->exists()) {
+        // La columna del Excel es: 'nombre_del_area_prioritaria'
+        $nombre = $row['nombre_del_area_prioritaria'] ?? $row['nombre'] ?? $row['name'];
+        
+        // Check for duplicates
+        if (PriorityArea::where('name', $nombre)->exists()) {
             return null;
         }
 
         return new PriorityArea([
-            'name' => $row['nombre'] ?? $row['name'],
+            'name' => $nombre,
             'description' => $row['descripcion'] ?? $row['description'] ?? null,
         ]);
     }

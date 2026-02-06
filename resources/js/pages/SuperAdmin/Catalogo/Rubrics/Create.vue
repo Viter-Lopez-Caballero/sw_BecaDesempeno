@@ -1,7 +1,7 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
-import { mdiClipboardTextOutline } from '@mdi/js';
+import { mdiBookOpenPageVariant, mdiClipboardTextOutline } from '@mdi/js';
 
 const props = defineProps({
     title: String,
@@ -80,13 +80,18 @@ const submit = () => {
                     <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
-                            <path :d="mdiClipboardTextOutline"/>
+                            <path :d="mdiBookOpenPageVariant"/>
                         </svg>
                         <span class="text-gray-700 font-medium">Catálogo</span>
                         <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
                             <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
                         </svg>
-                         <Link :href="route('catalogo.rubrics.index')" class="text-gray-700 font-medium hover:text-[#1B396A] transition">Rúbricas</Link>
+                        <Link :href="route('catalogo.rubrics.index')" class="text-gray-700 font-medium hover:text-[#1B396A] transition flex items-center gap-1.5">
+                            <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #6B7280;">
+                                <path :d="mdiClipboardTextOutline"/>
+                            </svg>
+                            Rúbricas
+                        </Link>
                          <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
                             <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
                         </svg>

@@ -49,9 +49,6 @@ class UserController extends SecurityController
         
         $query = $this->model->query()
             ->with('roles')
-            ->whereDoesntHave('roles', function ($q) {
-                $q->where('id', 3); 
-            })
             ->buscarGlobal($filters->search)
             ->when($roleFilter, function($q) use ($roleFilter) {
                 $q->whereHas('roles', function($query) use ($roleFilter) {
@@ -69,8 +66,8 @@ class UserController extends SecurityController
             ->withQueryString()
             ->appends(['role_id' => $roleFilter]);
 
-        $roles = Role::orderBy('name')->where('id', '!=', 3)->get();
-        $rolesForImport = Role::whereIn('name', ['Admin', 'Evaluador'])->orderBy('name')->get();
+        $roles = Role::orderBy('name')->get();
+        $rolesForImport = Role::where('name', 'Evaluador')->orderBy('name')->get();
 
         return Inertia::render("{$this->source}Index", [
             'usuarios'  => UserResource::collection($users),
@@ -85,7 +82,7 @@ class UserController extends SecurityController
 
     public function create()
     {
-        $roles = Role::orderBy('name')->where('id', '!=', 3)->get();
+        $roles = Role::whereIn('name', ['Admin', 'Evaluador'])->orderBy('name')->get();
         return Inertia::render("{$this->source}Create", [
             'title'         => 'Agregar Usuarios',
             'routeName'     => $this->routeName,
@@ -115,7 +112,7 @@ class UserController extends SecurityController
      */
     public function edit(User $user)
     {
-        $roles = Role::orderBy('name')->where('id', '!=', 3)->get();
+        $roles = Role::whereIn('name', ['Admin', 'Evaluador'])->orderBy('name')->get();
         return Inertia::render("{$this->source}Edit", [
             'title'         => 'Editar Usuarios',
             'routeName'     => $this->routeName,
@@ -170,10 +167,16 @@ class UserController extends SecurityController
     {
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv',
-            'role_id' => 'required|exists:roles,id',
         ]);
         
-        \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\UsersImport($request->role_id), $request->file('file'));
+        // Obtener automáticamente el rol de Evaluador
+        $evaluadorRole = Role::where('name', 'Evaluador')->first();
+        
+        if (!$evaluadorRole) {
+            return redirect()->back()->with('error', 'No se encontró el rol de Evaluador.');
+        }
+        
+        \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\UsersImport($evaluadorRole->id), $request->file('file'));
         
         return redirect()->back()->with('success', 'Usuarios importados correctamente.');
     }

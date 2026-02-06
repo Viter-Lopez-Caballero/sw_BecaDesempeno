@@ -49,7 +49,6 @@ const selectedRole = ref(props.roleFilter || '');
 const showImportSection = ref(false);
 const importForm = useForm({
     file: null,
-    role_id: '',
 });
 
 const rowOptions = [
@@ -149,10 +148,6 @@ const submitImport = () => {
         alertaError('Error', 'Por favor selecciona un archivo');
         return;
     }
-    if (!importForm.role_id) {
-        alertaError('Error', 'Por favor selecciona un rol');
-        return;
-    }
     
     alertaCargando('Importando', 'Por favor espera...');
     
@@ -248,31 +243,9 @@ const downloadTemplate = () => {
                             </button>
                         </div>
                     </div>
-                    <div class="text-sm text-gray-500 mb-4">Carga masiva de usuarios mediante archivo Excel</div>
+                    <div class="text-sm text-gray-500 mb-4">Carga masiva de usuarios con rol de Evaluador mediante archivo Excel</div>
                     
                     <div class="space-y-4">
-                        <div>
-                            <label class="block mb-2 text-sm font-medium text-gray-900">Rol para los usuarios <span class="text-red-500">*</span></label>
-                            <VueSelect
-                                v-model="importForm.role_id"
-                                :options="rolesForImport"
-                                :reduce="rol => rol.id"
-                                label="name"
-                                placeholder="Selecciona un rol"
-                                :searchable="true"
-                                :clearable="true"
-                                class="vue-select-import-role"
-                            >
-                                <template #no-options="{ search, searching }">
-                                    <template v-if="searching">
-                                        No se encontraron resultados para <em>{{ search }}</em>.
-                                    </template>
-                                    <em v-else>Comienza a escribir para buscar...</em>
-                                </template>
-                            </VueSelect>
-                            <p v-if="importForm.errors.role_id" class="mt-1 text-sm text-red-600">{{ importForm.errors.role_id }}</p>
-                        </div>
-
                         <div>
                             <label class="block mb-2 text-sm font-medium text-gray-900">Archivo Excel <span class="text-red-500">*</span></label>
                             <div class="flex items-center gap-3">

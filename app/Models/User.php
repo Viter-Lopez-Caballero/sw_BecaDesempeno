@@ -26,8 +26,6 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $fillable = [
         'curp',
         'name',
-        'apellido_paterno',
-        'apellido_materno',
         'email',
         'password',
         'institucion_id',

@@ -146,7 +146,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::middleware(['role:Evaluador'])->prefix('evaluador')->name('evaluador.')->group(function () {
-        Route::get('inicio', [EvaluadorController::class, 'inicio'])->name('inicio');
+        Route::get('inicio', [\App\Http\Controllers\Evaluador\EvaluadorController::class, 'inicio'])->name('inicio');
+        Route::get('evaluacion/{id}', [\App\Http\Controllers\Evaluador\EvaluadorController::class, 'show'])->name('evaluacion.show');
+        Route::put('evaluacion/{id}', [\App\Http\Controllers\Evaluador\EvaluadorController::class, 'evaluar'])->name('evaluacion.update');
+        Route::get('documentos/{id}/stream', [\App\Http\Controllers\Evaluador\EvaluadorController::class, 'streamDocument'])->name('documentos.stream');
+
+        // Historial de Evaluaciones
+        Route::get('evaluaciones', [\App\Http\Controllers\Evaluador\EvaluadorController::class, 'index'])->name('evaluaciones.index');
+        Route::get('evaluaciones/{id}', [\App\Http\Controllers\Evaluador\EvaluadorController::class, 'showHistory'])->name('evaluaciones.show');
+
+        // Reconocimientos
+        Route::get('reconocimientos', [\App\Http\Controllers\Evaluador\ReconocimientoController::class, 'index'])->name('reconocimientos.index');
+        Route::get('reconocimientos/{id}/download', [\App\Http\Controllers\Evaluador\ReconocimientoController::class, 'download'])->name('reconocimientos.download');
     });
 
     Route::middleware(['role:Docente'])->prefix('docente')->name('docente.')->group(function () {

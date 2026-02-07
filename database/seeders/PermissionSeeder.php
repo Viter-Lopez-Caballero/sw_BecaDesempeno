@@ -108,6 +108,12 @@ class PermissionSeeder extends Seeder
             ['name' => 'docente.inicio', 'description' => 'Ver inicio docente', 'module_key' => 'dashboard'],
             ['name' => 'docente.solicitudes.show', 'description' => 'Ver detalle de solicitud docente', 'module_key' => 'dashboard'],
 
+            ['name' => 'evaluador.evaluaciones.index', 'description' => 'Ver historial de mis evaluaciones', 'module_key' => 'evaluaciones'],
+            ['name' => 'evaluador.evaluaciones.show', 'description' => 'Ver detalles de evaluación en historial', 'module_key' => 'evaluaciones'],
+            
+            // Evaluador Reconocimientos
+            ['name' => 'evaluador.reconocimientos.index', 'description' => 'Ver mis reconocimientos', 'module_key' => 'evaluaciones'],
+
             // Admin Dashboard
             ['name' => 'admin.inicio', 'description' => 'Ver dashboard de administrador', 'module_key' => 'dashboard'],
         ];
@@ -203,6 +209,9 @@ class PermissionSeeder extends Seeder
                 'convocatorias.index',
                 'reconocimiento.index',
                 'solicitudes.index',
+                'evaluador.evaluaciones.index',
+                'evaluador.evaluaciones.show',
+                'evaluador.reconocimientos.index',
             ])->get();
             $evaluador->syncPermissions($evaluadorPermissions);
             $this->command->info("✅ {$evaluadorPermissions->count()} permisos asignados al Evaluador.");

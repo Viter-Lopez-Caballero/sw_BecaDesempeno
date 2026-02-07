@@ -120,6 +120,7 @@
                             <tr>
                                 <th class="px-6 py-3 text-xs uppercase font-semibold w-12">#</th>
                                 <th class="px-6 py-3 text-xs uppercase font-semibold">Nombre</th>
+                                <th class="px-6 py-3 text-xs uppercase font-semibold">Comentarios</th>
                                 <th class="px-6 py-3 text-xs uppercase font-semibold text-right">Estado</th>
                             </tr>
                         </thead>
@@ -127,6 +128,9 @@
                             <tr v-for="(ev, index) in solicitud.evaluaciones" :key="ev.id">
                                 <td class="px-6 py-4 text-sm text-gray-500">{{ index + 1 }}</td>
                                 <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ ev.evaluador?.name }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600 italic">
+                                    {{ ev.comentario || 'Sin comentarios' }}
+                                </td>
                                 <td class="px-6 py-4 text-right">
                                     <span 
                                         class="px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-sm"
@@ -141,7 +145,7 @@
                                 </td>
                             </tr>
                              <tr v-if="!solicitud.evaluaciones || solicitud.evaluaciones.length === 0">
-                                <td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500 italic">
+                                <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500 italic">
                                     No se han asignado evaluadores aún.
                                 </td>
                             </tr>

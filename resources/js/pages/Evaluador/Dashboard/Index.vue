@@ -6,13 +6,10 @@ import { ref, watch } from 'vue';
 import { debounce } from 'lodash';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
-import { mdiSchool, mdiCheckCircle, mdiCloseCircle, mdiFileDocumentMultiple } from '@mdi/js';
+import { mdiHome } from '@mdi/js';
 
 const props = defineProps({
-    stats: {
-        type: Object,
-        default: () => ({ approved: 0, rejected: 0, evaluadas: 0, total: 0, pendientes: 0 })
-    },
+    stats: Object,
     solicitudes: Object,
     filters: Object,
 });
@@ -28,7 +25,7 @@ const rowOptions = [
 ];
 
 const onSearch = debounce((value) => {
-    router.get(route('evaluador.evaluaciones.index'), { 
+    router.get(route('evaluador.inicio'), { 
         search: value,
         rows: rows.value
     }, { preserveState: true, replace: true });
@@ -37,11 +34,11 @@ const onSearch = debounce((value) => {
 const cleanFilters = () => {
     search.value = '';
     rows.value = 10;
-    router.get(route('evaluador.evaluaciones.index'), {}, { preserveState: true, replace: true });
+    router.get(route('evaluador.inicio'), {}, { preserveState: true, replace: true });
 };
 
 const onRowsChange = () => {
-    router.get(route('evaluador.evaluaciones.index'), {
+    router.get(route('evaluador.inicio'), {
         search: search.value,
         rows: rows.value,
     }, { preserveState: true, replace: true, preserveScroll: true });
@@ -50,67 +47,64 @@ const onRowsChange = () => {
 watch(search, (value) => {
     onSearch(value);
 });
-
-const getStatusLabel = (status) => {
-    const labels = {
-        pending: 'Pendiente',
-        approved: 'Aprobada',
-        rejected: 'Rechazada',
-    };
-    return labels[status] || status;
-};
 </script>
 
 <template>
     <EvaluadorLayout>
-        <Head title="Historial de Evaluaciones" />
+        <Head title="Inicio" />
 
         <div class="space-y-6">
             <!-- Header -->
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Historial de Evaluaciones</h1>
+                    <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
-                            <path :d="mdiSchool"/>
+                            <path :d="mdiHome"/>
                         </svg>
-                        <span class="text-gray-900 font-semibold">Evaluaciones</span>
+                        <span class="text-gray-900 font-semibold">Inicio</span>
                     </div>
                 </div>
             </div>
 
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Aprobadas -->
-                <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-600 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Aprobadas</p>
-                        <p class="text-3xl font-bold text-gray-900 mt-1">{{ stats?.aprobadas ?? 0 }}</p>
-                    </div>
-                    <div class="p-3 bg-green-50 rounded-full">
-                        <svg viewBox="0 0 24 24" class="w-8 h-8 text-green-600" style="fill: currentColor"><path :d="mdiCheckCircle"/></svg>
-                    </div>
-                </div>
-
-                <!-- Rechazadas -->
-                <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Rechazadas</p>
-                        <p class="text-3xl font-bold text-gray-900 mt-1">{{ stats?.rechazadas ?? 0 }}</p>
-                    </div>
-                    <div class="p-3 bg-red-50 rounded-full">
-                         <svg viewBox="0 0 24 24" class="w-8 h-8 text-red-600" style="fill: currentColor"><path :d="mdiCloseCircle"/></svg>
-                    </div>
-                </div>
-
-                <!-- Total Evaluadas -->
+                <!-- Total Asignadas -->
                 <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-600 flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Completadas</p>
-                        <p class="text-3xl font-bold text-gray-900 mt-1">{{ stats?.evaluadas ?? 0 }}</p>
+                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Asignadas</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-1">{{ stats.total }}</p>
                     </div>
                     <div class="p-3 bg-blue-50 rounded-full">
-                         <svg viewBox="0 0 24 24" class="w-8 h-8 text-blue-600" style="fill: currentColor"><path :d="mdiFileDocumentMultiple"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#2563EB">
+                            <path d="M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Pendientes -->
+                <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Pendientes</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-1">{{ stats.pendientes }}</p>
+                    </div>
+                    <div class="p-3 bg-yellow-50 rounded-full">
+                         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#EAB308">
+                            <path d="M160-200h80v-340h-80v340Zm240 0h80v-558h-80v558Zm240 0h80v-248h-80v248ZM107-56q-20.92 0-35.96-15.04Q56-86.08 56-107v-746q0-20.92 15.04-35.96Q86.08-904 107-904h746q20.92 0 35.96 15.04Q904-873.92 904-853v746q0 20.92-15.04 35.96Q873.92-56 853-56H107Zm0-80h746v-746H107v746Zm0-746v746-746Z"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Evaluadas -->
+                <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-600 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Evaluadas</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-1">{{ stats.evaluadas }}</p>
+                    </div>
+                    <div class="p-3 bg-green-50 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#16A34A">
+                            <path d="M268-240 42-466l57-56 170 170 56 56-57 56Zm226 0L268-466l56-57 170 170 368-368 56 57-424 424Zm0-226-57-56 198-198 57 56-198 198Z"/>
+                        </svg>
                     </div>
                 </div>
             </div>
@@ -119,22 +113,35 @@ const getStatusLabel = (status) => {
             <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#374151">
+                            <path d="M440-160q-17 0-28.5-11.5T400-200v-240L168-736q-15-20-4.5-42t36.5-22h560q26 0 36.5 22t-4.5 42L560-440v240q0 17-11.5 28.5T520-160h-80Zm40-308 198-252H282l198 252Zm0 0Z"/>
+                        </svg>
                         <h2 class="text-xl font-semibold text-gray-800">Filtro de Búsqueda</h2>
                     </div>
                     <div class="flex items-center gap-3">
                         <button @click="cleanFilters" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-sm font-medium transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
+                                <path d="M400-240v-80h240v80H400Zm-158 0L15-467l57-57 170 170 366-366 57 57-423 423Zm318-160v-80h240v80H560Zm160-160v-80h240v80H720Z"/>
+                            </svg>
                             Limpiar Filtros
                         </button>
                     </div>
                 </div>
                 
+                <div class="text-sm text-gray-500 mb-4">Buscar por convocatoria o docente</div>
+                
                 <div class="flex flex-col md:flex-row gap-4 items-end mb-6">
                     <div class="relative w-full md:flex-1">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#1B396A">
+                                <path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/>
+                            </svg>
+                        </div>
                         <input 
                             v-model="search" 
                             type="text" 
-                            placeholder="Buscar por convocatoria o docente..." 
-                            class="pl-4 w-full h-[45px] rounded-lg border border-gray-300 text-gray-700 focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition"
+                            placeholder="Buscar..." 
+                            class="pl-10 w-full h-[45px] rounded-lg border border-gray-300 text-gray-700 focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition"
                         />
                     </div>
                     <div class="w-full md:w-52 flex-shrink-0">
@@ -150,18 +157,20 @@ const getStatusLabel = (status) => {
                         />
                     </div>
                 </div>
+
             </div>
 
-            <!-- Listado de Solicitudes Completadas -->
+            <!-- Listado de Solicitudes Pendientes -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200">
                 <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-bold text-gray-900">Evaluaciones Completadas</h3>
+                    <h3 class="text-lg font-bold text-gray-900">Solicitudes Pendientes</h3>
+                    <p class="text-sm text-gray-500">Solicitudes que requieren tu evaluación</p>
                 </div>
                 
                 <div class="p-6">
                     <div class="space-y-4">
                         <div v-if="solicitudes.data.length === 0" class="text-center py-8 text-gray-500">
-                            No has realizado ninguna evaluación aún.
+                            No tienes solicitudes pendientes de evaluación.
                         </div>
 
                         <div v-for="solicitud in solicitudes.data" :key="solicitud.evaluacion_id" class="border border-gray-300 rounded-lg p-5 hover:shadow-md transition-shadow bg-white flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -177,34 +186,30 @@ const getStatusLabel = (status) => {
                             <!-- Columna Central: Metadata -->
                             <div class="flex flex-col gap-2 text-sm text-gray-600 md:px-4 md:border-l md:border-r border-gray-200">
                                  <div class="flex items-center gap-2">
-                                    <span>Evaluado el {{ solicitud.fecha_evaluacion }}</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#4B5563">
+                                        <path d="M200-80q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v560q0 33-23.5 56.5T760-80H200Zm0-80h560v-400H200v400Zm0-480h560v-80H200v80Zm0 0v-80 80Z"/>
+                                    </svg>
+                                    <span>Solicitado el {{ solicitud.fecha_solicitud }}</span>
                                 </div>
                                 <div class="flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#4B5563">
+                                        <path d="M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"/>
+                                    </svg>
                                     <span>{{ solicitud.documentos_count }} Documentos adjuntos</span>
-                                </div>
-                                <div class="flex items-center gap-2 font-medium">
-                                    <span>Puntaje: {{ Math.round(solicitud.score) }} pts</span>
                                 </div>
                             </div>
 
                             <!-- Columna Derecha: Acciones -->
                             <div class="flex flex-col items-end gap-3 min-w-[140px]">
-                                <span 
-                                    class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border"
-                                    :class="{
-                                        'bg-green-100 text-green-800 border-green-200': solicitud.status === 'approved',
-                                        'bg-red-100 text-red-800 border-red-200': solicitud.status === 'rejected',
-                                        'bg-yellow-100 text-yellow-800 border-yellow-200': solicitud.status === 'pending',
-                                    }"
-                                >
-                                    {{ getStatusLabel(solicitud.status) }}
+                                <span class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full border border-yellow-200">
+                                    {{ solicitud.status }}
                                 </span>
                                 
                                 <Link 
-                                    :href="route('evaluador.evaluaciones.show', solicitud.evaluacion_id)" 
-                                    class="w-full text-center bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2 px-4 rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2"
+                                    :href="route('evaluador.evaluacion.show', solicitud.evaluacion_id)" 
+                                    class="w-full text-center bg-[#1B396A] hover:bg-[#2c4c85] text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm"
                                 >
-                                    Ver Detalles
+                                    Evaluar
                                 </Link>
                             </div>
                         </div>

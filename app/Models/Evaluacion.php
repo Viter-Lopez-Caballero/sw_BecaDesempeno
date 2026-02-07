@@ -16,7 +16,14 @@ class Evaluacion extends Model
         'solicitud_id',
         'user_id',
         'status', // pending, approved, rejected
+        'score',
+        'respuestas',
         'comentario',
+    ];
+
+    protected $casts = [
+        'respuestas' => 'array',
+        'score' => 'decimal:2',
     ];
 
     public function solicitud(): BelongsTo

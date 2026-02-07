@@ -163,20 +163,20 @@ export const menuConfigs = {
     evaluador: [
         {
             label: "Inicio",
-            route: "inicio.dashboard",
+            route: "evaluador.inicio",
             icon: mdiHome,
         },
         {
             label: "Evaluaciones",
-            route: "evaluaciones.index",
+            route: "evaluador.evaluaciones.index",
             icon: mdiSchool,
-            permission: "evaluaciones.index",
+            permission: "evaluador.evaluaciones.index",
         },
         {
-            label: "Reconocimiento",
-            route: "reconocimiento.index",
+            label: "Reconocimientos",
+            route: "evaluador.reconocimientos.index",
             icon: mdiStar,
-            permission: "reconocimiento.index",
+            permission: "evaluador.reconocimientos.index",
         }
     ]
 };

@@ -130,7 +130,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Mantenemos el dashboard principal exclusivo por Rol si se desea, 
     // o podríamos protegerlo con un permiso especial. Por ahora lo dejamos por rol para no romper el inicio.
     Route::middleware(['role:Super Admin'])->prefix('superadmin')->name('superadmin.')->group(function () {
-        Route::get('inicio', [SuperAdminController::class, 'inicio'])->name('inicio');
+        Route::get('inicio', [\App\Http\Controllers\SuperAdmin\InicioController::class, 'inicio'])->name('inicio');
         Route::get('control-solicitudes', [\App\Http\Controllers\SuperAdmin\RequestControlController::class, 'index'])->name('control-solicitudes');
     });
 

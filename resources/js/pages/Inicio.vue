@@ -337,7 +337,7 @@ if (typeof window !== 'undefined') {
                                     {{ convocatoria.estado === 'activa' ? 'Activa' : 'Cerrada' }}
                                 </span>
                                 <span class="text-sm font-semibold bg-gray-100 px-3 py-1 rounded-full" :class="convocatoria.estado === 'activa' ? 'text-gray-600' : 'text-gray-500'">
-                                    {{ convocatoria.anio || new Date().getFullYear() }}
+                                    {{ new Date().getFullYear() }}
                                 </span>
                             </div>
                             <h3 

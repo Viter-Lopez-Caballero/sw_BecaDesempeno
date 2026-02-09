@@ -14,7 +14,6 @@ class Convocatoria extends Model
     protected $fillable = [
         'nombre',
         'descripcion',
-        'anio',
         'estado',
         'archivo_path',
         'archivo_nombre',
@@ -40,6 +39,13 @@ class Convocatoria extends Model
             ->withTimestamps();
     }
 
+    public function documentosCatalogo()
+    {
+        return $this->belongsToMany(DocumentoCatalogo::class, 'convocatoria_documento', 'convocatoria_id', 'documento_catalogo_id')
+            ->withPivot('es_obligatorio')
+            ->withTimestamps();
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Scopes
@@ -53,7 +59,6 @@ class Convocatoria extends Model
         }
 
         return $query->where('nombre', 'LIKE', "%{$search}%")
-            ->orWhere('anio', 'LIKE', "%{$search}%")
             ->orWhere('estado', 'LIKE', "%{$search}%");
     }
 

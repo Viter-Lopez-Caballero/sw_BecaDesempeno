@@ -19,16 +19,27 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    documentosCatalogo: {
+        type: Array,
+        default: () => [],
+    },
+    documentosVinculados: {
+        type: Array,
+        default: () => [],
+    },
 });
 
 const form = useForm({
     id: props.convocatoria.data?.id || props.convocatoria.id,
     nombre: props.convocatoria.data?.nombre || props.convocatoria.nombre,
     descripcion: props.convocatoria.data?.descripcion || props.convocatoria.descripcion,
-    anio: props.convocatoria.data?.anio || props.convocatoria.anio,
     estado: props.convocatoria.data?.estado || props.convocatoria.estado,
     archivo: null,
     _method: 'PUT',
+});
+
+const documentosForm = useForm({
+    documentos: props.documentosVinculados || [],
 });
 
 const archivoPreview = ref(null);
@@ -85,6 +96,21 @@ const removeFile = () => {
 const submit = () => {
     form.post(route(`${props.routeName}update`, { convocatoria: form.id }));
 };
+
+const toggleDocumento = (docId) => {
+    const index = documentosForm.documentos.indexOf(docId);
+    if (index > -1) {
+        documentosForm.documentos.splice(index, 1);
+    } else {
+        documentosForm.documentos.push(docId);
+    }
+};
+
+const guardarDocumentos = () => {
+    documentosForm.put(route('convocatorias.updateDocumentos', form.id), {
+        preserveScroll: true,
+    });
+};
 </script>
 
 <template>
@@ -133,19 +159,6 @@ const submit = () => {
                             <p v-if="form.errors.nombre" class="mt-1 text-sm text-red-600">{{ form.errors.nombre }}</p>
                         </div>
                         
-                        <!-- Año -->
-                        <div>
-                            <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Año: <span class="text-red-500">*</span></label>
-                            <input v-model="form.anio" type="number" min="2000" max="2100" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" placeholder="Año" />
-                            <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span>Por favor, introduce el año de la convocatoria</span>
-                            </div>
-                            <p v-if="form.errors.anio" class="mt-1 text-sm text-red-600">{{ form.errors.anio }}</p>
-                        </div>
-
                         <!-- Estado -->
                         <div>
                             <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Estado: <span class="text-red-500">*</span></label>
@@ -244,6 +257,52 @@ const submit = () => {
                                         <p class="text-xs text-gray-500">Tamaño máximo: 30MB Admite: JPG, PNG, PDF</p>
                                     </div>
                                     <input id="archivo-convocatoria" type="file" class="hidden" @change="handleFileChange" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+
+                        <!-- Documentos Requeridos Section -->
+                        <div v-if="documentosCatalogo && documentosCatalogo.length >0">
+                            <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Documentos Requeridos:</label>
+                            <div class="bg-[#F3F4F6] rounded-lg p-4 border border-gray-200">
+                                <p class="text-sm text-gray-600 mb-4">Selecciona los documentos que los docentes deberán subir al solicitar esta convocatoria:</p>
+                                
+                                <div class="space-y-2 max-h-64 overflow-y-auto pr-2">
+                                    <div v-for="doc in documentosCatalogo" :key="doc.id" class="flex items-center gap-3 p-3 bg-white rounded-lg hover:bg-gray-50 transition border border-gray-100">
+                                        <input 
+                                            :id="`doc-${doc.id}`" 
+                                            type="checkbox" 
+                                            :checked="documentosForm.documentos.includes(doc.id)" 
+                                            @change="toggleDocumento(doc.id)" 
+                                            class="w-4 h-4 text-[#1B396A] bg-gray-100 border-gray-300 rounded focus:ring-[#1B396A] focus:ring-2" 
+                                        />
+                                        <label :for="`doc-${doc.id}`" class="flex-1 cursor-pointer">
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-medium text-gray-900">{{ doc.nombre }}</span>
+                                                <span v-if="doc.es_obligatorio" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                    Obligatorio
+                                                </span>
+                                                <span class="text-xs font-medium uppercase px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">
+                                                    {{ doc.tipo_archivo }}
+                                                </span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-1">{{ doc.descripcion || 'Sin descripción' }}</p>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+                                    <span class="text-sm text-gray-600">
+                                        <strong>{{ documentosForm.documentos.length }}</strong> de <strong>{{ documentosCatalogo.length }}</strong> documentos seleccionados
+                                    </span>
+                                    <button 
+                                        @click.prevent="guardarDocumentos" 
+                                        :disabled="documentosForm.processing" 
+                                        type="button" 
+                                        class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition disabled:opacity-50"
+                                    >
+                                        {{ documentosForm.processing ? 'Guardando...' : 'Guardar Documentos' }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                                 </label>
                             </div>
 

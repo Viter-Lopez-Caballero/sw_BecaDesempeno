@@ -6,40 +6,11 @@ import { ref } from 'vue';
 
 const props = defineProps({
     convocatoria: Object,
+    documentos: {
+        type: Array,
+        default: () => [],
+    },
 });
-
-// Required documents list
-const documents = [
-    {
-        id: 'carta_exclusividad',
-        name: 'Carta de Exclusividad Laboral',
-        url: 'https://edd.tecnm.mx/formatos/2025/CARTA_EXCLUSIVIDAD_EDD2025.docx',
-        description: 'Documento firmado declarando exclusividad con TecNM.',
-        type: 'docx'
-    },
-    {
-        id: 'liberacion_academica',
-        name: 'Liberación de Actividades Académicas',
-        url: 'https://edd.tecnm.mx/formatos/2025/Formato_Liberacion_de_Actividades_Academicas_2025.docx',
-        description: 'Constancia de cumplimiento de actividades académicas.',
-        type: 'docx'
-    },
-    {
-        id: 'constancia_docente',
-        name: 'Constancia Actividades Frente a Grupo',
-        url: 'https://edd.tecnm.mx/formatos/2025/Formato_Constancia_de_Liberacion_de_Actividades_Docentes_2025.docx',
-        description: 'Certificación de cumplimiento frente a grupo.',
-        type: 'docx'
-    },
-    // Add other generic requirements if needed
-    {
-        id: 'cedula',
-        name: 'Cédula Profesional',
-        url: null, // No template
-        description: 'Copia digital de su Cédula Profesional.',
-        type: 'pdf'
-    }
-];
 
 const form = useForm({
     convocatoria_id: props.convocatoria.id,
@@ -67,14 +38,21 @@ const submit = () => {
     // We should iterate through our known documents and check if they are uploaded.
     
     // Validate all required?
-    // Let's assume all listed are required.
     let missing = [];
-    documents.forEach(doc => {
-        if (uploadedFiles.value[doc.id]) {
-            form.files.push(uploadedFiles.value[doc.id]);
-            form.file_types.push(doc.name); // Send the descriptive name
+    props.documentos.forEach(doc => {
+        if (doc.es_obligatorio) {
+            if (uploadedFiles.value[doc.id]) {
+                form.files.push(uploadedFiles.value[doc.id]);
+                form.file_types.push(doc.nombre); // Send the descriptive name
+            } else {
+                missing.push(doc.nombre);
+            }
         } else {
-            missing.push(doc.name);
+            // Optional documents
+            if (uploadedFiles.value[doc.id]) {
+                form.files.push(uploadedFiles.value[doc.id]);
+                form.file_types.push(doc.nombre);
+            }
         }
     });
 
@@ -122,8 +100,9 @@ const submit = () => {
                             Descarga los formatos, llénalos correctamente y súbelos en formato PDF. Asegúrate de que sean legibles.
                         </p>
 
-                        <div class="space-y-6">
-                            <div v-for="doc in documents" :key="doc.id" class="flex flex-col sm:flex-row gap-4 p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition">
+                        <!-- Dynamic Documents List -->
+                        <div v-if="documentos && documentos.length > 0" class="space-y-6">
+                            <div v-for="doc in documentos" :key="doc.id" class="flex flex-col sm:flex-row gap-4 p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition">
                                 <!-- Icon / Status -->
                                 <div class="flex-shrink-0 pt-1">
                                     <div v-if="uploadedFiles[doc.id]" class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
@@ -138,11 +117,19 @@ const submit = () => {
                                 <div class="flex-1">
                                     <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
                                         <div>
-                                            <h4 class="font-semibold text-gray-900">{{ doc.name }}</h4>
-                                            <p class="text-xs text-gray-500 mb-2">{{ doc.description }}</p>
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <h4 class="font-semibold text-gray-900">{{ doc.nombre }}</h4>
+                                                <span v-if="doc.es_obligatorio" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                    Obligatorio
+                                                </span>
+                                                <span v-else class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                    Opcional
+                                                </span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mb-2">{{ doc.descripcion || 'Sin descripción' }}</p>
                                             
                                             <!-- Download Template Link -->
-                                            <a v-if="doc.url" :href="doc.url" target="_blank" class="text-xs font-medium text-[#1B396A] hover:underline flex items-center gap-1 mb-3">
+                                            <a v-if="doc.url_plantilla" :href="doc.url_plantilla" target="_blank" class="text-xs font-medium text-[#1B396A] hover:underline flex items-center gap-1 mb-3">
                                                 <svg xmlns="http://www.w3.org/2000/svg" height="14px" viewBox="0 -960 960 960" width="14px" fill="currentColor">
                                                     <path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
                                                 </svg>
@@ -156,7 +143,7 @@ const submit = () => {
                                             <label class="cursor-pointer inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transition">
                                                 <svg viewBox="0 0 24 24" class="w-5 h-5 mr-2 text-gray-400" fill="currentColor"><path :d="mdiCloudUpload"/></svg>
                                                 {{ uploadedFiles[doc.id] ? 'Archivo seleccionado' : 'Subir PDF' }}
-                                                <input type="file" class="hidden" @change="(e) => handleFileUpload(e, doc.id, doc.name)" accept=".pdf" />
+                                                <input type="file" class="hidden" @change="(e) => handleFileUpload(e, doc.id, doc.nombre)" accept=".pdf" />
                                             </label>
                                             <p v-if="uploadedFiles[doc.id]" class="text-xs text-green-600 mt-1 text-center font-medium max-w-[150px] truncate">
                                                 {{ uploadedFiles[doc.id].name }}
@@ -166,6 +153,15 @@ const submit = () => {
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Empty State -->
+                        <div v-else class="flex flex-col items-center justify-center py-12 text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#9CA3AF" class="mb-4">
+                                <path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/>
+                            </svg>
+                            <p class="text-lg font-medium">No hay documentos configurados para esta convocatoria</p>
+                            <p class="text-sm">Por favor contacta al administrador</p>
+                        </div>
                     </div>
                 </div>
 
@@ -174,12 +170,16 @@ const submit = () => {
                     <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6 sticky top-6">
                         <h3 class="text-lg font-bold text-gray-900 mb-4">Resumen</h3>
                         <div class="space-y-3 mb-6">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600">Documentos requeridos:</span>
+                                <span class="font-bold text-gray-900">{{ documentos.filter(d => d.es_obligatorio).length }}</span>
+                            </div>
                              <div class="flex justify-between items-center text-sm">
                                 <span class="text-gray-600">Documentos subidos:</span>
-                                <span class="font-bold text-gray-900">{{ Object.keys(uploadedFiles).length }} / {{ documents.length }}</span>
+                                <span class="font-bold text-gray-900">{{ Object.keys(uploadedFiles).length }}</span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                <div class="bg-[#1B396A] h-2.5 rounded-full transition-all duration-500" :style="{ width: (Object.keys(uploadedFiles).length / documents.length * 100) + '%' }"></div>
+                                <div class="bg-[#1B396A] h-2.5 rounded-full transition-all duration-500" :style="{ width: documentos.length > 0 ? (Object.keys(uploadedFiles).length / documentos.filter(d => d.es_obligatorio).length * 100) + '%' : '0%' }"></div>
                             </div>
                         </div>
 
@@ -189,7 +189,7 @@ const submit = () => {
                             </p>
                         </div>
 
-                        <button @click="submit" :disabled="form.processing || Object.keys(uploadedFiles).length < documents.length"
+                        <button @click="submit" :disabled="form.processing || Object.keys(uploadedFiles).length < documentos.filter(d => d.es_obligatorio).length"
                             class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#1B396A] hover:bg-[#0f2347] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B396A] disabled:opacity-50 disabled:cursor-not-allowed transition">
                             <span v-if="form.processing">Enviando...</span>
                             <span v-else>Enviar Solicitud</span>

@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('nombre');
             $table->text('descripcion')->nullable();
-            $table->integer('anio');
             $table->enum('estado', ['activa', 'cerrada', 'pendiente'])->default('pendiente');
             $table->softDeletes();
             $table->timestamps();

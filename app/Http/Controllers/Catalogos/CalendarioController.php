@@ -70,7 +70,7 @@ class CalendarioController extends Controller
         return Inertia::render("{$this->source}Create", [
             'title'          => 'Agregar Calendario',
             'routeName'      => $this->routeName,
-            'convocatorias'  => Convocatoria::ordenado('anio', 'desc')->get(['id', 'nombre', 'anio']),
+            'convocatorias'  => Convocatoria::ordenado('id', 'desc')->get(['id', 'nombre']),
         ]);
     }
 
@@ -100,7 +100,7 @@ class CalendarioController extends Controller
             'title'         => 'Editar Calendario',
             'routeName'     => $this->routeName,
             'calendario'    => new CalendarioResource($calendario->load('convocatoria')),
-            'convocatorias' => Convocatoria::ordenado('anio', 'desc')->get(['id', 'nombre', 'anio']),
+            'convocatorias' => Convocatoria::ordenado('id', 'desc')->get(['id', 'nombre']),
         ]);
     }
 

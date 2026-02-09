@@ -95,6 +95,12 @@ class PermissionSeeder extends Seeder
             ['name' => 'calendario.edit', 'description' => 'Editar calendario', 'module_key' => 'cat'],
             ['name' => 'calendario.delete', 'description' => 'Eliminar calendario', 'module_key' => 'cat'],
           
+            // Documentos Catálogo (CRUD)
+            ['name' => 'documentos.index', 'description' => 'Ver catálogo de documentos', 'module_key' => 'cat'],
+            ['name' => 'documentos.create', 'description' => 'Crear documento catálogo', 'module_key' => 'cat'],
+            ['name' => 'documentos.edit', 'description' => 'Editar documento catálogo', 'module_key' => 'cat'],
+            ['name' => 'documentos.delete', 'description' => 'Eliminar documento catálogo', 'module_key' => 'cat'],
+
             // Documents Module (Admin)
             ['name' => 'documents.index', 'description' => 'Ver documentos admin', 'module_key' => 'cat'],
             ['name' => 'documents.show', 'description' => 'Ver detalles de documentos', 'module_key' => 'cat'],
@@ -107,6 +113,12 @@ class PermissionSeeder extends Seeder
             // Docente Specific
             ['name' => 'docente.inicio', 'description' => 'Ver inicio docente', 'module_key' => 'dashboard'],
             ['name' => 'docente.solicitudes.show', 'description' => 'Ver detalle de solicitud docente', 'module_key' => 'dashboard'],
+
+            ['name' => 'evaluador.evaluaciones.index', 'description' => 'Ver historial de mis evaluaciones', 'module_key' => 'evaluaciones'],
+            ['name' => 'evaluador.evaluaciones.show', 'description' => 'Ver detalles de evaluación en historial', 'module_key' => 'evaluaciones'],
+            
+            // Evaluador Reconocimientos
+            ['name' => 'evaluador.reconocimientos.index', 'description' => 'Ver mis reconocimientos', 'module_key' => 'evaluaciones'],
 
             // Admin Dashboard
             ['name' => 'admin.inicio', 'description' => 'Ver dashboard de administrador', 'module_key' => 'dashboard'],
@@ -203,6 +215,9 @@ class PermissionSeeder extends Seeder
                 'convocatorias.index',
                 'reconocimiento.index',
                 'solicitudes.index',
+                'evaluador.evaluaciones.index',
+                'evaluador.evaluaciones.show',
+                'evaluador.reconocimientos.index',
             ])->get();
             $evaluador->syncPermissions($evaluadorPermissions);
             $this->command->info("✅ {$evaluadorPermissions->count()} permisos asignados al Evaluador.");

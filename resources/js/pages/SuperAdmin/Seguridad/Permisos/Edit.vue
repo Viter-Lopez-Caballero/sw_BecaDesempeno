@@ -44,16 +44,16 @@ const submit = () => {
     form.clearErrors();
     
     // Validación del lado del cliente
+    if (!form.module_key) {
+        form.errors.module_key = 'Debes seleccionar un módulo';
+        return;
+    }
     if (!form.name) {
         form.errors.name = 'El nombre es obligatorio';
         return;
     }
     if (!form.description) {
         form.errors.description = 'La descripción es obligatoria';
-        return;
-    }
-    if (!form.module_key) {
-        form.errors.module_key = 'Debes seleccionar un módulo';
         return;
     }
     
@@ -124,7 +124,8 @@ const submit = () => {
                                 :searchable="true"
                                 :clearable="true"
                                 :class="['vue-select-custom', { 'vue-select-error': form.errors.module_key }]"
-                                @input="clearError('module_key')"
+                                @option:selected="clearError('module_key')"
+                                @option:deselected="clearError('module_key')"
                             />
                             <div v-if="!form.errors.module_key" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -70,7 +70,7 @@ class ReconocimientoController extends Controller
     /**
      * Toggle reconocimiento status.
      */
-    public function toggle(Request $request, $id)
+    public function toggle(Request $request)
     {
         // $id es el reconocimiento_id si existe, o necesitamos user_id + convocatoria_id
         // Mejor recibir user_id y convocatoria_id en el request

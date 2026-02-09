@@ -18,13 +18,16 @@ class ConvocatoriaResource extends JsonResource
             'id' => $this->id,
             'nombre' => $this->nombre,
             'descripcion' => $this->descripcion,
-            'anio' => $this->anio,
             'estado' => $this->estado,
             'archivo_path' => $this->archivo_path,
             'archivo_nombre' => $this->archivo_nombre,
             'archivo_tipo' => $this->archivo_tipo,
             'archivo_size' => $this->archivo_size,
             'calendario' => $this->whenLoaded('calendario'),
+            'fecha_fin' => $this->when(
+                $this->relationLoaded('calendario'),
+                fn() => $this->calendario?->registro_fin ?? null
+            ),
             'created_at' => $this->created_at->toDateTimeString(),
         ];
     }

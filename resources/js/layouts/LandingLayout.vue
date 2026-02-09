@@ -117,7 +117,8 @@ const showingNavigationDropdown = ref(false);
                         <div>
                             <h3 class="text-lg font-bold mb-3">Dirección</h3>
                             <p class="text-sm leading-relaxed">
-                                Av. Universidad 1200, Col. Xoco, Ciudad de México, Alcaldía Benito Juárez C.P. 03330
+                                Av. Universidad 1200, Col. Xoco, Ciudad de México,<br> 
+                                Alcaldía Benito Juárez C.P. 03330
                             </p>
                         </div>
                     </div>

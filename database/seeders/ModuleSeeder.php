@@ -48,6 +48,11 @@ class ModuleSeeder extends Seeder
                 'description' => 'Gestión de reconocimientos para evaluadores',
                 'key' => 'reconocimiento',
             ],
+            [
+                'name' => 'Evaluaciones',
+                'description' => 'Módulo de evaluaciones y su historial',
+                'key' => 'evaluaciones',
+            ],
 
         ];
 

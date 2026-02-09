@@ -93,7 +93,18 @@ class ConvocatoriaController extends Controller
             $data['archivo_size'] = $file->getSize();
         }
 
-        Convocatoria::create($data);
+        $convocatoria = Convocatoria::create($data);
+        
+        // Vincular automáticamente todos los documentos activos del catálogo
+        $documentosActivos = \App\Models\DocumentoCatalogo::where('activo', true)->pluck('id');
+        if ($documentosActivos->isNotEmpty()) {
+            $syncData = [];
+            foreach ($documentosActivos as $docId) {
+                $syncData[$docId] = ['es_obligatorio' => true];
+            }
+            $convocatoria->documentosCatalogo()->sync($syncData);
+        }
+        
         return redirect()->route("{$this->routeName}index")->with('success', 'Convocatoria creada con éxito!');
     }
 
@@ -110,10 +121,16 @@ class ConvocatoriaController extends Controller
      */
     public function edit(Convocatoria $convocatoria): Response
     {
+        // Cargar documentos del catálogo y documentos vinculados
+        $documentosCatalogo = \App\Models\DocumentoCatalogo::activos()->ordenado()->get();
+        $documentosVinculados = $convocatoria->documentosCatalogo->pluck('id')->toArray();
+        
         return Inertia::render("{$this->source}Edit", [
-            'title'         => 'Editar Convocatoria',
-            'routeName'     => $this->routeName,
-            'convocatoria'  => new ConvocatoriaResource($convocatoria->load('calendario')),
+            'title'                  => 'Editar Convocatoria',
+            'routeName'              => $this->routeName,
+            'convocatoria'           => new ConvocatoriaResource($convocatoria->load('calendario')),
+            'documentosCatalogo'     => \App\Http\Resources\Catalogos\DocumentoResource::collection($documentosCatalogo),
+            'documentosVinculados'   => $documentosVinculados,
         ]);
     }
 
@@ -173,4 +190,29 @@ class ConvocatoriaController extends Controller
             $convocatoria->archivo_nombre
         );
     }
+
+    /**
+     * Update the documents linked to the convocatoria.
+     */
+    public function updateDocumentos(Request $request, Convocatoria $convocatoria): RedirectResponse
+    {
+        $request->validate([
+            'documentos' => 'nullable|array',
+            'documentos.*' => 'exists:documentos_catalogo,id',
+        ]);
+
+        // Sincronizar documentos vinculados
+        $documentos = $request->input('documentos', []);
+        $syncData = [];
+        
+        foreach ($documentos as $docId) {
+            $syncData[$docId] = ['es_obligatorio' => true]; // Por defecto obligatorio
+        }
+        
+        $convocatoria->documentosCatalogo()->sync($syncData);
+        
+        return redirect()->route("{$this->routeName}edit", $convocatoria->id)
+            ->with('success', 'Documentos actualizados correctamente');
+    }
 }
+

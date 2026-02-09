@@ -95,6 +95,12 @@ class PermissionSeeder extends Seeder
             ['name' => 'calendario.edit', 'description' => 'Editar calendario', 'module_key' => 'cat'],
             ['name' => 'calendario.delete', 'description' => 'Eliminar calendario', 'module_key' => 'cat'],
           
+            // Documentos Catálogo (CRUD)
+            ['name' => 'documentos.index', 'description' => 'Ver catálogo de documentos', 'module_key' => 'cat'],
+            ['name' => 'documentos.create', 'description' => 'Crear documento catálogo', 'module_key' => 'cat'],
+            ['name' => 'documentos.edit', 'description' => 'Editar documento catálogo', 'module_key' => 'cat'],
+            ['name' => 'documentos.delete', 'description' => 'Eliminar documento catálogo', 'module_key' => 'cat'],
+
             // Documents Module (Admin)
             ['name' => 'documents.index', 'description' => 'Ver documentos admin', 'module_key' => 'cat'],
             ['name' => 'documents.show', 'description' => 'Ver detalles de documentos', 'module_key' => 'cat'],

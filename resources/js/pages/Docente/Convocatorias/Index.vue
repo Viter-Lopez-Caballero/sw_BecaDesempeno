@@ -29,7 +29,7 @@ const props = defineProps({
                 <div v-for="convocatoria in convocatorias.data" :key="convocatoria.id" class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
                     <div class="bg-gray-50 p-4 border-b border-gray-100 flex justify-between items-center">
                          <span class="text-xs font-bold uppercase tracking-wider text-[#1B396A] bg-blue-100 px-2 py-1 rounded-md">
-                            {{ convocatoria.anio }}
+                            {{ convocatoria.nombre }}
                         </span>
                         <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-200">
                             Activa
@@ -41,7 +41,7 @@ const props = defineProps({
                          
                          <div class="flex items-center gap-2 text-xs text-gray-500 mb-2">
                             <span class="font-semibold">Cierre:</span>
-                            <span>{{ new Date(convocatoria.fecha_fin).toLocaleDateString() }}</span>
+                            <span>{{ convocatoria.fecha_fin ? new Date(convocatoria.fecha_fin).toLocaleDateString() : 'Por definir' }}</span>
                          </div>
                     </div>
                     <div class="p-6 pt-0 mt-auto">

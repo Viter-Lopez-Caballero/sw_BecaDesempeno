@@ -58,8 +58,7 @@ class Calendario extends Model
         }
 
         return $query->whereHas('convocatoria', function ($q) use ($search) {
-            $q->where('nombre', 'LIKE', "%{$search}%")
-              ->orWhere('anio', 'LIKE', "%{$search}%");
+            $q->where('nombre', 'LIKE', "%{$search}%");
         });
     }
 

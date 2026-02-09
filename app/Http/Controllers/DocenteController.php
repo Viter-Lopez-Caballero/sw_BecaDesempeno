@@ -35,7 +35,7 @@ class DocenteController extends Controller
     public function show($id)
     {
         $solicitud = \App\Models\Solicitud::where('user_id', auth()->id())
-            ->with(['convocatoria', 'documentos', 'user.institucion', 'user.priorityArea', 'user.subArea'])
+            ->with(['convocatoria', 'documentos', 'user.institucion.estado', 'user.priorityArea', 'user.subArea'])
             ->findOrFail($id);
 
         return Inertia::render('Docente/Solicitudes/Show', [
@@ -77,9 +77,9 @@ class DocenteController extends Controller
 
     public function convocatorias()
     {
-        // Fetch active convocatorias
-        // Assuming 'estado' = 'activa' denotes active.
-        $convocatorias = \App\Models\Convocatoria::where('estado', 'activa') // Match state string/enum from other files
+        // Fetch active convocatorias with calendario for fecha_fin
+        $convocatorias = \App\Models\Convocatoria::where('estado', 'activa')
+            ->with('calendario')
             ->orderByDesc('created_at')
             ->get();
 
@@ -93,7 +93,7 @@ class DocenteController extends Controller
 
     public function solicitar($id)
     {
-        $convocatoria = \App\Models\Convocatoria::findOrFail($id);
+        $convocatoria = \App\Models\Convocatoria::with(['documentosCatalogo', 'calendario'])->findOrFail($id);
 
         // Check if user already has an active application (pending or approved)
         // Adjust logic if they can apply to multiple IF they are different years? 
@@ -106,8 +106,15 @@ class DocenteController extends Controller
              return redirect()->route('docente.inicio')->with('error', 'Ya tienes una solicitud en proceso. No puedes aplicar a otra.');
         }
 
+        // Get documents for this convocatoria (from catalog)
+        $documentos = $convocatoria->documentosCatalogo()
+            ->activos()
+            ->ordenado()
+            ->get();
+
         return Inertia::render('Docente/Convocatorias/Solicitar', [
             'convocatoria' => (new \App\Http\Resources\Catalogos\ConvocatoriaResource($convocatoria))->resolve(),
+            'documentos' => \App\Http\Resources\Catalogos\DocumentoResource::collection($documentos)->resolve(),
         ]);
     }
 

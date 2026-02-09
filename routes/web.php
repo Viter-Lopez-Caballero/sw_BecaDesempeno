@@ -108,6 +108,7 @@ use App\Http\Controllers\Catalogos\SubAreaController;
 use App\Http\Controllers\Catalogos\RubricController;
 use App\Http\Controllers\Catalogos\CalendarioController;
 use App\Http\Controllers\Catalogos\ConvocatoriaController;
+use App\Http\Controllers\Catalogos\DocumentoController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Ruta de inicio genérica (redirige según rol)
@@ -224,6 +225,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Convocatorias
     Route::get('convocatorias/{convocatoria}/download', [ConvocatoriaController::class, 'download'])->name('convocatorias.download');
+    Route::put('convocatorias/{convocatoria}/documentos', [ConvocatoriaController::class, 'updateDocumentos'])->name('convocatorias.updateDocumentos');
     Route::resource('convocatorias', ConvocatoriaController::class)->names([
         'index' => 'convocatorias.index',
         'create' => 'convocatorias.create',
@@ -253,9 +255,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return Inertia::render('Catalogo/AreasPrioritarias');
         })->name('areas')->middleware('can:catalogo.index');
 
-        Route::get('documentos', function () {
-            return Inertia::render('SuperAdmin/Catalogo/Documentos/Index');
-        })->name('documentos')->middleware('can:documents.index');
+        Route::get('documentos/{id}/download', [DocumentoController::class, 'download'])->name('documentos.download');
+        Route::post('documentos/{id}/toggle-active', [DocumentoController::class, 'toggleActive'])->name('documentos.toggleActive');
+        Route::get('documentos/{documento}/download-docente', [DocumentoController::class, 'downloadDocente'])->name('documentos.downloadDocente');
+        Route::get('documentos/{documento}/stream-docente', [DocumentoController::class, 'streamDocente'])->name('documentos.streamDocente');
+        Route::resource('documentos', DocumentoController::class);
+
+        // Documentos de Docentes - REMOVED (integrated into documentos with tabs)
+        // Mantener estas rutas comentadas para referencia si se necesitan en el futuro
 
         Route::get('rubrica', function () {
             return Inertia::render('Catalogo/Rubrica');

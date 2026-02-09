@@ -20,7 +20,6 @@ const props = defineProps({
 const form = useForm({
     nombre: '',
     descripcion: '',
-    anio: new Date().getFullYear(),
     estado: 'pendiente',
     archivo: null,
 });
@@ -116,19 +115,6 @@ const submit = () => {
                                 <span>Por favor, introduce el nombre de la convocatoria</span>
                             </div>
                             <p v-if="form.errors.nombre" class="mt-1 text-sm text-red-600">{{ form.errors.nombre }}</p>
-                        </div>
-                        
-                        <!-- Año -->
-                        <div>
-                            <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Año: <span class="text-red-500">*</span></label>
-                            <input v-model="form.anio" type="number" min="2000" max="2100" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" placeholder="Año" />
-                            <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span>Por favor, introduce el año de la convocatoria</span>
-                            </div>
-                            <p v-if="form.errors.anio" class="mt-1 text-sm text-red-600">{{ form.errors.anio }}</p>
                         </div>
 
                         <!-- Estado -->

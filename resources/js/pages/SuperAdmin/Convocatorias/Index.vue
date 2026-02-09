@@ -262,18 +262,6 @@ const closeViewer = () => {
                                         </svg>
                                     </button>
                                 </th>
-                                <th scope="col" class="px-6 py-4 text-center" style="width: 120px;">
-                                    <button @click="sortBy('anio')"
-                                        class="flex items-center justify-center gap-1 hover:text-gray-200 transition w-full">
-                                        <span>Año</span>
-                                        <svg v-if="sortField === 'anio'" xmlns="http://www.w3.org/2000/svg"
-                                            class="h-4 w-4" :class="sortDirection === 'asc' ? 'rotate-0' : 'rotate-180'"
-                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M5 15l7-7 7 7" />
-                                        </svg>
-                                    </button>
-                                </th>
                                 <th scope="col" class="px-6 py-4 text-center" style="width: 150px;">
                                     <button @click="sortBy('estado')"
                                         class="flex items-center justify-center gap-1 hover:text-gray-200 transition w-full">
@@ -302,7 +290,6 @@ const closeViewer = () => {
                                         <span class="text-gray-900 font-medium">{{ convocatoria.nombre }}</span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-center text-gray-900">{{ convocatoria.anio }}</td>
                                 <td class="px-6 py-4 text-center">
                                     <span v-if="convocatoria.estado === 'activa'"
                                         class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">

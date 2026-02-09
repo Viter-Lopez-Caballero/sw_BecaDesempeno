@@ -40,6 +40,47 @@ const clearError = (field) => {
 };
 
 const submit = () => {
+    // Limpiar errores previos
+    form.clearErrors();
+    
+    // Validación del lado del cliente
+    if (!form.convocatoria_id) {
+        form.errors.convocatoria_id = 'Debes seleccionar una convocatoria';
+        return;
+    }
+    if (!form.publicacion_inicio) {
+        form.errors.publicacion_inicio = 'La fecha de inicio de publicación es obligatoria';
+        return;
+    }
+    if (!form.publicacion_fin) {
+        form.errors.publicacion_fin = 'La fecha de fin de publicación es obligatoria';
+        return;
+    }
+    if (!form.registro_inicio) {
+        form.errors.registro_inicio = 'La fecha de inicio de registro es obligatoria';
+        return;
+    }
+    if (!form.registro_fin) {
+        form.errors.registro_fin = 'La fecha de fin de registro es obligatoria';
+        return;
+    }
+    if (!form.evaluacion_inicio) {
+        form.errors.evaluacion_inicio = 'La fecha de inicio de evaluación es obligatoria';
+        return;
+    }
+    if (!form.evaluacion_fin) {
+        form.errors.evaluacion_fin = 'La fecha de fin de evaluación es obligatoria';
+        return;
+    }
+    if (!form.resultados_inicio) {
+        form.errors.resultados_inicio = 'La fecha de inicio de resultados es obligatoria';
+        return;
+    }
+    if (!form.resultados_fin) {
+        form.errors.resultados_fin = 'La fecha de fin de resultados es obligatoria';
+        return;
+    }
+    
     alertaCargando('Guardando', 'Por favor espera...');
     
     form.post(route(`${props.routeName}store`), {
@@ -105,14 +146,13 @@ const submit = () => {
                             placeholder="Selecciona una convocatoria"
                             :searchable="true"
                             :clearable="true"
-                            :class="{ 'vue-select-error': form.errors.convocatoria_id }"
-                            class="vue-select-custom"
-                            @update:modelValue="clearError('convocatoria_id')"
+                            :class="['vue-select-custom', { 'vue-select-error': form.errors.convocatoria_id }]"
+                            @option:selected="clearError('convocatoria_id')"
+                            @option:deselected="clearError('convocatoria_id')"
                         >
                             <template #option="option">
                                 <div class="flex flex-col">
                                     <span class="font-semibold">{{ option.nombre }}</span>
-                                    <span class="text-xs text-gray-500">Año {{ option.anio }}</span>
                                 </div>
                             </template>
                             <template #no-options="{ search, searching }">
@@ -134,12 +174,12 @@ const submit = () => {
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Fecha de Inicio: <span class="text-red-500">*</span></label>
-                                <input v-model="form.publicacion_inicio" type="date" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" />
+                                <input v-model="form.publicacion_inicio" @input="clearError('publicacion_inicio')" type="date" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors.publicacion_inicio }" />
                                 <p v-if="form.errors.publicacion_inicio" class="mt-1 text-sm text-red-600">{{ form.errors.publicacion_inicio }}</p>
                             </div>
                             <div>
                                 <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Fecha de Fin: <span class="text-red-500">*</span></label>
-                                <input v-model="form.publicacion_fin" type="date" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" />
+                                <input v-model="form.publicacion_fin" @input="clearError('publicacion_fin')" type="date" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors.publicacion_fin }" />
                                 <p v-if="form.errors.publicacion_fin" class="mt-1 text-sm text-red-600">{{ form.errors.publicacion_fin }}</p>
                             </div>
                         </div>
@@ -154,12 +194,12 @@ const submit = () => {
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Fecha de Inicio: <span class="text-red-500">*</span></label>
-                                <input v-model="form.registro_inicio" type="date" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" />
+                                <input v-model="form.registro_inicio" @input="clearError('registro_inicio')" type="date" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors.registro_inicio }" />
                                 <p v-if="form.errors.registro_inicio" class="mt-1 text-sm text-red-600">{{ form.errors.registro_inicio }}</p>
                             </div>
                             <div>
                                 <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Fecha de Fin: <span class="text-red-500">*</span></label>
-                                <input v-model="form.registro_fin" type="date" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" />
+                                <input v-model="form.registro_fin" @input="clearError('registro_fin')" type="date" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors.registro_fin }" />
                                 <p v-if="form.errors.registro_fin" class="mt-1 text-sm text-red-600">{{ form.errors.registro_fin }}</p>
                             </div>
                         </div>
@@ -174,12 +214,12 @@ const submit = () => {
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Fecha de Inicio: <span class="text-red-500">*</span></label>
-                                <input v-model="form.evaluacion_inicio" type="date" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" />
+                                <input v-model="form.evaluacion_inicio" @input="clearError('evaluacion_inicio')" type="date" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors.evaluacion_inicio }" />
                                 <p v-if="form.errors.evaluacion_inicio" class="mt-1 text-sm text-red-600">{{ form.errors.evaluacion_inicio }}</p>
                             </div>
                             <div>
                                 <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Fecha de Fin: <span class="text-red-500">*</span></label>
-                                <input v-model="form.evaluacion_fin" type="date" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" />
+                                <input v-model="form.evaluacion_fin" @input="clearError('evaluacion_fin')" type="date" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors.evaluacion_fin }" />
                                 <p v-if="form.errors.evaluacion_fin" class="mt-1 text-sm text-red-600">{{ form.errors.evaluacion_fin }}</p>
                             </div>
                         </div>
@@ -194,12 +234,12 @@ const submit = () => {
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Fecha de Inicio: <span class="text-red-500">*</span></label>
-                                <input v-model="form.resultados_inicio" type="date" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" />
+                                <input v-model="form.resultados_inicio" @input="clearError('resultados_inicio')" type="date" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors.resultados_inicio }" />
                                 <p v-if="form.errors.resultados_inicio" class="mt-1 text-sm text-red-600">{{ form.errors.resultados_inicio }}</p>
                             </div>
                             <div>
                                 <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Fecha de Fin: <span class="text-red-500">*</span></label>
-                                <input v-model="form.resultados_fin" type="date" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" />
+                                <input v-model="form.resultados_fin" @input="clearError('resultados_fin')" type="date" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors.resultados_fin }" />
                                 <p v-if="form.errors.resultados_fin" class="mt-1 text-sm text-red-600">{{ form.errors.resultados_fin }}</p>
                             </div>
                         </div>

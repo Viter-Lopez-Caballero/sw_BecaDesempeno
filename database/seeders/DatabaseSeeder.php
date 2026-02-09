@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             PriorityAreaSeeder::class,
             SubAreaSeeder::class,
             RenapoSeeder::class,
+            DocumentosCatalogoSeeder::class,
         ]);
     }
 }

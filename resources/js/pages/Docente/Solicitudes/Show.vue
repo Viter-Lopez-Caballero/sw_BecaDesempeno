@@ -85,15 +85,15 @@ const getFileIcon = (type) => {
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-y-8 gap-x-12 mb-10">
                     <div>
                         <p class="text-sm font-medium text-gray-600 mb-1">Profesor</p>
-                        <p class="text-gray-900 font-medium text-base">{{ solicitud.user?.name || solicitud.user?.data?.name || 'Usuario' }}</p>
+                        <p class="text-gray-900 font-medium text-base">{{ solicitud.profesor?.name || solicitud.user?.name || 'Usuario' }}</p>
                     </div>
                     <div>
                         <p class="text-sm font-medium text-gray-600 mb-1">Departamento</p>
-                        <p class="text-gray-900 font-medium text-base">{{ solicitud.user?.sub_area?.name || solicitud.user?.data?.sub_area?.name || 'No asignado' }}</p>
+                        <p class="text-gray-900 font-medium text-base">{{ solicitud.profesor?.departamento || solicitud.user?.priority_area?.name || 'No asignado' }}</p>
                     </div>
                     <div>
                         <p class="text-sm font-medium text-gray-600 mb-1">Campus</p>
-                        <p class="text-gray-900 text-base leading-snug">{{ solicitud.user?.institucion?.nombre || solicitud.user?.data?.institucion?.nombre || 'No registrado' }}</p>
+                        <p class="text-gray-900 text-base leading-snug">{{ solicitud.campus || solicitud.user?.institucion?.nombre || 'No registrado' }}</p>
                     </div>
                     <div>
                         <p class="text-sm font-medium text-gray-600 mb-1">Tipo de Beca</p>
@@ -110,11 +110,11 @@ const getFileIcon = (type) => {
                     <h3 class="text-lg font-bold text-gray-900 mb-6">Documentación</h3>
                     
                     <div class="space-y-4">
-                        <div v-if="!solicitud.documentos || (solicitud.documentos.data && solicitud.documentos.data.length === 0) || (!solicitud.documentos.data && solicitud.documentos.length === 0)" class="text-gray-500 italic">
+                        <div v-if="!solicitud.documentos || solicitud.documentos.length === 0" class="text-gray-500 italic">
                             No hay documentos disponibles.
                         </div>
 
-                        <div v-for="doc in (solicitud.documentos.data || solicitud.documentos)" :key="doc.id" 
+                        <div v-for="doc in solicitud.documentos" :key="doc.id" 
                             class="flex items-center justify-between p-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
                             <div class="flex items-center gap-4">
                                 <div class="text-gray-700">

@@ -67,9 +67,9 @@ const getCatalogItems = (routePrefix) => [
     },
     {
         label: "Documentos",
-        route: `${routePrefix}documentos`,
+        route: `${routePrefix}documentos.index`,
         icon: mdiFileDocumentMultiple,
-        permission: "documents.index",
+        permission: "documentos.index",
     },
     {
         label: "Calendario",

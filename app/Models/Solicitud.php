@@ -18,6 +18,7 @@ class Solicitud extends Model
         'user_id',
         'convocatoria_id',
         'status',
+        'admin_comment',
     ];
 
     public function user(): BelongsTo

@@ -177,7 +177,7 @@ const downloadTemplate = () => {
 
         <div class="space-y-6">
             <!-- Header -->
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
@@ -194,22 +194,22 @@ const downloadTemplate = () => {
                         <span class="text-gray-900 font-semibold">Usuarios</span>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
-                     <button @click="handleExport" class="px-4 py-2.5 bg-[#0D7239] text-white rounded-lg hover:bg-green-800 transition flex items-center gap-2 font-medium cursor-pointer">
+                <div class="flex flex-col md:flex-row w-full md:w-auto items-center gap-2">
+                     <button @click="handleExport" class="w-full md:w-auto justify-center px-4 py-2.5 bg-[#0D7239] text-white rounded-lg hover:bg-green-800 transition flex items-center gap-2 font-medium cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                             <path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
                         </svg>
                         Exportar
                     </button>
 
-                    <button @click="toggleImportSection" class="px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium cursor-pointer">
+                    <button @click="toggleImportSection" class="w-full md:w-auto justify-center px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                             <path d="M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
                         </svg>
                         {{ showImportSection ? 'Ocultar Importar' : 'Importar' }}
                     </button>
 
-                    <Link v-if="useCan('users.create')" :href="route(`${routeName}create`)" class="px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium">
+                    <Link v-if="useCan('users.create')" :href="route(`${routeName}create`)" class="w-full md:w-auto justify-center px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium">
                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                             <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
                         </svg>

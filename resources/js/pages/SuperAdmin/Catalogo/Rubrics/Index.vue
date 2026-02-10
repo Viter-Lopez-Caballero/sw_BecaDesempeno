@@ -2,16 +2,80 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
 import Pagination from '@/Shared/Pagination.vue';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { mdiBookOpenPageVariant, mdiClipboardTextOutline } from '@mdi/js';
 import { useCan } from '@/composables/usePermissions';
+import _ from 'lodash';
+import VueSelect from 'vue-select';
+import 'vue-select/dist/vue-select.css';
 
 const props = defineProps({
     rubrics: {
         type: Object,
         required: true,
     },
+    filters: {
+        type: Object,
+        required: true,
+    },
 });
+
+const search = ref(props.filters.search);
+const rows = ref(props.filters.rows || 10);
+const sortField = ref(props.filters.order || 'title');
+const sortDirection = ref(props.filters.direction || 'asc');
+
+const rowOptions = [
+    { label: '5 Registros', value: 5 },
+    { label: '10 Registros', value: 10 },
+    { label: '25 Registros', value: 25 },
+    { label: '50 Registros', value: 50 },
+];
+
+const onSearch = _.debounce((value) => {
+    router.get(route('catalogo.rubrics.index'), {
+        search: value,
+        rows: rows.value,
+        order: sortField.value,
+        direction: sortDirection.value
+    }, { preserveState: true, replace: true });
+}, 500);
+
+const onRowsChange = () => {
+    router.get(route('catalogo.rubrics.index'), {
+        search: search.value,
+        rows: rows.value,
+        order: sortField.value,
+        direction: sortDirection.value
+    }, { preserveState: true, replace: true });
+};
+
+watch(search, (value) => {
+    onSearch(value);
+});
+
+const cleanFilters = () => {
+    search.value = '';
+    rows.value = 10;
+    sortField.value = 'title';
+    sortDirection.value = 'asc';
+    router.get(route('catalogo.rubrics.index'), {}, { preserveState: true, replace: true });
+};
+
+const sortBy = (field) => {
+    if (sortField.value === field) {
+        sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortField.value = field;
+        sortDirection.value = 'asc';
+    }
+    router.get(route('catalogo.rubrics.index'), {
+        search: search.value,
+        rows: rows.value,
+        order: sortField.value,
+        direction: sortDirection.value
+    }, { preserveState: true, replace: true });
+};
 
 const toggleActive = (rubric) => {
     router.post(route('catalogo.rubrics.toggle-active', rubric.id), {}, {
@@ -45,8 +109,8 @@ const deleteItem = (id) => {
 
         <div class="space-y-6">
             <!-- Header -->
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="w-full md:w-auto">
                     <h1 class="text-3xl font-bold text-gray-900">Rúbricas</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
@@ -62,12 +126,53 @@ const deleteItem = (id) => {
                         <span class="text-gray-900 font-semibold">Rúbricas</span>
                     </div>
                 </div>
-                <Link :href="route('catalogo.rubrics.create')" class="px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium">
+                <Link :href="route('catalogo.rubrics.create')" class="w-full md:w-auto justify-center px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
                     </svg>
                     Agregar
                 </Link>
+            </div>
+
+            <!-- Filter Card -->
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#374151">
+                            <path d="M440-160q-17 0-28.5-11.5T400-200v-240L168-736q-15-20-4.5-42t36.5-22h560q26 0 36.5 22t-4.5 42L560-440v240q0 17-11.5 28.5T520-160h-80Zm40-308 198-252H282l198 252Zm0 0Z"/>
+                        </svg>
+                        <h2 class="text-xl font-semibold text-gray-800">Filtro de Búsqueda</h2>
+                    </div>
+                    <button @click="cleanFilters" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-sm font-medium transition cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
+                            <path d="M400-240v-80h240v80H400Zm-158 0L15-467l57-57 170 170 366-366 57 57-423 423Zm318-160v-80h240v80H560Zm160-160v-80h240v80H720Z"/>
+                        </svg>
+                        Limpiar Filtros
+                    </button>
+                </div>
+                <div class="text-sm text-gray-500 mb-4">Buscar y filtrar rúbricas por título</div>
+                <div class="flex flex-col md:flex-row gap-4 items-end">
+                    <div class="relative w-full md:flex-1">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#1B396A">
+                                <path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/>
+                            </svg>
+                        </div>
+                        <input v-model="search" type="text" placeholder="Buscar..." class="pl-10 w-full h-[45px] rounded-lg border border-gray-300 text-gray-700 focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition" />
+                    </div>
+                    <div class="w-full md:w-52 flex-shrink-0">
+                        <VueSelect
+                            v-model="rows"
+                            :options="rowOptions"
+                            :reduce="option => option.value"
+                            :searchable="false"
+                            :clearable="false"
+                            placeholder="Registros"
+                            class="vue-select-custom"
+                            @option:selected="onRowsChange"
+                        />
+                    </div>
+                </div>
             </div>
 
             <!-- Table -->
@@ -124,3 +229,47 @@ const deleteItem = (id) => {
         </div>
     </LayoutAuthenticated>
 </template>
+
+<style scoped>
+:deep(.vue-select-custom .vs__dropdown-toggle) {
+    background: linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%);
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    min-height: 42px;
+}
+
+:deep(.vue-select-custom .vs__selected) {
+    color: #374151;
+    font-weight: 500;
+}
+
+:deep(.vue-select-custom .vs__search::placeholder) {
+    color: #9ca3af;
+}
+
+:deep(.vue-select-custom .vs__dropdown-menu) {
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+:deep(.vue-select-custom .vs__dropdown-option) {
+    padding: 0.75rem 1rem;
+    color: #374151;
+}
+
+:deep(.vue-select-custom .vs__dropdown-option--highlight) {
+    background: #1B396A;
+    color: white;
+}
+
+:deep(.vue-select-custom .vs__open-indicator) {
+    fill: #1B396A;
+    transform: scale(0.85);
+}
+
+:deep(.vue-select-custom .vs__actions) {
+    padding-right: 4px;
+}
+</style>

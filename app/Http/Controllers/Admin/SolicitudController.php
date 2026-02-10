@@ -147,6 +147,9 @@ class SolicitudController extends Controller
         ]);
 
         $solicitud->status = $validated['status'];
+        if ($validated['status'] === 'rejected') {
+            $solicitud->admin_comment = $validated['comentario'];
+        }
         $solicitud->save();
 
         return to_route('admin.solicitudes.show', $id)->with('success', 'Veredicto registrado correctamente.');

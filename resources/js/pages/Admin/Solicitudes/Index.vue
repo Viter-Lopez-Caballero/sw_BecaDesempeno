@@ -67,76 +67,78 @@
 
             <!-- Table -->
             <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-                <table class="w-full text-left">
-                    <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
-                        <tr>
-                            <th class="px-6 py-4">ID</th>
-                            <th class="px-6 py-4">Docente</th>
-                            <th class="px-6 py-4">Campus</th>
-                            <th class="px-6 py-4">Evaluador(es)</th>
-                            <th class="px-6 py-4">Estado</th>
-                            <th class="px-6 py-4 text-center">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        <tr v-for="solicitud in solicitudes.data" :key="solicitud.id" class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ solicitud.id }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-900">
-                                <div class="font-semibold text-gray-800">{{ solicitud.user?.name }}</div>
-                            </td>
-                             <td class="px-6 py-4 text-sm text-gray-600">
-                                {{ solicitud.user?.institucion?.nombre || 'N/A' }}
-                            </td>
-                            <td class="px-6 py-4">
-                                <template v-if="solicitud.evaluaciones && solicitud.evaluaciones.length > 0">
-                                    <span class="inline-flex items-center gap-1 text-sm text-gray-600">
-                                        <svg style="width:16px;height:16px" viewBox="0 0 24 24" class="text-gray-400">
-                                            <path fill="currentColor" :d="mdiAccountMultiple" />
-                                        </svg>
-                                        {{ solicitud.evaluaciones.length }} Evaluadores
-                                    </span>
-                                </template>
-                                <Link 
-                                    v-else 
-                                    :href="route('admin.solicitudes.assign_view', solicitud.id)"
-                                    class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-full transition-colors"
-                                >
-                                    <svg style="width:14px;height:14px" viewBox="0 0 24 24">
-                                        <path fill="currentColor" :d="mdiAccountPlus" />
-                                    </svg>
-                                    Asignar
-                                </Link>
-                            </td>
-                            <td class="px-6 py-4">
-                                <span 
-                                    class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide"
-                                    :class="{
-                                        'bg-green-100 text-green-700 border border-green-200': solicitud.status === 'approved',
-                                        'bg-red-100 text-red-700 border border-red-200': solicitud.status === 'rejected',
-                                        'bg-yellow-50 text-yellow-700 border border-yellow-200': solicitud.status === 'pending'
-                                    }"
-                                >
-                                    {{ getStatusLabel(solicitud.status) }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-center">
-                                <div class="flex items-center justify-center gap-2">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
+                            <tr>
+                                <th class="px-6 py-4 whitespace-nowrap">ID</th>
+                                <th class="px-6 py-4 whitespace-nowrap">Docente</th>
+                                <th class="px-6 py-4 whitespace-nowrap">Campus</th>
+                                <th class="px-6 py-4 whitespace-nowrap">Evaluador(es)</th>
+                                <th class="px-6 py-4 whitespace-nowrap">Estado</th>
+                                <th class="px-6 py-4 text-center whitespace-nowrap">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr v-for="solicitud in solicitudes.data" :key="solicitud.id" class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">{{ solicitud.id }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
+                                    <div class="font-semibold text-gray-800">{{ solicitud.user?.name }}</div>
+                                </td>
+                                 <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">
+                                    {{ solicitud.user?.institucion?.nombre || 'N/A' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <template v-if="solicitud.evaluaciones && solicitud.evaluaciones.length > 0">
+                                        <span class="inline-flex items-center gap-1 text-sm text-gray-600">
+                                            <svg style="width:16px;height:16px" viewBox="0 0 24 24" class="text-gray-400">
+                                                <path fill="currentColor" :d="mdiAccountMultiple" />
+                                            </svg>
+                                            {{ solicitud.evaluaciones.length }} Evaluadores
+                                        </span>
+                                    </template>
                                     <Link 
-                                        :href="route('admin.solicitudes.show', solicitud.id)"
-                                        class="text-xs font-medium text-[#1B396A] hover:bg-gray-100 px-3 py-1.5 rounded-md transition-colors border border-transparent hover:border-gray-200"
+                                        v-else 
+                                        :href="route('admin.solicitudes.assign_view', solicitud.id)"
+                                        class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-full transition-colors"
                                     >
-                                        Detalles
+                                        <svg style="width:14px;height:14px" viewBox="0 0 24 24">
+                                            <path fill="currentColor" :d="mdiAccountPlus" />
+                                        </svg>
+                                        Asignar
                                     </Link>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr v-if="solicitudes.data.length === 0">
-                            <td colspan="6" class="px-6 py-8 text-center text-gray-500">
-                                No se encontraron solicitudes.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span 
+                                        class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide"
+                                        :class="{
+                                            'bg-green-100 text-green-700 border border-green-200': solicitud.status === 'approved',
+                                            'bg-red-100 text-red-700 border border-red-200': solicitud.status === 'rejected',
+                                            'bg-yellow-50 text-yellow-700 border border-yellow-200': solicitud.status === 'pending'
+                                        }"
+                                    >
+                                        {{ getStatusLabel(solicitud.status) }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-center whitespace-nowrap">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <Link 
+                                            :href="route('admin.solicitudes.show', solicitud.id)"
+                                            class="text-xs font-medium text-[#1B396A] hover:bg-gray-100 px-3 py-1.5 rounded-md transition-colors border border-transparent hover:border-gray-200"
+                                        >
+                                            Detalles
+                                        </Link>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr v-if="solicitudes.data.length === 0">
+                                <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                                    No se encontraron solicitudes.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
                  <!-- Pagination and Total -->
                 <div class="border-t border-gray-100 bg-gray-50 px-6 py-4" v-if="solicitudes.meta?.links">
                      <Pagination :links="solicitudes.meta.links" :total="solicitudes.meta.total" />

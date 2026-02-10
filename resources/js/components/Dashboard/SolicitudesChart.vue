@@ -30,7 +30,7 @@ const props = defineProps({
 </script>
 
 <template>
-  <div class="w-full h-[400px]">
+  <div class="w-full h-64 md:h-[400px]">
     <Bar
       :id="'solicitudes-chart'"
       :options="chartOptions"

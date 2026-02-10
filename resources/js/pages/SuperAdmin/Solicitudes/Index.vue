@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, router } from '@inertiajs/vue3';
-import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
+import SuperAdminLayout from '@/Layouts/SuperAdminLayout.vue';
 import Pagination from '@/Shared/Pagination.vue';
 import { ref, watch } from 'vue';
 import { debounce } from 'lodash';
@@ -101,7 +101,7 @@ watch(search, (value) => {
 </style>
 
 <template>
-    <LayoutAuthenticated>
+    <SuperAdminLayout>
         <Head title="Control de Solicitudes - SuperAdmin" />
 
         <div class="space-y-6">
@@ -118,7 +118,7 @@ watch(search, (value) => {
                 </div>
             </div>
 
-            <!-- Filter Card -->
+            <!-- Filter Section -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-2">
@@ -143,7 +143,7 @@ watch(search, (value) => {
                     </div>
                 </div>
                 
-                <div class="text-sm text-gray-500 mb-4">Buscar y filtrar</div>
+                <div class="text-sm text-gray-500 mb-4">Buscar por nombre de campus o ID</div>
                 
                 <div class="flex flex-col md:flex-row gap-4 items-end mb-6">
                     <div class="relative w-full md:flex-1">
@@ -155,7 +155,7 @@ watch(search, (value) => {
                         <input 
                             v-model="search" 
                             type="text" 
-                            placeholder="Buscar..." 
+                            placeholder="Buscar por ID, nombre, campus, etc." 
                             class="pl-10 w-full h-[45px] rounded-lg border border-gray-300 text-gray-700 focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition"
                         />
                     </div>
@@ -166,29 +166,45 @@ watch(search, (value) => {
                             :reduce="option => option.value" 
                             :searchable="true" 
                             :clearable="true" 
-                            placeholder="Estado"
+                            placeholder="Todos los Estados"
                             class="vue-select-custom"
                             @option:selected="onEstadoChange"
                             @option:deselected="onEstadoChange"
                         />
                     </div>
+                    <div class="w-full md:w-52 flex-shrink-0">
+                        <VueSelect 
+                            v-model="rows" 
+                            :options="rowOptions" 
+                            :reduce="option => option.value" 
+                            :searchable="false" 
+                            :clearable="false" 
+                            placeholder="Registros"
+                            class="vue-select-custom"
+                            @option:selected="onRowsChange"
+                        />
+                    </div>
                 </div>
+            </div>
 
-                <!-- Table -->
-                <div class="overflow-x-auto rounded-lg border border-gray-200">
+            <!-- Table Section -->
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+                <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
-                                <th scope="col" class="px-6 py-4 tracking-wider">ID</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">#</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Estado</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Campus</th>
-                                <th scope="col" class="px-6 py-4 text-center tracking-wider">Aprobados</th>
-                                <th scope="col" class="px-6 py-4 text-center tracking-wider">Rechazados</th>
+                                <th scope="col" class="px-6 py-4 text-center tracking-wider">Aprobadas</th>
+                                <th scope="col" class="px-6 py-4 text-center tracking-wider">Rechazadas</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 bg-white">
-                            <tr v-for="institution in institutions.data" :key="institution.id" class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 font-medium text-gray-900">{{ institution.id }}</td>
+                            <tr v-for="(institution, index) in institutions.data" :key="institution.id" class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 font-medium text-gray-900">
+                                    {{ institutions.meta.from + index }}
+                                </td>
                                 <td class="px-6 py-4 font-medium text-gray-900">{{ institution.estado }}</td>
                                 <td class="px-6 py-4 text-gray-800 font-semibold">{{ institution.nombre }}</td>
                                 <td class="px-6 py-4 text-center">
@@ -217,5 +233,5 @@ watch(search, (value) => {
                 </div>
             </div>
         </div>
-    </LayoutAuthenticated>
+    </SuperAdminLayout>
 </template>

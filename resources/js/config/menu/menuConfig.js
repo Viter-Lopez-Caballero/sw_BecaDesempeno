@@ -94,9 +94,8 @@ export const menuConfigs = {
         },
         {
             label: "Control de Solicitudes",
-            route: "solicitudes.index",
+            route: "superadmin.control-solicitudes",
             icon: mdiFileDocumentMultiple,
-            permission: "solicitudes.index",
         },
         {
             label: "Convocatorias",

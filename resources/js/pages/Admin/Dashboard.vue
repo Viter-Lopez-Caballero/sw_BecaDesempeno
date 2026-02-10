@@ -221,7 +221,7 @@ const getProgressWidth = (count) => {
                 </div>
             </div>
 
-            <!-- Filter and Table Section -->
+            <!-- Filter Section -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-2">
@@ -248,7 +248,7 @@ const getProgressWidth = (count) => {
                 
                 <div class="text-sm text-gray-500 mb-4">Buscar por nombre de campus o ID</div>
                 
-                <div class="flex flex-col md:flex-row gap-4 items-end mb-6">
+                <div class="flex flex-col md:flex-row gap-4 items-end">
                     <div class="relative w-full md:flex-1">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#1B396A">
@@ -275,13 +275,15 @@ const getProgressWidth = (count) => {
                         />
                     </div>
                 </div>
+            </div>
 
-                <!-- Table -->
-                <div class="overflow-x-auto rounded-lg border border-gray-200">
+            <!-- Table Section -->
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+                <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
-                                <th scope="col" class="px-6 py-4 tracking-wider">ID</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">#</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Estado</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Campus</th>
                                 <th scope="col" class="px-6 py-4 text-center tracking-wider">Aprobadas</th>
@@ -289,8 +291,10 @@ const getProgressWidth = (count) => {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 bg-white">
-                            <tr v-for="institution in institutions.data" :key="institution.id" class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 font-medium text-gray-900">{{ institution.id }}</td>
+                            <tr v-for="(institution, index) in institutions.data" :key="institution.id" class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 font-medium text-gray-900">
+                                    {{ institutions.meta.from + index }}
+                                </td>
                                 <td class="px-6 py-4 font-medium text-gray-900">{{ institution.estado }}</td>
                                 <td class="px-6 py-4 text-gray-800 font-semibold">{{ institution.nombre }}</td>
                                 <td class="px-6 py-4 text-center">
@@ -314,7 +318,7 @@ const getProgressWidth = (count) => {
                 </div>
 
                 <!-- Pagination for Table -->
-                <div v-if="institutions.meta" class="mt-4 pt-4 border-t border-gray-200 bg-gray-50 px-4 py-3 rounded-b-lg">
+                <div v-if="institutions.meta" class="px-6 py-4 border-t border-gray-200 bg-gray-50">
                     <Pagination 
                         :links="institutions.meta.links" 
                         :total="institutions.meta.total" 

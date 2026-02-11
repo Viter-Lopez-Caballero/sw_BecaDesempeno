@@ -9,36 +9,33 @@ use App\Models\Solicitud;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Traits\Filterable;
 use Inertia\Inertia;
 
 class SolicitudController extends Controller
 {
+    use Filterable;
     /**
      * Display a listing of Requests for Admin (with evaluator assignment).
      */
     public function index(Request $request)
     {
-        $search = $request->input('search');
-        $rows = $request->input('rows', 10);
-        $status = $request->input('status'); // filter by status
+        $filters = $this->getFiltersBase($request->query());
+        $status = $request->input('status');
+        
+        // Merge status into filters object for view
+        $filters->status = $status;
 
         $query = Solicitud::with([
                 'user.institucion', 
                 'evaluaciones.evaluador',
                 'convocatoria'
             ])
-            ->when($search, function ($q, $search) {
-                $q->whereHas('user', function ($subQ) use ($search) {
-                    $subQ->where('name', 'like', "%{$search}%")
-                         ->orWhere('email', 'like', "%{$search}%");
-                })->orWhere('id', 'like', "%{$search}%");
-            })
-            ->when($status, function ($q, $status) {
-                $q->where('status', $status);
-            })
-            ->latest();
+            ->buscarGlobal($filters->search)
+            ->porEstatus($status)
+            ->ordenado($filters->order, $filters->direction);
 
-        $solicitudes = $query->paginate($rows)->withQueryString();
+        $solicitudes = $query->paginate($filters->rows)->withQueryString();
 
         // Get Evaluators for the Assignment Modal
         $evaluators = User::role('Evaluador')->select('id', 'name', 'email')->get();
@@ -46,7 +43,7 @@ class SolicitudController extends Controller
         return Inertia::render('Admin/Solicitudes/Index', [
             'solicitudes' => SolicitudResource::collection($solicitudes),
             'evaluators' => $evaluators,
-            'filters' => $request->all(['search', 'rows', 'status']),
+            'filters' => $filters,
         ]);
     }
 

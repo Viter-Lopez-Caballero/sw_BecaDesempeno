@@ -82,6 +82,10 @@ const downloadFile = (id) => {
                         <p class="text-base font-semibold text-gray-900">{{ solicitud.profesor?.name || 'N/A' }}</p>
                     </div>
                     <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">Correo Electrónico</label>
+                        <p class="text-base text-gray-700">{{ solicitud.profesor?.email || 'N/A' }}</p>
+                    </div>
+                    <div>
                         <label class="block text-sm font-medium text-gray-500 mb-1">Departamento</label>
                         <p class="text-base text-gray-700">{{ solicitud.profesor?.departamento || 'N/A' }}</p>
                     </div>

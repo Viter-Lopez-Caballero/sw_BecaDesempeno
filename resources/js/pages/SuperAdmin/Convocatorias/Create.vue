@@ -22,12 +22,17 @@ const form = useForm({
     descripcion: '',
     estado: 'pendiente',
     archivo: null,
+    imagen: null,
 });
 
 const archivoPreview = ref(null);
 const archivoNombre = ref(null);
 const archivoUrl = ref(null);
 const archivoTipo = ref(null);
+
+const imagenPreview = ref(null);
+const imagenNombre = ref(null);
+const imagenUrl = ref(null);
 
 const estadosOptions = [
     { id: 'pendiente', nombre: 'Pendiente' },
@@ -53,6 +58,23 @@ const handleFileChange = (event) => {
     }
 };
 
+const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        form.imagen = file;
+        imagenNombre.value = file.name;
+        
+        // Limpiar URL anterior si existe
+        if (imagenUrl.value && imagenUrl.value.startsWith('blob:')) {
+            URL.revokeObjectURL(imagenUrl.value);
+        }
+        
+        // Crear URL del blob para preview instantánea
+        imagenUrl.value = URL.createObjectURL(file);
+        imagenPreview.value = imagenUrl.value;
+    }
+};
+
 const removeFile = () => {
     // Limpiar URL de blob si existe
     if (archivoUrl.value && archivoUrl.value.startsWith('blob:')) {
@@ -64,6 +86,18 @@ const removeFile = () => {
     archivoPreview.value = null;
     archivoUrl.value = null;
     archivoTipo.value = null;
+};
+
+const removeImage = () => {
+    // Limpiar URL de blob si existe
+    if (imagenUrl.value && imagenUrl.value.startsWith('blob:')) {
+        URL.revokeObjectURL(imagenUrl.value);
+    }
+    
+    form.imagen = null;
+    imagenNombre.value = null;
+    imagenPreview.value = null;
+    imagenUrl.value = null;
 };
 
 const submit = () => {
@@ -155,6 +189,42 @@ const submit = () => {
                             <p v-if="form.errors.descripcion" class="mt-1 text-sm text-red-600">{{ form.errors.descripcion }}</p>
                         </div>
 
+                        <!-- Imagen de Convocatoria -->
+                        <div class="col-span-2">
+                            <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">
+                                Imagen de Portada:
+                            </label>
+                            
+                            <!-- Visor de imagen cuando hay una seleccionada -->
+                            <div v-if="imagenUrl" class="border-2 border-gray-300 rounded-lg overflow-hidden bg-gray-50 flex flex-col items-center p-4">
+                                <img :src="imagenUrl" :alt="imagenNombre" class="max-h-64 object-contain shadow-md rounded-lg mb-4" />
+                                <div class="flex items-center gap-3">
+                                    <span class="text-sm font-semibold text-gray-700">{{ imagenNombre }}</span>
+                                    <button type="button" @click="removeImage" 
+                                        class="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition">
+                                        Eliminar
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Drop zone cuando NO hay imagen -->
+                            <div v-else class="flex items-center justify-center w-full">
+                                <label for="imagen-convocatoria" class="flex flex-col items-center justify-center w-full h-32 bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 hover:border-[#1B396A] transition-all">
+                                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                        <svg class="w-8 h-8 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <p class="mb-2 text-sm text-gray-500">
+                                            <span class="font-semibold text-[#1B396A]">Sube una imagen</span> o arrastra aquí
+                                        </p>
+                                        <p class="text-xs text-gray-500">PNG, JPG o GIF up to 2MB</p>
+                                    </div>
+                                    <input id="imagen-convocatoria" type="file" class="hidden" @change="handleImageChange" accept="image/*" />
+                                </label>
+                            </div>
+                            <p v-if="form.errors.imagen" class="mt-1 text-sm text-red-600">{{ form.errors.imagen }}</p>
+                        </div>
+
                         <!-- Archivo de Convocatoria -->
                         <div class="col-span-2">
                             <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">
@@ -185,13 +255,14 @@ const submit = () => {
                                     <div v-else-if="archivoTipo?.startsWith('image/')" class="h-full flex items-center justify-center bg-gray-900">
                                         <img :src="archivoUrl" :alt="archivoNombre" class="max-h-full max-w-full object-contain" />
                                     </div>
-                                    <div v-else class="h-full flex items-center justify-center">
+                                    <div v-else class="h-full flex items-center justify-center bg-gray-50 p-6">
                                         <div class="text-center">
-                                            <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-16 h-16 mx-auto text-[#1B396A] mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                             </svg>
-                                            <p class="text-gray-600 font-medium mb-2">Vista previa no disponible</p>
-                                            <p class="text-sm text-gray-500">Este tipo de archivo no se puede visualizar en el navegador</p>
+                                            <p class="text-gray-900 font-bold mb-2 text-lg">Archivo Seleccionado</p>
+                                            <p class="text-gray-600 font-medium mb-2 break-all">{{ archivoNombre }}</p>
+                                            <p class="text-sm text-gray-500">Vista previa no disponible para este tipo de archivo.</p>
                                         </div>
                                     </div>
                                 </div>

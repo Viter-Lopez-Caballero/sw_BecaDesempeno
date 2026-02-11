@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Illuminate\Support\Str;
 
 class ConvocatoriaController extends Controller
 {
@@ -51,7 +52,7 @@ class ConvocatoriaController extends Controller
             ->buscarGlobal($filters->search);
 
         // Ordenamiento dinámico
-        $convocatorias = $query->orderBy($filters->order, $filters->direction ?? 'asc')
+        $convocatorias = $query->orderBy($filters->order, $filters->direction ?? 'desc')
             ->paginate($filters->rows)
             ->withQueryString();
 
@@ -84,13 +85,27 @@ class ConvocatoriaController extends Controller
         // Manejar la subida del archivo
         if ($request->hasFile('archivo')) {
             $file = $request->file('archivo');
-            $fileName = time() . '_' . $file->getClientOriginalName();
+            // Usar UUID para evitar colisiones y nombres extraños
+            $fileName = Str::uuid() . '_' . $file->getClientOriginalName();
             $filePath = $file->storeAs('convocatorias', $fileName, 'public');
             
             $data['archivo_path'] = $filePath;
             $data['archivo_nombre'] = $file->getClientOriginalName();
             $data['archivo_tipo'] = $file->getClientMimeType();
             $data['archivo_size'] = $file->getSize();
+        }
+
+        // Handle Image Upload
+        if ($request->hasFile('imagen')) {
+            $image = $request->file('imagen');
+            $imageName = Str::uuid() . '_img_' . $image->getClientOriginalName();
+            $imagePath = $image->storeAs('convocatorias/imagenes', $imageName, 'public');
+            $data['imagen_path'] = $imagePath;
+        }
+
+        // Enforce single active convocatoria
+        if (isset($data['estado']) && $data['estado'] === 'activa') {
+             Convocatoria::where('estado', 'activa')->update(['estado' => 'cerrada']);
         }
 
         $convocatoria = Convocatoria::create($data);
@@ -149,13 +164,33 @@ class ConvocatoriaController extends Controller
             }
             
             $file = $request->file('archivo');
-            $fileName = time() . '_' . $file->getClientOriginalName();
+            $fileName = Str::uuid() . '_' . $file->getClientOriginalName();
             $filePath = $file->storeAs('convocatorias', $fileName, 'public');
             
             $data['archivo_path'] = $filePath;
             $data['archivo_nombre'] = $file->getClientOriginalName();
             $data['archivo_tipo'] = $file->getClientMimeType();
             $data['archivo_size'] = $file->getSize();
+        }
+
+        // Handle Image Upload
+        if ($request->hasFile('imagen')) {
+            // Delete old image if exists
+            if ($convocatoria->imagen_path) {
+                Storage::disk('public')->delete($convocatoria->imagen_path);
+            }
+
+            $image = $request->file('imagen');
+            $imageName = Str::uuid() . '_img_' . $image->getClientOriginalName();
+            $imagePath = $image->storeAs('convocatorias/imagenes', $imageName, 'public');
+            $data['imagen_path'] = $imagePath;
+        }
+
+        if (isset($data['estado']) && $data['estado'] === 'activa') {
+            // Desactivar otras convocatorias activas
+            Convocatoria::where('estado', 'activa')
+                ->where('id', '!=', $convocatoria->id)
+                ->update(['estado' => 'cerrada']);
         }
 
         $convocatoria->update($data);
@@ -167,6 +202,11 @@ class ConvocatoriaController extends Controller
      */
     public function destroy(Convocatoria $convocatoria): RedirectResponse
     {
+        // Delete image if exists
+        if ($convocatoria->imagen_path) {
+            Storage::disk('public')->delete($convocatoria->imagen_path);
+        }
+
         // Eliminar archivo si existe
         if ($convocatoria->archivo_path) {
             Storage::disk('public')->delete($convocatoria->archivo_path);

@@ -55,7 +55,7 @@ class DocumentoController extends Controller
                       ->orWhere('descripcion', 'LIKE', "%{$filters->search}%");
                 });
 
-            $documentos = $query->orderBy($filters->order ?? 'nombre', $filters->direction ?? 'asc')
+            $documentos = $query->orderBy($filters->order ?? 'id', $filters->direction ?? 'desc')
                 ->paginate($filters->rows)
                 ->withQueryString();
 

@@ -19,22 +19,70 @@ Route::get('/', function () {
     }
     
     // Si no está autenticado, mostrar la página pública
-    $convocatorias = \App\Models\Modulo::query()
+    $convocatorias = \App\Models\Convocatoria::query()
+        ->with('calendario')
+        ->whereIn('estado', ['activa', 'cerrada'])
         ->latest('created_at')
         ->paginate(3)
         ->withQueryString();
     
+    // Obtener convocatoria para la línea de tiempo (Prioridad: Activa > Pendiente > Cerrada)
+    $timelineConvocatoria = \App\Models\Convocatoria::query()
+        ->with('calendario')
+        ->where('estado', 'activa')
+        ->latest('created_at')
+        ->first();
+
+    if (!$timelineConvocatoria) {
+        $timelineConvocatoria = \App\Models\Convocatoria::query()
+            ->with('calendario')
+            ->where('estado', 'pendiente')
+            ->latest('created_at')
+            ->first();
+    }
+
+    if (!$timelineConvocatoria) {
+        $timelineConvocatoria = \App\Models\Convocatoria::query()
+            ->with('calendario')
+            ->where('estado', 'cerrada')
+            ->latest('created_at')
+            ->first();
+    }
+    
     return Inertia::render('Inicio', [
         'canLogin' => Route::has('login'),
         'canRegister' => Features::enabled(Features::registration()),
-        'convocatorias' => $convocatorias,
+        'convocatorias' => \App\Http\Resources\Catalogos\ConvocatoriaResource::collection($convocatorias),
+        'timelineConvocatoria' => $timelineConvocatoria ? new \App\Http\Resources\Catalogos\ConvocatoriaResource($timelineConvocatoria) : null,
     ]);
 })->name('inicio');
 
 // (visits endpoint removed)
 
 Route::get('/convocatoria', function () {
-    return Inertia::render('Convocatoria');
+    // Prioridad: Activa > Pendiente > Cerrada
+    $convocatoria = \App\Models\Convocatoria::with('calendario')
+        ->where('estado', 'activa')
+        ->latest('created_at')
+        ->first();
+
+    if (!$convocatoria) {
+        $convocatoria = \App\Models\Convocatoria::with('calendario')
+            ->where('estado', 'pendiente')
+            ->latest('created_at')
+            ->first();
+    }
+
+    if (!$convocatoria) {
+        $convocatoria = \App\Models\Convocatoria::with('calendario')
+            ->where('estado', 'cerrada')
+            ->latest('created_at')
+            ->first();
+    }
+    
+    return Inertia::render('Convocatoria', [
+        'convocatoria' => $convocatoria ? new \App\Http\Resources\Catalogos\ConvocatoriaResource($convocatoria) : null,
+    ]);
 })->name('convocatoria');
 
 Route::get('/documentos', function () {

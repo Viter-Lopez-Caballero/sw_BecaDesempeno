@@ -19,11 +19,14 @@ class ConvocatoriaResource extends JsonResource
             'nombre' => $this->nombre,
             'descripcion' => $this->descripcion,
             'estado' => $this->estado,
+            'imagen_path' => $this->imagen_path,
+            'imagen_url' => $this->imagen_path ? asset('storage/' . $this->imagen_path) : null,
             'archivo_path' => $this->archivo_path,
+            'archivo_url' => $this->archivo_path ? asset('storage/' . $this->archivo_path) : null,
             'archivo_nombre' => $this->archivo_nombre,
             'archivo_tipo' => $this->archivo_tipo,
             'archivo_size' => $this->archivo_size,
-            'calendario' => $this->whenLoaded('calendario'),
+            'calendario' => $this->relationLoaded('calendario') && $this->calendario ? new CalendarioResource($this->calendario) : null,
             'fecha_fin' => $this->when(
                 $this->relationLoaded('calendario'),
                 fn() => $this->calendario?->registro_fin ?? null

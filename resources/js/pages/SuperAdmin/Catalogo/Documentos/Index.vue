@@ -308,6 +308,9 @@ const viewDetails = (id) => {
                             <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                                 <tr>
                                     <th scope="col" class="px-6 py-4 tracking-wider">
+                                        #
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 tracking-wider">
                                         <div @click="sortBy('nombre')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
                                             Nombre
                                             <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'nombre', 'opacity-50': sortField !== 'nombre' }">
@@ -322,7 +325,8 @@ const viewDetails = (id) => {
                                 </tr>
                             </thead>
             <tbody class="divide-y divide-gray-200">
-                                <tr v-for="documento in (documentos?.data || [])" :key="documento.id" class="hover:bg-gray-50 transition">
+                                <tr v-for="(documento, index) in (documentos?.data || [])" :key="documento.id" class="hover:bg-gray-50 transition">
+                                    <td class="px-6 py-4 font-medium text-gray-900">{{ documentos.from + index }}</td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center">
                                             <div>
@@ -378,7 +382,7 @@ const viewDetails = (id) => {
                                     </td>
                                 </tr>
                                 <tr v-if="!documentos?.data || documentos.data.length === 0">
-                                    <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">
                                         No se encontraron registros
                                     </td>
                                 </tr>
@@ -403,7 +407,7 @@ const viewDetails = (id) => {
                         <table class="w-full text-sm text-left">
                             <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                                 <tr>
-                                    <th scope="col" class="px-6 py-4 tracking-wider">ID</th>
+                                    <th scope="col" class="px-6 py-4 tracking-wider">#</th>
                                     <th scope="col" class="px-6 py-4 tracking-wider">
                                         <button @click="sortByDocentes('name')" class="flex items-center justify-center gap-1 hover:text-gray-200 transition w-full">
                                             <span>Profesor</span>
@@ -425,14 +429,13 @@ const viewDetails = (id) => {
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
-                                <tr v-for="solicitud in (solicitudes?.data || [])" :key="solicitud.id" class="hover:bg-gray-50 transition">
+                                <tr v-for="(solicitud, index) in (solicitudes?.data || [])" :key="solicitud.id" class="hover:bg-gray-50 transition">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        {{ solicitud.id }}
+                                        {{ solicitudes.meta.from + index }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex flex-col">
                                             <span class="text-sm font-medium text-gray-900">{{ solicitud.profesor?.name || 'N/A' }}</span>
-                                            <span class="text-xs text-gray-500">{{ solicitud.profesor?.email || '' }}</span>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">

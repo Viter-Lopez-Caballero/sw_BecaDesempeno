@@ -24,7 +24,6 @@ const props = defineProps({
 const form = useForm({
     convocatoria_id: null,
     publicacion_inicio: '',
-    publicacion_fin: '',
     registro_inicio: '',
     registro_fin: '',
     evaluacion_inicio: '',
@@ -50,10 +49,6 @@ const submit = () => {
     }
     if (!form.publicacion_inicio) {
         form.errors.publicacion_inicio = 'La fecha de inicio de publicación es obligatoria';
-        return;
-    }
-    if (!form.publicacion_fin) {
-        form.errors.publicacion_fin = 'La fecha de fin de publicación es obligatoria';
         return;
     }
     if (!form.registro_inicio) {
@@ -102,8 +97,8 @@ const submit = () => {
 
         <div class="space-y-6">
             <!-- Header -->
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="w-full md:w-auto">
                     <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
@@ -125,7 +120,7 @@ const submit = () => {
                         <span class="text-gray-900 font-semibold">Agregar Calendario</span>
                     </div>
                 </div>
-                <Link :href="route(`${routeName}index`)" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium cursor-pointer">
+                <Link :href="route(`${routeName}index`)" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
                     </svg>
@@ -171,16 +166,11 @@ const submit = () => {
                             <span class="bg-[#1B396A] text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">1</span>
                             Fase de Publicación
                         </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-1 gap-6">
                             <div>
                                 <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Fecha de Inicio: <span class="text-red-500">*</span></label>
                                 <input v-model="form.publicacion_inicio" @input="clearError('publicacion_inicio')" type="date" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors.publicacion_inicio }" />
                                 <p v-if="form.errors.publicacion_inicio" class="mt-1 text-sm text-red-600">{{ form.errors.publicacion_inicio }}</p>
-                            </div>
-                            <div>
-                                <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Fecha de Fin: <span class="text-red-500">*</span></label>
-                                <input v-model="form.publicacion_fin" @input="clearError('publicacion_fin')" type="date" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors.publicacion_fin }" />
-                                <p v-if="form.errors.publicacion_fin" class="mt-1 text-sm text-red-600">{{ form.errors.publicacion_fin }}</p>
                             </div>
                         </div>
                     </div>

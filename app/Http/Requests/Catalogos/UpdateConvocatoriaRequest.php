@@ -21,6 +21,7 @@ class UpdateConvocatoriaRequest extends FormRequest
             'descripcion' => ['nullable', 'string'],
             'estado' => ['required', 'in:activa,cerrada,pendiente'],
             'archivo' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,doc,docx', 'max:30720'], // 30MB
+            'imagen' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'], // 2MB
         ];
     }
 

@@ -20,6 +20,7 @@ class SolicitudResource extends JsonResource
             'user_id' => $this->user_id,
             'convocatoria_id' => $this->convocatoria_id,
             'status' => $this->status,
+            'admin_comment' => $this->admin_comment,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             

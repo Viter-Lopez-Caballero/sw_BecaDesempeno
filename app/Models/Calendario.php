@@ -14,7 +14,6 @@ class Calendario extends Model
     protected $fillable = [
         'convocatoria_id',
         'publicacion_inicio',
-        'publicacion_fin',
         'registro_inicio',
         'registro_fin',
         'evaluacion_inicio',
@@ -25,7 +24,6 @@ class Calendario extends Model
 
     protected $casts = [
         'publicacion_inicio' => 'date',
-        'publicacion_fin' => 'date',
         'registro_inicio' => 'date',
         'registro_fin' => 'date',
         'evaluacion_inicio' => 'date',

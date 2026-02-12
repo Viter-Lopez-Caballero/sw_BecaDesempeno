@@ -19,10 +19,10 @@
             <div class="space-y-6">
                  <!-- Main Info Card -->
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative">
-                     <div class="absolute top-6 right-6">
+                     <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-100 pb-4 mb-6 gap-2 md:gap-4">
                          <!-- Badge Estado -->
                          <span 
-                            class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide"
+                            class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide w-fit self-start md:self-auto md:order-last"
                             :class="{
                                 'bg-yellow-100 text-yellow-800': solicitud.status === 'pending',
                                 'bg-green-100 text-green-800': solicitud.status === 'approved',
@@ -31,8 +31,8 @@
                         >
                             {{ getStatusLabel(solicitud.status) }}
                         </span>
+                        <h2 class="text-lg font-bold text-gray-900 md:order-first">Información General</h2>
                      </div>
-                     <h2 class="text-lg font-bold text-gray-900 mb-6 border-b border-gray-100 pb-2">Información General</h2>
                      
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
@@ -70,33 +70,33 @@
                 <!-- Documentation -->
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                     <h2 class="text-lg font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2">Documentación</h2>
-                    <div class="space-y-3">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div 
                             v-for="doc in getDocuments()" 
                             :key="doc.id"
-                            class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow"
+                            class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg hover:shadow-md transition-shadow gap-4 overflow-hidden"
                         >
-                            <div class="flex items-center gap-3">
-                                 <div class="bg-white p-2 rounded border border-gray-200">
-                                    <svg class="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div class="flex items-center gap-3 w-full sm:w-auto min-w-0">
+                                 <div class="bg-white p-2.5 rounded-lg border border-gray-200 flex-shrink-0 text-[#1B396A]">
+                                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
                                  </div>
-                                 <span class="text-sm font-medium text-gray-700">{{ doc.name || doc.nombre }}</span>
+                                 <span class="text-sm font-semibold text-gray-700 truncate flex-1 min-w-0 block" :title="doc.name || doc.nombre">{{ doc.name || doc.nombre }}</span>
                             </div>
                             
-                             <div class="flex items-center gap-2">
+                             <div class="flex items-center gap-2 w-full sm:w-auto justify-end flex-shrink-0">
                                 <button 
                                     v-if="doc.file_type === 'pdf'" 
                                     @click="openPdfModal(doc)" 
-                                    class="flex items-center gap-1 text-[#1B396A] hover:bg-blue-50 px-3 py-1.5 rounded-md transition text-sm font-medium"
+                                    class="flex items-center justify-center gap-1 text-white bg-[#1B396A] hover:bg-[#152d47] px-3 py-2 rounded-lg transition text-xs font-bold uppercase tracking-wide shadow-sm"
                                 >
                                     <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path :d="mdiEye"/></svg>
                                     Ver
                                 </button>
                                 <a 
                                     :href="route('admin.documents.download', doc.id || doc.data?.id)" 
-                                    class="flex items-center gap-1 text-gray-600 hover:bg-gray-50 px-3 py-1.5 rounded-md transition text-sm font-medium"
+                                    class="flex items-center justify-center gap-1 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 px-3 py-2 rounded-lg transition text-xs font-bold uppercase tracking-wide shadow-sm"
                                     title="Descargar"
                                 >
                                     <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path :d="mdiDownload"/></svg>
@@ -104,9 +104,9 @@
                                 </a>
                             </div>
                         </div>
-                        <div v-if="getDocuments().length === 0" class="text-sm text-gray-500 italic">
-                            No hay documentos adjuntos.
-                        </div>
+                    </div>
+                    <div v-if="getDocuments().length === 0" class="text-sm text-gray-500 italic text-center py-4 bg-gray-50 rounded-lg mt-2">
+                        No hay documentos adjuntos.
                     </div>
                 </div>
 
@@ -115,42 +115,44 @@
                     <div class="px-6 py-4 border-b border-gray-100">
                         <h2 class="text-lg font-bold text-gray-900">Evaluadores Asignados</h2>
                     </div>
-                    <table class="w-full text-left">
-                        <thead class="bg-[#1B396A] text-white">
-                            <tr>
-                                <th class="px-6 py-3 text-xs uppercase font-semibold w-12">#</th>
-                                <th class="px-6 py-3 text-xs uppercase font-semibold">Nombre</th>
-                                <th class="px-6 py-3 text-xs uppercase font-semibold">Comentarios</th>
-                                <th class="px-6 py-3 text-xs uppercase font-semibold text-right">Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100">
-                            <tr v-for="(ev, index) in solicitud.evaluaciones" :key="ev.id">
-                                <td class="px-6 py-4 text-sm text-gray-500">{{ index + 1 }}</td>
-                                <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ ev.evaluador?.name }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600 italic">
-                                    {{ ev.comentario || 'Sin comentarios' }}
-                                </td>
-                                <td class="px-6 py-4 text-right">
-                                    <span 
-                                        class="px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-sm"
-                                        :class="{
-                                            'bg-gray-400': ev.status === 'pending',
-                                            'bg-green-500': ev.status === 'approved',
-                                            'bg-red-500': ev.status === 'rejected',
-                                        }"
-                                    >
-                                        {{ getStatusLabel(ev.status) }}
-                                    </span>
-                                </td>
-                            </tr>
-                             <tr v-if="!solicitud.evaluaciones || solicitud.evaluaciones.length === 0">
-                                <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500 italic">
-                                    No se han asignado evaluadores aún.
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-[#1B396A] text-white">
+                                <tr>
+                                    <th class="px-6 py-3 text-xs uppercase font-semibold w-12 whitespace-nowrap">#</th>
+                                    <th class="px-6 py-3 text-xs uppercase font-semibold whitespace-nowrap">Nombre</th>
+                                    <th class="px-6 py-3 text-xs uppercase font-semibold whitespace-nowrap">Comentarios</th>
+                                    <th class="px-6 py-3 text-xs uppercase font-semibold text-right whitespace-nowrap">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                <tr v-for="(ev, index) in solicitud.evaluaciones" :key="ev.id">
+                                    <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{{ index + 1 }}</td>
+                                    <td class="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">{{ ev.evaluador?.name }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-600 italic">
+                                        {{ ev.comentario || 'Sin comentarios' }}
+                                    </td>
+                                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                                        <span 
+                                            class="px-2.5 py-1 rounded-full text-xs font-bold text-white shadow-sm"
+                                            :class="{
+                                                'bg-gray-400': ev.status === 'pending',
+                                                'bg-green-500': ev.status === 'approved',
+                                                'bg-red-500': ev.status === 'rejected',
+                                            }"
+                                        >
+                                            {{ getStatusLabel(ev.status) }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr v-if="!solicitud.evaluaciones || solicitud.evaluaciones.length === 0">
+                                    <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-500 italic">
+                                        No se han asignado evaluadores aún.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <!-- Admin Verdict Buttons -->

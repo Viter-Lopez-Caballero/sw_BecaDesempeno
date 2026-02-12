@@ -156,7 +156,17 @@ export const menuConfigs = {
             label: "Convocatorias",
             route: "docente.convocatorias.index",
             icon: mdiBullhorn,
-            permission: "convocatorias.index", // Permission remains same or I can assume generic Index permission is enough or 'docente.inicio' covers it if I remove permission check.
+            permission: "convocatorias.index",
+        },
+        {
+            label: "Seguridad",
+            icon: mdiSecurity,
+            items: getSecurityItems("seguridad."),
+        },
+        {
+            label: "Catálogo",
+            icon: mdiBookOpenPageVariant,
+            items: getCatalogItems("catalogo."),
         },
     ],
     evaluador: [
@@ -176,6 +186,16 @@ export const menuConfigs = {
             route: "evaluador.reconocimientos.index",
             icon: mdiStar,
             permission: "evaluador.reconocimientos.index",
-        }
+        },
+        {
+            label: "Seguridad",
+            icon: mdiSecurity,
+            items: getSecurityItems("seguridad."),
+        },
+        {
+            label: "Catálogo",
+            icon: mdiBookOpenPageVariant,
+            items: getCatalogItems("catalogo."),
+        },
     ]
 };

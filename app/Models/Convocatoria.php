@@ -15,6 +15,7 @@ class Convocatoria extends Model
         'nombre',
         'descripcion',
         'estado',
+        'imagen_path',
         'archivo_path',
         'archivo_nombre',
         'archivo_tipo',

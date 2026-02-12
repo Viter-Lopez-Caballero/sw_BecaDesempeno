@@ -127,7 +127,7 @@ const closeViewer = () => {
 
         <div class="space-y-6">
             <!-- Header -->
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
@@ -138,7 +138,7 @@ const closeViewer = () => {
                     </div>
                 </div>
                 <Link v-if="useCan('convocatorias.create')" :href="route(`${routeName}create`)"
-                    class="px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium">
+                    class="w-full md:w-auto justify-center px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
                         fill="currentColor">
                         <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
@@ -239,16 +239,7 @@ const closeViewer = () => {
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
                                 <th scope="col" class="px-6 py-4 text-center" style="width: 80px;">
-                                    <button @click="sortBy('id')"
-                                        class="flex items-center justify-center gap-1 hover:text-gray-200 transition w-full">
-                                        <span>ID</span>
-                                        <svg v-if="sortField === 'id'" xmlns="http://www.w3.org/2000/svg"
-                                            class="h-4 w-4" :class="sortDirection === 'asc' ? 'rotate-0' : 'rotate-180'"
-                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M5 15l7-7 7 7" />
-                                        </svg>
-                                    </button>
+                                    #
                                 </th>
                                 <th scope="col" class="px-6 py-4 text-left">
                                     <button @click="sortBy('nombre')"
@@ -279,9 +270,9 @@ const closeViewer = () => {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                            <tr v-for="convocatoria in convocatorias.data" :key="convocatoria.id"
+                            <tr v-for="(convocatoria, index) in convocatorias.data" :key="convocatoria.id"
                                 class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 text-center text-gray-900 font-medium">{{ convocatoria.id }}</td>
+                                <td class="px-6 py-4 text-center text-gray-900 font-medium">{{ convocatorias.meta.from + index }}</td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-2">
                                         <svg viewBox="0 0 24 24" class="w-5 h-5 flex-shrink-0" style="fill: #1B396A;">

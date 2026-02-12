@@ -244,7 +244,7 @@ watch([search, institucionId, estadoId], () => {
                     <p class="text-sm text-gray-500">Distribución de aprobados y rechazados</p>
                 </div>
                 
-                <div class="w-full relative min-h-[400px]">
+                <div class="w-full relative min-h-[256px] md:min-h-[400px]">
                     <SolicitudesChart :chart-data="chartData" :chart-options="chartOptions" />
                 </div>
             </div>

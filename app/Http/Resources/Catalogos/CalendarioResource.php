@@ -19,7 +19,6 @@ class CalendarioResource extends JsonResource
             'convocatoria_id' => $this->convocatoria_id,
             'convocatoria' => $this->whenLoaded('convocatoria'),
             'publicacion_inicio' => $this->publicacion_inicio?->format('Y-m-d'),
-            'publicacion_fin' => $this->publicacion_fin?->format('Y-m-d'),
             'registro_inicio' => $this->registro_inicio?->format('Y-m-d'),
             'registro_fin' => $this->registro_fin?->format('Y-m-d'),
             'evaluacion_inicio' => $this->evaluacion_inicio?->format('Y-m-d'),

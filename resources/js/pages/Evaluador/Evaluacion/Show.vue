@@ -148,8 +148,8 @@ const submitEvaluation = (status) => {
 
         <div class="space-y-6">
             <!-- Header -->
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="w-full md:w-auto">
                     <h1 class="text-3xl font-bold text-gray-900">Evaluación de Solicitud</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm text-gray-600">
                         <Link :href="route('evaluador.inicio')" class="hover:text-blue-600 flex items-center gap-1">
@@ -160,7 +160,7 @@ const submitEvaluation = (status) => {
                         <span class="font-semibold text-gray-800">Evaluar</span>
                     </div>
                 </div>
-                <Link :href="route('evaluador.inicio')" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition flex items-center gap-2">
+                <Link :href="route('evaluador.inicio')" class="w-full md:w-auto justify-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition flex items-center gap-2">
                     <svg viewBox="0 0 24 24" class="w-5 h-5" style="fill: currentColor"><path :d="mdiArrowLeft"/></svg>
                     Volver
                 </Link>

@@ -1,163 +1,159 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import LandingLayout from '@/layouts/LandingLayout.vue';
 import Pagination from '@/Shared/Pagination.vue';
-import { CheckCircle, Clock, AlertCircle, Calendar, ClipboardCheck, Award } from 'lucide-vue-next';
+import { CheckCircle, Clock, AlertCircle, Calendar, ClipboardCheck, Award, FileText } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
-import { router } from '@inertiajs/vue3';
 
-defineProps({
+const props = defineProps({
     convocatorias: Object,
+    timelineConvocatoria: Object,
+    canLogin: Boolean,
+    canRegister: Boolean,
 });
 
-const etapas = ref([
-    {
-        id: 1,
-        numero: '01',
-        titulo: 'Publicación',
-        descripcion: 'Publicación de la Convocatoria.',
-        fechas: '12 Dic - 12 Ene 2025',
-        color: '#1B396A',
-        icono: 'CheckCircle',
-        isActive: true
-    },
-    {
-        id: 2,
-        numero: '02',
-        titulo: 'Registro',
-        descripcion: 'Periodo para Inscribirse.',
-        fechas: '20 Dic - 05 Ene 2025',
-        color: '#10A558',
-        icono: 'Clock',
-        isActive: true
-    },
-    {
-        id: 3,
-        numero: '03',
-        titulo: 'Evaluación',
-        descripcion: 'Periodo de Revisión de Solicitudes.',
-        fechas: '06 Ene - 11 Ene 2026',
-        color: '#E9C81F',
-        icono: 'ClipboardCheck',
-        isActive: true
-    },
-    {
-        id: 4,
-        numero: '04',
-        titulo: 'Resultados',
-        descripcion: 'Publicación de Resultados.',
-        fechas: '12 Ene - 13 Ene 2026',
-        color: '#0F172A',
-        icono: 'Award',
-        isActive: false
+const page = usePage();
+const user = computed(() => page.props.auth.user);
+
+// Helper para parsear fecha "YYYY-MM-DD", "YYYY-MM-DD HH:MM:SS" o ISO "YYYY-MM-DDTHH:mm:ss"
+const parseDateLocal = (dateString) => {
+    if (!dateString) return null;
+    // Tomamos los primeros 10 caracteres (YYYY-MM-DD)
+    const datePart = dateString.substring(0, 10);
+    const [year, month, day] = datePart.split('-').map(Number);
+    
+    if (!year || !month || !day) return null; // Validación básica
+    
+    return new Date(year, month - 1, day);
+};
+
+// Helper para determinar la fase actual de una convocatoria basada en su calendario
+const getFase = (convocatoria) => {
+    // 1. Estado Cerrada
+    if (convocatoria.estado !== 'activa') {
+        return { 
+            nombre: 'Cerrada', 
+            color: 'bg-red-100 text-red-800', 
+            canRegister: false 
+        };
     }
-]);
+
+    // 2. Estado Activa
+    // Calculamos si está en periodo de registro para habilitar el botón
+    let canRegister = false;
+    
+    if (convocatoria.calendario) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // Usar parseDateLocal para evitar desfases de zona horaria (UTC vs Local)
+        const regInicio = parseDateLocal(convocatoria.calendario.registro_inicio);
+        const regFin = parseDateLocal(convocatoria.calendario.registro_fin);
+        
+        // Comparación inclusiva
+        if (regInicio && regFin && today >= regInicio && today <= regFin) {
+            canRegister = true;
+        }
+    }
+
+    // Retornamos siempre "Activa" si el estado es activa
+    return { 
+        nombre: 'Activa', 
+        color: 'bg-green-100 text-green-800', 
+        canRegister: canRegister 
+    };
+};
+
+const etapas = computed(() => {
+    // Usamos la convocatoria específica para el timeline (Activa o Pendiente)
+    const convocatoria = props.timelineConvocatoria ? (props.timelineConvocatoria.data || props.timelineConvocatoria) : null;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const stages = [
+        {
+            id: 1,
+            numero: '01',
+            titulo: 'Publicación',
+            descripcion: 'Publicación de la Convocatoria.',
+            icono: 'CheckCircle',
+            dateStartKey: 'publicacion_inicio',
+            color: '#1B396A'
+        },
+        {
+            id: 2,
+            numero: '02',
+            titulo: 'Registro',
+            descripcion: 'Periodo para Inscribirse.',
+            icono: 'Clock',
+            dateStartKey: 'registro_inicio',
+            dateEndKey: 'registro_fin',
+            color: '#10A558'
+        },
+        {
+            id: 3,
+            numero: '03',
+            titulo: 'Evaluación',
+            descripcion: 'Periodo de Revisión.',
+            icono: 'ClipboardCheck',
+            dateStartKey: 'evaluacion_inicio',
+            color: '#E9C81F'
+        },
+        {
+            id: 4,
+            numero: '04',
+            titulo: 'Resultados',
+            descripcion: 'Publicación de Resultados.',
+            icono: 'Award',
+            dateStartKey: 'resultados_inicio',
+            color: '#0F172A' // Dark Blue/Gray
+        }
+    ];
+
+    if (!convocatoria || !convocatoria.calendario) {
+        return stages.map(s => ({ 
+            ...s, 
+            fechas: 'Por definir', 
+            isActive: false,
+            isFuture: true
+        }));
+    }
+
+    return stages.map(stage => {
+        // Usar parseDateLocal
+        const start = parseDateLocal(convocatoria.calendario[stage.dateStartKey]);
+        
+        const isPastOrCurrent = start ? today >= start : false;
+        
+        let fechasStr = start ? start.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Por definir';
+        
+        if (stage.dateEndKey) {
+            const end = parseDateLocal(convocatoria.calendario[stage.dateEndKey]);
+            if (end) {
+                fechasStr += ` - ${end.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' })}`;
+            }
+        }
+
+        return {
+            ...stage,
+            fechas: fechasStr,
+            isActive: isPastOrCurrent, // Controls color vs opacity
+            isFuture: !isPastOrCurrent
+        };
+    });
+});
 
 const getIconComponent = (iconName) => {
     const icons = {
         CheckCircle,
         Clock,
         ClipboardCheck,
-        Award
+        Award,
+        FileText
     };
     return icons[iconName];
 };
-
-const convocatoriasEjemplo = ref([
-    {
-        id: 1,
-        titulo: 'Convocatoria de Estímulos al Desempeño Docente 2026',
-        nombre: 'Convocatoria de Estímulos al Desempeño Docente 2026',
-        descripcion: 'Programa diseñado para reconocer y estimular la excelencia académica, dedicación y permanencia de los profesores del Tecnológico Nacional de México.',
-        anio: 2026,
-        estado: 'activa',
-        imagen: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600&h=400&fit=crop'
-    },
-    {
-        id: 2,
-        titulo: 'Convocatoria de Estímulos 2025',
-        nombre: 'Convocatoria de Estímulos 2025',
-        descripcion: 'Reconocimiento al desempeño docente durante el año 2025. Esta convocatoria ya fue cerrada y se publicaron los resultados.',
-        anio: 2025,
-        estado: 'cerrada',
-        imagen: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600&h=400&fit=crop'
-    },
-    {
-        id: 3,
-        titulo: 'Convocatoria de Estímulos 2024',
-        nombre: 'Convocatoria de Estímulos 2024',
-        descripcion: 'Programa de reconocimiento a la excelencia docente 2024. Convocatoria finalizada con resultados publicados.',
-        anio: 2024,
-        estado: 'cerrada',
-        imagen: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=600&h=400&fit=crop'
-    },
-    {
-        id: 4,
-        titulo: 'Convocatoria Especial Investigación 2024',
-        nombre: 'Convocatoria Especial Investigación 2024',
-        descripcion: 'Estímulos especiales para docentes con proyectos de investigación destacados. Convocatoria cerrada.',
-        anio: 2024,
-        estado: 'cerrada',
-        imagen: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&h=400&fit=crop'
-    },
-    {
-        id: 5,
-        titulo: 'Convocatoria de Estímulos 2023',
-        nombre: 'Convocatoria de Estímulos 2023',
-        descripcion: 'Reconocimiento al desempeño docente del año 2023. Proceso completado con resultados oficiales publicados.',
-        anio: 2023,
-        estado: 'cerrada',
-        imagen: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&h=400&fit=crop'
-    }
-]);
-
-// Paginación
-const currentPage = ref(1);
-const perPage = 3;
-
-const totalPages = computed(() => Math.ceil(convocatoriasEjemplo.value.length / perPage));
-
-const convocatoriasPaginadas = computed(() => {
-    const start = (currentPage.value - 1) * perPage;
-    const end = start + perPage;
-    return convocatoriasEjemplo.value.slice(start, end);
-});
-
-const paginationLinks = computed(() => {
-    const links = [];
-    
-    // Link anterior
-    links.push({
-        url: currentPage.value > 1 ? `?page=${currentPage.value - 1}` : null,
-        label: '&laquo; Previous',
-        active: false
-    });
-    
-    // Links de páginas
-    for (let i = 1; i <= totalPages.value; i++) {
-        links.push({
-            url: `?page=${i}`,
-            label: i.toString(),
-            active: i === currentPage.value
-        });
-    }
-    
-    // Link siguiente
-    links.push({
-        url: currentPage.value < totalPages.value ? `?page=${currentPage.value + 1}` : null,
-        label: 'Next &raquo;',
-        active: false
-    });
-    
-    return links;
-});
-
-// Detectar cambios en la URL
-if (typeof window !== 'undefined') {
-    const urlParams = new URLSearchParams(window.location.search);
-    const page = parseInt(urlParams.get('page')) || 1;
-    currentPage.value = page;
-}
 </script>
 
 <template>
@@ -189,7 +185,6 @@ if (typeof window !== 'undefined') {
         </section>
 
         <!-- Sección Sobre el Programa -->
-        <!-- <section class="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 to-white"> -->
         <section class="py-20 px-4 sm:px-6 lg:px-8 bg-white">
             <div class="max-w-7xl mx-auto">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -257,34 +252,36 @@ if (typeof window !== 'undefined') {
             </div>
             
             <div class="max-w-7xl mx-auto relative z-10">
-                <h2 class="text-3xl font-bold text-center mb-12 text-white">Etapas de la Convocatoria Activa</h2>
+                <h2 class="text-3xl font-bold text-center mb-12 text-white">Etapas de la Convocatoria</h2>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div 
                         v-for="etapa in etapas" 
                         :key="etapa.id"
                         class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-lg border-l-4 hover:shadow-xl transition-all duration-300"
-                        :class="etapa.isActive ? `border-[${etapa.color}]` : 'border-[#AEAEAE]'"
-                        :style="{ borderLeftColor: etapa.isActive ? etapa.color : '#AEAEAE' }"
+                        :class="[
+                             etapa.isActive ? `border-[${etapa.color}]` : 'border-gray-300 opacity-60 bg-gray-50',
+                        ]"
+                        :style="{ borderLeftColor: etapa.isActive ? etapa.color : '#D1D5DB' }"
                     >
                         <div class="flex-shrink-0">
                             <component 
                                 :is="getIconComponent(etapa.icono)" 
                                 class="w-8 h-8" 
-                                :style="{ color: etapa.isActive ? etapa.color : '#AEAEAE' }"
+                                :style="{ color: etapa.isActive ? etapa.color : '#9CA3AF' }"
                             />
                         </div>
                         <div class="flex-1">
                             <div class="flex items-center gap-2 mb-2">
                                 <span 
                                     class="font-bold text-2xl" 
-                                    :style="{ color: etapa.isActive ? etapa.color : '#AEAEAE' }"
+                                    :style="{ color: etapa.isActive ? etapa.color : '#9CA3AF' }"
                                 >
                                     {{ etapa.numero }}
                                 </span>
                             </div>
-                            <h3 class="font-bold text-base mb-2" :class="etapa.isActive ? 'text-gray-900' : 'text-[#AEAEAE]'">{{ etapa.titulo }}</h3>
-                            <p class="text-xs mb-3" :class="etapa.isActive ? 'text-gray-600' : 'text-[#AEAEAE]'">{{ etapa.descripcion }}</p>
-                            <div class="flex items-center text-xs" :class="etapa.isActive ? 'text-gray-500' : 'text-[#AEAEAE]'">
+                            <h3 class="font-bold text-base mb-2" :class="etapa.isActive ? 'text-gray-900' : 'text-gray-500'">{{ etapa.titulo }}</h3>
+                            <p class="text-xs mb-3" :class="etapa.isActive ? 'text-gray-600' : 'text-gray-400'">{{ etapa.descripcion }}</p>
+                             <div class="flex items-center text-xs" :class="etapa.isActive ? 'text-gray-500' : 'text-gray-400'">
                                 <Calendar class="w-3 h-3 mr-1" />
                                 <span>{{ etapa.fechas }}</span>
                             </div>
@@ -299,12 +296,12 @@ if (typeof window !== 'undefined') {
             <div class="max-w-7xl mx-auto">
                 <h2 class="text-3xl font-bold text-center mb-4 text-gray-900">Convocatorias</h2>
                 <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-                    Consulta las convocatorias disponibles y mantente informado sobre los procesos de estímulos al desempeño docente.
+                    Consulta las convocatorias disponibles y su estado actual.
                 </p>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <div v-if="convocatorias.data && convocatorias.data.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
                     <div 
-                        v-for="convocatoria in convocatoriasPaginadas" 
+                        v-for="convocatoria in convocatorias.data" 
                         :key="convocatoria.id"
                         :class="[
                             'rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col',
@@ -315,7 +312,7 @@ if (typeof window !== 'undefined') {
                     >
                         <div class="h-56 bg-gradient-to-br overflow-hidden relative" :class="convocatoria.estado === 'activa' ? 'from-gray-700 via-gray-600 to-gray-500' : 'from-gray-400 via-gray-300 to-gray-200'">
                             <img 
-                                :src="convocatoria.imagen || 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600&h=400&fit=crop'" 
+                                :src="convocatoria.imagen_url || 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600&h=400&fit=crop'" 
                                 alt="Imagen de convocatoria" 
                                 :class="[
                                     'w-full h-full object-cover transition-transform duration-500',
@@ -327,17 +324,13 @@ if (typeof window !== 'undefined') {
                         <div class="p-6 flex-1 flex flex-col">
                             <div class="flex justify-between items-center mb-4">
                                 <span 
-                                    :class="[
-                                        'text-xs font-bold px-3 py-1.5 rounded-full shadow-md',
-                                        convocatoria.estado === 'activa' 
-                                            ? 'bg-gradient-to-r from-green-500 to-green-600 text-white' 
-                                            : 'bg-gray-200 text-gray-700'
-                                    ]"
+                                    :class="getFase(convocatoria).color"
+                                    class="text-xs font-bold px-3 py-1.5 rounded-full shadow-md"
                                 >
-                                    {{ convocatoria.estado === 'activa' ? 'Activa' : 'Cerrada' }}
+                                    {{ getFase(convocatoria).nombre }}
                                 </span>
                                 <span class="text-sm font-semibold bg-gray-100 px-3 py-1 rounded-full" :class="convocatoria.estado === 'activa' ? 'text-gray-600' : 'text-gray-500'">
-                                    {{ new Date().getFullYear() }}
+                                    {{ new Date(convocatoria.created_at).getFullYear() }}
                                 </span>
                             </div>
                             <h3 
@@ -348,53 +341,67 @@ if (typeof window !== 'undefined') {
                                         : 'text-gray-800'
                                 ]"
                             >
-                                {{ convocatoria.titulo || convocatoria.nombre || 'Convocatoria' }}
+                                {{ convocatoria.nombre }}
                             </h3>
                             <p class="text-gray-600 mb-4 text-sm line-clamp-3 leading-relaxed">
-                                {{ convocatoria.descripcion || 'Descripción de la convocatoria.' }}
+                                {{ convocatoria.descripcion || 'Sin descripción disponible.' }}
                             </p>
+
+                            <!-- Document Link -->
+                            <div v-if="convocatoria.archivo_url" class="mb-4">
+                                <a 
+                                    :href="convocatoria.archivo_url" 
+                                    target="_blank" 
+                                    class="inline-flex items-center text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors group/pdf"
+                                >
+                                    <FileText class="w-4 h-4 mr-1 group-hover/pdf:scale-110 transition-transform"/>
+                                    Más sobre la convocatoria
+                                </a>
+                            </div>
                             
-                            <Link 
-                                :href="`/convocatorias/${convocatoria.id}`" 
-                                :class="[
-                                    'text-sm font-semibold mb-4 inline-flex items-center group/link',
-                                    convocatoria.estado === 'activa' 
-                                        ? 'text-[#2c5282] hover:text-[#1e3a5f]' 
-                                        : 'text-gray-500 hover:text-gray-700'
-                                ]"
-                            >
-                                <svg class="w-4 h-4 mr-2" :class="convocatoria.estado === 'activa' ? 'group-hover/link:translate-x-1 transition-transform' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                Información Acerca de la Convocatoria
-                            </Link>
-                            
-                            <Link
-                                :href="`/convocatorias/${convocatoria.id}`"
-                                :class="[
-                                    'mt-auto w-full py-3 rounded-xl transition-all font-semibold cursor-pointer text-center',
-                                    convocatoria.estado === 'activa'
-                                        ? 'bg-gradient-to-r from-[#2c5282] to-[#3d5a80] text-white hover:from-[#1e3a5f] hover:to-[#2c5282] shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
-                                        : 'border-2 border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400'
-                                ]"
-                            >
-                                Ver más
-                            </Link>
+                            <div class="mt-auto">
+                                <!-- Lógica de Botones según Estado y Login -->
+                                <Link 
+                                    v-if="!user && convocatoria.estado === 'activa'" 
+                                    :href="route('login')"
+                                    class="w-full block py-3 rounded-xl transition-all font-semibold cursor-pointer text-center bg-white border-2 border-[#2c5282] text-[#2c5282] hover:bg-[#2c5282] hover:text-white shadow-md hover:shadow-lg"
+                                >
+                                    Iniciar Sesión para Solicitar
+                                </Link>
+
+                                <Link 
+                                    v-else-if="getFase(convocatoria).canRegister"
+                                    :href="route('docente.inicio')"
+                                    class="w-full block py-3 rounded-xl transition-all font-semibold cursor-pointer text-center bg-gradient-to-r from-[#2c5282] to-[#3d5a80] text-white hover:from-[#1e3a5f] hover:to-[#2c5282] shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                                >
+                                    Ir a Panel Docente
+                                </Link>
+                                <div v-else class="w-full py-3 rounded-xl font-semibold text-center border-2 border-gray-300 text-gray-500 bg-gray-50 cursor-not-allowed">
+                                    {{ convocatoria.estado === 'activa' ? 'Ver Detalles' : 'Convocatoria Cerrada' }}
+                                </div>
+                            </div>
                         </div>
                     </div>
+                </div>
+                
+                <div v-else class="text-center py-12">
+                    <p class="text-gray-500 text-lg">No hay convocatorias disponibles en este momento.</p>
                 </div>
                 
                 <!-- Paginación -->
                 <div class="mt-8">
                     <Pagination 
-                        :links="paginationLinks" 
-                        :total="convocatoriasEjemplo.length"
-                        :from="(currentPage - 1) * perPage + 1"
-                        :to="Math.min(currentPage * perPage, convocatoriasEjemplo.length)"
-                        :show-total="false"
+                        :links="convocatorias.links" 
+                        :total="convocatorias.total"
+                        :from="convocatorias.from"
+                        :to="convocatorias.to"
+                        :show-total="true"
                     />
                 </div>
             </div>
         </section>
+
+
+
     </LandingLayout>
 </template>

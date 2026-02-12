@@ -35,6 +35,7 @@ const form = useForm({
     descripcion: props.convocatoria.data?.descripcion || props.convocatoria.descripcion,
     estado: props.convocatoria.data?.estado || props.convocatoria.estado,
     archivo: null,
+    imagen: null,
     _method: 'PUT',
 });
 
@@ -47,6 +48,11 @@ const archivoNombre = ref(props.convocatoria.data?.archivo_nombre || null);
 const archivoActual = ref(props.convocatoria.data?.archivo_path || null);
 const archivoUrl = ref(props.convocatoria.data?.archivo_path ? `/storage/${props.convocatoria.data.archivo_path}` : null);
 const archivoTipo = ref(props.convocatoria.data?.archivo_tipo || null);
+
+const imagenPreview = ref(null);
+const imagenNombre = ref(null);
+const imagenActual = ref(props.convocatoria.data?.imagen_path || null);
+const imagenUrl = ref(props.convocatoria.data?.imagen_path ? `/storage/${props.convocatoria.data.imagen_path}` : null);
 
 const estadosOptions = [
     { id: 'pendiente', nombre: 'Pendiente' },
@@ -72,6 +78,23 @@ const handleFileChange = (event) => {
     }
 };
 
+const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        form.imagen = file;
+        imagenNombre.value = file.name;
+        
+        // Limpiar URL anterior si existe
+        if (imagenUrl.value && imagenUrl.value.startsWith('blob:')) {
+            URL.revokeObjectURL(imagenUrl.value);
+        }
+        
+        // Crear URL del blob para preview instantánea
+        imagenUrl.value = URL.createObjectURL(file);
+        imagenPreview.value = imagenUrl.value;
+    }
+};
+
 const removeFile = () => {
     // Limpiar URL de blob si existe
     if (archivoUrl.value && archivoUrl.value.startsWith('blob:')) {
@@ -90,6 +113,25 @@ const removeFile = () => {
         archivoUrl.value = null;
         archivoNombre.value = null;
         archivoTipo.value = null;
+    }
+};
+
+const removeImage = () => {
+    // Limpiar URL de blob si existe
+    if (imagenUrl.value && imagenUrl.value.startsWith('blob:')) {
+        URL.revokeObjectURL(imagenUrl.value);
+    }
+    
+    form.imagen = null;
+    imagenPreview.value = null;
+    
+    // Restaurar imagen original si existe
+    if (imagenActual.value) {
+        imagenUrl.value = `/storage/${imagenActual.value}`;
+        imagenNombre.value = null; 
+    } else {
+        imagenUrl.value = null;
+        imagenNombre.value = null;
     }
 };
 
@@ -119,7 +161,7 @@ const guardarDocumentos = () => {
 
         <div class="space-y-6">
             <!-- Header -->
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
@@ -135,7 +177,7 @@ const guardarDocumentos = () => {
                         <span class="text-gray-900 font-semibold">Editar Convocatoria</span>
                     </div>
                 </div>
-                <Link :href="route(`${routeName}index`)" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium">
+                <Link :href="route(`${routeName}index`)" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
                     </svg>
@@ -182,7 +224,7 @@ const guardarDocumentos = () => {
                         </div>
 
                         <!-- Descripción -->
-                        <div class="col-span-2">
+                        <div class="col-span-1 md:col-span-2">
                             <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Descripción:</label>
                             <textarea v-model="form.descripcion" rows="4" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" placeholder="Descripción de la convocatoria"></textarea>
                             <div class="flex items-center justify-between mt-1">
@@ -195,6 +237,51 @@ const guardarDocumentos = () => {
                                 <span class="text-gray-400 text-sm">{{ form.descripcion?.length || 0 }}/500</span>
                             </div>
                             <p v-if="form.errors.descripcion" class="mt-1 text-sm text-red-600">{{ form.errors.descripcion }}</p>
+                        </div>
+
+                        <!-- Imagen de Convocatoria -->
+                        <div class="col-span-2">
+                            <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">
+                                Imagen de Portada:
+                            </label>
+                            
+                            <!-- Visor de imagen cuando hay una seleccionada -->
+                            <div v-if="imagenUrl" class="border-2 border-gray-300 rounded-lg overflow-hidden bg-gray-50 flex flex-col items-center p-4">
+                                <img :src="imagenUrl" :alt="imagenNombre" class="max-h-64 object-contain shadow-md rounded-lg mb-4" />
+                                <div class="flex items-center gap-3">
+                                    <span v-if="imagenNombre" class="text-sm font-semibold text-gray-700">{{ imagenNombre }}</span>
+                                    <div class="flex items-center gap-2">
+                                        <label for="imagen-convocatoria-change" class="px-3 py-1 bg-[#1B396A] text-white text-xs rounded hover:bg-[#0f2347] transition cursor-pointer">
+                                            Cambiar Imagen
+                                        </label>
+                                        <button v-if="form.imagen" type="button" @click="removeImage" 
+                                            class="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition">
+                                            Revertir
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Drop zone cuando NO hay imagen -->
+                            <div v-else class="flex items-center justify-center w-full">
+                                <label for="imagen-convocatoria" class="flex flex-col items-center justify-center w-full h-32 bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 hover:border-[#1B396A] transition-all">
+                                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                        <svg class="w-8 h-8 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <p class="mb-2 text-sm text-gray-500">
+                                            <span class="font-semibold text-[#1B396A]">Sube una imagen</span> o arrastra aquí
+                                        </p>
+                                        <p class="text-xs text-gray-500">PNG, JPG o GIF up to 2MB</p>
+                                    </div>
+                                    <input id="imagen-convocatoria" type="file" class="hidden" @change="handleImageChange" accept="image/*" />
+                                </label>
+                            </div>
+                            
+                            <!-- Input para cambiar imagen (oculto) -->
+                            <input id="imagen-convocatoria-change" type="file" class="hidden" @change="handleImageChange" accept="image/*" />
+
+                            <p v-if="form.errors.imagen" class="mt-1 text-sm text-red-600">{{ form.errors.imagen }}</p>
                         </div>
 
                         <!-- Archivo de Convocatoria -->
@@ -232,13 +319,14 @@ const guardarDocumentos = () => {
                                     <div v-else-if="archivoTipo?.startsWith('image/')" class="h-full flex items-center justify-center bg-gray-900">
                                         <img :src="archivoUrl" :alt="archivoNombre" class="max-h-full max-w-full object-contain" />
                                     </div>
-                                    <div v-else class="h-full flex items-center justify-center">
+                                    <div v-else class="h-full flex items-center justify-center bg-gray-50 p-6">
                                         <div class="text-center">
-                                            <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-16 h-16 mx-auto text-[#1B396A] mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                             </svg>
-                                            <p class="text-gray-600 font-medium mb-2">Vista previa no disponible</p>
-                                            <p class="text-sm text-gray-500">Este tipo de archivo no se puede visualizar en el navegador</p>
+                                            <p class="text-gray-900 font-bold mb-2 text-lg">Archivo Seleccionado</p>
+                                            <p class="text-gray-600 font-medium mb-2 break-all">{{ archivoNombre }}</p>
+                                            <p class="text-sm text-gray-500">Vista previa no disponible para este tipo de archivo.</p>
                                         </div>
                                     </div>
                                 </div>

@@ -1,13 +1,18 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
 import LandingLayout from '@/layouts/LandingLayout.vue';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+
+const props = defineProps({
+    convocatoria: Object, // Puede venir como Resource (con .data) o directo
+});
 
 const showModal = ref(false);
 const currentPdfUrl = ref('');
 const currentPdfTitle = ref('');
 
 const openPdfModal = (url, title) => {
+    if (!url) return;
     currentPdfUrl.value = url;
     currentPdfTitle.value = title;
     showModal.value = true;
@@ -18,6 +23,81 @@ const closeModal = () => {
     currentPdfUrl.value = '';
     currentPdfTitle.value = '';
 };
+
+// Acceder a los datos correctamente (handling Resource wrapper)
+const convocatoriaData = computed(() => {
+    return props.convocatoria?.data || props.convocatoria;
+});
+
+// Helper para parsear fecha "YYYY-MM-DD", "YYYY-MM-DD HH:MM:SS" o ISO "YYYY-MM-DDTHH:mm:ss"
+const parseDateLocal = (dateString) => {
+    if (!dateString) return null;
+    // Tomamos los primeros 10 caracteres (YYYY-MM-DD)
+    const datePart = dateString.substring(0, 10);
+    const [year, month, day] = datePart.split('-').map(Number);
+    
+    if (!year || !month || !day) return null;
+
+    return new Date(year, month - 1, day);
+};
+
+const etapas = computed(() => {
+    const convocatoria = convocatoriaData.value;
+    const stages = [
+        {
+            id: 1,
+            titulo: 'Publicación de Convocatoria',
+            dateStartKey: 'publicacion_inicio',
+            color: '#1B396A'
+        },
+        {
+            id: 2,
+            titulo: 'Registro y Carga de Documentos',
+            dateStartKey: 'registro_inicio',
+            dateEndKey: 'registro_fin',
+            color: '#10A558'
+        },
+        {
+            id: 3,
+            titulo: 'Evaluación y Dictaminación',
+            dateStartKey: 'evaluacion_inicio',
+            color: '#E9C81F'
+        },
+        {
+            id: 4,
+            titulo: 'Publicación de Resultados',
+            dateStartKey: 'resultados_inicio',
+            dateEndKey: 'resultados_fin',
+            color: '#1B396A'
+        }
+    ];
+
+    if (!convocatoria || !convocatoria.calendario) {
+        return stages.map(s => ({
+            ...s,
+            fechas: 'Por definir'
+        }));
+    }
+
+    return stages.map(stage => {
+        const start = parseDateLocal(convocatoria.calendario[stage.dateStartKey]);
+        let fechasStr = start ? start.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) : 'Por definir';
+        
+        if (stage.dateEndKey && convocatoria.calendario[stage.dateEndKey]) {
+            const end = parseDateLocal(convocatoria.calendario[stage.dateEndKey]);
+            if (end) {
+                fechasStr += ` - ${end.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}`;
+            }
+        } else if (start) {
+             fechasStr += ` ${start.getFullYear()}`;
+        }
+
+        return {
+            ...stage,
+            fechas: fechasStr
+        };
+    });
+});
 </script>
 
 <template>
@@ -38,7 +118,13 @@ const closeModal = () => {
         <section class="bg-gray-50 py-16">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <!-- Case: No active convocatoria -->
+                <div v-if="!convocatoriaData" class="text-center py-12">
+                    <h2 class="text-2xl font-bold text-gray-700">No hay convocatorias activas en este momento.</h2>
+                    <p class="text-gray-500 mt-2">Por favor, vuelve más tarde.</p>
+                </div>
+
+                <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-12">
                     <!-- LADO IZQUIERDO: ¿A quién va dirigido? y Bases -->
                     <div class="space-y-8">
                         <!-- ¿A quién va dirigido? -->
@@ -130,28 +216,31 @@ const closeModal = () => {
                                     px-8 py-3 rounded-xl hover:bg-[#1B396A]
                                     transition shadow-lg transform hover:-translate-y-1"
                             >
-                                Iniciar en el Sistema
+                                Iniciar Sesión
                             </Link>
                         </div>
                     </div>
 
                     <!-- LADO DERECHO: Card Convocatoria y Calendario -->
                     <div class="space-y-8">
-                        <!-- Card Principal de Convocatoria 2025 -->
+                        <!-- Card Principal de Convocatoria -->
                         <div
                             class="bg-gradient-to-br from-[#2d4a7c] via-[#3a5a8c] to-[#4a6a9c] text-white rounded-3xl p-8 shadow-md">
-                            <h2 class="text-3xl font-bold mb-4 text-center">Convocatoria 2026</h2>
-                            <p class="text-base leading-relaxed mb-8 text-blue-50">
-                                El Tecnológico Nacional de México convoca a su personal docente a participar en el
-                                Programa de Estímulos al Desempeño del Personal Docente correspondiente al ejercicio
-                                2026.
+                            <h2 class="text-3xl font-bold mb-4 text-center">{{ convocatoriaData.nombre }}</h2>
+                            <p class="text-base leading-relaxed mb-8 text-blue-50 line-clamp-4">
+                                {{ convocatoriaData.descripcion || 'Sin descripción disponible.' }}
                             </p>
                             <div class="flex items-center justify-center gap-2">
                                 <button
-                                    @click="openPdfModal('https://edd.tecnm.mx/formatos/2025/CONVOCATORIA_EDD_2025.pdf', 'Convocatoria 2026')"
+                                    v-if="convocatoriaData.archivo_url && convocatoriaData.estado !== 'pendiente'"
+                                    @click="openPdfModal(convocatoriaData.archivo_url, convocatoriaData.nombre)"
                                     class="cursor-pointer px-6 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 hover:bg-gray-100 font-medium transition shadow-lg transform hover:-translate-y-1">
                                     Ver Convocatoria PDF
                                 </button>
+                                <span v-else-if="convocatoriaData.estado === 'pendiente'" class="text-sm bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg border border-yellow-200">
+                                    Convocatoria Próximamente
+                                </span>
+                                <span v-else class="text-sm bg-white/20 px-4 py-2 rounded-lg">Sin PDF disponible</span>
                             </div>
                         </div>
 
@@ -159,76 +248,27 @@ const closeModal = () => {
                         <div class="bg-white p-8 rounded-2xl shadow-md">
                             <h3 class="text-2xl font-bold text-gray-900 mb-8">Calendario de Actividades</h3>
 
-                            <!-- Fase 1 -->
-                            <div class="mb-10">
-                                <div class="flex items-start">
-                                    <div class="flex-shrink-0">
-                                        <div
-                                            class="h-12 w-12 rounded-full bg-[#1B396A] flex items-center justify-center shadow-md">
-                                            <span class="text-white font-bold text-sm">1</span>
-                                        </div>
-                                    </div>
-                                    <div class="ml-4 flex-1">
-                                        <p class="text-xs text-gray-500 mb-1">Fase 1</p>
-                                        <h4 class="text-lg font-bold text-gray-900 mb-1">Publicación de Convocatoria</h4>
-                                        <p class="text-sm text-gray-500">12 Dic - 12 Ene 2025</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Fase 2 -->
-                            <div class="mb-10 relative">
-                                <div class="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200 -mt-16"></div>
+                            <div v-for="(etapa, index) in etapas" :key="etapa.id" class="relative" :class="{ 'mb-10': index < etapas.length - 1 }">
+                                <!-- Connector Line -->
+                                <div v-if="index < etapas.length - 1" class="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200 -mt-10" style="height: calc(100% + 40px); top: 20px;"></div>
+                                
                                 <div class="flex items-start relative z-10">
                                     <div class="flex-shrink-0">
                                         <div
-                                            class="h-12 w-12 rounded-full bg-[#10A558] flex items-center justify-center shadow-md">
-                                            <span class="text-white font-bold text-sm">2</span>
+                                            class="h-12 w-12 rounded-full flex items-center justify-center shadow-md text-white font-bold text-sm"
+                                            :style="{ backgroundColor: etapa.color }"
+                                        >
+                                            {{ etapa.id }}
                                         </div>
                                     </div>
                                     <div class="ml-4 flex-1">
-                                        <p class="text-xs text-gray-500 mb-1">Fase 2</p>
-                                        <h4 class="text-lg font-bold text-gray-900 mb-1">Registro y Carga de Documentos</h4>
-                                        <p class="text-sm text-gray-500">20 Dic - 05 Ene 2025</p>
+                                        <p class="text-xs text-gray-500 mb-1">Fase {{ etapa.id }}</p>
+                                        <h4 class="text-lg font-bold text-gray-900 mb-1">{{ etapa.titulo }}</h4>
+                                        <p class="text-sm text-gray-500 capitalize">{{ etapa.fechas }}</p>
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Fase 3 -->
-                            <div class="mb-10 relative">
-                                <div class="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200 -mt-14"></div>
-                                <div class="flex items-start relative z-10">
-                                    <div class="flex-shrink-0">
-                                        <div
-                                            class="h-12 w-12 rounded-full bg-[#E9C81F] flex items-center justify-center shadow-md">
-                                            <span class="text-white font-bold text-sm">3</span>
-                                        </div>
-                                    </div>
-                                    <div class="ml-4 flex-1">
-                                        <p class="text-xs text-gray-500 mb-1">Fase 3</p>
-                                        <h4 class="text-lg font-bold text-gray-900 mb-1">Evaluación y Dictaminación</h4>
-                                        <p class="text-sm text-gray-500">06 Ene - 11 Ene 2026</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Fase 4 -->
-                            <div class="mb-5 relative">
-                                <div class="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200 -mt-10"></div>
-                                <div class="flex items-start relative z-10">
-                                    <div class="flex-shrink-0">
-                                        <div
-                                            class="h-12 w-12 rounded-full bg-[#1B396A] flex items-center justify-center shadow-md">
-                                            <span class="text-white font-bold text-sm">4</span>
-                                        </div>
-                                    </div>
-                                    <div class="ml-4 flex-1">
-                                        <p class="text-xs text-gray-500 mb-1">Fase 4</p>
-                                        <h4 class="text-lg font-bold text-gray-900 mb-1">Publicación de Resultados</h4>
-                                        <p class="text-sm text-gray-500">12 Ene - 13 Ene 2026</p>
-                                    </div>
-                                </div>
-                            </div>
+                            
                         </div>
                     </div>
                 </div>

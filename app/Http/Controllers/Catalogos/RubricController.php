@@ -13,14 +13,24 @@ use Illuminate\Support\Facades\DB;
 
 class RubricController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->input('search');
+        $rows = $request->input('rows', 10);
+        $order = $request->input('order', 'id');
+        $direction = $request->input('direction', 'desc');
+
         $rubrics = Rubric::withCount('questions')
-            ->orderBy('id', 'desc')
-            ->paginate(10);
+            ->when($search, function ($query, $search) {
+                $query->where('title', 'like', "%{$search}%");
+            })
+            ->orderBy($order, $direction)
+            ->paginate($rows)
+            ->withQueryString();
 
         return Inertia::render('SuperAdmin/Catalogo/Rubrics/Index', [
             'rubrics' => $rubrics,
+            'filters' => $request->all(['search', 'rows', 'order', 'direction']),
         ]);
     }
 

@@ -50,7 +50,7 @@ class CalendarioController extends Controller
             ->buscarGlobal($filters->search);
 
         // Ordenamiento dinámico
-        $calendarios = $query->orderBy($filters->order, $filters->direction ?? 'asc')
+        $calendarios = $query->orderBy($filters->order, $filters->direction ?? 'desc')
             ->paginate($filters->rows)
             ->withQueryString();
 
@@ -70,7 +70,8 @@ class CalendarioController extends Controller
         return Inertia::render("{$this->source}Create", [
             'title'          => 'Agregar Calendario',
             'routeName'      => $this->routeName,
-            'convocatorias'  => Convocatoria::ordenado('id', 'desc')->get(['id', 'nombre']),
+            // Solo mostrar convocatorias que NO tienen calendario asignado
+            'convocatorias'  => Convocatoria::doesntHave('calendario')->ordenado('id', 'desc')->get(['id', 'nombre']),
         ]);
     }
 
@@ -99,8 +100,12 @@ class CalendarioController extends Controller
         return Inertia::render("{$this->source}Edit", [
             'title'         => 'Editar Calendario',
             'routeName'     => $this->routeName,
-            'calendario'    => new CalendarioResource($calendario->load('convocatoria')),
-            'convocatorias' => Convocatoria::ordenado('id', 'desc')->get(['id', 'nombre']),
+            'calendario'    => (new CalendarioResource($calendario->load('convocatoria')))->resolve(),
+            // Mostrar convocatorias sin calendario O la convocatoria actual asignada a este calendario
+            'convocatorias' => Convocatoria::whereDoesntHave('calendario')
+                ->orWhere('id', $calendario->convocatoria_id)
+                ->ordenado('id', 'desc')
+                ->get(['id', 'nombre']),
         ]);
     }
 

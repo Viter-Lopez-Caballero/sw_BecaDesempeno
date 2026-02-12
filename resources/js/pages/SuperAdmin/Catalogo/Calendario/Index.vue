@@ -103,7 +103,8 @@ const deleteCalendario = async (id) => {
 
 const formatDate = (date) => {
     if (!date) return '';
-    const d = new Date(date);
+    // Agregar T00:00:00 para que JS lo interprete como hora local y no UTC
+    const d = new Date(date + 'T00:00:00');
     return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
 };
 </script>
@@ -114,8 +115,8 @@ const formatDate = (date) => {
 
         <div class="space-y-6">
             <!-- Header -->
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="w-full md:w-auto">
                     <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
@@ -131,7 +132,7 @@ const formatDate = (date) => {
                         <span class="text-gray-900 font-semibold">Calendario</span>
                     </div>
                 </div>
-                <Link v-if="useCan('calendario.create')" :href="route(`${routeName}create`)" class="px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium">
+                <Link v-if="useCan('calendario.create')" :href="route(`${routeName}create`)" class="w-full md:w-auto justify-center px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
                     </svg>
@@ -187,12 +188,7 @@ const formatDate = (date) => {
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
                                 <th scope="col" class="px-6 py-4 tracking-wider">
-                                    <div @click="sortBy('id')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
-                                        ID
-                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'id', 'opacity-50': sortField !== 'id' }">
-                                            <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/>
-                                        </svg>
-                                    </div>
+                                    #
                                 </th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Convocatoria</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Publicación</th>
@@ -203,14 +199,13 @@ const formatDate = (date) => {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                            <tr v-for="calendario in calendarios.data" :key="calendario.id" class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 font-medium text-gray-900">{{ calendario.id }}</td>
+                            <tr v-for="(calendario, index) in calendarios.data" :key="calendario.id" class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 font-medium text-gray-900">{{ calendarios.meta.from + index }}</td>
                                 <td class="px-6 py-4">
                                     <div class="text-sm font-semibold text-gray-800">{{ calendario.convocatoria?.nombre }}</div>
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="text-sm text-gray-900">{{ formatDate(calendario.publicacion_inicio) }}</div>
-                                    <div class="text-xs text-gray-500">al {{ formatDate(calendario.publicacion_fin) }}</div>
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="text-sm text-gray-900">{{ formatDate(calendario.registro_inicio) }}</div>

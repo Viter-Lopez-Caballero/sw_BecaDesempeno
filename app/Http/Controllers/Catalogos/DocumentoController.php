@@ -82,7 +82,9 @@ class DocumentoController extends Controller
         // Datos para la pestaña de Documentos de Docentes
         if ($activeTab === 'docentes') {
             $solicitudesQuery = \App\Models\Solicitud::query()
-                ->with(['user.institucion.estado', 'user.priorityArea', 'convocatoria'])
+                ->with(['user.institucion.estado', 'user.priorityArea', 'convocatoria' => function ($query) {
+                    $query->withTrashed();
+                }])
                 ->withCount('documentos')
                 ->when($filters->search, function ($q) use ($filters) {
                     $q->whereHas('user', function ($query) use ($filters) {

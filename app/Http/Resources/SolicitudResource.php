@@ -26,10 +26,7 @@ class SolicitudResource extends JsonResource
             
             // Relationships (conditional)
             'user' => new UserResource($this->whenLoaded('user')),
-            'convocatoria' => $this->when(
-                $this->relationLoaded('convocatoria'),
-                fn() => $this->convocatoria ? new ConvocatoriaResource($this->convocatoria) : null
-            ),
+            'convocatoria' => $this->convocatoria ? (new ConvocatoriaResource($this->convocatoria))->resolve() : null,
             'documentos' => $this->when(
                 $this->relationLoaded('documentos'),
                 fn() => DocumentoResource::collection($this->documentos)->resolve()
@@ -40,15 +37,12 @@ class SolicitudResource extends JsonResource
             'documentos_count' => $this->whenCounted('documentos'),
             
             // Computed fields for SuperAdmin Documentos view
-            'profesor' => $this->when(
-                $this->relationLoaded('user'),
-                fn() => $this->user ? [
-                    'name' => $this->user->name,
-                    'email' => $this->user->email,
-                    'departamento' => $this->user->priorityArea?->name ?? null,
-                    'estado' => $this->user->institucion?->estado?->nombre ?? null,
-                ] : null
-            ),
+            'profesor' => $this->user ? [
+                'name' => $this->user->name,
+                'email' => $this->user->email,
+                'departamento' => $this->user->priorityArea?->name ?? null,
+                'estado' => $this->user->institucion?->estado?->nombre ?? null,
+            ] : null,
             'campus' => $this->when(
                 $this->relationLoaded('user'),
                 fn() => $this->user?->institucion?->nombre ?? 'N/A'

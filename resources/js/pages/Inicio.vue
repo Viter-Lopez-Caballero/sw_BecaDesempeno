@@ -391,11 +391,11 @@ const getIconComponent = (iconName) => {
                 <!-- Paginación -->
                 <div class="mt-8">
                     <Pagination 
-                        :links="convocatorias.links" 
-                        :total="convocatorias.total"
-                        :from="convocatorias.from"
-                        :to="convocatorias.to"
-                        :show-total="true"
+                        :links="convocatorias.meta.links" 
+                        :total="convocatorias.meta.total"
+                        :from="convocatorias.meta.from"
+                        :to="convocatorias.meta.to"
+                        :show-total="false"
                     />
                 </div>
             </div>

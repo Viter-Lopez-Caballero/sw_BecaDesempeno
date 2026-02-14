@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('convocatoria_id')->constrained('convocatorias')->onDelete('cascade');
             $table->date('publicacion_inicio');
-            $table->date('publicacion_fin');
+            // 'publicacion_fin' removed
             $table->date('registro_inicio');
             $table->date('registro_fin');
             $table->date('evaluacion_inicio');

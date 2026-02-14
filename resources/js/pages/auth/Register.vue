@@ -59,7 +59,6 @@ watch(() => form.priority_area_id, async (newValue) => {
 });
 
 const submit = () => {
-    alertaCargando('Registrando cuenta', 'Por favor espera...');
     
     form.post(route('register'), {
         onSuccess: () => {

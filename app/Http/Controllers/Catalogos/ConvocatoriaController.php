@@ -56,11 +56,18 @@ class ConvocatoriaController extends Controller
             ->paginate($filters->rows)
             ->withQueryString();
 
+        // Check restriction: active or pending
+        // If there is ANY convocatoria with status 'activa' or 'pendiente', prevent creation.
+        // We can check efficiently.
+        $hasActiveOrPending = Convocatoria::whereIn('estado', ['activa', 'pendiente'])->exists();
+
         return Inertia::render("{$this->source}Index", [
             'convocatorias' => ConvocatoriaResource::collection($convocatorias),
             'title'         => 'Convocatorias',
             'routeName'     => $this->routeName,
-            'filters'       => $filters
+            'filters'       => $filters,
+            'canCreate'     => !$hasActiveOrPending,
+            'restrictionMessage' => $hasActiveOrPending ? 'Ya existe una convocatoria Activa o Pendiente.' : '',
         ]);
     }
 
@@ -81,6 +88,8 @@ class ConvocatoriaController extends Controller
     public function store(StoreConvocatoriaRequest $request): RedirectResponse
     {
         $data = $request->validated();
+        // Default to 'pendiente' on creation
+        $data['estado'] = 'pendiente';
         
         // Manejar la subida del archivo
         if ($request->hasFile('archivo')) {
@@ -109,6 +118,18 @@ class ConvocatoriaController extends Controller
         }
 
         $convocatoria = Convocatoria::create($data);
+        
+        // Crear Calendario
+        $convocatoria->calendario()->create([
+            'publicacion_inicio' => $request->publicacion_inicio,
+            // 'publicacion_fin' removed
+            'registro_inicio' => $request->registro_inicio,
+            'registro_fin' => $request->registro_fin,
+            'evaluacion_inicio' => $request->evaluacion_inicio,
+            'evaluacion_fin' => $request->evaluacion_fin,
+            'resultados_inicio' => $request->resultados_inicio,
+            'resultados_fin' => $request->resultados_fin,
+        ]);
         
         // Vincular automáticamente todos los documentos activos del catálogo
         $documentosActivos = \App\Models\DocumentoCatalogo::where('activo', true)->pluck('id');
@@ -194,6 +215,22 @@ class ConvocatoriaController extends Controller
         }
 
         $convocatoria->update($data);
+
+        // Actualizar o Crear Calendario
+        $convocatoria->calendario()->updateOrCreate(
+            ['convocatoria_id' => $convocatoria->id],
+            [
+                'publicacion_inicio' => $request->publicacion_inicio,
+                // 'publicacion_fin' removed
+                'registro_inicio' => $request->registro_inicio,
+                'registro_fin' => $request->registro_fin,
+                'evaluacion_inicio' => $request->evaluacion_inicio,
+                'evaluacion_fin' => $request->evaluacion_fin,
+                'resultados_inicio' => $request->resultados_inicio,
+                'resultados_fin' => $request->resultados_fin,
+            ]
+        );
+
         return redirect()->route("{$this->routeName}index")->with('success', 'Convocatoria actualizada con éxito!');
     }
 

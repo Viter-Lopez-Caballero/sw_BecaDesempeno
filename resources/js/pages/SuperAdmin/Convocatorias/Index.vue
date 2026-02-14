@@ -26,6 +26,14 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    canCreate: {
+        type: Boolean,
+        default: true
+    },
+    restrictionMessage: {
+        type: String,
+        default: ''
+    }
 });
 
 const search = ref(props.filters.search);
@@ -137,14 +145,31 @@ const closeViewer = () => {
                         <span class="text-gray-900 font-semibold">Convocatorias</span>
                     </div>
                 </div>
-                <Link v-if="useCan('convocatorias.create')" :href="route(`${routeName}create`)"
-                    class="w-full md:w-auto justify-center px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
-                        fill="currentColor">
-                        <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
-                    </svg>
-                    Agregar
-                </Link>
+                <div class="flex items-center gap-2 group relative">
+                    <Link v-if="useCan('convocatorias.create') && canCreate" :href="route(`${routeName}create`)"
+                        class="w-full md:w-auto justify-center px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                            fill="currentColor">
+                            <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
+                        </svg>
+                        Agregar
+                    </Link>
+                    <button v-else-if="useCan('convocatorias.create')" disabled
+                        class="w-full md:w-auto justify-center px-4 py-2.5 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed flex items-center gap-2 font-medium">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                            fill="currentColor">
+                            <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
+                        </svg>
+                        Agregar
+                    </button>
+                    
+                    <!-- Tooltip non-invasive -->
+                    <div v-if="!canCreate && useCan('convocatorias.create')" 
+                        class="absolute right-0 top-full mt-2 w-64 p-2 bg-gray-800 text-white text-xs rounded shadow-lg z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                        {{ restrictionMessage }}
+                        <div class="absolute -top-1 right-4 w-2 h-2 bg-gray-800 rotate-45"></div>
+                    </div>
+                </div>
             </div>
 
             <!-- Stats Cards -->

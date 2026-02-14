@@ -37,6 +37,14 @@ const form = useForm({
     archivo: null,
     imagen: null,
     _method: 'PUT',
+    // Calendar Fields (Safely access nested props)
+    publicacion_inicio: props.convocatoria.data?.calendario?.publicacion_inicio || '',
+    registro_inicio: props.convocatoria.data?.calendario?.registro_inicio || '',
+    registro_fin: props.convocatoria.data?.calendario?.registro_fin || '',
+    evaluacion_inicio: props.convocatoria.data?.calendario?.evaluacion_inicio || '',
+    evaluacion_fin: props.convocatoria.data?.calendario?.evaluacion_fin || '',
+    resultados_inicio: props.convocatoria.data?.calendario?.resultados_inicio || '',
+    resultados_fin: props.convocatoria.data?.calendario?.resultados_fin || '',
 });
 
 const documentosForm = useForm({
@@ -405,6 +413,81 @@ const guardarDocumentos = () => {
                                 <span>Sube el documento oficial de la convocatoria</span>
                             </div>
                             <p v-if="form.errors.archivo" class="mt-1 text-sm text-red-600">{{ form.errors.archivo }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Calendario Section -->
+                    <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                        <div class="flex items-center gap-2 mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1B396A">
+                                <path d="M200-80q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v560q0 33-23.5 56.5T760-80H200Zm0-80h560v-400H200v400Zm0-480h560v-80H200v80Zm0 0v-80 80Z"/>
+                            </svg>
+                            <h2 class="text-xl font-bold text-gray-900">Calendario de la Convocatoria</h2>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Publicación -->
+                            <div class="space-y-4">
+                                <h3 class="font-semibold text-[#1B396A] border-b border-gray-200 pb-1">Publicación</h3>
+                                <div class="grid grid-cols-1 gap-4">
+                                    <div>
+                                        <label class="block mb-1 text-sm font-medium text-gray-700">Fecha de Publicación</label>
+                                        <input v-model="form.publicacion_inicio" type="date" class="bg-white border text-gray-900 text-sm rounded-lg focus:ring-[#1B396A] focus:border-[#1B396A] block w-full p-2.5" />
+                                        <p v-if="form.errors.publicacion_inicio" class="mt-1 text-xs text-red-600">{{ form.errors.publicacion_inicio }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Registro -->
+                            <div class="space-y-4">
+                                <h3 class="font-semibold text-[#1B396A] border-b border-gray-200 pb-1">Registro de Solicitudes</h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block mb-1 text-sm font-medium text-gray-700">Inicio</label>
+                                        <input v-model="form.registro_inicio" type="date" :min="form.publicacion_inicio" class="bg-white border text-gray-900 text-sm rounded-lg focus:ring-[#1B396A] focus:border-[#1B396A] block w-full p-2.5" />
+                                        <p v-if="form.errors.registro_inicio" class="mt-1 text-xs text-red-600">{{ form.errors.registro_inicio }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block mb-1 text-sm font-medium text-gray-700">Fin</label>
+                                        <input v-model="form.registro_fin" type="date" :min="form.registro_inicio" class="bg-white border text-gray-900 text-sm rounded-lg focus:ring-[#1B396A] focus:border-[#1B396A] block w-full p-2.5" />
+                                        <p v-if="form.errors.registro_fin" class="mt-1 text-xs text-red-600">{{ form.errors.registro_fin }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Evaluación -->
+                            <div class="space-y-4">
+                                <h3 class="font-semibold text-[#1B396A] border-b border-gray-200 pb-1">Evaluación</h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block mb-1 text-sm font-medium text-gray-700">Inicio</label>
+                                        <input v-model="form.evaluacion_inicio" type="date" :min="form.registro_fin" class="bg-white border text-gray-900 text-sm rounded-lg focus:ring-[#1B396A] focus:border-[#1B396A] block w-full p-2.5" />
+                                        <p v-if="form.errors.evaluacion_inicio" class="mt-1 text-xs text-red-600">{{ form.errors.evaluacion_inicio }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block mb-1 text-sm font-medium text-gray-700">Fin</label>
+                                        <input v-model="form.evaluacion_fin" type="date" :min="form.evaluacion_inicio" class="bg-white border text-gray-900 text-sm rounded-lg focus:ring-[#1B396A] focus:border-[#1B396A] block w-full p-2.5" />
+                                        <p v-if="form.errors.evaluacion_fin" class="mt-1 text-xs text-red-600">{{ form.errors.evaluacion_fin }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Resultados -->
+                            <div class="space-y-4">
+                                <h3 class="font-semibold text-[#1B396A] border-b border-gray-200 pb-1">Resultados</h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block mb-1 text-sm font-medium text-gray-700">Inicio</label>
+                                        <input v-model="form.resultados_inicio" type="date" :min="form.evaluacion_fin" class="bg-white border text-gray-900 text-sm rounded-lg focus:ring-[#1B396A] focus:border-[#1B396A] block w-full p-2.5" />
+                                        <p v-if="form.errors.resultados_inicio" class="mt-1 text-xs text-red-600">{{ form.errors.resultados_inicio }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block mb-1 text-sm font-medium text-gray-700">Fin</label>
+                                        <input v-model="form.resultados_fin" type="date" :min="form.resultados_inicio" class="bg-white border text-gray-900 text-sm rounded-lg focus:ring-[#1B396A] focus:border-[#1B396A] block w-full p-2.5" />
+                                        <p v-if="form.errors.resultados_fin" class="mt-1 text-xs text-red-600">{{ form.errors.resultados_fin }}</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

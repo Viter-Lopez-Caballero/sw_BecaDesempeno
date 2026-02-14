@@ -71,12 +71,7 @@ const getCatalogItems = (routePrefix) => [
         icon: mdiFileDocumentMultiple,
         permission: "documentos.index",
     },
-    {
-        label: "Calendario",
-        route: `${routePrefix}calendario.index`,
-        icon: mdiCalendar,
-        permission: "calendario.index",
-    },
+    // 'Calendario' removed
     {
         label: "Rúbrica",
         route: `${routePrefix}rubrics.index`,

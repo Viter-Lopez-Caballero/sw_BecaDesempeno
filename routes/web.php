@@ -332,7 +332,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::resource('rubrics', RubricController::class);
         Route::post('rubrics/{rubric}/toggle-active', [RubricController::class, 'toggleActive'])->name('rubrics.toggle-active');
-        Route::resource('calendario', CalendarioController::class);
     });
 
     // Modules accessible by permission (Admin/SuperAdmin)

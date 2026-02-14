@@ -424,6 +424,14 @@ const viewDetails = (id) => {
                                             </svg>
                                         </button>
                                     </th>
+                                    <th scope="col" class="px-6 py-4 tracking-wider">
+                                        <button @click="sortByDocentes('convocatoria')" class="flex items-center justify-center gap-1 hover:text-gray-200 transition w-full">
+                                            <span>Convocatoria</span>
+                                            <svg v-if="sortField === 'convocatoria'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" :class="sortDirection === 'asc' ? 'rotate-0' : 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                                            </svg>
+                                        </button>
+                                    </th>
                                     <th scope="col" class="px-6 py-4 text-center tracking-wider">Documentos</th>
                                     <th scope="col" class="px-6 py-4 text-center tracking-wider">Acciones</th>
                                 </tr>
@@ -438,8 +446,11 @@ const viewDetails = (id) => {
                                             <span class="text-sm font-medium text-gray-900">{{ solicitud.profesor?.name || 'N/A' }}</span>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 max-w-[200px] truncate" :title="solicitud.campus">
                                         {{ solicitud.campus }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 max-w-[200px] truncate" :title="solicitud.convocatoria?.nombre">
+                                        {{ solicitud.convocatoria?.nombre || 'N/A' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center">
                                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">

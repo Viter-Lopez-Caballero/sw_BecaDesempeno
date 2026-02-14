@@ -21,7 +21,7 @@ class RegisterController extends Controller
     public function create()
     {
         return Inertia::render('Auth/Register', [
-            'instituciones' => Institucion::ordenado('nombre')->get(['id', 'nombre']),
+            'institutions' => \App\Models\Institution::orderBy('name')->get(['id', 'name']),
             'priorityAreas' => PriorityArea::with('subAreas')->orderBy('name')->get(['id', 'name']),
         ]);
     }
@@ -31,8 +31,8 @@ class RegisterController extends Controller
      */
     public function createEvaluador()
     {
-        return Inertia::render('Auth/RegisterEvaluador', [
-            'instituciones' => Institucion::ordenado('nombre')->get(['id', 'nombre']),
+        return Inertia::render('Auth/RegisterEvaluator', [
+            'institutions' => \App\Models\Institution::orderBy('name')->get(['id', 'name']),
             'priorityAreas' => PriorityArea::with('subAreas')->orderBy('name')->get(['id', 'name']),
         ]);
     }
@@ -49,7 +49,7 @@ class RegisterController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|lowercase|email|max:255|unique:users,email',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'institucion_id' => 'required|exists:instituciones,id',
+            'institucion_id' => 'required|exists:institutions,id', // Table updated
             'priority_area_id' => 'required|exists:priority_areas,id',
             'sub_area_id' => 'required|exists:sub_areas,id',
             'role_type' => 'sometimes|string|in:evaluador,docente', // Optional parameter to determine role

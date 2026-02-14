@@ -10,117 +10,117 @@ class PermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // Definir permisos para cada recurso del módulo de seguridad
+        // Define permissions for each resource of the security module
         $permissions = [
-            // Seguridad (modules, permissions, roles, users)
-            ['name' => 'modules.index', 'description' => 'Ver listado de módulos', 'module_key' => 'seg'],
-            ['name' => 'modules.create', 'description' => 'Crear módulos', 'module_key' => 'seg'],
-            ['name' => 'modules.edit', 'description' => 'Editar módulos', 'module_key' => 'seg'],
-            ['name' => 'modules.delete', 'description' => 'Eliminar módulos', 'module_key' => 'seg'],
+            // Security (modules, permissions, roles, users)
+            ['name' => 'modules.index', 'description' => 'View modules list', 'module_key' => 'security'],
+            ['name' => 'modules.create', 'description' => 'Create modules', 'module_key' => 'security'],
+            ['name' => 'modules.edit', 'description' => 'Edit modules', 'module_key' => 'security'],
+            ['name' => 'modules.delete', 'description' => 'Delete modules', 'module_key' => 'security'],
             
-            ['name' => 'permissions.index', 'description' => 'Ver listado de permisos', 'module_key' => 'seg'],
-            ['name' => 'permissions.create', 'description' => 'Crear permisos', 'module_key' => 'seg'],
-            ['name' => 'permissions.edit', 'description' => 'Editar permisos', 'module_key' => 'seg'],
-            ['name' => 'permissions.delete', 'description' => 'Eliminar permisos', 'module_key' => 'seg'],
+            ['name' => 'permissions.index', 'description' => 'View permissions list', 'module_key' => 'security'],
+            ['name' => 'permissions.create', 'description' => 'Create permissions', 'module_key' => 'security'],
+            ['name' => 'permissions.edit', 'description' => 'Edit permissions', 'module_key' => 'security'],
+            ['name' => 'permissions.delete', 'description' => 'Delete permissions', 'module_key' => 'security'],
 
-            ['name' => 'roles.index', 'description' => 'Ver listado de roles', 'module_key' => 'seg'],
-            ['name' => 'roles.create', 'description' => 'Crear roles', 'module_key' => 'seg'],
-            ['name' => 'roles.edit', 'description' => 'Editar roles', 'module_key' => 'seg'],
-            ['name' => 'roles.delete', 'description' => 'Eliminar roles', 'module_key' => 'seg'],
+            ['name' => 'roles.index', 'description' => 'View roles list', 'module_key' => 'security'],
+            ['name' => 'roles.create', 'description' => 'Create roles', 'module_key' => 'security'],
+            ['name' => 'roles.edit', 'description' => 'Edit roles', 'module_key' => 'security'],
+            ['name' => 'roles.delete', 'description' => 'Delete roles', 'module_key' => 'security'],
 
-            ['name' => 'users.index', 'description' => 'Ver listado de usuarios', 'module_key' => 'seg'],
-            ['name' => 'users.create', 'description' => 'Crear usuarios', 'module_key' => 'seg'],
-            ['name' => 'users.edit', 'description' => 'Editar usuarios', 'module_key' => 'seg'],
-            ['name' => 'users.delete', 'description' => 'Eliminar usuarios', 'module_key' => 'seg'],
+            ['name' => 'users.index', 'description' => 'View users list', 'module_key' => 'security'],
+            ['name' => 'users.create', 'description' => 'Create users', 'module_key' => 'security'],
+            ['name' => 'users.edit', 'description' => 'Edit users', 'module_key' => 'security'],
+            ['name' => 'users.delete', 'description' => 'Delete users', 'module_key' => 'security'],
 
-            // Solicitudes (Admin - Gestión Individual)
-            ['name' => 'solicitudes.index', 'description' => 'Ver listado de solicitudes', 'module_key' => 'adminsoli'],
-            ['name' => 'solicitudes.create', 'description' => 'Crear solicitudes', 'module_key' => 'adminsoli'],
-            ['name' => 'solicitudes.edit', 'description' => 'Editar solicitudes', 'module_key' => 'adminsoli'],
-            ['name' => 'solicitudes.delete', 'description' => 'Eliminar solicitudes', 'module_key' => 'adminsoli'],
-            ['name' => 'solicitudes.own', 'description' => 'Ver solo solicitudes propias', 'module_key' => 'adminsoli'],
-            ['name' => 'solicitudes.assign', 'description' => 'Asignar evaluadores a solicitudes', 'module_key' => 'adminsoli'],
-            ['name' => 'solicitudes.verdict', 'description' => 'Emitir veredicto final en solicitudes', 'module_key' => 'adminsoli'],
+            // Applications (Admin - Individual Management)
+            ['name' => 'applications.index', 'description' => 'View applications list', 'module_key' => 'applications'],
+            ['name' => 'applications.create', 'description' => 'Create applications', 'module_key' => 'applications'],
+            ['name' => 'applications.edit', 'description' => 'Edit applications', 'module_key' => 'applications'],
+            ['name' => 'applications.delete', 'description' => 'Delete applications', 'module_key' => 'applications'],
+            ['name' => 'applications.own', 'description' => 'View own applications only', 'module_key' => 'applications'],
+            ['name' => 'applications.assign', 'description' => 'Assign evaluators to applications', 'module_key' => 'applications'],
+            ['name' => 'applications.verdict', 'description' => 'Issue final verdict on applications', 'module_key' => 'applications'],
 
-            // Convocatorias
-            ['name' => 'convocatorias.index', 'description' => 'Ver listado de convocatorias', 'module_key' => 'convo'],
-            ['name' => 'convocatorias.create', 'description' => 'Crear convocatorias', 'module_key' => 'convo'],
-            ['name' => 'convocatorias.edit', 'description' => 'Editar convocatorias', 'module_key' => 'convo'],
-            ['name' => 'convocatorias.delete', 'description' => 'Eliminar convocatorias', 'module_key' => 'convo'],
+            // Announcements
+            ['name' => 'announcements.index', 'description' => 'View announcements list', 'module_key' => 'announcements'],
+            ['name' => 'announcements.create', 'description' => 'Create announcements', 'module_key' => 'announcements'],
+            ['name' => 'announcements.edit', 'description' => 'Edit announcements', 'module_key' => 'announcements'],
+            ['name' => 'announcements.delete', 'description' => 'Delete announcements', 'module_key' => 'announcements'],
 
-            // Evaluaciones (Asociado a adminsoli)
-            ['name' => 'evaluaciones.index', 'description' => 'Ver listado de evaluaciones', 'module_key' => 'adminsoli'],
-            ['name' => 'evaluaciones.create', 'description' => 'Crear evaluaciones', 'module_key' => 'adminsoli'],
-            ['name' => 'evaluaciones.edit', 'description' => 'Editar evaluaciones', 'module_key' => 'adminsoli'],
-            ['name' => 'evaluaciones.delete', 'description' => 'Eliminar evaluaciones', 'module_key' => 'adminsoli'],
+            // Evaluations (Associated with applications)
+            ['name' => 'evaluations.index', 'description' => 'View evaluations list', 'module_key' => 'evaluations'],
+            ['name' => 'evaluations.create', 'description' => 'Create evaluations', 'module_key' => 'evaluations'],
+            ['name' => 'evaluations.edit', 'description' => 'Edit evaluations', 'module_key' => 'evaluations'],
+            ['name' => 'evaluations.delete', 'description' => 'Delete evaluations', 'module_key' => 'evaluations'],
 
-            // Reconocimiento
-            ['name' => 'reconocimiento.index', 'description' => 'Ver reconocimientos', 'module_key' => 'reconocimiento'],
-            ['name' => 'reconocimiento.create', 'description' => 'Crear reconocimientos', 'module_key' => 'reconocimiento'],
-            ['name' => 'reconocimiento.edit', 'description' => 'Editar reconocimientos', 'module_key' => 'reconocimiento'],
-            ['name' => 'reconocimiento.toggle', 'description' => 'Activar/Desactivar reconocimientos', 'module_key' => 'reconocimiento'],
+            // Recognitions
+            ['name' => 'recognitions.index', 'description' => 'View recognitions', 'module_key' => 'recognitions'],
+            ['name' => 'recognitions.create', 'description' => 'Create recognitions', 'module_key' => 'recognitions'],
+            ['name' => 'recognitions.edit', 'description' => 'Edit recognitions', 'module_key' => 'recognitions'],
+            ['name' => 'recognitions.toggle', 'description' => 'Toggle recognitions active status', 'module_key' => 'recognitions'],
 
-            // Catálogo
-            ['name' => 'catalogo.index', 'description' => 'Ver catálogo', 'module_key' => 'cat'],
-            ['name' => 'catalogo.create', 'description' => 'Crear en catálogo', 'module_key' => 'cat'],
-            ['name' => 'catalogo.edit', 'description' => 'Editar catálogo', 'module_key' => 'cat'],
-            ['name' => 'catalogo.delete', 'description' => 'Eliminar catálogo', 'module_key' => 'cat'],
+            // Catalog
+            ['name' => 'catalog.index', 'description' => 'View catalog', 'module_key' => 'catalog'],
+            ['name' => 'catalog.create', 'description' => 'Create in catalog', 'module_key' => 'catalog'],
+            ['name' => 'catalog.edit', 'description' => 'Edit catalog', 'module_key' => 'catalog'],
+            ['name' => 'catalog.delete', 'description' => 'Delete catalog', 'module_key' => 'catalog'],
 
-            // Instituciones
-            ['name' => 'instituciones.index', 'description' => 'Ver instituciones', 'module_key' => 'cat'],
-            ['name' => 'instituciones.create', 'description' => 'Crear instituciones', 'module_key' => 'cat'],
-            ['name' => 'instituciones.edit', 'description' => 'Editar instituciones', 'module_key' => 'cat'],
-            ['name' => 'instituciones.delete', 'description' => 'Eliminar instituciones', 'module_key' => 'cat'],
+            // Institutions
+            ['name' => 'institutions.index', 'description' => 'View institutions', 'module_key' => 'catalog'],
+            ['name' => 'institutions.create', 'description' => 'Create institutions', 'module_key' => 'catalog'],
+            ['name' => 'institutions.edit', 'description' => 'Edit institutions', 'module_key' => 'catalog'],
+            ['name' => 'institutions.delete', 'description' => 'Delete institutions', 'module_key' => 'catalog'],
 
             // Priority Areas
-            ['name' => 'priority_areas.index', 'description' => 'Ver áreas prioritarias', 'module_key' => 'cat'],
-            ['name' => 'priority_areas.create', 'description' => 'Crear áreas prioritarias', 'module_key' => 'cat'],
-            ['name' => 'priority_areas.edit', 'description' => 'Editar áreas prioritarias', 'module_key' => 'cat'],
-            ['name' => 'priority_areas.delete', 'description' => 'Eliminar áreas prioritarias', 'module_key' => 'cat'],
+            ['name' => 'priority_areas.index', 'description' => 'View priority areas', 'module_key' => 'catalog'],
+            ['name' => 'priority_areas.create', 'description' => 'Create priority areas', 'module_key' => 'catalog'],
+            ['name' => 'priority_areas.edit', 'description' => 'Edit priority areas', 'module_key' => 'catalog'],
+            ['name' => 'priority_areas.delete', 'description' => 'Delete priority areas', 'module_key' => 'catalog'],
 
             // Sub Areas
-            ['name' => 'sub_areas.index', 'description' => 'Ver sub áreas', 'module_key' => 'cat'],
-            ['name' => 'sub_areas.create', 'description' => 'Crear sub áreas', 'module_key' => 'cat'],
-            ['name' => 'sub_areas.edit', 'description' => 'Editar sub áreas', 'module_key' => 'cat'],
-            ['name' => 'sub_areas.delete', 'description' => 'Eliminar sub áreas', 'module_key' => 'cat'],
+            ['name' => 'sub_areas.index', 'description' => 'View sub areas', 'module_key' => 'catalog'],
+            ['name' => 'sub_areas.create', 'description' => 'Create sub areas', 'module_key' => 'catalog'],
+            ['name' => 'sub_areas.edit', 'description' => 'Edit sub areas', 'module_key' => 'catalog'],
+            ['name' => 'sub_areas.delete', 'description' => 'Delete sub areas', 'module_key' => 'catalog'],
             // Rubrics
-            ['name' => 'rubrics.index', 'description' => 'Ver rúbricas', 'module_key' => 'cat'],
-            ['name' => 'rubrics.create', 'description' => 'Crear rúbricas', 'module_key' => 'cat'],
-            ['name' => 'rubrics.edit', 'description' => 'Editar rúbricas', 'module_key' => 'cat'],
-            ['name' => 'rubrics.delete', 'description' => 'Eliminar rúbricas', 'module_key' => 'cat'],
+            ['name' => 'rubrics.index', 'description' => 'View rubrics', 'module_key' => 'catalog'],
+            ['name' => 'rubrics.create', 'description' => 'Create rubrics', 'module_key' => 'catalog'],
+            ['name' => 'rubrics.edit', 'description' => 'Edit rubrics', 'module_key' => 'catalog'],
+            ['name' => 'rubrics.delete', 'description' => 'Delete rubrics', 'module_key' => 'catalog'],
 
             // Calendario permissions removed
           
-            // Documentos Catálogo (CRUD)
-            ['name' => 'documentos.index', 'description' => 'Ver catálogo de documentos', 'module_key' => 'cat'],
-            ['name' => 'documentos.create', 'description' => 'Crear documento catálogo', 'module_key' => 'cat'],
-            ['name' => 'documentos.edit', 'description' => 'Editar documento catálogo', 'module_key' => 'cat'],
-            ['name' => 'documentos.delete', 'description' => 'Eliminar documento catálogo', 'module_key' => 'cat'],
+            // Catalog Documents (CRUD)
+            ['name' => 'catalog.documents.index', 'description' => 'View document catalog', 'module_key' => 'catalog'],
+            ['name' => 'catalog.documents.create', 'description' => 'Create document catalog', 'module_key' => 'catalog'],
+            ['name' => 'catalog.documents.edit', 'description' => 'Edit document catalog', 'module_key' => 'catalog'],
+            ['name' => 'catalog.documents.delete', 'description' => 'Delete document catalog', 'module_key' => 'catalog'],
 
-            // Documents Module (Admin)
-            ['name' => 'documents.index', 'description' => 'Ver documentos admin', 'module_key' => 'cat'],
-            ['name' => 'documents.show', 'description' => 'Ver detalles de documentos', 'module_key' => 'cat'],
-            ['name' => 'documents.download', 'description' => 'Descargar documentos admin', 'module_key' => 'cat'],
+            // Admin Documents Module
+            ['name' => 'documents.index', 'description' => 'View admin documents', 'module_key' => 'catalog'],
+            ['name' => 'documents.show', 'description' => 'View document details', 'module_key' => 'catalog'],
+            ['name' => 'documents.download', 'description' => 'Download admin documents', 'module_key' => 'catalog'],
 
-            // Control de Solicitudes (Resumen por Instituciones)
-            ['name' => 'requests.index', 'description' => 'Ver control de solicitudes (resumen instituciones)', 'module_key' => 'controlsoli'],
-            ['name' => 'requests.show', 'description' => 'Ver detalles de control de solicitudes', 'module_key' => 'controlsoli'],
+            // Applications Control (Summary by Institutions)
+            ['name' => 'requests.index', 'description' => 'View request control (institution summary)', 'module_key' => 'request_control'],
+            ['name' => 'requests.show', 'description' => 'View request control details', 'module_key' => 'request_control'],
 
-            // Docente Specific
-            ['name' => 'docente.inicio', 'description' => 'Ver inicio docente', 'module_key' => 'dashboard'],
-            ['name' => 'docente.solicitudes.show', 'description' => 'Ver detalle de solicitud docente', 'module_key' => 'dashboard'],
+            // Teacher Specific
+            ['name' => 'teacher.dashboard', 'description' => 'View teacher dashboard', 'module_key' => 'dashboard'],
+            ['name' => 'teacher.applications.show', 'description' => 'View teacher application details', 'module_key' => 'dashboard'],
 
-            ['name' => 'evaluador.evaluaciones.index', 'description' => 'Ver historial de mis evaluaciones', 'module_key' => 'evaluaciones'],
-            ['name' => 'evaluador.evaluaciones.show', 'description' => 'Ver detalles de evaluación en historial', 'module_key' => 'evaluaciones'],
+            ['name' => 'evaluator.evaluations.index', 'description' => 'View my evaluations history', 'module_key' => 'evaluations'],
+            ['name' => 'evaluator.evaluations.show', 'description' => 'View evaluation details in history', 'module_key' => 'evaluations'],
             
-            // Evaluador Reconocimientos
-            ['name' => 'evaluador.reconocimientos.index', 'description' => 'Ver mis reconocimientos', 'module_key' => 'evaluaciones'],
+            // Evaluator Recognitions
+            ['name' => 'evaluator.recognitions.index', 'description' => 'View my recognitions', 'module_key' => 'evaluations'],
 
             // Admin Dashboard
-            ['name' => 'admin.inicio', 'description' => 'Ver dashboard de administrador', 'module_key' => 'dashboard'],
+            ['name' => 'admin.dashboard', 'description' => 'View admin dashboard', 'module_key' => 'dashboard'],
         ];
 
-        // Crear cada permiso
+        // Create each permission
         foreach ($permissions as $permission) {
             Permission::updateOrCreate(
                 ['name' => $permission['name']],
@@ -131,92 +131,92 @@ class PermissionSeeder extends Seeder
             );
         }
 
-        // Asignar permisos a roles
+        // Assign permissions to roles
         $this->assignPermissionsToRoles();
     }
 
     private function assignPermissionsToRoles(): void
     {
-        // Super Admin - TODOS los permisos
+        // Super Admin - ALL permissions
         $superAdmin = Role::where('name', 'Super Admin')->first();
         if ($superAdmin) {
             $allPermissions = Permission::all();
             $superAdmin->syncPermissions($allPermissions);
-            $this->command->info("✅ {$allPermissions->count()} permisos asignados al Super Admin.");
+            $this->command->info("✅ {$allPermissions->count()} permissions assigned to Super Admin.");
         }
 
-        // Admin - Permisos de gestión
+        // Admin - Management permissions
         $admin = Role::where('name', 'Admin')->first();
         if ($admin) {
             $adminPermissions = Permission::whereIn('name', [
                 // Dashboard
-                'admin.inicio',
+                'admin.dashboard',
                 
-                // Usuarios (Evaluadores Management)
+                // Users (Evaluators Management)
                 'users.index',
                 'users.delete',
                 
-                // Solicitudes (Gestión Individual)
-                'solicitudes.index',
-                'solicitudes.create',
-                'solicitudes.edit',
-                'solicitudes.delete',
-                'solicitudes.own',
-                'solicitudes.assign',
-                'solicitudes.verdict',
+                // Applications (Individual Management)
+                'applications.index',
+                'applications.create',
+                'applications.edit',
+                'applications.delete',
+                'applications.own',
+                'applications.assign',
+                'applications.verdict',
                 
-                // Evaluaciones
-                'evaluaciones.index',
-                'evaluaciones.create',
-                'evaluaciones.edit',
-                'evaluaciones.delete',
+                // Evaluations
+                'evaluations.index',
+                'evaluations.create',
+                'evaluations.edit',
+                'evaluations.delete',
                 
-                // Reconocimientos
-                'reconocimiento.index',
-                'reconocimiento.create',
-                'reconocimiento.edit',
-                'reconocimiento.toggle',
+                // Recognitions
+                'recognitions.index',
+                'recognitions.create',
+                'recognitions.edit',
+                'recognitions.toggle',
             ])->get();
             $admin->syncPermissions($adminPermissions);
-            $this->command->info("✅ {$adminPermissions->count()} permisos asignados al Admin.");
+            $this->command->info("✅ {$adminPermissions->count()} permissions assigned to Admin.");
         }
 
-        // Docente - Permisos de lectura y sus propias solicitudes
+        // Docente - Read permissions and own applications
         $docente = Role::where('name', 'Docente')->first();
         if ($docente) {
             $docentePermissions = Permission::whereIn('name', [
                 // Dashboard
-                'docente.inicio',
+                'teacher.dashboard',
                 
-                // Convocatorias (Vista Docente)
-                'convocatorias.index',
+                // Announcements (Teacher View)
+                'announcements.index',
                 
-                // Solicitudes (Solo propias)
-                'solicitudes.own',
-                'solicitudes.create',
-                'solicitudes.edit',
+                // Applications (Own only)
+                'applications.own',
+                'applications.create',
+                'applications.edit',
                 
-                // Documentos
-                'docente.solicitudes.show',
+                // Documents
+                'teacher.applications.show',
             ])->get();
             $docente->syncPermissions($docentePermissions);
-            $this->command->info("✅ {$docentePermissions->count()} permisos asignados al Docente.");
+            $this->command->info("✅ {$docentePermissions->count()} permissions assigned to Docente.");
         }
 
-        // Evaluador - Permisos de evaluación y lectura
+        // Evaluator - Evaluation and read permissions
         $evaluador = Role::where('name', 'Evaluador')->first();
         if ($evaluador) {
             $evaluadorPermissions = Permission::whereIn('name', [
-                'evaluaciones.index', 'evaluaciones.create', 'evaluaciones.edit',
-                'convocatorias.index',
-                'reconocimiento.index',
-                'solicitudes.index',
-                'evaluador.evaluaciones.index',
-                'evaluador.evaluaciones.show',
-                'evaluador.reconocimientos.index',
+                'evaluations.index', 'evaluations.create', 'evaluations.edit',
+                'announcements.index',
+                'recognitions.index',
+                'applications.index',
+                'evaluator.evaluations.index',
+                'evaluator.evaluations.show',
+                'evaluator.recognitions.index',
             ])->get();
             $evaluador->syncPermissions($evaluadorPermissions);
-            $this->command->info("✅ {$evaluadorPermissions->count()} permisos asignados al Evaluador.");
+            $this->command->info("✅ {$evaluadorPermissions->count()} permissions assigned to Evaluador.");
         }
     }
 }

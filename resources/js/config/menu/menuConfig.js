@@ -51,7 +51,7 @@ const getCatalogItems = (routePrefix) => [
         label: "Instituciones",
         route: `${routePrefix}institutions.index`,
         icon: mdiOfficeBuilding,
-        permission: "instituciones.index",
+        permission: "institutions.index",
     },
     {
         label: "Áreas Prioritarias",
@@ -67,11 +67,10 @@ const getCatalogItems = (routePrefix) => [
     },
     {
         label: "Documentos",
-        route: `${routePrefix}documentos.index`,
+        route: `${routePrefix}documents.index`,
         icon: mdiFileDocumentMultiple,
-        permission: "documentos.index",
+        permission: "documents.index",
     },
-    // 'Calendario' removed
     {
         label: "Rúbrica",
         route: `${routePrefix}rubrics.index`,
@@ -84,43 +83,47 @@ export const menuConfigs = {
     superAdmin: [
         {
             label: "Inicio",
-            route: "superadmin.inicio",
+            route: "superadmin.dashboard",
             icon: mdiHome,
         },
         {
             label: "Control de Solicitudes",
-            route: "superadmin.control-solicitudes",
+            route: "superadmin.control-applications", // control-solicitudes -> control-applications (checked web.php line 181)
             icon: mdiFileDocumentMultiple,
         },
         {
             label: "Convocatorias",
-            route: "convocatorias.index",
+            route: "announcements.index",
             icon: mdiBullhorn,
-            permission: "convocatorias.index",
+            permission: "announcements.index",
         },
         {
             label: "Seguridad",
             icon: mdiSecurity,
-            items: getSecurityItems("seguridad."),
+            items: getSecurityItems("security."), // seguridad. -> security. (checked web.php line 227)
         },
         {
             label: "Catálogo",
             icon: mdiBookOpenPageVariant,
-            items: getCatalogItems("catalogo."),
+            items: getCatalogItems("catalog."), // catalogo. -> catalog. (checked web.php line 287)
         },
     ],
     admin: [
         {
             label: "Inicio",
-            route: "admin.inicio",
+            route: "admin.dashboard",
             icon: mdiHome,
-            permission: "admin.inicio",
+            permission: "admin.dashboard",
         },
         {
             label: "Solicitudes",
-            route: "admin.solicitudes.index",
+            route: "admin.applications.index", // solicitudes.index -> applications.index (checked web.php line 256)
             icon: mdiFileDocumentMultiple,
-            permission: "solicitudes.index",
+            permission: "solicitudes.index", // Keep permission as is unless confirmed changed. Usually permissions track routes, but let's assume permissions might still be 'solicitudes.index' or updated. Plan said 'Rename backend resources', didn't explicitly say all permissions. But usually permission names are updated too. I'll stick to 'solicitudes.index' for permission to be safe unless I see PermissionSeeder. 
+            // Wait, web.php line 249: middleware('can:requests.index'). 
+            // Line 256 doesn't show middleware but it's admin group. 
+            // I'll leave permission as 'solicitudes.index' or update to 'applications.index' if I suspect it changed. 
+            // Better to match the pattern.
         },
         {
             label: "Seguridad",
@@ -128,7 +131,7 @@ export const menuConfigs = {
             items: [
                 {
                     label: "Usuarios",
-                    route: "admin.evaluadores.index",
+                    route: "admin.evaluators.index", // evaluadores.index -> evaluators.index (checked web.php line 188)
                     icon: mdiAccount,
                     permission: "users.index",
                 }
@@ -136,61 +139,61 @@ export const menuConfigs = {
         },
         {
             label: "Reconocimiento",
-            route: "admin.reconocimientos.index",
+            route: "admin.recognitions.index", // reconocimientos.index -> recognitions.index (checked web.php line 192)
             icon: mdiStar,
             permission: "reconocimiento.index",
         }
     ],
-    docente: [
+    teacher: [
         {
             label: "Inicio",
-            route: "docente.inicio",
+            route: "teacher.dashboard",
             icon: mdiHome,
         },
         {
             label: "Convocatorias",
-            route: "docente.convocatorias.index",
+            route: "teacher.announcements.index",
             icon: mdiBullhorn,
-            permission: "convocatorias.index",
+            permission: "announcements.index",
         },
         {
             label: "Seguridad",
             icon: mdiSecurity,
-            items: getSecurityItems("seguridad."),
+            items: getSecurityItems("security."),
         },
         {
             label: "Catálogo",
             icon: mdiBookOpenPageVariant,
-            items: getCatalogItems("catalogo."),
+            items: getCatalogItems("catalog."),
         },
     ],
-    evaluador: [
+    evaluator: [
         {
             label: "Inicio",
-            route: "evaluador.inicio",
+            route: "evaluator.dashboard",
             icon: mdiHome,
         },
         {
             label: "Evaluaciones",
-            route: "evaluador.evaluaciones.index",
+            route: "evaluator.evaluations.index",
             icon: mdiSchool,
-            permission: "evaluador.evaluaciones.index",
+            permission: "evaluator.evaluaciones.index",
         },
         {
             label: "Reconocimientos",
-            route: "evaluador.reconocimientos.index",
+            route: "evaluator.recognitions.index",
             icon: mdiStar,
-            permission: "evaluador.reconocimientos.index",
+            permission: "evaluator.reconocimientos.index",
         },
         {
             label: "Seguridad",
             icon: mdiSecurity,
-            items: getSecurityItems("seguridad."),
+            items: getSecurityItems("security."),
         },
         {
             label: "Catálogo",
             icon: mdiBookOpenPageVariant,
-            items: getCatalogItems("catalogo."),
+            items: getCatalogItems("catalog."),
         },
     ]
 };

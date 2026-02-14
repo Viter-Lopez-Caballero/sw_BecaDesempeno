@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('documentos', function (Blueprint $table) {
+        Schema::create('documents', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('solicitud_id')->constrained('solicitudes')->onDelete('cascade');
+            $table->foreignId('application_id')->constrained('applications')->onDelete('cascade');
             $table->string('name');
             $table->string('file_path');
-            $table->string('file_type')->nullable();
-            $table->timestamps();
+            $table->string('file_type');
             $table->softDeletes();
+            $table->timestamps();
         });
     }
 
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('documentos');
+        Schema::dropIfExists('documents');
     }
 };

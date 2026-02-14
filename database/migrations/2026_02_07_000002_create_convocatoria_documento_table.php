@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('convocatoria_documento', function (Blueprint $table) {
+        Schema::create('announcement_document', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('convocatoria_id')->constrained('convocatorias')->onDelete('cascade');
-            $table->foreignId('documento_catalogo_id')->constrained('documentos_catalogo')->onDelete('cascade');
-            $table->boolean('es_obligatorio')->default(true); // Puede sobrescribir el valor del catálogo
+            $table->foreignId('announcement_id')->constrained('announcements')->onDelete('cascade');
+            $table->foreignId('catalog_document_id')->constrained('catalog_documents')->onDelete('cascade');
+            $table->boolean('is_mandatory')->default(true);
             $table->timestamps();
             
-            $table->unique(['convocatoria_id', 'documento_catalogo_id'], 'convocatoria_documento_unique');
+            $table->unique(['announcement_id', 'catalog_document_id'], 'announcement_document_unique');
         });
     }
 
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('convocatoria_documento');
+        Schema::dropIfExists('announcement_document');
     }
 };

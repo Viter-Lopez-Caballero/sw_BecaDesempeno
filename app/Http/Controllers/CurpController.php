@@ -18,7 +18,7 @@ class CurpController extends Controller
     /**
      * Busca datos por CURP
      */
-    public function buscar(Request $request)
+    public function search(Request $request)
     {
         \Log::info('🔍 CurpController->buscar() llamado', [
             'curp' => $request->curp,
@@ -51,7 +51,7 @@ class CurpController extends Controller
     /**
      * Verifica el código de 6 dígitos
      */
-    public function verificarCodigo(Request $request)
+    public function verifyCode(Request $request)
     {
         $request->validate([
             'code' => 'required|string|size:6',
@@ -84,10 +84,10 @@ class CurpController extends Controller
         $role = $user->getPrimaryRole();
         
         $redirectRoute = match ($role) {
-            'Super Admin' => 'superadmin.inicio',
-            'Admin' => 'admin.inicio',
-            'Evaluador' => 'evaluador.inicio',
-            'Docente' => 'docente.inicio',
+            'Super Admin' => 'superadmin.dashboard',
+            'Admin' => 'admin.dashboard',
+            'Evaluador' => 'evaluator.dashboard',
+            'Docente' => 'teacher.dashboard',
             default => 'inicio',
         };
 
@@ -98,7 +98,7 @@ class CurpController extends Controller
     /**
      * Reenviar código de verificación
      */
-    public function reenviarCodigo(Request $request)
+    public function resendCode(Request $request)
     {
         // Obtener email de la sesión o del request
         $email = $request->email ?? session('email');

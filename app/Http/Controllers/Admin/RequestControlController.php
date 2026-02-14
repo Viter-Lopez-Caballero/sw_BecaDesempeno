@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\RequestControlSummaryResource;
 use App\Http\Resources\SolicitudResource;
 use App\Models\Institucion;
-use App\Models\Solicitud;
+use App\Models\Application;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -18,44 +18,44 @@ class RequestControlController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
-        $estado = $request->input('estado');
+        $state = $request->input('state');
         $rows = $request->input('rows', 10);
         
-        $institutions = Institucion::with('estado')
+        $institutions = \App\Models\Institution::with('state')
             ->withCount([
                 'users as approved_count' => function ($query) {
-                    $query->whereHas('solicitudes', function ($q) {
+                    $query->whereHas('applications', function ($q) {
                         $q->where('status', 'approved');
                     });
                 },
                 'users as rejected_count' => function ($query) {
-                    $query->whereHas('solicitudes', function ($q) {
+                    $query->whereHas('applications', function ($q) {
                         $q->where('status', 'rejected');
                     });
                 }
             ])
             ->when($search, function ($query, $search) {
-                 $query->where('nombre', 'like', "%{$search}%")
+                 $query->where('name', 'like', "%{$search}%")
                        ->orWhere('id', 'like', "%{$search}%");
             })
-            ->when($estado, function ($query, $estado) {
-                $query->whereHas('estado', function ($q) use ($estado) {
-                    $q->where('nombre', $estado);
+            ->when($state, function ($query, $state) {
+                $query->whereHas('state', function ($q) use ($state) {
+                    $q->where('name', $state);
                 });
             })
-            ->whereHas('users.solicitudes', function($q) {
+            ->whereHas('users.applications', function($q) {
                 $q->whereIn('status', ['approved', 'rejected']);
             })
             ->paginate($rows)
             ->withQueryString();
 
-        // Get unique estados for filter dropdown
-        $estados = \App\Models\Estado::orderBy('nombre')->get(['id', 'nombre']);
+        // Get unique states for filter dropdown
+        $states = \App\Models\State::orderBy('name')->get(['id', 'name']);
 
         return Inertia::render('Admin/RequestControl/Index', [
             'institutions' => RequestControlSummaryResource::collection($institutions),
-            'estados' => $estados,
-            'filters' => $request->all(['search', 'estado', 'rows']),
+            'states' => $states,
+            'filters' => $request->all(['search', 'state', 'rows']),
         ]);
     }
 
@@ -64,19 +64,19 @@ class RequestControlController extends Controller
      */
     public function show($id)
     {
-        $institution = Institucion::with('estado')->findOrFail($id);
+        $institution = \App\Models\Institution::with('state')->findOrFail($id);
 
-        $solicitudes = Solicitud::whereHas('user', function ($q) use ($id) {
-                $q->where('institucion_id', $id);
+        $applications = \App\Models\Application::whereHas('user', function ($q) use ($id) {
+                $q->where('institution_id', $id);
             })
             ->whereIn('status', ['approved', 'rejected'])
-            ->with(['user', 'convocatoria'])
+            ->with(['user', 'announcement'])
             ->orderByDesc('created_at')
             ->paginate(15);
 
         return Inertia::render('Admin/RequestControl/Show', [
             'institution' => $institution,
-            'solicitudes' => SolicitudResource::collection($solicitudes),
+            'applications' => \App\Http\Resources\ApplicationResource::collection($applications),
         ]);
     }
 }

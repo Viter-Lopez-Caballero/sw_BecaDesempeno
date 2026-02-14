@@ -32,7 +32,7 @@ const rowOptions = [
 ];
 
 const onSearch = debounce((value) => {
-    router.get(route('admin.inicio'), {
+    router.get(route('admin.dashboard'), {
         search: value,
         rows: rows.value,
     }, { preserveState: true, replace: true, preserveScroll: true });
@@ -41,11 +41,11 @@ const onSearch = debounce((value) => {
 const cleanFilters = () => {
     search.value = '';
     rows.value = 10;
-    router.get(route('admin.inicio'), {}, { preserveState: true, replace: true });
+    router.get(route('admin.dashboard'), {}, { preserveState: true, replace: true });
 };
 
 const onRowsChange = () => {
-    router.get(route('admin.inicio'), {
+    router.get(route('admin.dashboard'), {
         search: search.value,
         rows: rows.value,
     }, { preserveState: true, replace: true, preserveScroll: true });
@@ -57,7 +57,7 @@ watch(search, (value) => {
 
 const getMaxCount = () => {
     if (!props.topInstitutions?.data || props.topInstitutions.data.length === 0) return 1;
-    return Math.max(...props.topInstitutions.data.map(i => i.solicitudes_count));
+    return Math.max(...props.topInstitutions.data.map(i => i.applications_count));
 };
 
 const getProgressWidth = (count) => {
@@ -191,17 +191,20 @@ const getProgressWidth = (count) => {
                 <div class="space-y-4">
                     <div v-for="institution in topInstitutions.data" :key="institution.id" class="flex items-center gap-4">
                         <div class="flex-1">
-                            <p class="text-sm font-medium text-gray-700 mb-2">{{ institution.nombre }}</p>
+                            <p class="text-sm font-medium text-gray-700 mb-2">{{ institution.name }}</p>
                             <div class="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
                                 <div 
                                     class="h-full bg-gradient-to-r from-[#1B396A] to-[#2563eb] rounded-full transition-all duration-300 flex items-center justify-end pr-2"
-                                    :style="{ width: getProgressWidth(institution.solicitudes_count) + '%' }"
-                                >
-                                </div>
+                                    :style="{ width: getProgressWidth(institution.applications_count) + '%' }"
+                                ></div>
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>{{ institution.state?.name || 'N/A' }}</span> <!-- estado -> state, nombre -> name -->
+                                <span>{{ Math.round(getProgressWidth(institution.applications_count)) }}% del total</span>
                             </div>
                         </div>
-                        <div class="text-right min-w-[3rem]">
-                            <p class="text-lg font-bold text-[#1B396A]">{{ institution.solicitudes_count }}</p>
+                        <div class="flex items-center justify-center bg-blue-50 rounded-full h-10 w-10">
+                            <p class="text-lg font-bold text-[#1B396A]">{{ institution.applications_count }}</p>
                         </div>
                     </div>
 
@@ -295,8 +298,8 @@ const getProgressWidth = (count) => {
                                 <td class="px-6 py-4 font-medium text-gray-900">
                                     {{ institutions.meta.from + index }}
                                 </td>
-                                <td class="px-6 py-4 font-medium text-gray-900">{{ institution.estado }}</td>
-                                <td class="px-6 py-4 text-gray-800 font-semibold">{{ institution.nombre }}</td>
+                                <td class="px-6 py-4 font-medium text-gray-900">{{ institution.state }}</td>
+                                <td class="px-6 py-4 text-gray-800 font-semibold">{{ institution.name }}</td>
                                 <td class="px-6 py-4 text-center">
                                     <span class="px-3 py-1 inline-flex text-xs font-bold rounded-full bg-green-100 text-green-800">
                                         {{ institution.approved_count }}

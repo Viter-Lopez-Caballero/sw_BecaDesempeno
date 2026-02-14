@@ -5,7 +5,7 @@ import { mdiFileDocumentMultiple, mdiEye } from '@mdi/js';
 import { ref } from 'vue';
 
 const props = defineProps({
-    solicitud: Object,
+    application: Object,
 });
 
 const getFileIcon = (type) => {
@@ -55,18 +55,18 @@ const closeModal = () => {
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
                             <path :d="mdiFileDocumentMultiple"/>
                         </svg>
-                        <Link :href="route('catalogo.documentos')" class="text-gray-700 font-medium hover:text-[#1B396A]">Documentos</Link>
+                        <Link :href="route('admin.documents.index')" class="text-gray-700 font-medium hover:text-[#1B396A]">Documentos</Link>
                         <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
                             <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
                         </svg>
-                        <span class="text-gray-700 font-medium" v-if="solicitud.user?.institucion">{{ solicitud.user?.institucion?.nombre }}</span>
-                        <svg v-if="solicitud.user?.institucion" xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
+                        <span class="text-gray-700 font-medium" v-if="application.user?.institution">{{ application.user?.institution?.name }}</span>
+                        <svg v-if="application.user?.institution" xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
                             <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
                         </svg>
-                        <span class="text-gray-900 font-semibold">{{ solicitud.user?.name }}</span>
+                        <span class="text-gray-900 font-semibold">{{ application.user?.name }}</span>
                     </div>
                 </div>
-                 <Link :href="route('catalogo.documentos')" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium">
+                 <Link :href="route('admin.documents.index')" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
                     </svg>
@@ -79,31 +79,31 @@ const closeModal = () => {
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <div>
                             <p class="text-sm font-medium text-gray-500">Nombre Completo</p>
-                            <p class="text-gray-900 font-medium text-lg">{{ solicitud.user?.name || solicitud.user?.data?.name || 'Usuario' }}</p>
+                            <p class="text-gray-900 font-medium text-lg">{{ application.user?.name || application.user?.data?.name || 'Usuario' }}</p>
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-500">Correo Electrónico</p>
-                            <p class="text-gray-900">{{ solicitud.user?.email || solicitud.user?.data?.email }}</p>
+                            <p class="text-gray-900">{{ application.user?.email || application.user?.data?.email }}</p>
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-500">Campus</p>
-                            <p class="text-gray-900">{{ solicitud.user?.institucion?.nombre || solicitud.user?.data?.institucion?.nombre || 'No registrada' }}</p>
+                            <p class="text-gray-900">{{ application.user?.institution?.name || application.user?.data?.institution?.name || 'No registrada' }}</p>
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-500">Área Prioritaria</p>
-                            <p class="text-gray-900">{{ solicitud.user?.priority_area?.name || solicitud.user?.data?.priority_area?.name || 'No asignada' }}</p>
+                            <p class="text-gray-900">{{ application.user?.priority_area?.name || application.user?.data?.priority_area?.name || 'No asignada' }}</p>
                         </div>
                          <div>
                             <p class="text-sm font-medium text-gray-500">Sub Área</p>
-                            <p class="text-gray-900">{{ solicitud.user?.sub_area?.name || solicitud.user?.data?.sub_area?.name || 'No asignada' }}</p>
+                            <p class="text-gray-900">{{ application.user?.sub_area?.name || application.user?.data?.sub_area?.name || 'No asignada' }}</p>
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-500">Convocatoria</p>
-                            <p class="text-gray-900 font-semibold text-[#1B396A]">{{ solicitud.convocatoria?.nombre || solicitud.convocatoria?.data?.nombre }}</p>
+                            <p class="text-gray-900 font-semibold text-[#1B396A]">{{ application.announcement?.name || application.announcement?.data?.name }}</p>
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-500">Fecha de Solicitud</p>
-                            <p class="text-gray-900">{{ new Date(solicitud.created_at).toLocaleDateString() }}</p>
+                            <p class="text-gray-900">{{ new Date(application.created_at).toLocaleDateString() }}</p>
                         </div>
                     </div>
                 </div>
@@ -111,7 +111,7 @@ const closeModal = () => {
                 <div class="bg-white overflow-hidden shadow-md rounded-lg border border-gray-200 p-6">
                     <h3 class="text-lg font-bold text-[#1B396A] mb-6 border-b pb-2 flex justify-between items-center">
                         Documentos Cargados
-                        <span class="text-sm font-normal text-white bg-[#1B396A] px-3 py-1 rounded-full">{{ (solicitud.documentos?.data || solicitud.documentos)?.length || 0 }} archivos</span>
+                        <span class="text-sm font-normal text-white bg-[#1B396A] px-3 py-1 rounded-full">{{ (application.documents?.data || application.documents)?.length || 0 }} archivos</span>
                     </h3>
 
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
@@ -126,7 +126,7 @@ const closeModal = () => {
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
-                                <tr v-for="(doc, index) in (solicitud.documentos?.data || solicitud.documentos)" :key="doc.id" class="hover:bg-gray-50 transition">
+                                <tr v-for="(doc, index) in (application.documents?.data || application.documents)" :key="doc.id" class="hover:bg-gray-50 transition">
                                     <td class="px-6 py-4 text-gray-900 font-medium">{{ index + 1 }}</td>
                                     <td class="px-6 py-4 text-gray-900 font-semibold flex items-center gap-2">
                                         <div class="p-1 rounded bg-blue-50 text-[#1B396A]">
@@ -155,13 +155,14 @@ const closeModal = () => {
                                         </div>
                                     </td>
                                 </tr>
-                                <tr v-if="!solicitud.documentos || (solicitud.documentos.data && solicitud.documentos.data.length === 0) || (!solicitud.documentos.data && solicitud.documentos.length === 0)">
+                                <tr v-if="!application.documents || (application.documents.data && application.documents.data.length === 0) || (!application.documents.data && application.documents.length === 0)">
                                     <td colspan="4" class="px-6 py-12 text-center text-gray-500">
                                         No hay documentos cargados para esta solicitud.
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
+
                     </div>
                 </div>
                 </div>

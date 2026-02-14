@@ -9,12 +9,12 @@ import debounce from 'lodash/debounce';
 
 const props = defineProps({
     institutions: Object,
-    estados: Array,
+    states: Array,
     filters: Object,
 });
 
 const search = ref(props.filters?.search || '');
-const estado = ref(props.filters?.estado || '');
+const state = ref(props.filters?.state || '');
 const rows = ref(props.filters?.rows || 10);
 
 const rowOptions = [
@@ -24,35 +24,35 @@ const rowOptions = [
     { label: '50 Registros', value: 50 },
 ];
 
-const estadoOptions = props.estados ? props.estados.map(e => ({ label: e.nombre, value: e.nombre })) : [];
+const stateOptions = props.states ? props.states.map(e => ({ label: e.name, value: e.name })) : [];
 
 const onSearch = debounce((value) => {
-    router.get(route('solicitudes.index'), {
+    router.get(route('applications.control.index'), {
         search: value,
-        estado: estado.value,
+        state: state.value,
         rows: rows.value,
     }, { preserveState: true, replace: true, preserveScroll: true });
 }, 500);
 
 const cleanFilters = () => {
     search.value = '';
-    estado.value = '';
+    state.value = '';
     rows.value = 10;
-    router.get(route('solicitudes.index'), {}, { preserveState: true, replace: true });
+    router.get(route('applications.control.index'), {}, { preserveState: true, replace: true });
 };
 
 const onRowsChange = () => {
-    router.get(route('solicitudes.index'), {
+    router.get(route('applications.control.index'), {
         search: search.value,
-        estado: estado.value,
+        state: state.value,
         rows: rows.value,
     }, { preserveState: true, replace: true, preserveScroll: true });
 };
 
-const onEstadoChange = () => {
-    router.get(route('solicitudes.index'), {
+const onStateChange = () => {
+    router.get(route('applications.control.index'), {
         search: search.value,
-        estado: estado.value,
+        state: state.value,
         rows: rows.value,
     }, { preserveState: true, replace: true, preserveScroll: true });
 };
@@ -158,17 +158,17 @@ watch(search, (value) => {
                             class="pl-10 w-full h-[45px] rounded-lg border border-gray-300 text-gray-700 focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition"
                         />
                     </div>
-                    <div class="w-full md:w-52 flex-shrink-0" v-if="estadoOptions.length > 0">
+                    <div class="w-full md:w-52 flex-shrink-0" v-if="stateOptions.length > 0">
                         <VueSelect 
-                            v-model="estado" 
-                            :options="estadoOptions" 
+                            v-model="state" 
+                            :options="stateOptions" 
                             :reduce="option => option.value" 
                             :searchable="true" 
                             :clearable="true" 
                             placeholder="Estado"
                             class="vue-select-custom"
-                            @option:selected="onEstadoChange"
-                            @option:deselected="onEstadoChange"
+                            @option:selected="onStateChange"
+                            @option:deselected="onStateChange"
                         />
                     </div>
                 </div>
@@ -188,8 +188,8 @@ watch(search, (value) => {
                         <tbody class="divide-y divide-gray-200 bg-white">
                             <tr v-for="institution in institutions.data" :key="institution.id" class="hover:bg-gray-50 transition">
                                 <td class="px-6 py-4 font-medium text-gray-900">{{ institution.id }}</td>
-                                <td class="px-6 py-4 font-medium text-gray-900">{{ institution.estado }}</td>
-                                <td class="px-6 py-4 text-gray-800 font-semibold">{{ institution.nombre }}</td>
+                                <td class="px-6 py-4 font-medium text-gray-900">{{ institution.state ? institution.state.name : 'N/A' }}</td>
+                                <td class="px-6 py-4 text-gray-800 font-semibold">{{ institution.name }}</td>
                                 <td class="px-6 py-4 text-center">
                                     <span class="px-3 py-1 inline-flex text-xs font-bold rounded-full bg-green-100 text-green-800">
                                         {{ institution.approved_count }}

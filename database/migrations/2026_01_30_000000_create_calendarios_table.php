@@ -11,17 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('calendarios', function (Blueprint $table) {
+        Schema::create('calendars', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('convocatoria_id')->constrained('convocatorias')->onDelete('cascade');
-            $table->date('publicacion_inicio');
+            $table->foreignId('announcement_id')->constrained('announcements')->onDelete('cascade');
+            $table->date('publication_start');
             // 'publicacion_fin' removed
-            $table->date('registro_inicio');
-            $table->date('registro_fin');
-            $table->date('evaluacion_inicio');
-            $table->date('evaluacion_fin');
-            $table->date('resultados_inicio');
-            $table->date('resultados_fin');
+            $table->date('registration_start');
+            $table->date('registration_end');
+            $table->date('evaluation_start');
+            $table->date('evaluation_end');
+            $table->date('results_start');
+            $table->date('results_end');
             $table->softDeletes();
             $table->timestamps();
         });
@@ -32,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('calendarios');
+        Schema::dropIfExists('calendars');
     }
 };

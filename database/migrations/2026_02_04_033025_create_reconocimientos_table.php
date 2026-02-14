@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::create('reconocimientos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Evaluador
-            $table->foreignId('convocatoria_id')->constrained()->onDelete('cascade');
+            $table->foreignId('announcement_id')->constrained('announcements')->onDelete('cascade');
             $table->boolean('activo')->default(false); // Switch estado
             $table->timestamp('enviado_at')->nullable(); // Cuándo se envió/activó
             $table->timestamps();
             
             // Un evaluador solo puede tener un reconocimiento por convocatoria
-            $table->unique(['user_id', 'convocatoria_id']);
+            $table->unique(['user_id', 'announcement_id']);
         });
     }
 

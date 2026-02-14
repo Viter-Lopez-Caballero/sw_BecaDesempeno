@@ -11,11 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('convocatorias', function (Blueprint $table) {
+        Schema::create('announcements', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre');
-            $table->text('descripcion')->nullable();
-            $table->enum('estado', ['activa', 'cerrada', 'pendiente'])->default('pendiente');
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->string('file_path')->nullable();
+            $table->string('file_name')->nullable();
+            $table->string('file_type')->nullable();
+            $table->unsignedBigInteger('file_size')->nullable();
+            $table->string('image_path')->nullable();
+            $table->enum('status', ['activa', 'cerrada', 'pendiente'])->default('pendiente');
             $table->softDeletes();
             $table->timestamps();
         });
@@ -26,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('convocatorias');
+        Schema::dropIfExists('announcements');
     }
 };

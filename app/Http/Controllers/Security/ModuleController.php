@@ -28,9 +28,9 @@ class ModuleController extends SecurityController
 
     public function __construct()
     {
-        $this->source = 'SuperAdmin/Seguridad/Modulos/';
+        $this->source = 'SuperAdmin/Security/Modules/';
         $this->model = new Module();
-        $this->routeName = 'seguridad.modules.';
+        $this->routeName = 'security.modules.';
         $this->permissionPrefix = 'modules.';
 
         $this->middleware("permission:{$this->permissionPrefix}index")->only(['index', 'show']);

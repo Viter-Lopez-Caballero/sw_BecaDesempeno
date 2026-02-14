@@ -5,127 +5,129 @@ use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
 Route::get('/', function () {
-    // Si el usuario está autenticado, redirigir a su dashboard
+    // If user is authenticated, redirect to their dashboard
     if (auth()->check()) {
         $role = auth()->user()->getPrimaryRole();
         
         return match ($role) {
-            'Super Admin' => redirect()->route('superadmin.inicio'),
-            'Admin' => redirect()->route('admin.inicio'),
-            'Evaluador' => redirect()->route('evaluador.inicio'),
-            'Docente' => redirect()->route('docente.inicio'),
-            default => redirect()->route('inicio.dashboard'),
+            'Super Admin' => redirect()->route('superadmin.dashboard'),
+            'Admin' => redirect()->route('admin.dashboard'),
+            'Evaluador' => redirect()->route('evaluator.dashboard'), // Updated route name
+            'Docente' => redirect()->route('teacher.dashboard'), // Updated route name
+            default => redirect()->route('dashboard.index'), // Updated route name
         };
     }
     
-    // Si no está autenticado, mostrar la página pública
-    $convocatorias = \App\Models\Convocatoria::query()
-        ->with('calendario')
-        ->whereIn('estado', ['activa', 'cerrada'])
+    // If not authenticated, show public page
+    // Convocatoria -> Announcement
+    $announcements = \App\Models\Announcement::query()
+        ->with('calendar') // relationship refactored to English
+        ->whereIn('status', ['activa', 'cerrada']) // column renamed to status
         ->latest('created_at')
         ->paginate(3)
         ->withQueryString();
     
-    // Obtener convocatoria para la línea de tiempo (Prioridad: Activa > Pendiente > Cerrada)
-    $timelineConvocatoria = \App\Models\Convocatoria::query()
-        ->with('calendario')
-        ->where('estado', 'activa')
+    // Get announcement for timeline (Priority: Activa > Pendiente > Cerrada)
+    $timelineAnnouncement = \App\Models\Announcement::query()
+        ->with('calendar')
+        ->where('status', 'activa')
         ->latest('created_at')
         ->first();
 
-    if (!$timelineConvocatoria) {
-        $timelineConvocatoria = \App\Models\Convocatoria::query()
-            ->with('calendario')
-            ->where('estado', 'pendiente')
+    if (!$timelineAnnouncement) {
+        $timelineAnnouncement = \App\Models\Announcement::query()
+            ->with('calendar')
+            ->where('status', 'pendiente')
             ->latest('created_at')
             ->first();
     }
 
-    if (!$timelineConvocatoria) {
-        $timelineConvocatoria = \App\Models\Convocatoria::query()
-            ->with('calendario')
-            ->where('estado', 'cerrada')
+    if (!$timelineAnnouncement) {
+        $timelineAnnouncement = \App\Models\Announcement::query()
+            ->with('calendar')
+            ->where('status', 'cerrada')
             ->latest('created_at')
             ->first();
     }
     
-    return Inertia::render('Inicio', [
+    return Inertia::render('Home', [
         'canLogin' => Route::has('login'),
         'canRegister' => Features::enabled(Features::registration()),
-        'convocatorias' => \App\Http\Resources\Catalogos\ConvocatoriaResource::collection($convocatorias),
-        'timelineConvocatoria' => $timelineConvocatoria ? new \App\Http\Resources\Catalogos\ConvocatoriaResource($timelineConvocatoria) : null,
+        'announcements' => \App\Http\Resources\Catalog\AnnouncementResource::collection($announcements),
+        'timelineAnnouncement' => $timelineAnnouncement ? new \App\Http\Resources\Catalog\AnnouncementResource($timelineAnnouncement) : null,
     ]);
 })->name('inicio');
 
 // (visits endpoint removed)
 
-Route::get('/convocatoria', function () {
-    // Prioridad: Activa > Pendiente > Cerrada
-    $convocatoria = \App\Models\Convocatoria::with('calendario')
-        ->where('estado', 'activa')
-        ->latest('created_at')
+Route::get('/announcement', function () { // /convocatoria -> /announcement
+    // Priority: Activa > Pendiente > Cerrada
+    $announcement = \App\Models\Announcement::with('calendar')
+        ->where('status', 'activa')
+        ->latest('created_at') // created_at
         ->first();
 
-    if (!$convocatoria) {
-        $convocatoria = \App\Models\Convocatoria::with('calendario')
-            ->where('estado', 'pendiente')
+    if (!$announcement) {
+        $announcement = \App\Models\Announcement::with('calendar')
+            ->where('status', 'pendiente')
             ->latest('created_at')
             ->first();
     }
 
-    if (!$convocatoria) {
-        $convocatoria = \App\Models\Convocatoria::with('calendario')
-            ->where('estado', 'cerrada')
+    if (!$announcement) {
+        $announcement = \App\Models\Announcement::with('calendar')
+            ->where('status', 'cerrada')
             ->latest('created_at')
             ->first();
     }
     
-    return Inertia::render('Convocatoria', [
-        'convocatoria' => $convocatoria ? new \App\Http\Resources\Catalogos\ConvocatoriaResource($convocatoria) : null,
+    return Inertia::render('Announcement', [
+        'announcement' => $announcement ? new \App\Http\Resources\Catalog\AnnouncementResource($announcement) : null,
     ]);
-})->name('convocatoria');
+})->name('announcement.show'); // convocatoria -> announcement.show
 
-Route::get('/documentos', function () {
-    return Inertia::render('Documentos');
-})->name('documentos');
+Route::get('/documents', function () { // /documentos -> /documents
+    return Inertia::render('Documents'); // View name
+})->name('documents.index'); // documents.index
 
-Route::get('/contacto', function () {
-    return Inertia::render('Contacto');
-})->name('contacto');
+Route::get('/contact', function () { // /contacto -> /contact
+    return Inertia::render('Contact');
+})->name('contact');
 
-// API para obtener instituciones (contacto)
-Route::get('/api/instituciones', [App\Http\Controllers\ContactController::class, 'getInstituciones'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+// API to get institutions (contact)
+Route::get('/api/institutions', [App\Http\Controllers\ContactController::class, 'getInstitutions'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 
-// API para enviar formulario de contacto
-Route::post('/api/contacto', [App\Http\Controllers\ContactController::class, 'sendContact'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+// API to send contact form
+Route::post('/api/contact', [App\Http\Controllers\ContactController::class, 'sendContact'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+
 
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\CurpController;
 
-// API para buscar CURP (usado por Register.vue) - Sin CSRF
-Route::post('/api/buscar-curp', [CurpController::class, 'buscar'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+// API to search CURP (used by Register.vue) - No CSRF
+Route::post('/api/search-curp', [CurpController::class, 'search'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 
-// API para obtener sub-áreas - Sin CSRF
+// API to get sub-areas - No CSRF
 Route::get('/api/sub-areas/{priority_area_id}', function ($priority_area_id) {
     return \App\Models\SubArea::where('priority_area_id', $priority_area_id)->get(['id', 'name']);
 })->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 
-// Rutas de registro personalizadas (sobrescriben Fortify)
+// Custom Register Routes (override Fortify)
 Route::get('/register', [RegisterController::class, 'create'])->name('register');
-Route::get('/register/evaluador', [RegisterController::class, 'createEvaluador'])->name('register.evaluador');
+Route::get('/register/evaluator', [RegisterController::class, 'createEvaluador'])->name('register.evaluator'); // evaluator
 Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
 
-// Rutas de verificación de email
+// Email Verification Routes
 Route::get('/email/verify', function () {
-    // Si el usuario está autenticado y ya verificó su email, redirigir a su dashboard
+    // If user is authenticated and verified, redirect to dashboard
     if (auth()->check() && auth()->user()->hasVerifiedEmail()) {
         $role = auth()->user()->getPrimaryRole();
         
         return match ($role) {
-            'Super Admin' => redirect()->route('superadmin.inicio'),
-            'Admin' => redirect()->route('admin.inicio'),
-            'Evaluador' => redirect()->route('evaluador.inicio'),
-            'Docente' => redirect()->route('docente.inicio'),
+            'Super Admin' => redirect()->route('superadmin.dashboard'),
+            'Admin' => redirect()->route('admin.dashboard'),
+            'Evaluador' => redirect()->route('evaluator.dashboard'),
+            'Docente' => redirect()->route('teacher.dashboard'),
             default => redirect()->route('inicio'),
         };
     }
@@ -136,203 +138,185 @@ Route::get('/email/verify', function () {
     ]);
 })->name('verification.notice');
 
-Route::post('/email/verify/code', [CurpController::class, 'verificarCodigo'])->name('verification.verify');
-Route::post('/email/verify/resend', [CurpController::class, 'reenviarCodigo'])->name('verification.resend');
+Route::post('/email/verify/code', [CurpController::class, 'verifyCode'])->name('verification.verify');
+Route::post('/email/verify/resend', [CurpController::class, 'resendCode'])->name('verification.resend');
 
 use App\Http\Controllers\Security\ModuleController;
 use App\Http\Controllers\Security\PermissionController;
 use App\Http\Controllers\Security\RoleController;
 use App\Http\Controllers\Security\UserController;
-use App\Http\Controllers\SuperAdminController;
-use App\Http\Controllers\Admin\DocumentController;
-use App\Http\Controllers\Admin\RequestControlController;
-use App\Http\Controllers\Admin\SolicitudController;
+use App\Http\Controllers\Admin\DocumentController as AdminDocumentController;
+use App\Http\Controllers\Admin\RequestControlController as AdminRequestControlController;
+use App\Http\Controllers\Admin\ApplicationController; // SolicitudController renamed
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\EvaluadorController;
-use App\Http\Controllers\DocenteController;
-use App\Http\Controllers\Catalogos\InstitutionController;
-use App\Http\Controllers\Catalogos\PriorityAreaController;
-use App\Http\Controllers\Catalogos\SubAreaController;
-use App\Http\Controllers\Catalogos\RubricController;
-use App\Http\Controllers\Catalogos\CalendarioController;
-use App\Http\Controllers\Catalogos\ConvocatoriaController;
-use App\Http\Controllers\Catalogos\DocumentoController;
+use App\Http\Controllers\Evaluator\EvaluatorController; // EvaluadorController renamed
+use App\Http\Controllers\TeacherController; // DocenteController renamed
+use App\Http\Controllers\Catalog\InstitutionController;
+use App\Http\Controllers\Catalog\PriorityAreaController;
+use App\Http\Controllers\Catalog\SubAreaController;
+use App\Http\Controllers\Catalog\RubricController;
+use App\Http\Controllers\Catalog\CalendarController;
+use App\Http\Controllers\Catalog\AnnouncementController; // ConvocatoriaController renamed
+use App\Http\Controllers\Catalog\DocumentController; // DocumentoController renamed
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    // Ruta de inicio genérica (redirige según rol)
-    Route::get('inicio', function () {
+    // Generic Dashboard Route (redirects by role)
+    Route::get('dashboard', function () {
         $role = auth()->user()->getPrimaryRole();
         
         return match ($role) {
-            'Super Admin' => redirect()->route('superadmin.inicio'),
-            'Admin' => redirect()->route('admin.inicio'),
-            'Evaluador' => redirect()->route('evaluador.inicio'),
-            'Docente' => redirect()->route('docente.inicio'),
+            'Super Admin' => redirect()->route('superadmin.dashboard'),
+            'Admin' => redirect()->route('admin.dashboard'),
+            'Evaluador' => redirect()->route('evaluator.dashboard'),
+            'Docente' => redirect()->route('teacher.dashboard'),
             default => Inertia::render('Dashboard'),
         };
-    })->name('inicio.dashboard');
+    })->name('dashboard.index'); // renamed from inicio.dashboard
 
     // ========================
-    // RUTAS SUPER ADMIN DASHBOARD
+    // SUPER ADMIN DASHBOARD ROUTES
     // ========================
-    // Mantenemos el dashboard principal exclusivo por Rol si se desea, 
-    // o podríamos protegerlo con un permiso especial. Por ahora lo dejamos por rol para no romper el inicio.
     Route::middleware(['role:Super Admin'])->prefix('superadmin')->name('superadmin.')->group(function () {
-        Route::get('inicio', [\App\Http\Controllers\SuperAdmin\InicioController::class, 'inicio'])->name('inicio');
-        Route::get('control-solicitudes', [\App\Http\Controllers\SuperAdmin\RequestControlController::class, 'index'])->name('control-solicitudes');
+        Route::get('dashboard', [\App\Http\Controllers\SuperAdmin\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('control-applications', [\App\Http\Controllers\SuperAdmin\RequestControlController::class, 'index'])->name('control-applications'); // control-solicitudes
     });
 
     Route::middleware(['role:Admin'])->prefix('admin')->name('admin.')->group(function () {
-        Route::get('inicio', [AdminController::class, 'inicio'])->name('inicio');
+        Route::get('dashboard', [AdminController::class, 'index'])->name('dashboard');
         
-        // Evaluadores Management
-        Route::get('evaluadores', [\App\Http\Controllers\Admin\EvaluadorController::class, 'index'])->name('evaluadores.index');
-        Route::delete('evaluadores/{id}', [\App\Http\Controllers\Admin\EvaluadorController::class, 'destroy'])->name('evaluadores.destroy');
+        // Evaluators Management
+        Route::get('evaluators', [\App\Http\Controllers\Admin\EvaluatorController::class, 'index'])->name('evaluators.index'); // evaluadores
+        Route::delete('evaluators/{id}', [\App\Http\Controllers\Admin\EvaluatorController::class, 'destroy'])->name('evaluators.destroy');
         
-        // Reconocimientos
-        Route::get('reconocimientos', [\App\Http\Controllers\Admin\ReconocimientoController::class, 'index'])->name('reconocimientos.index');
-        Route::post('reconocimientos/toggle', [\App\Http\Controllers\Admin\ReconocimientoController::class, 'toggle'])->name('reconocimientos.toggle');
+        // Recognitions
+        Route::get('recognitions', [\App\Http\Controllers\Admin\RecognitionController::class, 'index'])->name('recognitions.index'); // reconocimientos
+        Route::post('recognitions/toggle', [\App\Http\Controllers\Admin\RecognitionController::class, 'toggle'])->name('recognitions.toggle');
     });
 
-    Route::middleware(['role:Evaluador'])->prefix('evaluador')->name('evaluador.')->group(function () {
-        Route::get('inicio', [\App\Http\Controllers\Evaluador\EvaluadorController::class, 'inicio'])->name('inicio');
-        Route::get('evaluacion/{id}', [\App\Http\Controllers\Evaluador\EvaluadorController::class, 'show'])->name('evaluacion.show');
-        Route::put('evaluacion/{id}', [\App\Http\Controllers\Evaluador\EvaluadorController::class, 'evaluar'])->name('evaluacion.update');
-        Route::get('documentos/{id}/stream', [\App\Http\Controllers\Evaluador\EvaluadorController::class, 'streamDocument'])->name('documentos.stream');
+    Route::middleware(['role:Evaluador'])->prefix('evaluator')->name('evaluator.')->group(function () { // prefix evaluador -> evaluator
+        Route::get('dashboard', [EvaluatorController::class, 'inicio'])->name('dashboard'); // inicio -> dashboard
+        Route::get('evaluation/{id}', [EvaluatorController::class, 'show'])->name('evaluation.show');
+        Route::put('evaluation/{id}', [EvaluatorController::class, 'evaluar'])->name('evaluation.update');
+        Route::get('documents/{id}/stream', [EvaluatorController::class, 'streamDocument'])->name('documents.stream');
 
-        // Historial de Evaluaciones
-        Route::get('evaluaciones', [\App\Http\Controllers\Evaluador\EvaluadorController::class, 'index'])->name('evaluaciones.index');
-        Route::get('evaluaciones/{id}', [\App\Http\Controllers\Evaluador\EvaluadorController::class, 'showHistory'])->name('evaluaciones.show');
+        // Evaluation History
+        Route::get('evaluations', [EvaluatorController::class, 'index'])->name('evaluations.index'); // evaluaciones
+        Route::get('evaluations/{id}', [EvaluatorController::class, 'showHistory'])->name('evaluations.show');
 
-        // Reconocimientos
-        Route::get('reconocimientos', [\App\Http\Controllers\Evaluador\ReconocimientoController::class, 'index'])->name('reconocimientos.index');
-        Route::get('reconocimientos/{id}/download', [\App\Http\Controllers\Evaluador\ReconocimientoController::class, 'download'])->name('reconocimientos.download');
+        // Recognitions
+        Route::get('recognitions', [\App\Http\Controllers\Evaluator\RecognitionController::class, 'index'])->name('recognitions.index');
+        Route::get('recognitions/{id}/download', [\App\Http\Controllers\Evaluator\RecognitionController::class, 'download'])->name('recognitions.download');
     });
 
-    Route::middleware(['role:Docente'])->prefix('docente')->name('docente.')->group(function () {
-        Route::get('inicio', [DocenteController::class, 'inicio'])->name('inicio');
-        Route::get('solicitudes/{id}', [DocenteController::class, 'show'])->name('solicitudes.show');
-        Route::get('solicitudes/download/{id}', [DocenteController::class, 'download'])->name('solicitudes.download');
-        Route::get('solicitudes/stream/{id}', [DocenteController::class, 'stream'])->name('solicitudes.stream');
+    Route::middleware(['role:Docente'])->prefix('teacher')->name('teacher.')->group(function () { // prefix docente -> teacher
+        Route::get('dashboard', [TeacherController::class, 'inicio'])->name('dashboard'); // inicio -> dashboard
+        Route::get('applications/{id}', [TeacherController::class, 'show'])->name('applications.show');
+        Route::get('documents/{id}/download', [TeacherController::class, 'download'])->name('documents.download');
+        Route::get('documents/{id}/stream', [TeacherController::class, 'stream'])->name('documents.stream');
         
-        // Convocatorias Docente
-        Route::get('convocatorias', [DocenteController::class, 'convocatorias'])->name('convocatorias.index');
-        Route::get('convocatorias/{id}/solicitar', [DocenteController::class, 'solicitar'])->name('convocatorias.solicitar');
-        Route::post('convocatorias/solicitar', [DocenteController::class, 'storeSolicitud'])->name('solicitudes.store');
+        // Announcements Teacher
+        Route::get('announcements', [TeacherController::class, 'convocatorias'])->name('announcements.index'); // convocatorias
+        Route::get('announcements/{id}/apply', [TeacherController::class, 'solicitar'])->name('announcements.apply'); // solicitar
+        Route::post('announcements/apply', [TeacherController::class, 'storeApplication'])->name('applications.store');
     });
 
     // ========================
-    // MÓDULO DE SEGURIDAD
+    // SECURITY MODULE
     // ========================
-    // Protegido por permisos específicos. 
-    // Nota: Los controladores ya deberían verificar permisos independientemente.
     
-    Route::prefix('seguridad')->name('seguridad.')->group(function () {
+    Route::prefix('security')->name('security.')->group(function () { // seguridad -> security
         Route::resource('modules', ModuleController::class);
-        // ->middleware('can:modules.index'); // Opcional si el controlador ya gestiona
 
-     // Documents Module Routes
-    Route::get('documentos', [DocumentController::class, 'index'])->name('documents.index')->middleware('can:documents.index');
-    Route::get('documentos/{id}', [DocumentController::class, 'show'])->name('documents.show')->middleware('can:documents.show');
-    Route::get('documentos/download/{documento}', [DocumentController::class, 'download'])->name('documents.download')->middleware('can:documents.download');
+        // Documents Module Routes
+        Route::get('documents', [AdminDocumentController::class, 'index'])->name('documents.index')->middleware('can:documents.index');
+        Route::get('documents/{id}', [AdminDocumentController::class, 'show'])->name('documents.show')->middleware('can:documents.show');
+        Route::get('documents/download/{documento}', [AdminDocumentController::class, 'download'])->name('documents.download')->middleware('can:documents.download');
 
         Route::resource('permissions', PermissionController::class);
-        // ->middleware('can:permissions.index');
-
         Route::resource('roles', RoleController::class);
-        // ->middleware('can:roles.index');
 
-        Route::get('users/export', [UserController::class, 'export'])->name('users.export'); // ->middleware('can:users.index');
-        Route::get('users/template', [UserController::class, 'template'])->name('users.template'); // ->middleware('can:users.index');
-        Route::post('users/import', [UserController::class, 'import'])->name('users.import'); // ->middleware('can:users.create');
+        Route::get('users/export', [UserController::class, 'export'])->name('users.export');
+        Route::get('users/template', [UserController::class, 'template'])->name('users.template');
+        Route::post('users/import', [UserController::class, 'import'])->name('users.import');
         Route::resource('users', UserController::class);
-        // ->middleware('can:users.index');
     });
 
 
     // ========================
-    // MÓDULOS COMPARTIDOS
+    // SHARED MODULES
     // ========================
     
-    Route::get('control-solicitudes', [RequestControlController::class, 'index'])->name('solicitudes.index')->middleware('can:requests.index');
-    Route::get('control-solicitudes/{id}', [RequestControlController::class, 'show'])->name('solicitudes.show')->middleware('can:requests.show');
+    Route::get('control-applications', [AdminRequestControlController::class, 'index'])->name('applications.control.index')->middleware('can:requests.index');
+    Route::get('control-applications/{id}', [AdminRequestControlController::class, 'show'])->name('applications.control.show')->middleware('can:requests.show');
 
-    // Admin Specific Solicitudes Logic
+    // Admin Specific Applications Logic
     Route::middleware(['role:Admin'])->prefix('admin')->name('admin.')->group(function () {
-        Route::get('inicio', [AdminController::class, 'inicio'])->name('inicio');
-        // Admin Solicitudes (List, Assign, Verdict)
-        Route::get('solicitudes', [SolicitudController::class, 'index'])->name('solicitudes.index');
-        Route::get('solicitudes/{id}/assign', [SolicitudController::class, 'assignView'])->name('solicitudes.assign_view');
-        Route::post('solicitudes/assign', [SolicitudController::class, 'assignEvaluator'])->name('solicitudes.assign');
-        Route::delete('solicitudes/evaluador', [SolicitudController::class, 'removeEvaluator'])->name('solicitudes.remove-evaluator');
-        Route::get('solicitudes/{id}', [SolicitudController::class, 'show'])->name('solicitudes.show');
-        Route::post('solicitudes/{id}/verdict', [SolicitudController::class, 'verdict'])->name('solicitudes.verdict');
-        // Documents (Existing?)
-        // ...
+        // Route::get('inicio', [AdminController::class, 'inicio'])->name('inicio'); // Already defined above
+        // Admin Applications (List, Assign, Verdict)
+        Route::get('applications', [ApplicationController::class, 'index'])->name('applications.index'); // solicitudes -> applications
+        Route::get('applications/{id}/assign', [ApplicationController::class, 'assignView'])->name('applications.assign_view');
+        Route::post('applications/assign', [ApplicationController::class, 'assignEvaluator'])->name('applications.assign');
+        Route::delete('applications/evaluator', [ApplicationController::class, 'removeEvaluator'])->name('applications.remove-evaluator');
+        Route::get('applications/{id}', [ApplicationController::class, 'show'])->name('applications.show');
+        Route::post('applications/{id}/verdict', [ApplicationController::class, 'verdict'])->name('applications.verdict');
     });
 
-    // Convocatorias
-    Route::get('convocatorias/{convocatoria}/download', [ConvocatoriaController::class, 'download'])->name('convocatorias.download');
-    Route::put('convocatorias/{convocatoria}/documentos', [ConvocatoriaController::class, 'updateDocumentos'])->name('convocatorias.updateDocumentos');
-    Route::resource('convocatorias', ConvocatoriaController::class)->names([
-        'index' => 'convocatorias.index',
-        'create' => 'convocatorias.create',
-        'store' => 'convocatorias.store',
-        'edit' => 'convocatorias.edit',
-        'update' => 'convocatorias.update',
-        'destroy' => 'convocatorias.destroy',
+    // Announcements
+    Route::get('announcements/{announcement}/download', [AnnouncementController::class, 'download'])->name('announcements.download');
+    Route::put('announcements/{announcement}/documents', [AnnouncementController::class, 'updateDocumentos'])->name('announcements.updateDocuments');
+    Route::resource('announcements', AnnouncementController::class)->names([
+        'index' => 'announcements.index',
+        'create' => 'announcements.create',
+        'store' => 'announcements.store',
+        'edit' => 'announcements.edit',
+        'update' => 'announcements.update',
+        'destroy' => 'announcements.destroy',
     ]);
 
-    // Reconocimiento
-    Route::get('reconocimiento', function () {
-        return Inertia::render('Reconocimiento/Index');
-    })->name('reconocimiento.index')->middleware('can:reconocimiento.index');
+    // Recognitions (Generic View)
+    Route::get('recognition', function () {
+        return Inertia::render('Reconocimiento/Index'); // View
+    })->name('recognition.index')->middleware('can:reconocimiento.index');
 
-    // Evaluaciones
-    Route::get('evaluaciones', function () {
-        return Inertia::render('Evaluaciones/Index');
-    })->name('evaluaciones.index')->middleware('can:evaluaciones.index');
+    // Evaluations (Generic View)
+    Route::get('evaluations', function () {
+        return Inertia::render('Evaluaciones/Index'); // View
+    })->name('evaluations.index')->middleware('can:evaluaciones.index');
 
-    // Catálogo
-    Route::prefix('catalogo')->name('catalogo.')->group(function() {
+    // Catalog
+    Route::prefix('catalog')->name('catalog.')->group(function() { // catalogo -> catalog
         Route::get('campus', function () {
             return Inertia::render('Catalogo/Campus');
         })->name('campus')->middleware('can:catalogo.index');
 
-        Route::get('areas-prioritarias', function () {
+        Route::get('priority-areas-view', function () {
             return Inertia::render('Catalogo/AreasPrioritarias');
-        })->name('areas')->middleware('can:catalogo.index');
+        })->name('areas')->middleware('can:catalog.index');
 
-        Route::get('documentos/{id}/download', [DocumentoController::class, 'download'])->name('documentos.download');
-        Route::post('documentos/{id}/toggle-active', [DocumentoController::class, 'toggleActive'])->name('documentos.toggleActive');
-        Route::get('documentos/{documento}/download-docente', [DocumentoController::class, 'downloadDocente'])->name('documentos.downloadDocente');
-        Route::get('documentos/{documento}/stream-docente', [DocumentoController::class, 'streamDocente'])->name('documentos.streamDocente');
-        Route::resource('documentos', DocumentoController::class);
+    // CATALOG MODULE
+    // Route::prefix('catalog')->name('catalog.')->group(function () { // Removed nested group
+        Route::get('documents/{id}/download', [DocumentController::class, 'download'])->name('documents.download');
+        Route::post('documents/{id}/toggle-active', [DocumentController::class, 'toggleActive'])->name('documents.toggleActive');
+        Route::get('documents/{documento}/download-docente', [DocumentController::class, 'downloadDocente'])->name('documents.downloadDocente');
+        Route::get('documents/{documento}/stream-docente', [DocumentController::class, 'streamDocente'])->name('documents.streamDocente');
+        Route::resource('documents', DocumentController::class);
 
-        // Documentos de Docentes - REMOVED (integrated into documentos with tabs)
-        // Mantener estas rutas comentadas para referencia si se necesitan en el futuro
-
-        Route::get('rubrica', function () {
-            return Inertia::render('Catalogo/Rubrica');
-        })->name('rubrica')->middleware('can:catalogo.index');
-
-        Route::get('institutions/export', [InstitutionController::class, 'export'])->name('institutions.export'); // ->middleware('can:catalogo.index');
-        Route::post('institutions/import', [InstitutionController::class, 'import'])->name('institutions.import'); // ->middleware('can:catalogo.index');
-        Route::get('institutions/template', [InstitutionController::class, 'downloadTemplate'])->name('institutions.template'); // ->middleware('can:catalogo.index');
+        Route::get('institutions/export', [InstitutionController::class, 'export'])->name('institutions.export');
+        Route::post('institutions/import', [InstitutionController::class, 'import'])->name('institutions.import');
+        Route::get('institutions/template', [InstitutionController::class, 'downloadTemplate'])->name('institutions.template');
         Route::resource('institutions', InstitutionController::class);
 
-        Route::get('priority-areas/export', [PriorityAreaController::class, 'export'])->name('priority-areas.export'); // ->middleware('can:catalogo.index');
-        Route::post('priority-areas/import', [PriorityAreaController::class, 'import'])->name('priority-areas.import'); // ->middleware('can:catalogo.index');
-        Route::get('priority-areas/template', [PriorityAreaController::class, 'downloadTemplate'])->name('priority-areas.template'); // ->middleware('can:catalogo.index');
+        Route::get('priority-areas/export', [PriorityAreaController::class, 'export'])->name('priority-areas.export');
+        Route::post('priority-areas/import', [PriorityAreaController::class, 'import'])->name('priority-areas.import');
+        Route::get('priority-areas/template', [PriorityAreaController::class, 'downloadTemplate'])->name('priority-areas.template');
         Route::resource('priority-areas', PriorityAreaController::class);
         
-        Route::get('sub-areas/export', [SubAreaController::class, 'export'])->name('sub-areas.export'); // ->middleware('can:catalogo.index');
-        // No import for sub-areas as requested
+        Route::get('sub-areas/export', [SubAreaController::class, 'export'])->name('sub-areas.export');
         Route::resource('sub-areas', SubAreaController::class);
 
         Route::resource('rubrics', RubricController::class);
         Route::post('rubrics/{rubric}/toggle-active', [RubricController::class, 'toggleActive'])->name('rubrics.toggle-active');
-    });
+    // }); // Removed nested group closing brace
 
     // Modules accessible by permission (Admin/SuperAdmin)
     Route::middleware(['can:documents.index'])->prefix('admin')->name('admin.')->group(function () {
@@ -340,6 +324,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('documents/{documento}/download', [\App\Http\Controllers\Admin\DocumentController::class, 'download'])->name('documents.download');
         Route::get('documents/{documento}/stream', [\App\Http\Controllers\Admin\DocumentController::class, 'stream'])->name('documents.stream');
     });
+});
+
 });
 
 require __DIR__.'/settings.php';

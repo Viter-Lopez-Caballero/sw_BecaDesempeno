@@ -11,16 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('solicitudes', function (Blueprint $table) {
+        Schema::create('applications', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('convocatoria_id')->constrained()->onDelete('cascade');
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
-            $table->timestamps();
+            $table->foreignId('announcement_id')->constrained('announcements')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->enum('status', ['pending', 'in_review', 'approved', 'rejected'])->default('pending');
+            $table->text('admin_comment')->nullable();
             $table->softDeletes();
-            
-            // Ensure unique application per user per convocatoria
-            $table->unique(['user_id', 'convocatoria_id']); 
+            $table->timestamps();
         });
     }
 

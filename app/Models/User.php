@@ -11,6 +11,8 @@ use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Support\Collection;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -28,7 +30,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
-        'institucion_id',
+        'institution_id',
         'priority_area_id',
         'sub_area_id',
         'email_verification_code',
@@ -67,9 +69,9 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasRole('Super Admin');
     }
 
-    public function institucion(): BelongsTo
+    public function institution(): BelongsTo
     {
-        return $this->belongsTo(Institucion::class);
+        return $this->belongsTo(Institution::class);
     }
 
     public function priorityArea(): BelongsTo
@@ -82,15 +84,15 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsTo(SubArea::class);
     }
 
-    public function solicitudes()
+    public function applications(): HasMany
     {
-        return $this->hasMany(Solicitud::class);
+        return $this->hasMany(Application::class);
     }
 
-    public function convocatorias()
+    public function announcements(): BelongsToMany
     {
-        return $this->belongsToMany(Convocatoria::class, 'convocatoria_user')
-            ->withPivot('estado', 'fecha_inscripcion')
+        return $this->belongsToMany(Announcement::class, 'announcement_user')
+            ->withPivot('status', 'registration_date')
             ->withTimestamps();
     }
 

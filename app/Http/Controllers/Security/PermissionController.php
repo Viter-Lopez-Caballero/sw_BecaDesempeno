@@ -32,9 +32,9 @@ class PermissionController extends SecurityController
 
     public function __construct()
     {
-        $this->routeName = "seguridad.permissions.";
+        $this->routeName = "security.permissions.";
         $this->permissionPrefix = "permissions.";
-        $this->source    = "SuperAdmin/Seguridad/Permisos/";
+        $this->source    = "SuperAdmin/Security/Permissions/";
         $this->model     = new Permission();
 
         $this->middleware("permission:{$this->permissionPrefix}index")->only(['index', 'show']);

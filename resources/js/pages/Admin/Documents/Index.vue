@@ -9,7 +9,7 @@ import 'vue-select/dist/vue-select.css';
 import { mdiFileDocumentMultiple } from '@mdi/js';
 
 const props = defineProps({
-    solicitudes: Object,
+    applications: Object,
     filters: Object,
 });
 
@@ -155,25 +155,25 @@ const viewDetails = (id) => {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                            <tr v-for="solicitud in solicitudes.data" :key="solicitud.id" class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 font-medium text-gray-900">{{ solicitud.id }}</td>
+                            <tr v-for="application in applications.data" :key="application.id" class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 font-medium text-gray-900">{{ application.id }}</td>
                                 <td class="px-6 py-4 font-medium text-gray-900">
-                                    {{ solicitud.user?.name || 'N/A' }}
+                                    {{ application.user?.name || 'N/A' }}
                                 </td>
                                 <td class="px-6 py-4 text-gray-800">
-                                    {{ solicitud.user?.institucion?.nombre || 'N/A' }}
+                                    {{ application.user?.institution?.name || 'N/A' }}
                                 </td>
                                 <td class="px-6 py-4 text-gray-800">
-                                    {{ solicitud.convocatoria?.nombre }}
+                                    {{ application.announcement?.name }}
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <span class="px-3 py-1 inline-flex text-xs font-bold rounded-full bg-blue-100 text-blue-800">
-                                        {{ solicitud.documentos_count }} Archivos
+                                        {{ application.documents_count }} Archivos
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center">
-                                        <button @click="viewDetails(solicitud.id)" class="text-[#1B396A] hover:text-[#0f2347] font-medium flex items-center gap-1 transition">
+                                        <button @click="viewDetails(application.id)" class="text-[#1B396A] hover:text-[#0f2347] font-medium flex items-center gap-1 transition">
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
@@ -183,7 +183,7 @@ const viewDetails = (id) => {
                                     </div>
                                 </td>
                             </tr>
-                            <tr v-if="solicitudes.data.length === 0">
+                            <tr v-if="applications.data.length === 0">
                                 <td colspan="5" class="px-6 py-12 text-center text-gray-500">
                                     No se encontraron solicitudes.
                                 </td>
@@ -194,7 +194,7 @@ const viewDetails = (id) => {
 
                 <!-- Pagination -->
                 <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                     <Pagination :links="solicitudes.meta.links" :total="solicitudes.meta.total" :from="solicitudes.meta.from" :to="solicitudes.meta.to" />
+                     <Pagination :links="applications.meta.links" :total="applications.meta.total" :from="applications.meta.from" :to="applications.meta.to" />
                 </div>
             </div>
         </div>

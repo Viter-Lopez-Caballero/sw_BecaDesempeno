@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Documento;
-use App\Models\Solicitud;
+use App\Models\Application;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
@@ -20,20 +20,19 @@ class DocumentController extends Controller
         $order = $request->input('order', 'created_at');
         $direction = $request->input('direction', 'desc');
 
-        $solicitudes = Solicitud::with(['user.institucion', 'convocatoria'])
-            ->withCount('documentos')
+        $applications = \App\Models\Application::with(['user.institution', 'announcement']) // Solicitud -> Application
+            ->withCount('documents') // documentos -> documents
             ->when($search, function ($query, $search) {
                 $query->whereHas('user', function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
                       ->orWhere('email', 'like', "%{$search}%");
                 })
-                ->orWhereHas('convocatoria', function ($q) use ($search) {
-                    $q->where('nombre', 'like', "%{$search}%");
+                ->orWhereHas('announcement', function ($q) use ($search) { // convocatoria -> announcement
+                    $q->where('name', 'like', "%{$search}%"); // nombre -> name
                 })
                 ->orWhere('id', 'like', "%{$search}%");
             })
             ->when($order, function ($query, $order) use ($direction) {
-                // Handle relationship sorting if needed, but basic sorting first
                 if (in_array($order, ['id', 'created_at'])) {
                     $query->orderBy($order, $direction);
                 }
@@ -44,43 +43,36 @@ class DocumentController extends Controller
             ->withQueryString();
 
         return Inertia::render('Admin/Documents/Index', [
-            'solicitudes' => SolicitudResource::collection($solicitudes),
+            'applications' => \App\Http\Resources\ApplicationResource::collection($applications),
             'filters' => $request->all(['search', 'rows', 'order', 'direction']),
         ]);
     }
 
     public function show($id)
     {
-        $solicitud = Solicitud::with(['user.institucion', 'user.priorityArea', 'user.subArea', 'convocatoria', 'documentos'])
+        $application = \App\Models\Application::with(['user.institution', 'user.priorityArea', 'user.subArea', 'announcement', 'documents'])
             ->findOrFail($id);
 
         return Inertia::render('Admin/Documents/Show', [
-            'solicitud' => (new SolicitudResource($solicitud))->resolve(),
+            'application' => (new \App\Http\Resources\ApplicationResource($application))->resolve(),
         ]);
     }
 
-    public function download(Documento $documento)
+    public function download(\App\Models\Document $document) // Documento -> Document
     {
-        // For dummy files in seeding, we might need a visual check or ensure they exist.
-        // In production, this would serve valid files.
-        if (!Storage::disk('public')->exists($documento->file_path)) {
-            // Fallback for demo purposes if using dummy paths
+        if (!Storage::disk('public')->exists($document->file_path)) {
             return back()->with('error', 'El archivo no existe.');
         }
 
-        return Storage::disk('public')->download($documento->file_path, $documento->name);
+        return Storage::disk('public')->download($document->file_path, $document->name);
     }
 
-    public function stream(Documento $documento)
+    public function stream(\App\Models\Document $document)
     {
-        // Add check if admin can view this document?
-        // Documents are generally viewable by admin if they can view the solicitud.
-        // Assuming Middleware handles Solicitud permissions, checking file existence is enough here.
-
-        if (!Storage::disk('public')->exists($documento->file_path)) {
+        if (!Storage::disk('public')->exists($document->file_path)) {
             return back()->with('error', 'El archivo no existe.');
         }
 
-        return response()->file(Storage::disk('public')->path($documento->file_path));
+        return response()->file(Storage::disk('public')->path($document->file_path));
     }
 }

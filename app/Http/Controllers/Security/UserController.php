@@ -31,9 +31,9 @@ class UserController extends SecurityController
 
     public function __construct()
     {
-        $this->routeName = "seguridad.users.";
+        $this->routeName = "security.users.";
         $this->permissionPrefix = "users.";
-        $this->source    = "SuperAdmin/Seguridad/Usuarios/";
+        $this->source    = "SuperAdmin/Security/Users/";
         $this->model     = new User();
         
         $this->middleware("permission:{$this->permissionPrefix}index")->only(['index', 'show']);

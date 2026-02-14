@@ -69,10 +69,10 @@ class LoginResponse implements LoginResponseContract
         
         // Redirigir según el rol
         $redirectRoute = match ($role) {
-            'Super Admin' => 'superadmin.inicio',
-            'Admin' => 'admin.inicio',
-            'Evaluador' => 'evaluador.inicio',
-            'Docente' => 'docente.inicio',
+            'Super Admin' => 'superadmin.dashboard',
+            'Admin' => 'admin.dashboard',
+            'Evaluador' => 'evaluator.dashboard',
+            'Docente' => 'teacher.dashboard',
             default => 'inicio',
         };
         

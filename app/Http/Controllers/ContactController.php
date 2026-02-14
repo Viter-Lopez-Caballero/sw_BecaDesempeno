@@ -11,21 +11,21 @@ use Illuminate\Support\Facades\Validator;
 
 class ContactController extends Controller
 {
-    public function getInstituciones()
+    public function getInstitutions()
     {
         try {
-            $instituciones = Institucion::with('estado')
-                ->orderBy('nombre', 'asc')
+            $institutions = \App\Models\Institution::with('state')
+                ->orderBy('name', 'asc')
                 ->get()
-                ->map(function ($institucion) {
+                ->map(function ($institution) {
                     return [
-                        'id' => $institucion->id,
-                        'nombre' => $institucion->nombre,
-                        'estado' => $institucion->estado->nombre ?? ''
+                        'id' => $institution->id,
+                        'name' => $institution->name,
+                        'state' => $institution->state->name ?? ''
                     ];
                 });
 
-            return response()->json($instituciones);
+            return response()->json($institutions);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error al cargar instituciones'], 500);
         }
@@ -36,7 +36,7 @@ class ContactController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
-            'institucion_id' => 'required|exists:instituciones,id',
+            'institucion_id' => 'required|exists:institutions,id', // Table name updated? Yes.
             'message' => 'required|string|max:1000',
         ], [
             'name.required' => 'El nombre es obligatorio',
@@ -56,20 +56,20 @@ class ContactController extends Controller
         }
 
         try {
-            // Obtener la institución
-            $institucion = Institucion::with('estado')->find($request->institucion_id);
+            // Get Institution
+            $institution = \App\Models\Institution::with('state')->find($request->institucion_id);
             
             $data = [
                 'name' => $request->name,
                 'email' => $request->email,
-                'institucion' => $institucion->nombre . ' (' . ($institucion->estado->nombre ?? '') . ')',
+                'institution' => $institution->name . ' (' . ($institution->state->name ?? '') . ')',
                 'message' => $request->message,
             ];
 
-            // Enviar correo al administrador
+            // Send to Admin
             Mail::to('tecnmpedpd@gmail.com')->send(new ContactFormMail($data));
 
-            // Enviar correo de confirmación al usuario
+            // Send Confirmation
             Mail::to($request->email)->send(new ContactConfirmationMail($data));
 
             return response()->json([

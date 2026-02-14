@@ -11,7 +11,7 @@ import axios from 'axios';
 import { alertaExito, alertaError, alertaAdvertencia, alertaCargando, cerrarAlerta } from '@/utils/alerts.js';
 
 const props = defineProps({
-    instituciones: {
+    institutions: {
         type: Array,
         default: () => [],
     },
@@ -33,7 +33,7 @@ const form = useForm({
 });
 
 // Map props to dropdown options
-const institucionesOptions = props.instituciones;
+const institucionesOptions = props.institutions;
 const areasPrioritariasOptions = props.priorityAreas;
 const subareasPrioritariasOptions = ref([]);
 
@@ -313,7 +313,7 @@ const buscarCurp = async () => {
                                 v-model="form.institucion_id"
                                 :options="institucionesOptions"
                                 :reduce="option => option.id"
-                                label="nombre"
+                                label="name"
                                 placeholder="Buscar o seleccionar una institución..."
                                 :searchable="true"
                                 :clearable="true"

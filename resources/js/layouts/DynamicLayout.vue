@@ -3,21 +3,28 @@ import { computed } from 'vue'
 import { usePage } from '@inertiajs/vue3'
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue'
 import AdminLayout from '@/layouts/AdminLayout.vue'
-import EvaluadorLayout from '@/layouts/EvaluadorLayout.vue'
-import DocenteLayout from '@/layouts/DocenteLayout.vue'
+import TeacherLayout from '@/layouts/TeacherLayout.vue'
+import EvaluatorLayout from '@/layouts/EvaluatorLayout.vue'
 
 const page = usePage()
 
 const layouts = {
   LayoutAuthenticated,
   AdminLayout,
-  EvaluadorLayout,
-  DocenteLayout,
+  EvaluatorLayout,
+  TeacherLayout,
 }
 
 const currentLayout = computed(() => {
   const layoutName = page.props.auth.layoutName
-  return layouts[layoutName] || LayoutAuthenticated
+  // Map old role names to new layout components
+  const layoutMap = {
+    'Docente': TeacherLayout,
+    'Evaluador': EvaluatorLayout,
+    'LayoutAuthenticated': LayoutAuthenticated,
+    'AdminLayout': AdminLayout,
+  }
+  return layoutMap[layoutName] || layouts[layoutName] || LayoutAuthenticated
 })
 </script>
 

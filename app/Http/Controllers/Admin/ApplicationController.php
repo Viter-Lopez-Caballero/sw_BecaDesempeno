@@ -27,7 +27,7 @@ class ApplicationController extends Controller
         $filters->status = $status;
 
         $query = \App\Models\Application::with([
-                'user.institucion', 
+                'user.institution', 
                 'evaluations.evaluator', // Relationship rename? Check Application model
                 'announcement'
             ])
@@ -100,7 +100,7 @@ class ApplicationController extends Controller
 
     public function assignView($id)
     {
-        $application = \App\Models\Application::with(['user.institucion', 'announcement', 'evaluations.evaluator'])
+        $application = \App\Models\Application::with(['user.institution', 'announcement', 'evaluations.evaluator'])
             ->findOrFail($id);
 
         $evaluators = User::role('Evaluador')->select('id', 'name', 'email')->get();
@@ -117,7 +117,7 @@ class ApplicationController extends Controller
     public function show($id)
     {
         $application = \App\Models\Application::with([
-                'user.institucion', 
+                'user.institution', 
                 'user.priorityArea',
                 'user.subArea',
                 'evaluations.evaluator', 

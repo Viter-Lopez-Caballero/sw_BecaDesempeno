@@ -315,18 +315,18 @@ const deleteItem = async (id) => {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                            <tr v-for="(institucion, index) in institutions.data" :key="institucion.id" class="hover:bg-gray-50 transition">
+                            <tr v-for="(institution, index) in institutions.data" :key="institution.id" class="hover:bg-gray-50 transition">
                                 <td class="px-6 py-4 font-medium text-gray-900">{{ (institutions.meta.current_page - 1) * institutions.meta.per_page + index + 1 }}</td>
-                                <td class="px-6 py-4 font-semibold text-gray-800">{{ institucion.name }}</td>
-                                <td class="px-6 py-4 text-gray-600">{{ institucion.state?.name || 'N/A' }}</td>
+                                <td class="px-6 py-4 font-semibold text-gray-800">{{ institution.name }}</td>
+                                <td class="px-6 py-4 text-gray-600">{{ institution.state?.name || 'N/A' }}</td>
                                 <td v-if="useCan('institutions.edit') || useCan('institutions.delete')" class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <Link v-if="useCan('institutions.edit')" :href="route(`${routeName}edit`, institucion.id)" class="p-2 text-[#1B396A] border border-[#1B396A] rounded-full hover:bg-[#1B396A] hover:text-white transition group cursor-pointer" title="Editar">
+                                        <Link v-if="useCan('institutions.edit')" :href="route(`${routeName}edit`, institution.id)" class="p-2 text-[#1B396A] border border-[#1B396A] rounded-full hover:bg-[#1B396A] hover:text-white transition group cursor-pointer" title="Editar">
                                             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                                                 <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/>
                                             </svg>
                                         </Link>
-                                        <button v-if="useCan('institutions.delete')" @click="deleteItem(institucion.id)" class="p-2 text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition group cursor-pointer" title="Eliminar">
+                                        <button v-if="useCan('institutions.delete')" @click="deleteItem(institution.id)" class="p-2 text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition group cursor-pointer" title="Eliminar">
                                             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                                                 <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
                                             </svg>

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Reconocimiento;
+use App\Models\Recognition;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +22,7 @@ class RecognitionController extends Controller
         // Query to get evaluators with their announcements (where they participated)
         // JOIN: evaluations -> applications -> announcements
         $recognitions = \Illuminate\Support\Facades\DB::table('evaluations')
-            ->join('users', 'evaluations.user_id', '=', 'users.id')
+            ->join('users', 'evaluations.evaluator_id', '=', 'users.id')
             ->join('applications', 'evaluations.application_id', '=', 'applications.id')
             ->join('announcements', 'applications.announcement_id', '=', 'announcements.id')
             ->leftJoin('recognitions', function ($join) {
@@ -84,7 +84,7 @@ class RecognitionController extends Controller
         // Verify evaluator reviewed at least 1 application of this announcement
         $applicationsReviewed = \Illuminate\Support\Facades\DB::table('evaluations')
             ->join('applications', 'evaluations.application_id', '=', 'applications.id')
-            ->where('evaluations.user_id', $userId)
+            ->where('evaluations.evaluator_id', $userId)
             ->where('applications.announcement_id', $announcementId)
             ->count();
 

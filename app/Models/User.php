@@ -133,9 +133,9 @@ class User extends Authenticatable implements MustVerifyEmail
         return match($role) {
             'Super Admin' => 'LayoutAuthenticated',
             'Admin' => 'AdminLayout',
-            'Evaluador' => 'EvaluadorLayout',
-            'Docente' => 'DocenteLayout',
-            default => 'DocenteLayout',
+            'Evaluador' => 'EvaluatorLayout',
+            'Docente' => 'TeacherLayout',
+            default => 'TeacherLayout',
         };
     }
 

@@ -70,7 +70,7 @@ class UserController extends SecurityController
         $rolesForImport = Role::where('name', 'Evaluador')->orderBy('name')->get();
 
         return Inertia::render("{$this->source}Index", [
-            'usuarios'  => UserResource::collection($users),
+            'users'  => UserResource::collection($users),
             'title'     => 'Gestión de Usuarios',
             'routeName' => $this->routeName,
             'filters'   => $filters,

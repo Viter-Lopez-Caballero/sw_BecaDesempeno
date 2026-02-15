@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Documento;
+use App\Models\Document;
 use App\Models\Application;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 
-use App\Http\Resources\SolicitudResource;
+use App\Http\Resources\ApplicationResource;
 
 class DocumentController extends Controller
 {

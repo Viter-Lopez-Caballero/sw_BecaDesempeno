@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Modulo;
+use App\Models\Module;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -21,17 +21,17 @@ class UpdateModuloRequest extends FormRequest
         $id = $this->route('modulo') ? $this->route('modulo')->id : $this->id;
 
         return [
-            'nombre' => ['required','max:255',Rule::unique(Modulo::class)->ignore($id)],
-            'descripcion' => 'required|max:255',
-            'key' => ['required','max:255',Rule::unique(Modulo::class)->ignore($id)],
+            'name' => ['required','max:255',Rule::unique(Module::class)->ignore($id)],
+            'description' => 'required|max:255',
+            'key' => ['required','max:255',Rule::unique(Module::class)->ignore($id)],
         ];
     }
 
     public function attributes(): array
     {
         return [
-            'nombre' => 'Nombre del Módulo',
-            'descripcion' => 'Descripción',
+            'name' => 'Nombre del Módulo',
+            'description' => 'Descripción',
             'key' => 'Clave'
         ];
     }

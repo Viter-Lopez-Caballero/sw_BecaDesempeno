@@ -14,24 +14,24 @@ const props = defineProps({
         type: String,
         required: true,
     },
-    documento: {
+    document: {
         type: Object,
         required: true,
     },
 });
 
 const form = useForm({
-    nombre: props.documento.nombre,
-    descripcion: props.documento.descripcion,
-    activo: props.documento.activo,
+    name: props.document.name,
+    description: props.document.description,
+    active: props.document.active,
     archivo: null,
 });
 
 const archivoPreview = ref(null);
-const archivoNombre = ref(props.documento.archivo_nombre || null);
-const archivoActual = ref(props.documento.archivo_path || null);
-const archivoUrl = ref(props.documento.archivo_path ? `/storage/${props.documento.archivo_path}` : null);
-const archivoTipo = ref(props.documento.archivo_tipo || null);
+const archivoNombre = ref(props.document.file_name || null);
+const archivoActual = ref(props.document.file_path || null);
+const archivoUrl = ref(props.document.file_path ? `/storage/${props.document.file_path}` : null);
+const archivoTipo = ref(props.document.file_type || null);
 
 const clearError = (field) => {
     if (form.errors[field]) {
@@ -54,13 +54,13 @@ const handleFileChange = (event) => {
             };
             reader.readAsDataURL(file);
         } else if (file.type === 'application/pdf') {
-            if (archivoUrl.value && !props.documento.archivo_path) {
+            if (archivoUrl.value && !props.document.file_path) {
                 URL.revokeObjectURL(archivoUrl.value);
             }
             archivoUrl.value = URL.createObjectURL(file);
         } else {
             archivoPreview.value = null;
-            if (archivoUrl.value && !props.documento.archivo_path) {
+            if (archivoUrl.value && !props.document.file_path) {
                 URL.revokeObjectURL(archivoUrl.value);
             }
             archivoUrl.value = null;
@@ -69,7 +69,7 @@ const handleFileChange = (event) => {
 };
 
 const removeFile = () => {
-    if (archivoUrl.value && !props.documento.archivo_path) {
+    if (archivoUrl.value && !props.document.file_path) {
         URL.revokeObjectURL(archivoUrl.value);
     }
     
@@ -89,13 +89,13 @@ const removeFile = () => {
 const submit = () => {
     form.clearErrors();
     
-    if (!form.nombre) {
-        form.errors.nombre = 'El nombre del documento es obligatorio';
+    if (!form.name) {
+        form.errors.name = 'El nombre del documento es obligatorio';
         return;
     }
     
     alertaCargando('Actualizando...', 'Por favor espera mientras se actualiza el documento');
-    form.post(route(`${props.routeName}update`, props.documento.id), {
+    form.post(route(`${props.routeName}update`, props.document.id), {
         _method: 'put',
         onSuccess: () => {
             cerrarAlerta();
@@ -157,7 +157,7 @@ const viewCurrentFile = () => {
             <!-- Form Card -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 p-8">
                 <!-- Mensaje de documento fundamental -->
-                <div v-if="documento.es_fundamental" class="mb-6 p-4 bg-amber-50 border-l-4 border-amber-400 rounded-r-lg">
+                <div v-if="document.is_fundamental" class="mb-6 p-4 bg-amber-50 border-l-4 border-amber-400 rounded-r-lg">
                     <div class="flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#F59E0B">
                             <path d="m233-120 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Z"/>
@@ -174,28 +174,28 @@ const viewCurrentFile = () => {
                                 Nombre del Documento: <span class="text-red-500">*</span>
                             </label>
                             <input 
-                                v-model="form.nombre" 
-                                @input="clearError('nombre')" 
+                                v-model="form.name" 
+                                @input="clearError('name')" 
                                 type="text" 
                                 class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" 
-                                :class="{ 'border-b-red-500': form.errors.nombre }" 
+                                :class="{ 'border-b-red-500': form.errors.name }" 
                                 placeholder="Ej. Cédula Profesional" 
                             />
-                            <p v-if="form.errors.nombre" class="mt-1 text-sm text-red-600">{{ form.errors.nombre }}</p>
+                            <p v-if="form.errors.name" class="mt-1 text-sm text-red-600">{{ form.errors.name }}</p>
                         </div>
 
                         <!-- Descripción -->
                         <div class="col-span-1 md:col-span-2">
                             <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Descripción:</label>
                             <textarea 
-                                v-model="form.descripcion" 
-                                @input="clearError('descripcion')" 
+                                v-model="form.description" 
+                                @input="clearError('description')" 
                                 rows="3" 
                                 class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" 
-                                :class="{ 'border-b-red-500': form.errors.descripcion }" 
+                                :class="{ 'border-b-red-500': form.errors.description }" 
                                 placeholder="Descripción del documento..."
                             ></textarea>
-                            <p v-if="form.errors.descripcion" class="mt-1 text-sm text-red-600">{{ form.errors.descripcion }}</p>
+                            <p v-if="form.errors.description" class="mt-1 text-sm text-red-600">{{ form.errors.description }}</p>
                         </div>
 
                         <!-- Archivo de Plantilla/Ejemplo -->

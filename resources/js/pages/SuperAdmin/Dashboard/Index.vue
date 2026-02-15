@@ -1,7 +1,7 @@
 <script setup>
 import { Head, router } from '@inertiajs/vue3';
 import SuperAdminLayout from '@/layouts/SuperAdminLayout.vue';
-import SolicitudesChart from '@/components/Dashboard/SolicitudesChart.vue';
+import ApplicationsChart from '@/components/Dashboard/ApplicationsChart.vue';
 import { ref, watch, computed } from 'vue';
 import { debounce } from 'lodash';
 import VueSelect from 'vue-select';
@@ -12,13 +12,13 @@ const props = defineProps({
     stats: Object,
     chart: Object,
     filters: Object,
-    instituciones: Array,
-    estados: Array,
+    institutions: Array,
+    states: Array,
 });
 
 const search = ref(props.filters.search || '');
-const institucionId = ref(props.filters.institucion_id || null);
-const estadoId = ref(props.filters.estado_id || null);
+const institutionId = ref(props.filters.institution_id || null);
+const stateId = ref(props.filters.state_id || null);
 
 // Chart Data Setup
 const chartData = computed(() => ({
@@ -88,19 +88,19 @@ const chartOptions = {
 const updateFilters = debounce(() => {
     router.get(route('superadmin.dashboard'), {
         search: search.value,
-        institucion_id: institucionId.value,
-        estado_id: estadoId.value,
+        institution_id: institutionId.value,
+        state_id: stateId.value,
     }, { preserveState: true, replace: true });
 }, 500);
 
 const cleanFilters = () => {
     search.value = '';
-    institucionId.value = null;
-    estadoId.value = null;
+    institutionId.value = null;
+    stateId.value = null;
     updateFilters();
 };
 
-watch([search, institucionId, estadoId], () => {
+watch([search, institutionId, stateId], () => {
     updateFilters();
 });
 
@@ -211,10 +211,10 @@ watch([search, institucionId, estadoId], () => {
                     <div class="w-full">
                         <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Filtrar por Campus</label>
                         <VueSelect
-                            v-model="institucionId"
-                            :options="instituciones"
+                            v-model="institutionId"
+                            :options="institutions"
                             :reduce="option => option.id"
-                            label="nombre"
+                            label="name"
                             :clearable="true"
                             placeholder="Todos los campus"
                             class="vue-select-custom"
@@ -225,10 +225,10 @@ watch([search, institucionId, estadoId], () => {
                     <div class="w-full">
                         <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Filtrar por Estado</label>
                          <VueSelect
-                            v-model="estadoId"
-                            :options="estados"
+                            v-model="stateId"
+                            :options="states"
                             :reduce="option => option.id"
-                            label="nombre"
+                            label="name"
                             :clearable="true"
                             placeholder="Todos los estados"
                             class="vue-select-custom"
@@ -245,7 +245,7 @@ watch([search, institucionId, estadoId], () => {
                 </div>
                 
                 <div class="w-full relative min-h-[256px] md:min-h-[400px]">
-                    <SolicitudesChart :chart-data="chartData" :chart-options="chartOptions" />
+                    <ApplicationsChart :chart-data="chartData" :chart-options="chartOptions" />
                 </div>
             </div>
         </div>

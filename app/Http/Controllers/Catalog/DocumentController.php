@@ -89,7 +89,7 @@ class DocumentController extends Controller
         // Datos para la pestaña de Documentos de Docentes
         if ($activeTab === 'docentes') {
             $applicationsQuery = Application::query()
-                ->with(['user.institucion.state', 'user.priorityArea', 'announcement' => function ($query) {
+                ->with(['user.institution.state', 'user.priorityArea', 'announcement' => function ($query) {
                     $query->withTrashed();
                 }])
                 ->withCount('documents')
@@ -98,7 +98,7 @@ class DocumentController extends Controller
                         $query->where('name', 'LIKE', "%{$filters->search}%")
                               ->orWhere('email', 'LIKE', "%{$filters->search}%");
                     })
-                    ->orWhereHas('user.institucion', function ($query) use ($filters) {
+                    ->orWhereHas('user.institution', function ($query) use ($filters) {
                         $query->where('name', 'LIKE', "%{$filters->search}%");
                     })
                     ->orWhereHas('announcement', function ($query) use ($filters) {
@@ -139,8 +139,8 @@ class DocumentController extends Controller
         }
 
         return Inertia::render("{$this->source}Index", [
-            'documentos'  => $documentsData,
-            'solicitudes' => $applicationsData, // Vue expects 'solicitudes'
+            'documents'  => $documentsData,
+            'applications' => $applicationsData,
             'title'       => 'Documentos',
             'routeName'   => $this->routeName,
             'filters'     => $filters,
@@ -202,7 +202,7 @@ class DocumentController extends Controller
     public function show($id): Response
     {
         $application = Application::with([
-            'user.institucion.state', // Updated relationship name
+            'user.institution.state', // Updated relationship name
             'user.priorityArea', 
             'user.subArea', 
             'announcement', // Updated relationship name
@@ -210,7 +210,7 @@ class DocumentController extends Controller
         ])->findOrFail($id);
 
         return Inertia::render("{$this->source}Show", [
-            'solicitud' => (new \App\Http\Resources\SolicitudResource($application))->resolve(), // Keep 'solicitud' prop
+            'application' => (new \App\Http\Resources\ApplicationResource($application))->resolve(),
             'title' => 'Detalles de Documentos del Profesor',
             'routeName' => $this->routeName
         ]);
@@ -221,13 +221,10 @@ class DocumentController extends Controller
      */
     public function edit(CatalogDocument $document): Response // Typehint updated
     {
-        // Inertia route binding might fail if it expects 'documento' based on route param name?
-        // Route is likely /documents/{document}.
-        // If we change route resource name in web.php to 'documents', then param is 'document'.
         return Inertia::render("{$this->source}Edit", [
             'title'      => 'Editar Documento',
             'routeName'  => $this->routeName,
-            'documento'  => new DocumentResource($document), // Keep 'documento' prop for Vue
+            'document'  => new DocumentResource($document),
         ]);
     }
 

@@ -16,8 +16,8 @@ class StoreModuloRequest extends FormRequest
     public function rules(): array
     {
         return[
-            'nombre'        => "required|max:255|unique:modules",
-            'descripcion' => 'required|max:255',
+            'name'        => "required|max:255|unique:modules",
+            'description' => 'required|max:255',
             'key'         => "required|string|max:255|min:1|unique:modules,key",
         ];
     }
@@ -25,8 +25,8 @@ class StoreModuloRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'nombre' => 'Nombre del Modulo',
-            'descripcion' => 'Descripcion',
+            'name' => 'Nombre del Modulo',
+            'description' => 'Descripcion',
             'key' => 'Clave'
         ];
     }

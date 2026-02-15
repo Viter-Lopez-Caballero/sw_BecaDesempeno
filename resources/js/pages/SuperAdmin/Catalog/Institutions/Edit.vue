@@ -19,7 +19,7 @@ const props = defineProps({
         type: Object,
         required: true,
     },
-    estados: {
+    states: {
         type: Array,
         required: true,
     },
@@ -123,7 +123,7 @@ const submit = () => {
                             <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Estado: <span class="text-red-500">*</span></label>
                             <VueSelect
                                 v-model="form.state_id"
-                                :options="estados"
+                                :options="states"
                                 :reduce="estado => estado.id"
                                 label="name"
                                 placeholder="Selecciona un estado"

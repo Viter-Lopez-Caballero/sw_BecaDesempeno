@@ -11,7 +11,7 @@ import { mdiSecurity, mdiLockCheckOutline } from '@mdi/js';
 import { alertaPregunta, alertaExito } from '@/utils/alerts.js';
 
 const props = defineProps({
-    permisos: {
+    permissions: {
         type: Object,
         required: true,
     },
@@ -210,8 +210,8 @@ const deletePermission = async (id) => {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                            <tr v-for="(permission, index) in permisos.data" :key="permission.id" class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 font-medium text-gray-900">{{ (permisos.meta.current_page - 1) * permisos.meta.per_page + index + 1 }}</td>
+                            <tr v-for="(permission, index) in permissions.data" :key="permission.id" class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 font-medium text-gray-900">{{ (permissions.meta.current_page - 1) * permissions.meta.per_page + index + 1 }}</td>
                                 <td class="px-6 py-4 font-semibold text-gray-800">{{ permission.name }}</td>
                                 <td class="px-6 py-4 text-gray-600">{{ permission.description }}</td>
                                 <td class="px-6 py-4 text-gray-600">{{ permission.module_key }}</td>
@@ -230,7 +230,7 @@ const deletePermission = async (id) => {
                                     </div>
                                 </td>
                             </tr>
-                            <tr v-if="permisos.data.length === 0">
+                            <tr v-if="permissions.data.length === 0">
                                 <td colspan="5" class="px-6 py-12 text-center text-gray-500">
                                     No se encontraron registros
                                 </td>
@@ -241,7 +241,7 @@ const deletePermission = async (id) => {
                 
                  <!-- Pagination -->
                 <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                     <Pagination :links="permisos.meta.links" :total="permisos.meta.total" :from="permisos.meta.from" :to="permisos.meta.to" />
+                     <Pagination :links="permissions.meta.links" :total="permissions.meta.total" :from="permissions.meta.from" :to="permissions.meta.to" />
                 </div>
             </div>
         </div>

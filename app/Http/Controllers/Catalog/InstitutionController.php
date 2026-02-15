@@ -70,7 +70,7 @@ class InstitutionController extends Controller
         return Inertia::render("{$this->source}Create", [
             'title'     => 'Agregar Institución',
             'routeName' => $this->routeName,
-            'estados'   => State::ordenado('name', 'asc')->get(['id', 'name']), // Use State model
+            'states'   => State::ordenado('name', 'asc')->get(['id', 'name']),
         ]);
     }
 
@@ -100,7 +100,7 @@ class InstitutionController extends Controller
             'title'       => 'Editar Institución',
             'routeName'   => $this->routeName,
             'institution' => new InstitutionResource($institution->load('state')),
-            'estados'     => State::ordenado('name', 'asc')->get(['id', 'name']),
+            'states'     => State::ordenado('name', 'asc')->get(['id', 'name']),
         ]);
     }
 

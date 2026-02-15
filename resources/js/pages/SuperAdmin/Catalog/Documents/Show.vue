@@ -4,7 +4,7 @@ import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
 import { mdiFileDocumentOutline, mdiBookOpenPageVariant, mdiAccountSchool } from '@mdi/js';
 
 const props = defineProps({
-    solicitud: {
+    application: {
         type: Object,
         required: true,
     },
@@ -18,9 +18,9 @@ const props = defineProps({
     },
 });
 
-const viewFile = (documento) => {
-    if (documento.file_path) {
-        window.open(`/storage/${documento.file_path}`, '_blank');
+const viewFile = (document) => {
+    if (document.file_path) {
+        window.open(`/storage/${document.file_path}`, '_blank');
     }
 };
 
@@ -74,32 +74,32 @@ const downloadFile = (id) => {
                     </svg>
                     Información del Profesor
                 </h2>
-                <div class="text-sm text-gray-500 mb-4">Solicitud #{{ solicitud.id }}</div>
+                <div class="text-sm text-gray-500 mb-4">Solicitud #{{ application.id }}</div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-500 mb-1">Profesor</label>
-                        <p class="text-base font-semibold text-gray-900">{{ solicitud.profesor?.name || 'N/A' }}</p>
+                        <p class="text-base font-semibold text-gray-900">{{ application.profesor?.name || 'N/A' }}</p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-500 mb-1">Correo Electrónico</label>
-                        <p class="text-base text-gray-700">{{ solicitud.profesor?.email || 'N/A' }}</p>
+                        <p class="text-base text-gray-700">{{ application.profesor?.email || 'N/A' }}</p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-500 mb-1">Departamento</label>
-                        <p class="text-base text-gray-700">{{ solicitud.profesor?.departamento || 'N/A' }}</p>
+                        <p class="text-base text-gray-700">{{ application.profesor?.departamento || 'N/A' }}</p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-500 mb-1">Campus</label>
-                        <p class="text-base text-gray-700">{{ solicitud.campus }}</p>
+                        <p class="text-base text-gray-700">{{ application.campus }}</p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-500 mb-1">Estado</label>
-                        <p class="text-base text-gray-700">{{ solicitud.profesor?.estado || 'N/A' }}</p>
+                        <p class="text-base text-gray-700">{{ application.profesor?.estado || 'N/A' }}</p>
                     </div>
-                    <div v-if="solicitud.convocatoria" class="md:col-span-2">
+                    <div v-if="application.announcement" class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-500 mb-1">Convocatoria</label>
-                        <p class="text-base text-gray-700">{{ solicitud.convocatoria.nombre }}</p>
+                        <p class="text-base text-gray-700">{{ application.announcement.name }}</p>
                     </div>
                 </div>
             </div>
@@ -113,8 +113,8 @@ const downloadFile = (id) => {
                     Documentación
                 </h2>
 
-                <div v-if="solicitud.documentos && solicitud.documentos.length > 0" class="space-y-3">
-                    <div v-for="documento in solicitud.documentos" :key="documento.id" class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition">
+                <div v-if="application.documents && application.documents.length > 0" class="space-y-3">
+                    <div v-for="document in application.documents" :key="document.id" class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition">
                         <div class="flex items-center gap-3">
                             <div class="flex-shrink-0 w-10 h-10 bg-[#1B396A] rounded-lg flex items-center justify-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="white">
@@ -122,17 +122,17 @@ const downloadFile = (id) => {
                                 </svg>
                             </div>
                             <div>
-                                <p class="font-medium text-gray-900">{{ documento.name }}</p>
-                                <p class="text-xs text-gray-500">{{ documento.file_type }}</p>
+                                <p class="font-medium text-gray-900">{{ document.name }}</p>
+                                <p class="text-xs text-gray-500">{{ document.file_type }}</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
-                            <button @click="viewFile(documento)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition cursor-pointer" title="Ver">
+                            <button @click="viewFile(document)" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition cursor-pointer" title="Ver">
                                 <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                                     <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z"/>
                                 </svg>
                             </button>
-                            <button @click="downloadFile(documento.id)" class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition cursor-pointer" title="Descargar">
+                            <button @click="downloadFile(document.id)" class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition cursor-pointer" title="Descargar">
                                 <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                                     <path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
                                 </svg>

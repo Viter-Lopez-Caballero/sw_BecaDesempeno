@@ -11,16 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('reconocimientos', function (Blueprint $table) {
+        Schema::create('applications', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Evaluador
             $table->foreignId('announcement_id')->constrained('announcements')->onDelete('cascade');
-            $table->boolean('activo')->default(false); // Switch estado
-            $table->timestamp('enviado_at')->nullable(); // Cuándo se envió/activó
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->enum('status', ['pending', 'in_review', 'approved', 'rejected'])->default('pending');
+            $table->text('admin_comment')->nullable();
+            $table->softDeletes();
             $table->timestamps();
-            
-            // Un evaluador solo puede tener un reconocimiento por convocatoria
-            $table->unique(['user_id', 'announcement_id']);
         });
     }
 
@@ -29,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('reconocimientos');
+        Schema::dropIfExists('applications');
     }
 };

@@ -10,7 +10,7 @@ import { alertaExito, alertaError, alertaCargando, cerrarAlerta } from '@/utils/
 const contactForm = ref({
     name: '',
     email: '',
-    institucion_id: '',
+    institution_id: '',
     message: ''
 });
 
@@ -46,8 +46,8 @@ const submitContact = async () => {
         errors.value.email = 'El correo electrónico es obligatorio';
         return;
     }
-    if (!contactForm.value.institucion_id) {
-        errors.value.institucion_id = 'Debes seleccionar una institución';
+    if (!contactForm.value.institution_id) {
+        errors.value.institution_id = 'Debes seleccionar una institución';
         return;
     }
     if (!contactForm.value.message) {
@@ -72,7 +72,7 @@ const submitContact = async () => {
         contactForm.value = {
             name: '',
             email: '',
-            institucion_id: '',
+            institution_id: '',
             message: ''
         };
     } catch (error) {
@@ -170,19 +170,19 @@ const submitContact = async () => {
 
                         <!-- Institución -->
                         <div>
-                            <label for="institucion_id" class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">
+                            <label for="institution_id" class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">
                                 Nombre de la Institución de Procedencia: <span class="text-red-500">*</span>
                             </label>
                             <VueSelect
-                                v-model="contactForm.institucion_id"
+                                v-model="contactForm.institution_id"
                                 :options="instituciones"
                                 :reduce="option => option.id"
                                 label="name"
                                 placeholder="Buscar o seleccionar una institución..."
                                 :searchable="true"
                                 :clearable="true"
-                                @input="clearError('institucion_id')"
-                                :class="['vue-select-custom', { 'vue-select-error': errors.institucion_id }]"
+                                @input="clearError('institution_id')"
+                                :class="['vue-select-custom', { 'vue-select-error': errors.institution_id }]"
                             >
                                 <template #no-options="{ search, searching }">
                                     <template v-if="searching">
@@ -191,14 +191,14 @@ const submitContact = async () => {
                                     <em v-else>Comienza a escribir para buscar...</em>
                                 </template>
                             </VueSelect>
-                            <div v-if="!errors.institucion_id" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <div v-if="!errors.institution_id" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 <span>Por favor, selecciona tu institución</span>
                             </div>
-                            <div v-if="errors.institucion_id" class="mt-1 text-sm text-red-600">
-                                {{ errors.institucion_id }}
+                            <div v-if="errors.institution_id" class="mt-1 text-sm text-red-600">
+                                {{ errors.institution_id }}
                             </div>
                         </div>
 

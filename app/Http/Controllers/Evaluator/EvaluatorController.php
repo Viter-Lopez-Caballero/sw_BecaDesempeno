@@ -17,12 +17,12 @@ class EvaluatorController extends Controller
         $search = $request->input('search');
 
         // Statistics
-        $totalAsignadas = \App\Models\Evaluation::where('user_id', $user->id)->count();
-        $pendientes = \App\Models\Evaluation::where('user_id', $user->id)->where('status', 'pending')->count();
+        $totalAsignadas = \App\Models\Evaluation::where('evaluator_id', $user->id)->count();
+        $pendientes = \App\Models\Evaluation::where('evaluator_id', $user->id)->where('status', 'pending')->count();
         $evaluadas = $totalAsignadas - $pendientes;
 
         // Pending Applications
-        $applications = \App\Models\Evaluation::where('user_id', $user->id)
+        $applications = \App\Models\Evaluation::where('evaluator_id', $user->id)
             ->where('status', 'pending')
             ->with([
                 'application.announcement',
@@ -73,7 +73,7 @@ class EvaluatorController extends Controller
     public function show($id)
     {
         $evaluation = \App\Models\Evaluation::where('id', $id)
-            ->where('user_id', Auth::id())
+            ->where('evaluator_id', Auth::id())
             ->where('status', 'pending')
             ->with([
                 'application.announcement',
@@ -91,7 +91,7 @@ class EvaluatorController extends Controller
 
         // Ensure all relationships are loaded
         $application = $evaluation->application;
-        $application->load(['announcement', 'documents', 'user.institucion', 'user.priorityArea', 'user.subArea']);
+        $application->load(['announcement', 'documents', 'user.institution', 'user.priorityArea', 'user.subArea']);
 
         return Inertia::render('Evaluator/Evaluation/Show', [
             'evaluation' => $evaluation,
@@ -111,7 +111,7 @@ class EvaluatorController extends Controller
         ]);
 
         $evaluation = \App\Models\Evaluation::where('id', $id)
-            ->where('user_id', Auth::id())
+            ->where('evaluator_id', Auth::id())
             ->firstOrFail();
 
         $evaluation->update([
@@ -129,7 +129,7 @@ class EvaluatorController extends Controller
         $document = \App\Models\Document::findOrFail($id);
         
         // Authorization: Check if the evaluator is assigned to the application this document belongs to
-        $hasAccess = \App\Models\Evaluation::where('user_id', Auth::id())
+        $hasAccess = \App\Models\Evaluation::where('evaluator_id', Auth::id())
             ->where('application_id', $document->application_id)
             ->exists();
             
@@ -155,15 +155,15 @@ class EvaluatorController extends Controller
         $search = $request->input('search');
 
         // Statistics
-        $totalAsignadas = \App\Models\Evaluation::where('user_id', $user->id)->count();
-        $pendientes = \App\Models\Evaluation::where('user_id', $user->id)->where('status', 'pending')->count();
+        $totalAsignadas = \App\Models\Evaluation::where('evaluator_id', $user->id)->count();
+        $pendientes = \App\Models\Evaluation::where('evaluator_id', $user->id)->where('status', 'pending')->count();
         $evaluadas = $totalAsignadas - $pendientes;
         
-        $aprobadas = \App\Models\Evaluation::where('user_id', $user->id)->where('status', 'approved')->count();
-        $rechazadas = \App\Models\Evaluation::where('user_id', $user->id)->where('status', 'rejected')->count();
+        $aprobadas = \App\Models\Evaluation::where('evaluator_id', $user->id)->where('status', 'approved')->count();
+        $rechazadas = \App\Models\Evaluation::where('evaluator_id', $user->id)->where('status', 'rejected')->count();
 
         // Completed Applications (History)
-        $applications = \App\Models\Evaluation::where('user_id', $user->id)
+        $applications = \App\Models\Evaluation::where('evaluator_id', $user->id)
             ->where('status', '!=', 'pending')
             ->with([
                 'application.announcement',
@@ -218,12 +218,12 @@ class EvaluatorController extends Controller
     public function showHistory($id)
     {
         $evaluation = \App\Models\Evaluation::where('id', $id)
-            ->where('user_id', Auth::id())
+            ->where('evaluator_id', Auth::id())
             ->with([
                 'application.announcement',
                 'application.user.subArea',
                 'application.user.priorityArea',
-                'application.user.institucion',
+                'application.user.institution',
                 'application.documents'
             ])
             ->firstOrFail();
@@ -233,7 +233,7 @@ class EvaluatorController extends Controller
             ->first();
 
         $application = $evaluation->application;
-        $application->load(['announcement', 'documents', 'user.institucion', 'user.priorityArea', 'user.subArea']);
+        $application->load(['announcement', 'documents', 'user.institution', 'user.priorityArea', 'user.subArea']);
 
         return Inertia::render('Evaluator/Evaluations/Show', [
             'evaluation' => $evaluation,

@@ -11,7 +11,7 @@ import { mdiSecurity } from '@mdi/js';
 import { alertaPregunta, alertaExito, alertaError, alertaCargando, cerrarAlerta } from '@/utils/alerts.js';
 
 const props = defineProps({
-    usuarios: {
+    users: {
         type: Object,
         required: true,
     },
@@ -364,8 +364,8 @@ const downloadTemplate = () => {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                            <tr v-for="(user, index) in usuarios.data" :key="user.id" class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 font-medium text-gray-900">{{ (usuarios.meta.current_page - 1) * usuarios.meta.per_page + index + 1 }}</td>
+                            <tr v-for="(user, index) in users.data" :key="user.id" class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 font-medium text-gray-900">{{ (users.meta.current_page - 1) * users.meta.per_page + index + 1 }}</td>
                                 <td class="px-6 py-4 font-semibold text-gray-800">{{ user.name }}</td>
                                 <td class="px-6 py-4 text-gray-600">{{ user.email }}</td>
                                 <td class="px-6 py-4 text-gray-600 capitalize">{{ user.role }}</td>
@@ -384,7 +384,7 @@ const downloadTemplate = () => {
                                     </div>
                                 </td>
                             </tr>
-                            <tr v-if="usuarios.data.length === 0">
+                            <tr v-if="users.data.length === 0">
                                 <td colspan="5" class="px-6 py-12 text-center text-gray-500">
                                     No se encontraron registros
                                 </td>
@@ -395,7 +395,7 @@ const downloadTemplate = () => {
                 
                  <!-- Pagination -->
                 <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                     <Pagination :links="usuarios.meta.links" :total="usuarios.meta.total" :from="usuarios.meta.from" :to="usuarios.meta.to" />
+                     <Pagination :links="users.meta.links" :total="users.meta.total" :from="users.meta.from" :to="users.meta.to" />
                 </div>
             </div>
         </div>

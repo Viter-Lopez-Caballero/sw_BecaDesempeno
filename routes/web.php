@@ -4,10 +4,13 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
+/** @var \Illuminate\Contracts\Auth\Guard|\Illuminate\Contracts\Auth\StatefulGuard $auth */
 Route::get('/', function () {
     // If user is authenticated, redirect to their dashboard
     if (auth()->check()) {
-        $role = auth()->user()->getPrimaryRole();
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $role = $user->getPrimaryRole();
         
         return match ($role) {
             'Super Admin' => redirect()->route('superadmin.dashboard'),
@@ -95,22 +98,22 @@ Route::get('/contact', function () { // /contacto -> /contact
 })->name('contact');
 
 // API to get institutions (contact)
-Route::get('/api/institutions', [App\Http\Controllers\ContactController::class, 'getInstitutions'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+Route::get('/api/institutions', [App\Http\Controllers\ContactController::class, 'getInstitutions']);
 
 // API to send contact form
-Route::post('/api/contact', [App\Http\Controllers\ContactController::class, 'sendContact'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+Route::post('/api/contact', [App\Http\Controllers\ContactController::class, 'sendContact']);
 
 
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\CurpController;
 
-// API to search CURP (used by Register.vue) - No CSRF
-Route::post('/api/search-curp', [CurpController::class, 'search'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+// API to search CURP (used by Register.vue)
+Route::post('/api/search-curp', [CurpController::class, 'search']);
 
-// API to get sub-areas - No CSRF
+// API to get sub-areas
 Route::get('/api/sub-areas/{priority_area_id}', function ($priority_area_id) {
     return \App\Models\SubArea::where('priority_area_id', $priority_area_id)->get(['id', 'name']);
-})->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+});
 
 // Custom Register Routes (override Fortify)
 Route::get('/register', [RegisterController::class, 'create'])->name('register');
@@ -121,7 +124,9 @@ Route::post('/register', [RegisterController::class, 'store'])->name('register.s
 Route::get('/email/verify', function () {
     // If user is authenticated and verified, redirect to dashboard
     if (auth()->check() && auth()->user()->hasVerifiedEmail()) {
-        $role = auth()->user()->getPrimaryRole();
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $role = $user->getPrimaryRole();
         
         return match ($role) {
             'Super Admin' => redirect()->route('superadmin.dashboard'),
@@ -132,7 +137,7 @@ Route::get('/email/verify', function () {
         };
     }
     
-    return \Inertia\Inertia::render('Auth/VerifyEmail', [
+    return \Inertia\Inertia::render('auth/VerifyEmail', [
         'email' => session('email'),
         'status' => session('status'),
     ]);
@@ -155,14 +160,15 @@ use App\Http\Controllers\Catalog\InstitutionController;
 use App\Http\Controllers\Catalog\PriorityAreaController;
 use App\Http\Controllers\Catalog\SubAreaController;
 use App\Http\Controllers\Catalog\RubricController;
-use App\Http\Controllers\Catalog\CalendarController;
 use App\Http\Controllers\Catalog\AnnouncementController; // ConvocatoriaController renamed
 use App\Http\Controllers\Catalog\DocumentController; // DocumentoController renamed
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Generic Dashboard Route (redirects by role)
     Route::get('dashboard', function () {
-        $role = auth()->user()->getPrimaryRole();
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $role = $user->getPrimaryRole();
         
         return match ($role) {
             'Super Admin' => redirect()->route('superadmin.dashboard'),
@@ -230,7 +236,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Documents Module Routes
         Route::get('documents', [AdminDocumentController::class, 'index'])->name('documents.index')->middleware('can:documents.index');
         Route::get('documents/{id}', [AdminDocumentController::class, 'show'])->name('documents.show')->middleware('can:documents.show');
-        Route::get('documents/download/{documento}', [AdminDocumentController::class, 'download'])->name('documents.download')->middleware('can:documents.download');
+        Route::get('documents/download/{document}', [AdminDocumentController::class, 'download'])->name('documents.download')->middleware('can:documents.download');
 
         Route::resource('permissions', PermissionController::class);
         Route::resource('roles', RoleController::class);
@@ -273,32 +279,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'destroy' => 'announcements.destroy',
     ]);
 
-    // Recognitions (Generic View)
-    Route::get('recognition', function () {
-        return Inertia::render('Reconocimiento/Index'); // View
-    })->name('recognition.index')->middleware('can:reconocimiento.index');
-
-    // Evaluations (Generic View)
-    Route::get('evaluations', function () {
-        return Inertia::render('Evaluaciones/Index'); // View
-    })->name('evaluations.index')->middleware('can:evaluaciones.index');
-
-    // Catalog
-    Route::prefix('catalog')->name('catalog.')->group(function() { // catalogo -> catalog
-        Route::get('campus', function () {
-            return Inertia::render('Catalogo/Campus');
-        })->name('campus')->middleware('can:catalogo.index');
-
-        Route::get('priority-areas-view', function () {
-            return Inertia::render('Catalogo/AreasPrioritarias');
-        })->name('areas')->middleware('can:catalog.index');
+    // Note: Generic recognition and evaluation views are handled within their respective role dashboards
+    // Admin -> Admin/Recognitions/Index
+    // Evaluator -> Evaluator/Evaluations/Index
+    
+    // Catalog routes are handled by controllers in SuperAdmin/Catalog/*
+    Route::prefix('catalog')->name('catalog.')->group(function() {
 
     // CATALOG MODULE
     // Route::prefix('catalog')->name('catalog.')->group(function () { // Removed nested group
         Route::get('documents/{id}/download', [DocumentController::class, 'download'])->name('documents.download');
         Route::post('documents/{id}/toggle-active', [DocumentController::class, 'toggleActive'])->name('documents.toggleActive');
-        Route::get('documents/{documento}/download-docente', [DocumentController::class, 'downloadDocente'])->name('documents.downloadDocente');
-        Route::get('documents/{documento}/stream-docente', [DocumentController::class, 'streamDocente'])->name('documents.streamDocente');
+        Route::get('documents/{document}/download-docente', [DocumentController::class, 'downloadDocente'])->name('documents.downloadDocente');
+        Route::get('documents/{document}/stream-docente', [DocumentController::class, 'streamDocente'])->name('documents.streamDocente');
         Route::resource('documents', DocumentController::class);
 
         Route::get('institutions/export', [InstitutionController::class, 'export'])->name('institutions.export');
@@ -321,8 +314,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Modules accessible by permission (Admin/SuperAdmin)
     Route::middleware(['can:documents.index'])->prefix('admin')->name('admin.')->group(function () {
         Route::resource('documents', \App\Http\Controllers\Admin\DocumentController::class)->only(['index', 'show']);
-        Route::get('documents/{documento}/download', [\App\Http\Controllers\Admin\DocumentController::class, 'download'])->name('documents.download');
-        Route::get('documents/{documento}/stream', [\App\Http\Controllers\Admin\DocumentController::class, 'stream'])->name('documents.stream');
+        Route::get('documents/{document}/download', [\App\Http\Controllers\Admin\DocumentController::class, 'download'])->name('documents.download');
+        Route::get('documents/{document}/stream', [\App\Http\Controllers\Admin\DocumentController::class, 'stream'])->name('documents.stream');
     });
 });
 

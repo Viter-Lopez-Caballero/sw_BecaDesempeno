@@ -59,7 +59,7 @@ class PermissionController extends SecurityController
             ->withQueryString();
 
         return Inertia::render("{$this->source}Index", [
-            'permisos'      => PermissionResource::collection($permissions),
+            'permissions'      => PermissionResource::collection($permissions),
             'title'         => 'Gestión de Permisos',
             'routeName'     => $this->routeName,
             'filters'       => $filters

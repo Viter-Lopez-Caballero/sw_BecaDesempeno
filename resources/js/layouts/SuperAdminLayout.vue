@@ -42,7 +42,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, provide } from 'vue';
 import { menuConfigs } from '@/config/menu/menuConfig';
-import AppSidebar from '@/Components/Sidebar/AppSidebar.vue';
+import AppSidebar from '@/components/Sidebar/AppSidebar.vue';
 
 const sidebarOpen = ref(false);
 const sidebarCollapsed = ref(false);

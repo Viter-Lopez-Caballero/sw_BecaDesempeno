@@ -35,7 +35,7 @@ class TeacherController extends Controller
     public function show($id)
     {
         $application = \App\Models\Application::where('user_id', auth()->id())
-            ->with(['announcement', 'documents', 'user.institucion.state', 'user.priorityArea', 'user.subArea'])
+            ->with(['announcement', 'documents', 'user.institution.state', 'user.priorityArea', 'user.subArea'])
             ->findOrFail($id);
 
         return Inertia::render('Teacher/Applications/Show', [
@@ -106,8 +106,8 @@ class TeacherController extends Controller
 
         // Get documents for this announcement (from catalog)
         $documents = $announcement->catalogDocuments()
-            ->activos()
-            ->ordenado()
+            ->active()
+            ->ordered()
             ->get();
 
         return Inertia::render('Teacher/Announcements/Apply', [

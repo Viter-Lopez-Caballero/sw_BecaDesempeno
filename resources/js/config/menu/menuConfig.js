@@ -117,13 +117,9 @@ export const menuConfigs = {
         },
         {
             label: "Solicitudes",
-            route: "admin.applications.index", // solicitudes.index -> applications.index (checked web.php line 256)
+            route: "admin.applications.index",
             icon: mdiFileDocumentMultiple,
-            permission: "solicitudes.index", // Keep permission as is unless confirmed changed. Usually permissions track routes, but let's assume permissions might still be 'solicitudes.index' or updated. Plan said 'Rename backend resources', didn't explicitly say all permissions. But usually permission names are updated too. I'll stick to 'solicitudes.index' for permission to be safe unless I see PermissionSeeder. 
-            // Wait, web.php line 249: middleware('can:requests.index'). 
-            // Line 256 doesn't show middleware but it's admin group. 
-            // I'll leave permission as 'solicitudes.index' or update to 'applications.index' if I suspect it changed. 
-            // Better to match the pattern.
+            permission: "applications.index",
         },
         {
             label: "Seguridad",
@@ -139,9 +135,9 @@ export const menuConfigs = {
         },
         {
             label: "Reconocimiento",
-            route: "admin.recognitions.index", // reconocimientos.index -> recognitions.index (checked web.php line 192)
+            route: "admin.recognitions.index",
             icon: mdiStar,
-            permission: "reconocimiento.index",
+            permission: "recognitions.index",
         }
     ],
     teacher: [
@@ -177,13 +173,13 @@ export const menuConfigs = {
             label: "Evaluaciones",
             route: "evaluator.evaluations.index",
             icon: mdiSchool,
-            permission: "evaluator.evaluaciones.index",
+            permission: "evaluator.evaluations.index",
         },
         {
             label: "Reconocimientos",
             route: "evaluator.recognitions.index",
             icon: mdiStar,
-            permission: "evaluator.reconocimientos.index",
+            permission: "evaluator.recognitions.index",
         },
         {
             label: "Seguridad",

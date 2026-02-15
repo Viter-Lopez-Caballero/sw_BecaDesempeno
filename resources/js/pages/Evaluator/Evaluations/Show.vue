@@ -13,22 +13,22 @@ import {
 } from '@mdi/js';
 
 const props = defineProps({
-    evaluacion: Object,
-    solicitud: Object,
+    evaluation: Object,
+    application: Object,
     rubric: Object,
-    docente: Object,
+    teacher: Object,
 });
 
 const selectedDocument = ref(null);
 
 const documentUrl = computed(() => {
     if (!selectedDocument.value) return null;
-    return route('evaluador.documentos.stream', selectedDocument.value.id);
+    return route('evaluator.documents.stream', selectedDocument.value.id);
 });
 
 // Normalize documents list
 const documentsList = computed(() => {
-    const docs = props.solicitud.documentos;
+    const docs = props.application.documents;
     if (!docs) return [];
     return Array.isArray(docs) ? docs : (docs.data || []);
 });
@@ -38,7 +38,7 @@ const selectDocument = (doc) => {
 };
 
 // Respuestas guardadas en la evaluación
-const respuestas = computed(() => props.evaluacion.respuestas || {});
+const respuestas = computed(() => props.evaluation.answers || {});
 
 // Verificar si una opción fue la seleccionada
 // Obtener la opción seleccionada para una pregunta
@@ -66,14 +66,14 @@ const getSelectedOption = (question) => {
                             Inicio
                         </Link>
                         <span>/</span>
-                        <Link :href="route('evaluador.evaluaciones.index')" class="hover:text-blue-600">
+                        <Link :href="route('evaluator.evaluations.index')" class="hover:text-blue-600">
                             Historial
                         </Link>
                         <span>/</span>
                         <span class="font-semibold text-gray-800">Detalles</span>
                     </div>
                 </div>
-                <Link :href="route('evaluador.evaluaciones.index')" class="w-full md:w-auto justify-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition flex items-center gap-2">
+                <Link :href="route('evaluator.evaluations.index')" class="w-full md:w-auto justify-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition flex items-center gap-2">
                     <svg viewBox="0 0 24 24" class="w-5 h-5" style="fill: currentColor"><path :d="mdiArrowLeft"/></svg>
                     Volver
                 </Link>
@@ -83,43 +83,43 @@ const getSelectedOption = (question) => {
             <div 
                 class="rounded-lg p-4 flex items-center gap-4 shadow-sm border"
                 :class="{
-                    'bg-green-50 border-green-200': evaluacion.status === 'approved',
-                    'bg-red-50 border-red-200': evaluacion.status === 'rejected'
+                    'bg-green-50 border-green-200': evaluation.status === 'approved',
+                    'bg-red-50 border-red-200': evaluation.status === 'rejected'
                 }"
             >
                 <div 
                     class="p-2 rounded-full"
                     :class="{
-                        'bg-green-100 text-green-600': evaluacion.status === 'approved',
-                        'bg-red-100 text-red-600': evaluacion.status === 'rejected'
+                        'bg-green-100 text-green-600': evaluation.status === 'approved',
+                        'bg-red-100 text-red-600': evaluation.status === 'rejected'
                     }"
                 >
-                    <svg v-if="evaluacion.status === 'approved'" viewBox="0 0 24 24" class="w-8 h-8" style="fill: currentColor"><path :d="mdiCheckCircle"/></svg>
+                    <svg v-if="evaluation.status === 'approved'" viewBox="0 0 24 24" class="w-8 h-8" style="fill: currentColor"><path :d="mdiCheckCircle"/></svg>
                     <svg v-else viewBox="0 0 24 24" class="w-8 h-8" style="fill: currentColor"><path :d="mdiCloseCircle"/></svg>
                 </div>
                 <div>
                     <h3 
                         class="text-lg font-bold"
                         :class="{
-                            'text-green-800': evaluacion.status === 'approved',
-                            'text-red-800': evaluacion.status === 'rejected'
+                            'text-green-800': evaluation.status === 'approved',
+                            'text-red-800': evaluation.status === 'rejected'
                         }"
                     >
-                        Solicitud {{ evaluacion.status === 'approved' ? 'Aprobada' : 'Rechazada' }}
+                        Solicitud {{ evaluation.status === 'approved' ? 'Aprobada' : 'Rechazada' }}
                     </h3>
                     <p class="text-sm text-gray-600">
-                        Evaluada el {{ evaluacion.updated_at ? new Date(evaluacion.updated_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Fecha no disponible' }}
+                        Evaluada el {{ evaluation.updated_at ? new Date(evaluation.updated_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Fecha no disponible' }}
                     </p>
                 </div>
             </div>
 
             <!-- Comentario de Rechazo (si existe) -->
-            <div v-if="evaluacion.status === 'rejected' && evaluacion.comentario" class="bg-red-50 rounded-lg shadow-md border border-red-200 p-6">
+            <div v-if="evaluation.status === 'rejected' && evaluation.comment" class="bg-red-50 rounded-lg shadow-md border border-red-200 p-6">
                 <div class="flex items-start gap-3">
                     <svg viewBox="0 0 24 24" class="w-6 h-6 text-red-600 mt-1" style="fill: currentColor"><path :d="mdiMessageText"/></svg>
                     <div>
                         <h3 class="font-bold text-red-800 mb-2">Motivo del Rechazo</h3>
-                        <p class="text-red-700 italic">"{{ evaluacion.comentario }}"</p>
+                        <p class="text-red-700 italic">"{{ evaluation.comment }}"</p>
                     </div>
                 </div>
             </div>
@@ -134,31 +134,31 @@ const getSelectedOption = (question) => {
                         <!-- Docente -->
                         <div>
                             <p class="text-gray-500 text-xs uppercase tracking-wider">Docente</p>
-                            <p class="font-medium text-gray-900 text-base leading-tight">{{ docente.name }}</p>
+                            <p class="font-medium text-gray-900 text-base leading-tight">{{ teacher.name }}</p>
                         </div>
                         
                         <!-- Convocatoria -->
                         <div>
                             <p class="text-gray-500 text-xs uppercase tracking-wider">Convocatoria</p>
-                            <p class="font-medium text-gray-900">{{ solicitud.convocatoria?.nombre }}</p>
+                            <p class="font-medium text-gray-900">{{ application.announcement?.name }}</p>
                         </div>
 
                         <!-- Campus -->
                         <div>
                             <p class="text-gray-500 text-xs uppercase tracking-wider">Campus</p>
-                            <p class="font-medium text-gray-900">{{ docente.institucion?.name || 'No registrada' }}</p>
+                            <p class="font-medium text-gray-900">{{ teacher.institution?.name || 'No registrada' }}</p>
                         </div>
 
                         <!-- Área -->
                         <div>
                             <p class="text-gray-500 text-xs uppercase tracking-wider">Área</p>
-                            <p class="font-medium text-gray-900">{{ docente.priority_area?.name || 'N/A' }}</p>
+                            <p class="font-medium text-gray-900">{{ teacher.priority_area?.name || 'N/A' }}</p>
                         </div>
 
                         <!-- Sub Área -->
                         <div>
                             <p class="text-gray-500 text-xs uppercase tracking-wider">Sub Área</p>
-                            <p class="font-medium text-gray-900">{{ docente.sub_area?.name || 'N/A' }}</p>
+                            <p class="font-medium text-gray-900">{{ teacher.sub_area?.name || 'N/A' }}</p>
                         </div>
                     </div>
                 </div>
@@ -251,7 +251,7 @@ const getSelectedOption = (question) => {
                         </div>
                         <div class="text-right">
                             <p class="text-xs opacity-80 uppercase tracking-widest">Puntuación Final</p>
-                            <p class="text-3xl font-bold">{{ Math.round(evaluacion.score) }} <span class="text-lg font-normal">pts</span></p>
+                            <p class="text-3xl font-bold">{{ Math.round(evaluation.score) }} <span class="text-lg font-normal">pts</span></p>
                         </div>
                     </div>
                     

@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\Convocatoria;
-use App\Models\Documento;
-use App\Models\Solicitud;
+use App\Models\Announcement;
+use App\Models\Document;
+use App\Models\Application;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -15,8 +15,8 @@ class DocumentSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Create Active Convocatoria
-        $convocatoria = Convocatoria::create([
+        // 1. Create Active Announcement
+        $announcement = Announcement::create([
             'name' => 'Convocatoria Estímulos 2026',
             'start_date' => now()->startOfYear(),
             'end_date' => now()->endOfYear(),
@@ -30,16 +30,16 @@ class DocumentSeeder extends Seeder
             return; // Or create dummy users if preferred, but existing setup implies users exist
         }
 
-        // 3. Create Solicitudes and Documents for each user
+        // 3. Create Applications and Documents for each user
         foreach ($users as $user) {
-            // Check if solicitud already exists
-            if (Solicitud::where('user_id', $user->id)->where('convocatoria_id', $convocatoria->id)->exists()) {
+            // Check if application already exists
+            if (Application::where('user_id', $user->id)->where('announcement_id', $announcement->id)->exists()) {
                 continue;
             }
 
-            $solicitud = Solicitud::create([
+            $application = Application::create([
                 'user_id' => $user->id,
-                'convocatoria_id' => $convocatoria->id,
+                'announcement_id' => $announcement->id,
                 'status' => 'pending',
             ]);
 
@@ -52,8 +52,8 @@ class DocumentSeeder extends Seeder
             ];
 
             foreach ($documents as $doc) {
-                Documento::create([
-                    'solicitud_id' => $solicitud->id,
+                Document::create([
+                    'application_id' => $application->id,
                     'name' => $doc['name'],
                     'file_path' => $doc['path'],
                     'file_type' => $doc['type'],

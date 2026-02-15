@@ -11,7 +11,7 @@ import { mdiFileDocumentOutline, mdiBookOpenPageVariant, mdiAccountSchool } from
 import { alertaPregunta, alertaExito, alertaError } from '@/utils/alerts.js';
 
 const props = defineProps({
-    documentos: {
+    documents: {
         type: Object,
         required: true,
         default: () => ({
@@ -22,7 +22,7 @@ const props = defineProps({
             total: 0
         })
     },
-    solicitudes: {
+    applications: {
         type: Object,
         default: () => ({
             data: [],
@@ -55,7 +55,7 @@ const props = defineProps({
 
 const search = ref(props.filters.search);
 const rows = ref(props.filters.rows || 10);
-const sortField = ref(props.filters.order || 'nombre');
+const sortField = ref(props.filters.order || 'name');
 const sortDirection = ref(props.filters.direction || 'asc');
 const currentTab = ref(props.activeTab);
 
@@ -104,7 +104,7 @@ watch(search, (value) => {
 const cleanFilters = () => {
     search.value = '';
     rows.value = 10;
-    sortField.value = 'nombre';
+    sortField.value = 'name';
     sortDirection.value = 'asc';
     router.get(route(`${props.routeName}index`), { tab: currentTab.value }, { preserveState: true, replace: true });
 };
@@ -125,19 +125,19 @@ const sortBy = (field) => {
     }, { preserveState: true, replace: true });
 };
 
-const deleteItem = async (id, esFundamental, nombre) => {
-    if (esFundamental) {
+const deleteItem = async (id, isFundamental, name) => {
+    if (isFundamental) {
         alertaError('No se puede eliminar', 'Este es un documento fundamental. Solo puedes actualizarlo.');
         return;
     }
     
     const result = await alertaPregunta(
         '¿Estás seguro?',
-        `Se eliminará el documento "${nombre}"`
+        `Se eliminará el documento "${name}"`
     );
     
     if (result.isConfirmed) {
-        router.delete(route(`${props.routeName}destroy`, { documento: id }), {
+        router.delete(route(`${props.routeName}destroy`, { document: id }), {
             preserveScroll: true,
             onSuccess: () => alertaExito('¡Eliminado!', 'El documento ha sido eliminado'),
             onError: () => alertaError('Error', 'No se pudo eliminar el documento')
@@ -145,22 +145,22 @@ const deleteItem = async (id, esFundamental, nombre) => {
     }
 };
 
-const toggleActivo = (id, activo) => {
+const toggleActivo = (id, active) => {
     router.post(route('catalog.documents.toggleActive', id), {}, {
         preserveScroll: true,
         onSuccess: () => {
             alertaExito(
                 '¡Actualizado!',
-                activo ? 'Documento desactivado' : 'Documento activado'
+                active ? 'Documento desactivado' : 'Documento activado'
             );
         },
         onError: () => alertaError('Error', 'No se pudo actualizar el estado')
     });
 };
 
-const viewFile = (documento) => {
-    if (documento.archivo_path) {
-        window.open(`/storage/${documento.archivo_path}`, '_blank');
+const viewFile = (document) => {
+    if (document.file_path) {
+        window.open(`/storage/${document.file_path}`, '_blank');
     }
 };
 
@@ -214,7 +214,7 @@ const viewDetails = (id) => {
                     </div>
                 </div>
                 <div class="flex items-center gap-2 w-full md:w-auto justify-end">
-                    <Link v-if="useCan('documentos.create') && currentTab === 'requeridos'" :href="route(`${routeName}create`)" class="w-full md:w-auto justify-center px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium cursor-pointer">
+                    <Link v-if="useCan('documents.create') && currentTab === 'requeridos'" :href="route(`${routeName}create`)" class="w-full md:w-auto justify-center px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                             <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
                         </svg>
@@ -325,13 +325,13 @@ const viewDetails = (id) => {
                                 </tr>
                             </thead>
             <tbody class="divide-y divide-gray-200">
-                                <tr v-for="(documento, index) in (documentos?.data || [])" :key="documento.id" class="hover:bg-gray-50 transition">
-                                    <td class="px-6 py-4 font-medium text-gray-900">{{ documentos.from + index }}</td>
+                                <tr v-for="(document, index) in (documents?.data || [])" :key="document.id" class="hover:bg-gray-50 transition">
+                                    <td class="px-6 py-4 font-medium text-gray-900">{{ documents.from + index }}</td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center">
                                             <div>
-                                                <div class="text-sm font-semibold text-gray-800">{{ documento.nombre }}</div>
-                                                <div v-if="documento.es_fundamental" class="flex items-center gap-1 mt-1">
+                                                <div class="text-sm font-semibold text-gray-800">{{ document.name }}</div>
+                                                <div v-if="document.is_fundamental" class="flex items-center gap-1 mt-1">
                                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
                                                         <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="currentColor" class="mr-1">
                                                             <path d="m233-120 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Z"/>
@@ -343,16 +343,16 @@ const viewDetails = (id) => {
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 text-gray-600">
-                                        {{ documento.descripcion || 'Sin descripción' }}
+                                        {{ document.description || 'Sin descripción' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        <div v-if="documento.archivo_path" class="flex items-center justify-center gap-2">
-                                            <button @click="viewFile(documento)" class="text-blue-600 hover:text-blue-900 transition" title="Ver archivo">
+                                        <div v-if="document.file_path" class="flex items-center justify-center gap-2">
+                                            <button @click="viewFile(document)" class="text-blue-600 hover:text-blue-900 transition" title="Ver archivo">
                                                 <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                                                     <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z"/>
                                                 </svg>
                                             </button>
-                                            <button @click="downloadFile(documento.id)" class="text-green-600 hover:text-green-900 transition" title="Descargar">
+                                            <button @click="downloadFile(document.id)" class="text-green-600 hover:text-green-900 transition" title="Descargar">
                                                 <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                                                     <path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
                                                 </svg>
@@ -362,18 +362,18 @@ const viewDetails = (id) => {
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center">
                                         <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" :checked="documento.activo" @change="toggleActivo(documento.id, documento.activo)" class="sr-only peer" />
+                                            <input type="checkbox" :checked="document.active" @change="toggleActivo(document.id, document.active)" class="sr-only peer" />
                                             <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#1B396A]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1B396A]"></div>
                                         </label>
                                     </td>
                                     <td class="px-6 py-4 text-center">
                                         <div class="flex items-center justify-center gap-2">
-                                            <Link v-if="useCan('documentos.edit')" :href="route(`${routeName}edit`, { documento: documento.id })" class="p-2 text-[#1B396A] border border-[#1B396A] rounded-full hover:bg-[#1B396A] hover:text-white transition group cursor-pointer" title="Editar">
+                                            <Link v-if="useCan('documents.edit')" :href="route(`${routeName}edit`, { document: document.id })" class="p-2 text-[#1B396A] border border-[#1B396A] rounded-full hover:bg-[#1B396A] hover:text-white transition group cursor-pointer" title="Editar">
                                                 <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                                                     <path d="M200-200h57l391-391-57-57-391 391v57Zm-40 80q-17 0-28.5-11.5T120-160v-97q0-16 6-30.5t17-25.5l505-504q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L313-143q-11 11-25.5 17t-30.5 6h-97Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/>
                                                 </svg>
                                             </Link>
-                                            <button v-if="useCan('documentos.delete')" @click="deleteItem(documento.id, documento.es_fundamental, documento.nombre)" :class="documento.es_fundamental ? 'p-2 text-gray-400 border border-gray-400 rounded-full cursor-not-allowed' : 'p-2 text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition group cursor-pointer'" :title="documento.es_fundamental ? 'No se puede eliminar (Documento fundamental)' : 'Eliminar'">
+                                            <button v-if="useCan('documents.delete')" @click="deleteItem(document.id, document.is_fundamental, document.name)" :class="document.is_fundamental ? 'p-2 text-gray-400 border border-gray-400 rounded-full cursor-not-allowed' : 'p-2 text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition group cursor-pointer'" :title="document.is_fundamental ? 'No se puede eliminar (Documento fundamental)' : 'Eliminar'">
                                                 <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                                                     <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
                                                 </svg>
@@ -381,7 +381,7 @@ const viewDetails = (id) => {
                                         </div>
                                     </td>
                                 </tr>
-                                <tr v-if="!documentos?.data || documentos.data.length === 0">
+                                <tr v-if="!documents?.data || documents.data.length === 0">
                                     <td colspan="6" class="px-6 py-12 text-center text-gray-500">
                                         No se encontraron registros
                                     </td>
@@ -393,10 +393,10 @@ const viewDetails = (id) => {
                     <!-- Pagination Documentos Requeridos -->
                     <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
                         <Pagination 
-                            :links="documentos.links || []" 
-                            :from="documentos.from || 0" 
-                            :to="documentos.to || 0" 
-                            :total="documentos.total || 0" 
+                            :links="documents.links || []" 
+                            :from="documents.from || 0" 
+                            :to="documents.to || 0" 
+                            :total="documents.total || 0" 
                         />
                     </div>
                 </div>
@@ -437,28 +437,28 @@ const viewDetails = (id) => {
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
-                                <tr v-for="(solicitud, index) in (solicitudes?.data || [])" :key="solicitud.id" class="hover:bg-gray-50 transition">
+                                <tr v-for="(application, index) in (applications?.data || [])" :key="application.id" class="hover:bg-gray-50 transition">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        {{ solicitudes.meta.from + index }}
+                                        {{ applications.meta.from + index }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex flex-col">
-                                            <span class="text-sm font-medium text-gray-900">{{ solicitud.teacher?.name || 'N/A' }}</span>
+                                            <span class="text-sm font-medium text-gray-900">{{ application.teacher?.name || 'N/A' }}</span>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 max-w-[200px] truncate" :title="solicitud.campus">
-                                        {{ solicitud.campus }}
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 max-w-[200px] truncate" :title="application.campus">
+                                        {{ application.campus }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 max-w-[200px] truncate" :title="solicitud.announcement?.name">
-                                        <div class="text-sm text-gray-900">{{ solicitud.announcement?.name || 'N/A' }}</div>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 max-w-[200px] truncate" :title="application.announcement?.name">
+                                        <div class="text-sm text-gray-900">{{ application.announcement?.name || 'N/A' }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center">
                                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                            {{ solicitud.documentos_count || 0 }}
+                                            {{ application.documents_count || 0 }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        <button @click="viewDetails(solicitud.id)" class="px-4 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium cursor-pointer mx-auto text-sm">
+                                        <button @click="viewDetails(application.id)" class="px-4 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium cursor-pointer mx-auto text-sm">
                                             <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
                                                 <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z"/>
                                             </svg>
@@ -466,7 +466,7 @@ const viewDetails = (id) => {
                                         </button>
                                     </td>
                                 </tr>
-                                <tr v-if="!solicitudes?.data || solicitudes.data.length === 0">
+                                <tr v-if="!applications?.data || applications.data.length === 0">
                                     <td colspan="5" class="px-6 py-12 text-center text-gray-500">
                                         <div class="flex flex-col items-center gap-2">
                                             <svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#9CA3AF">
@@ -481,12 +481,12 @@ const viewDetails = (id) => {
                     </div>
 
                     <!-- Pagination Documentos de Docentes -->
-                    <div v-if="solicitudes?.meta?.links && solicitudes.meta.links.length > 0" class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                    <div v-if="applications?.meta?.links && applications.meta.links.length > 0" class="px-6 py-4 bg-gray-50 border-t border-gray-200">
                         <Pagination 
-                            :links="solicitudes.meta.links" 
-                            :from="solicitudes.meta.from || 0" 
-                            :to="solicitudes.meta.to || 0" 
-                            :total="solicitudes.meta.total || 0" 
+                            :links="applications.meta.links" 
+                            :from="applications.meta.from || 0" 
+                            :to="applications.meta.to || 0" 
+                            :total="applications.meta.total || 0" 
                         />
                     </div>
                 </div>

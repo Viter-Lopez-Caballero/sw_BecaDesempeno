@@ -15,15 +15,15 @@ const props = defineProps({
         type: String,
         required: true,
     },
-    estados: {
+    states: {
         type: Array,
         required: true,
     },
 });
 
 const form = useForm({
-    nombre: '',
-    estado_id: null,
+    name: '',
+    state_id: null,
 });
 
 const clearError = (field) => {
@@ -37,12 +37,12 @@ const submit = () => {
     form.clearErrors();
     
     // Validación del lado del cliente
-    if (!form.nombre) {
-        form.errors.nombre = 'El nombre de la institución es obligatorio';
+    if (!form.name) {
+        form.errors.name = 'El nombre de la institución es obligatorio';
         return;
     }
-    if (!form.estado_id) {
-        form.errors.estado_id = 'Debes seleccionar un estado';
+    if (!form.state_id) {
+        form.errors.state_id = 'Debes seleccionar un estado';
         return;
     }
     
@@ -103,30 +103,30 @@ const submit = () => {
                         <!-- Nombre -->
                         <div>
                             <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Nombre de la Institución: <span class="text-red-500">*</span></label>
-                            <input v-model="form.nombre" @input="clearError('nombre')" type="text" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors.nombre }" placeholder="Nombre de la institución" />
-                            <div v-if="!form.errors.nombre" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <input v-model="form.name" @input="clearError('name')" type="text" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors.name }" placeholder="Nombre de la institución" />
+                            <div v-if="!form.errors.name" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 <span>Por favor, introduce el nombre oficial de la institución</span>
                             </div>
-                            <p v-if="form.errors.nombre" class="mt-1 text-sm text-red-600">{{ form.errors.nombre }}</p>
+                            <p v-if="form.errors.name" class="mt-1 text-sm text-red-600">{{ form.errors.name }}</p>
                         </div>
                         
                         <!-- Estado -->
                         <div>
                             <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Estado: <span class="text-red-500">*</span></label>
                             <VueSelect
-                                v-model="form.estado_id"
-                                :options="estados"
+                                v-model="form.state_id"
+                                :options="states"
                                 :reduce="estado => estado.id"
-                                label="nombre"
+                                label="name"
                                 placeholder="Selecciona un estado"
                                 :searchable="true"
                                 :clearable="true"
-                                :class="['vue-select-custom', { 'vue-select-error': form.errors.estado_id }]"
-                                @option:selected="clearError('estado_id')"
-                                @option:deselected="clearError('estado_id')"
+                                :class="['vue-select-custom', { 'vue-select-error': form.errors.state_id }]"
+                                @option:selected="clearError('state_id')"
+                                @option:deselected="clearError('state_id')"
                             />
                             <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -134,7 +134,7 @@ const submit = () => {
                                 </svg>
                                 <span>Selecciona el estado donde se ubica la institución</span>
                             </div>
-                             <p v-if="form.errors.estado_id" class="mt-1 text-sm text-red-600">{{ form.errors.estado_id }}</p>
+                             <p v-if="form.errors.state_id" class="mt-1 text-sm text-red-600">{{ form.errors.state_id }}</p>
                         </div>
                     </div>
 

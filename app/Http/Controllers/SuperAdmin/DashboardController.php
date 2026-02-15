@@ -15,8 +15,8 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
-        $institucionId = $request->input('institucion_id');
-        $estadoId = $request->input('estado_id');
+        $institutionId = $request->input('institution_id');
+        $stateId = $request->input('state_id');
 
         // Base Query for Stats
         $query = Application::query()
@@ -32,12 +32,12 @@ class DashboardController extends Controller
             });
         }
 
-        if ($institucionId) {
-            $query->where('institutions.id', $institucionId);
+        if ($institutionId) {
+            $query->where('institutions.id', $institutionId);
         }
 
-        if ($estadoId) {
-            $query->where('states.id', $estadoId);
+        if ($stateId) {
+            $query->where('states.id', $stateId);
         }
 
         // --- Stats Cards ---
@@ -84,8 +84,8 @@ class DashboardController extends Controller
             ],
             'filters' => [
                 'search' => $search,
-                'institucion_id' => $institucionId,
-                'estado_id' => $estadoId,
+                'institution_id' => $institutionId,
+                'state_id' => $stateId,
             ],
             'institutions' => Institution::select('id', 'name')->orderBy('name')->get(),
             'states' => State::select('id', 'name')->orderBy('name')->get(),

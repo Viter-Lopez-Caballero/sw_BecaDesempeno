@@ -58,7 +58,7 @@ class ModuleController extends SecurityController
             ->withQueryString();
 
         return Inertia::render("{$this->source}Index", [
-            'modulos'   => ModuleResource::collection($modules),
+            'modules'   => ModuleResource::collection($modules),
             'title'     => 'Gestión de Módulos',
             'routeName' => $this->routeName,
             'filters'   => $filters

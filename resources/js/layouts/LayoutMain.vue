@@ -1,7 +1,7 @@
 <script setup>
 
-import SectionMain from '@/Components/SectionMain.vue';
-import LayoutAuthenticated from '@/Layouts/LayoutAuthenticated.vue';
+import SectionMain from '@/components/SectionMain.vue';
+import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
 
 </script>
 

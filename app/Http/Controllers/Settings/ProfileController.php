@@ -26,7 +26,7 @@ class ProfileController extends Controller
             'user' => $user->load(['priorityArea', 'subArea', 'institution']),
             'priorityAreas' => \App\Models\PriorityArea::all(),
             'subAreas' => \App\Models\SubArea::all(),
-            'institutions' => \App\Models\Institucion::all(),
+            'institutions' => \App\Models\Institution::all(),
         ]);
     }
 

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Institucion;
+use App\Models\Institution;
 use App\Models\Application;
 use App\Http\Resources\RequestControlSummaryResource;
 use Illuminate\Http\Request;

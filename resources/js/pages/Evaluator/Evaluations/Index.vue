@@ -28,7 +28,7 @@ const rowOptions = [
 ];
 
 const onSearch = debounce((value) => {
-    router.get(route('evaluador.evaluaciones.index'), { 
+    router.get(route('evaluator.evaluations.index'), { 
         search: value,
         rows: rows.value
     }, { preserveState: true, replace: true });
@@ -37,11 +37,11 @@ const onSearch = debounce((value) => {
 const cleanFilters = () => {
     search.value = '';
     rows.value = 10;
-    router.get(route('evaluador.evaluaciones.index'), {}, { preserveState: true, replace: true });
+    router.get(route('evaluator.evaluations.index'), {}, { preserveState: true, replace: true });
 };
 
 const onRowsChange = () => {
-    router.get(route('evaluador.evaluaciones.index'), {
+    router.get(route('evaluator.evaluations.index'), {
         search: search.value,
         rows: rows.value,
     }, { preserveState: true, replace: true, preserveScroll: true });

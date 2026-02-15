@@ -26,3 +26,10 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Ignore document files but keep directory structure
+/public/documents/**/*.pdf
+/public/documents/**/*.docx
+/public/documents/**/*.doc
+!/public/documents/**/.gitkeep
+!/public/documents/**/README.md

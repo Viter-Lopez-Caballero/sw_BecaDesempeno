@@ -32,9 +32,9 @@ class PermissionController extends SecurityController
 
     public function __construct()
     {
-        $this->routeName = "seguridad.permissions.";
+        $this->routeName = "security.permissions.";
         $this->permissionPrefix = "permissions.";
-        $this->source    = "SuperAdmin/Seguridad/Permisos/";
+        $this->source    = "SuperAdmin/Security/Permissions/";
         $this->model     = new Permission();
 
         $this->middleware("permission:{$this->permissionPrefix}index")->only(['index', 'show']);
@@ -59,7 +59,7 @@ class PermissionController extends SecurityController
             ->withQueryString();
 
         return Inertia::render("{$this->source}Index", [
-            'permisos'      => PermissionResource::collection($permissions),
+            'permissions'      => PermissionResource::collection($permissions),
             'title'         => 'Gestión de Permisos',
             'routeName'     => $this->routeName,
             'filters'       => $filters

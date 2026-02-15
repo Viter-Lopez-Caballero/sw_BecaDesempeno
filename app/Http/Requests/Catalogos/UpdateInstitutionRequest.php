@@ -17,8 +17,8 @@ class UpdateInstitutionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre' => ['required', 'string', 'max:255'],
-            'estado_id' => ['required', 'exists:estados,id'],
+            'name' => ['required', 'string', 'max:255'],
+            'state_id' => ['required', 'exists:states,id'],
         ];
     }
 }

@@ -31,9 +31,9 @@ class RoleController extends SecurityController
 
     public function __construct()
     {
-        $this->routeName = "seguridad.roles.";
+        $this->routeName = "security.roles.";
         $this->permissionPrefix = "roles.";
-        $this->source    = "SuperAdmin/Seguridad/Roles/";
+        $this->source    = "SuperAdmin/Security/Roles/";
         $this->model     = new Role();
         
         $this->middleware("permission:{$this->permissionPrefix}index")->only(['index', 'show']);

@@ -28,9 +28,9 @@ class ModuleController extends SecurityController
 
     public function __construct()
     {
-        $this->source = 'SuperAdmin/Seguridad/Modulos/';
+        $this->source = 'SuperAdmin/Security/Modules/';
         $this->model = new Module();
-        $this->routeName = 'seguridad.modules.';
+        $this->routeName = 'security.modules.';
         $this->permissionPrefix = 'modules.';
 
         $this->middleware("permission:{$this->permissionPrefix}index")->only(['index', 'show']);
@@ -58,7 +58,7 @@ class ModuleController extends SecurityController
             ->withQueryString();
 
         return Inertia::render("{$this->source}Index", [
-            'modulos'   => ModuleResource::collection($modules),
+            'modules'   => ModuleResource::collection($modules),
             'title'     => 'Gestión de Módulos',
             'routeName' => $this->routeName,
             'filters'   => $filters

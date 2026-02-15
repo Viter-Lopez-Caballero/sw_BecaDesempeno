@@ -2,8 +2,8 @@
 
 namespace App\Imports;
 
-use App\Models\Institucion;
-use App\Models\Estado;
+use App\Models\Institution;
+use App\Models\State;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
@@ -12,15 +12,15 @@ class InstitutionsImport implements ToModel, WithHeadingRow
     public function model(array $row)
     {
         // Las columnas del Excel son: 'nombre_de_la_institucion', 'ciudad', 'estado'
-        $estadoId = null;
+        $stateId = null;
         if (!empty($row['estado'])) {
-            $estado = Estado::where('nombre', 'LIKE', '%' . trim($row['estado']) . '%')->first();
-            $estadoId = $estado ? $estado->id : null;
+            $state = State::where('name', 'LIKE', '%' . trim($row['estado']) . '%')->first();
+            $stateId = $state ? $state->id : null;
         }
 
-        return new Institucion([
-            'nombre'     => $row['nombre_de_la_institucion'] ?? $row['nombre'], 
-            'estado_id'  => $estadoId ?? 1,
+        return new Institution([
+            'name'       => $row['nombre_de_la_institucion'] ?? $row['nombre'], 
+            'state_id'   => $stateId ?? 1,
         ]);
     }
 }

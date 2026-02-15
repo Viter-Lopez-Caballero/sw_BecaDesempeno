@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->foreignId('institucion_id')->nullable()->constrained('instituciones')->onDelete('set null');
-            $table->foreignId('priority_area_id')->nullable()->constrained('priority_areas')->onDelete('set null');
-            $table->foreignId('sub_area_id')->nullable()->constrained('sub_areas')->onDelete('set null');
+            $table->foreignId('institution_id')->nullable()->after('password')->constrained('institutions')->onDelete('set null');
+            $table->foreignId('priority_area_id')->nullable()->after('institution_id')->constrained('priority_areas')->onDelete('set null');
+            $table->foreignId('sub_area_id')->nullable()->after('priority_area_id')->constrained('sub_areas')->onDelete('set null');
         });
     }
 
@@ -24,10 +24,12 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropForeign(['institucion_id']);
+            $table->dropForeign(['institution_id']);
+            $table->dropColumn('institution_id');
             $table->dropForeign(['priority_area_id']);
+            $table->dropColumn('priority_area_id');
             $table->dropForeign(['sub_area_id']);
-            $table->dropColumn(['institucion_id', 'priority_area_id', 'sub_area_id']);
+            $table->dropColumn('sub_area_id');
         });
     }
 };

@@ -40,11 +40,11 @@
 </template>
 
 <script setup>
-// import AppSidebar from '@/Components/Sidebar/AppSidebar.vue';
+// import AppSidebar from '@/components/Sidebar/AppSidebar.vue';
 import { ref, onMounted, onUnmounted, provide, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { menuConfigs } from '@/config/menu/menuConfig';
-import AppSidebar from '@/Components/Sidebar/AppSidebar.vue';
+import AppSidebar from '@/components/Sidebar/AppSidebar.vue';
 
 const page = usePage();
 const sidebarOpen = ref(false);
@@ -70,8 +70,8 @@ const currentMenu = computed(() => {
     // Mapping:
     if (userRole === 'Super Admin') return menuConfigs.superAdmin;
     if (userRole === 'Admin') return menuConfigs.admin;
-    if (userRole === 'Docente') return menuConfigs.docente;
-    if (userRole === 'Evaluador') return menuConfigs.evaluador;
+    if (userRole === 'Docente') return menuConfigs.teacher;
+    if (userRole === 'Evaluador') return menuConfigs.evaluator;
     
     return menuConfigs.superAdmin; // Default fallback
 });

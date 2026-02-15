@@ -23,10 +23,10 @@ class ProfileController extends Controller
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
-            'user' => $user->load(['priorityArea', 'subArea', 'institucion']),
+            'user' => $user->load(['priorityArea', 'subArea', 'institution']),
             'priorityAreas' => \App\Models\PriorityArea::all(),
             'subAreas' => \App\Models\SubArea::all(),
-            'instituciones' => \App\Models\Institucion::all(),
+            'institutions' => \App\Models\Institution::all(),
         ]);
     }
 

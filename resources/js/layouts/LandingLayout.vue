@@ -59,9 +59,9 @@ const showingNavigationDropdown = ref(false);
 
                     <div class="hidden md:flex space-x-8">
                         <Link :href="route('inicio')" :class="{'border-b-2 border-white': route().current('inicio')}" class="hover:text-blue-300 transition font-medium py-1">INICIO</Link>
-                        <Link :href="route('convocatoria')" :class="{'border-b-2 border-white': route().current('convocatoria')}" class="hover:text-blue-300 transition font-medium py-1">CONVOCATORIA</Link>
-                        <Link :href="route('documentos')" :class="{'border-b-2 border-white': route().current('documentos')}" class="hover:text-blue-300 transition font-medium py-1">DOCUMENTOS</Link>
-                        <Link :href="route('contacto')" :class="{'border-b-2 border-white': route().current('contacto')}" class="hover:text-blue-300 transition font-medium py-1">CONTACTO</Link>
+                        <Link :href="route('announcement.show')" :class="{'border-b-2 border-white': route().current('announcement.show')}" class="hover:text-blue-300 transition font-medium py-1">CONVOCATORIA</Link>
+                        <Link :href="route('documents.index')" :class="{'border-b-2 border-white': route().current('documents.index')}" class="hover:text-blue-300 transition font-medium py-1">DOCUMENTOS</Link>
+                        <Link :href="route('contact')" :class="{'border-b-2 border-white': route().current('contact')}" class="hover:text-blue-300 transition font-medium py-1">CONTACTO</Link>
                     </div>
 
                     <div class="hidden md:flex items-center space-x-4">
@@ -84,9 +84,9 @@ const showingNavigationDropdown = ref(false);
             >
                 <div class="pt-2 pb-3 space-y-1">
                     <Link :href="route('inicio')" :class="{'bg-blue-800 border-l-4 border-white': route().current('inicio')}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 hover:border-blue-300 transition duration-150 ease-in-out">INICIO</Link>
-                    <Link :href="route('convocatoria')" :class="{'bg-blue-800 border-l-4 border-white': route().current('convocatoria')}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 hover:border-blue-300 transition duration-150 ease-in-out">CONVOCATORIA</Link>
-                    <Link :href="route('documentos')" :class="{'bg-blue-800 border-l-4 border-white': route().current('documentos')}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 hover:border-blue-300 transition duration-150 ease-in-out">DOCUMENTOS</Link>
-                    <Link :href="route('contacto')" :class="{'bg-blue-800 border-l-4 border-white': route().current('contacto')}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 hover:border-blue-300 transition duration-150 ease-in-out">CONTACTO</Link>
+                    <Link :href="route('announcement.show')" :class="{'bg-blue-800 border-l-4 border-white': route().current('announcement.show')}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 hover:border-blue-300 transition duration-150 ease-in-out">CONVOCATORIA</Link>
+                    <Link :href="route('documents.index')" :class="{'bg-blue-800 border-l-4 border-white': route().current('documents.index')}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 hover:border-blue-300 transition duration-150 ease-in-out">DOCUMENTOS</Link>
+                    <Link :href="route('contact')" :class="{'bg-blue-800 border-l-4 border-white': route().current('contact')}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 hover:border-blue-300 transition duration-150 ease-in-out">CONTACTO</Link>
                 </div>
 
                 <!-- Responsive Settings Options -->

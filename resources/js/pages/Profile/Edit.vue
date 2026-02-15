@@ -28,7 +28,7 @@ const props = defineProps({
         type: Array,
         default: () => []
     },
-    instituciones: {
+    institutions: {
         type: Array,
         default: () => []
     }
@@ -37,7 +37,7 @@ const props = defineProps({
 const profileForm = useForm({
     name: props.user.name,
     email: props.user.email,
-    institucion_id: props.user.institucion_id,
+    institution_id: props.user.institution_id,
     priority_area_id: props.user.priority_area_id,
     sub_area_id: props.user.sub_area_id,
 });
@@ -140,15 +140,15 @@ const updatePassword = () => {
                             Institución
                         </label>
                         <VueSelect
-                            v-model="profileForm.institucion_id"
-                            :options="instituciones"
-                            :reduce="institucion => institucion.id"
-                            label="nombre"
+                            v-model="profileForm.institution_id"
+                            :options="institutions"
+                            :reduce="institution => institution.id"
+                            label="name"
                             placeholder="Selecciona una institución"
                             class="vue-select-custom"
                         />
-                        <div v-if="profileForm.errors.institucion_id" class="mt-1 text-sm text-red-600">
-                            {{ profileForm.errors.institucion_id }}
+                        <div v-if="profileForm.errors.institution_id" class="mt-1 text-sm text-red-600">
+                            {{ profileForm.errors.institution_id }}
                         </div>
                     </div>
 

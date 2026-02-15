@@ -21,37 +21,37 @@ class ModuleSeeder extends Seeder
             [
                 'name' => 'Solicitudes',
                 'description' => 'Gestión individual de solicitudes de becas y estímulos',
-                'key' => 'adminsoli',
+                'key' => 'applications', // Was adminsoli
             ],
             [
                 'name' => 'Control de solicitudes',
                 'description' => 'Resumen y control de solicitudes por institución',
-                'key' => 'controlsoli',
+                'key' => 'request_control', // Was controlsoli
             ],
             [
                 'name' => 'Convocatorias',
                 'description' => 'Administración de convocatorias activas e historial',
-                'key' => 'convo',
+                'key' => 'announcements', // Was convo
             ],
             [
                 'name' => 'Modulo de Seguridad',
                 'description' => 'Gestión de usuarios, roles, permisos y módulos del sistema',
-                'key' => 'seg',
+                'key' => 'security', // Was seg
             ],
             [
                 'name' => 'Catálogo',
                 'description' => 'Módulo de catálogo',
-                'key' => 'cat',
+                'key' => 'catalog', // Was cat
             ],
             [
                 'name' => 'Reconocimientos',
                 'description' => 'Gestión de reconocimientos para evaluadores',
-                'key' => 'reconocimiento',
+                'key' => 'recognitions', // Was reconocimiento
             ],
             [
                 'name' => 'Evaluaciones',
                 'description' => 'Módulo de evaluaciones y su historial',
-                'key' => 'evaluaciones',
+                'key' => 'evaluations', // Was evaluaciones (check match)
             ],
 
         ];

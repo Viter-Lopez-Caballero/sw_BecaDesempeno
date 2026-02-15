@@ -32,7 +32,7 @@ class CreateNewUser implements CreatesNewUsers
                 Rule::unique(User::class),
             ],
             'password' => $this->passwordRules(),
-            'institucion_id' => ['required', 'exists:instituciones,id'],
+            'institution_id' => ['required', 'exists:institutions,id'],
             'priority_area_id' => ['required', 'exists:priority_areas,id'],
             'sub_area_id' => ['required', 'exists:sub_areas,id'],
         ])->validate();
@@ -45,7 +45,7 @@ class CreateNewUser implements CreatesNewUsers
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => Hash::make($input['password']),
-            'institucion_id' => $input['institucion_id'],
+            'institution_id' => $input['institution_id'],
             'priority_area_id' => $input['priority_area_id'],
             'sub_area_id' => $input['sub_area_id'],
             'email_verification_code' => $verificationCode,

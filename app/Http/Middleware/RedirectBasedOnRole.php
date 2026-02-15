@@ -19,10 +19,10 @@ class RedirectIfAuthenticated
             $role = $request->user()->getPrimaryRole();
             
             return match ($role) {
-                'Super Admin' => redirect()->route('superadmin.inicio'),
-                'Admin' => redirect()->route('admin.inicio'),
-                'Evaluador' => redirect()->route('evaluador.inicio'),
-                'Docente' => redirect()->route('docente.inicio'),
+                'Super Admin' => redirect()->route('superadmin.dashboard'),
+                'Admin' => redirect()->route('admin.dashboard'),
+                'Evaluador' => redirect()->route('evaluator.dashboard'),
+                'Docente' => redirect()->route('teacher.dashboard'),
                 default => redirect()->route('inicio.dashboard'),
             };
         }

@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-use App\Models\Institucion;
+use App\Models\Institution;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -12,15 +12,15 @@ class InstitutionsExport implements FromCollection, WithHeadings, WithMapping, S
 {
     public function collection()
     {
-        return Institucion::with('estado')->get();
+        return Institution::with('state')->get();
     }
 
     public function map($institution): array
     {
         return [
             $institution->id,
-            $institution->nombre,
-            $institution->estado ? $institution->estado->nombre : '',
+            $institution->name,
+            $institution->state ? $institution->state->name : '',
         ];
     }
 

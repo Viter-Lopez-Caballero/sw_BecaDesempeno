@@ -24,13 +24,14 @@ class DatabaseSeeder extends Seeder
             ModuleSeeder::class,
             RoleSeeder::class,
             PermissionSeeder::class,
-            UsuarioSeeder::class,
-            EstadoSeeder::class,
-            InstitucionSeeder::class,
+            UserSeeder::class,
+            StateSeeder::class,
+            InstitutionSeeder::class,
             PriorityAreaSeeder::class,
             SubAreaSeeder::class,
             RenapoSeeder::class,
-            DocumentosCatalogoSeeder::class,
+            CatalogDocumentSeeder::class,
+            AnnouncementSeeder::class,
         ]);
     }
 }

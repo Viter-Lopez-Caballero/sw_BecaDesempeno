@@ -2,53 +2,54 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Institucion;
-use App\Models\Solicitud;
+use App\Models\Institution;
+use App\Models\Application;
 use App\Http\Resources\RequestControlSummaryResource;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class AdminController extends Controller
 {
-    public function inicio(Request $request)
+    public function index(Request $request)
     {
         // Global Statistics
         $stats = [
-            'total' => Solicitud::count(),
-            'pending' => Solicitud::where('status', 'pending')->count(),
-            'approved' => Solicitud::where('status', 'approved')->count(),
-            'rejected' => Solicitud::where('status', 'rejected')->count(),
+            'total' => \App\Models\Application::count(),
+            'pending' => \App\Models\Application::where('status', 'pending')->count(),
+            'approved' => \App\Models\Application::where('status', 'approved')->count(),
+            'rejected' => \App\Models\Application::where('status', 'rejected')->count(),
         ];
 
-        // Top Institutions by Solicitudes Count (for chart/progress bars)
-        $topInstitutions = Institucion::with('estado')
-            ->withCount('solicitudes')
-            ->having('solicitudes_count', '>', 0)
-            ->orderByDesc('solicitudes_count')
+        // Top Institutions by Applications Count (for chart/progress bars)
+        $topInstitutions = \App\Models\Institution::with('state')
+            ->withCount('applications')
+            ->having('applications_count', '>', 0)
+            ->orderByDesc('applications_count')
             ->paginate(5, ['*'], 'top_page');
 
         // Main Table: Institutions with Approved/Rejected counts (filterable)
         $search = $request->input('search');
         $rows = $request->input('rows', 10);
         
-        $institutions = Institucion::with('estado')
+        $institutions = \App\Models\Institution::with('state')
             ->withCount([
                 'users as approved_count' => function ($query) {
-                    $query->whereHas('solicitudes', function ($q) {
+                    $query->whereHas('applications', function ($q) {
                         $q->where('status', 'approved');
                     });
                 },
                 'users as rejected_count' => function ($query) {
-                    $query->whereHas('solicitudes', function ($q) {
+                    $query->whereHas('applications', function ($q) {
                         $q->where('status', 'rejected');
                     });
                 }
             ])
             ->when($search, function ($query, $search) {
-                 $query->where('nombre', 'like', "%{$search}%")
+                 $query->where('name', 'like', "%{$search}%")
                        ->orWhere('id', 'like', "%{$search}%");
             })
-            ->whereHas('users.solicitudes', function($q) {
+            ->whereHas('users.applications', function($q) { // users.applications is likely correct via HasManyThrough or similar? No, User hasMany Applications. Institution hasMany Users. So Institution hasManyThrough Applications? Or just check users with applications.
+                // Original was `users.solicitudes`. User model has `applications`.
                 $q->whereIn('status', ['approved', 'rejected']);
             })
             ->paginate($rows, ['*'], 'table_page')

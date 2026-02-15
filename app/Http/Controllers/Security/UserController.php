@@ -31,9 +31,9 @@ class UserController extends SecurityController
 
     public function __construct()
     {
-        $this->routeName = "seguridad.users.";
+        $this->routeName = "security.users.";
         $this->permissionPrefix = "users.";
-        $this->source    = "SuperAdmin/Seguridad/Usuarios/";
+        $this->source    = "SuperAdmin/Security/Users/";
         $this->model     = new User();
         
         $this->middleware("permission:{$this->permissionPrefix}index")->only(['index', 'show']);
@@ -70,7 +70,7 @@ class UserController extends SecurityController
         $rolesForImport = Role::where('name', 'Evaluador')->orderBy('name')->get();
 
         return Inertia::render("{$this->source}Index", [
-            'usuarios'  => UserResource::collection($users),
+            'users'  => UserResource::collection($users),
             'title'     => 'Gestión de Usuarios',
             'routeName' => $this->routeName,
             'filters'   => $filters,

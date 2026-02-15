@@ -11,7 +11,7 @@ import axios from 'axios';
 import { alertaExito, alertaError, alertaAdvertencia, alertaCargando, cerrarAlerta } from '@/utils/alerts.js';
 
 const props = defineProps({
-    instituciones: {
+    institutions: {
         type: Array,
         default: () => [],
     },
@@ -27,13 +27,13 @@ const form = useForm({
     email: '',
     password: '',
     password_confirmation: '',
-    institucion_id: '',
+    institution_id: '',
     priority_area_id: '',
     sub_area_id: ''
 });
 
 // Map props to dropdown options
-const institucionesOptions = props.instituciones;
+const institucionesOptions = props.institutions;
 const areasPrioritariasOptions = props.priorityAreas;
 const subareasPrioritariasOptions = ref([]);
 
@@ -59,7 +59,6 @@ watch(() => form.priority_area_id, async (newValue) => {
 });
 
 const submit = () => {
-    alertaCargando('Registrando cuenta', 'Por favor espera...');
     
     form.post(route('register'), {
         onSuccess: () => {
@@ -307,14 +306,14 @@ const buscarCurp = async () => {
 
                         <!-- Nombre de la Institución de Procedencia -->
                         <div>
-                            <label for="institucion_id" class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">
+                            <label for="institution_id" class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">
                                 Nombre de la Institución de Procedencia:
                             </label>
                             <VueSelect
-                                v-model="form.institucion_id"
+                                v-model="form.institution_id"
                                 :options="institucionesOptions"
                                 :reduce="option => option.id"
-                                label="nombre"
+                                label="name"
                                 placeholder="Buscar o seleccionar una institución..."
                                 :searchable="true"
                                 :clearable="true"
@@ -333,8 +332,8 @@ const buscarCurp = async () => {
                                 </svg>
                                 <span>Por favor, selecciona tu institución de procedencia</span>
                             </div>
-                            <div v-if="form.errors.institucion_id" class="mt-1 text-sm text-red-600">
-                                {{ form.errors.institucion_id }}
+                            <div v-if="form.errors.institution_id" class="mt-1 text-sm text-red-600">
+                                {{ form.errors.institution_id }}
                             </div>
                         </div>
 

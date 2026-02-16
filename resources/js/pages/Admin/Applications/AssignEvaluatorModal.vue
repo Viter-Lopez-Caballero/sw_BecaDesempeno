@@ -131,7 +131,7 @@ const availableEvaluators = computed(() => {
     const assignedIds = new Set(localEvaluators.value.map(e => e.id));
     
     if (props.application?.evaluations) {
-        props.application.evaluations.forEach(ev => assignedIds.add(ev.user_id));
+        props.application.evaluations.forEach(ev => assignedIds.add(ev.evaluator_id));
     }
 
     return props.evaluators.filter(e => !assignedIds.has(e.id));

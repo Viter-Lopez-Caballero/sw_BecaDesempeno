@@ -50,18 +50,18 @@ watch(search, (value) => {
 
 <template>
     <EvaluatorLayout>
-        <Head title="My Recognitions" />
+        <Head title="Mis Reconocimientos" />
 
         <div class="space-y-6">
             <!-- Header -->
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">My Recognitions</h1>
+                    <h1 class="text-3xl font-bold text-gray-900">Mis Reconocimientos</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
                             <path :d="mdiStar"/>
                         </svg>
-                        <span class="text-gray-900 font-semibold">Recognitions</span>
+                        <span class="text-gray-900 font-semibold">Reconocimientos</span>
                     </div>
                 </div>
             </div>
@@ -73,16 +73,16 @@ watch(search, (value) => {
                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#374151">
                             <path d="M440-160q-17 0-28.5-11.5T400-200v-240L168-736q-15-20-4.5-42t36.5-22h560q26 0 36.5 22t-4.5 42L560-440v240q0 17-11.5 28.5T520-160h-80Zm40-308 198-252H282l198 252Zm0 0Z"/>
                         </svg>
-                        <h2 class="text-xl font-semibold text-gray-800">Search Filter</h2>
+                        <h2 class="text-xl font-semibold text-gray-800">Filtro de Búsqueda</h2>
                     </div>
                     <button @click="cleanFilters" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-sm font-medium transition cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
                              <path d="M400-240v-80h240v80H400Zm-158 0L15-467l57-57 170 170 366-366 57 57-423 423Zm318-160v-80h240v80H560Zm160-160v-80h240v80H720Z"/>
                         </svg>
-                        Clear Filters
+                        Limpiar Filtros
                     </button>
                 </div>
-                <div class="text-sm text-gray-500 mb-4">Search by announcement name or year</div>
+                <div class="text-sm text-gray-500 mb-4">Buscar por nombre de convocatoria o año</div>
                 
                 <div class="flex flex-col md:flex-row gap-4 items-end">
                     <div class="relative w-full md:flex-1">
@@ -94,7 +94,7 @@ watch(search, (value) => {
                         <input 
                             v-model="search" 
                             type="text" 
-                            placeholder="Search..." 
+                            placeholder="Buscar..." 
                             class="pl-10 w-full h-[45px] rounded-lg border border-gray-300 text-gray-700 focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition" 
                         />
                     </div>
@@ -105,7 +105,7 @@ watch(search, (value) => {
                             :reduce="option => option.value" 
                             :searchable="false" 
                             :clearable="false" 
-                            placeholder="Records"
+                            placeholder="Registros"
                             class="vue-select-custom"
                             @option:selected="onRowsChange"
                         />
@@ -119,10 +119,10 @@ watch(search, (value) => {
                     <table class="w-full text-sm text-left">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
-                                <th scope="col" class="px-6 py-4 tracking-wider">Announcement</th>
-                                <th scope="col" class="px-6 py-4 tracking-wider">Issue Date</th>
-                                <th scope="col" class="px-6 py-4 tracking-wider">Year</th>
-                                <th scope="col" class="px-6 py-4 text-center tracking-wider">Actions</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">Convocatoria</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">Fecha de Emisión</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">Año</th>
+                                <th scope="col" class="px-6 py-4 text-center tracking-wider">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
@@ -130,7 +130,7 @@ watch(search, (value) => {
                                 <td colspan="4" class="px-6 py-12 text-center text-gray-500">
                                     <div class="flex flex-col items-center justify-center">
                                         <svg viewBox="0 0 24 24" class="h-12 w-12 text-gray-300 mb-3" style="fill: currentColor"><path :d="mdiStar"/></svg>
-                                        <p>You don't have any recognitions available yet.</p>
+                                        <p>Aún no tienes reconocimientos disponibles.</p>
                                     </div>
                                 </td>
                             </tr>
@@ -154,7 +154,7 @@ watch(search, (value) => {
                                             class="inline-flex items-center gap-1 text-xs font-semibold text-white bg-[#1B396A] hover:bg-[#234a85] border border-transparent px-3 py-1.5 rounded-md transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B396A]"
                                         >
                                             <svg viewBox="0 0 24 24" class="w-4 h-4" style="fill: currentColor"><path :d="mdiDownload"/></svg>
-                                            Download
+                                            Descargar
                                         </a>
                                     </div>
                                 </td>

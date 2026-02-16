@@ -95,7 +95,7 @@
                                     Ver
                                 </button>
                                 <a 
-                                    :href="route('admin.documents.download', doc.id || doc.data?.id)" 
+                                    :href="route('catalog.admin.documents.download', doc.id || doc.data?.id)" 
                                     class="flex items-center justify-center gap-1 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 px-3 py-2 rounded-lg transition text-xs font-bold uppercase tracking-wide shadow-sm"
                                     title="Descargar"
                                 >
@@ -288,7 +288,7 @@ const openPdfModal = (doc) => {
     // Determine stream URL
     const id = doc.id || doc.data?.id;
     if (!id) return;
-    currentPdfUrl.value = route('admin.documents.stream', id);
+    currentPdfUrl.value = route('catalog.admin.documents.stream', id);
     currentPdfTitle.value = doc.name || doc.nombre || doc.data?.name;
     showModal.value = true;
 };

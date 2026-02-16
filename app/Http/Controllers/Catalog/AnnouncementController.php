@@ -37,8 +37,9 @@ class AnnouncementController extends Controller
         // Middleware de permisos
         $this->middleware("permission:{$this->permissionPrefix}index")->only(['index', 'show']);
         $this->middleware("permission:{$this->permissionPrefix}create")->only(['store', 'create']);
-        $this->middleware("permission:{$this->permissionPrefix}edit")->only(['update', 'edit']);
+        $this->middleware("permission:{$this->permissionPrefix}edit")->only(['update', 'edit', 'updateDocumentos']);
         $this->middleware("permission:{$this->permissionPrefix}delete")->only(['destroy']);
+        $this->middleware("permission:{$this->permissionPrefix}index")->only(['download']);
     }
 
     /**
@@ -75,9 +76,13 @@ class AnnouncementController extends Controller
      */
     public function create(): Response
     {
+        // Cargar documentos del catálogo disponibles
+        $catalogDocuments = CatalogDocument::active()->ordered()->get();
+        
         return Inertia::render("{$this->source}Create", [
             'title'     => 'Agregar Convocatoria',
             'routeName' => $this->routeName,
+            'requiredDocuments' => \App\Http\Resources\Catalog\DocumentResource::collection($catalogDocuments)->resolve(),
         ]);
     }
 
@@ -129,14 +134,23 @@ class AnnouncementController extends Controller
             'results_end' => $request->results_end,
         ]);
         
-        // Vincular automáticamente todos los documentos activos del catálogo
-        $activeDocuments = CatalogDocument::where('active', true)->pluck('id');
-        if ($activeDocuments->isNotEmpty()) {
+        // Vincular documentos seleccionados desde el formulario
+        if ($request->has('documents') && is_array($request->documents)) {
             $syncData = [];
-            foreach ($activeDocuments as $docId) {
+            foreach ($request->documents as $docId) {
                 $syncData[$docId] = ['is_mandatory' => true];
             }
             $announcement->catalogDocuments()->sync($syncData);
+        } else {
+            // Si no se seleccionaron documentos, vincular todos los activos (comportamiento por defecto)
+            $activeDocuments = CatalogDocument::where('active', true)->pluck('id');
+            if ($activeDocuments->isNotEmpty()) {
+                $syncData = [];
+                foreach ($activeDocuments as $docId) {
+                    $syncData[$docId] = ['is_mandatory' => true];
+                }
+                $announcement->catalogDocuments()->sync($syncData);
+            }
         }
         
         return redirect()->route("{$this->routeName}index")->with('success', 'Convocatoria creada con éxito!');
@@ -271,12 +285,12 @@ class AnnouncementController extends Controller
     public function updateDocumentos(Request $request, Announcement $announcement): RedirectResponse
     {
         $request->validate([
-            'documentos' => 'nullable|array',
-            'documentos.*' => 'exists:catalog_documents,id',
+            'documents' => 'nullable|array',
+            'documents.*' => 'exists:catalog_documents,id',
         ]);
 
         // Sincronizar documentos vinculados
-        $documents = $request->input('documentos', []);
+        $documents = $request->input('documents', []);
         $syncData = [];
         
         foreach ($documents as $docId) {

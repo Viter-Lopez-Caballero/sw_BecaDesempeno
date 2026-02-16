@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ApplicationResource;
-use App\Models\Evaluacion;
 use App\Models\Application;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -65,13 +64,13 @@ class ApplicationController extends Controller
             foreach ($evaluatorIds as $userId) {
                 // Check if already assigned
                 $exists = \App\Models\Evaluation::where('application_id', $applicationId)
-                                    ->where('user_id', $userId)
+                                    ->where('evaluator_id', $userId)
                                     ->exists();
                 
                 if (!$exists) {
                     \App\Models\Evaluation::create([
                         'application_id' => $applicationId,
-                        'user_id' => $userId,
+                        'evaluator_id' => $userId,
                         'status' => 'pending',
                     ]);
                 }
@@ -92,7 +91,7 @@ class ApplicationController extends Controller
         ]);
 
         \App\Models\Evaluation::where('application_id', $request->application_id)
-                  ->where('user_id', $request->evaluator_id)
+                  ->where('evaluator_id', $request->evaluator_id)
                   ->delete();
 
         return back()->with('success', 'Evaluador removido.');

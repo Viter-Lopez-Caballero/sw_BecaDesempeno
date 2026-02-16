@@ -4,7 +4,7 @@ import LandingLayout from '@/layouts/LandingLayout.vue';
 import { ref, computed } from 'vue';
 
 const props = defineProps({
-    announcement: Object, // Puede venir como Resource (con .data) o directo
+    announcement: Object, // Changed from convocatoria to match web.php
 });
 
 const showModal = ref(false);
@@ -61,6 +61,7 @@ const etapas = computed(() => {
             id: 3,
             titulo: 'Evaluación y Dictaminación',
             dateStartKey: 'evaluation_start',
+            dateEndKey: 'evaluation_end',
             color: '#E9C81F'
         },
         {
@@ -118,13 +119,7 @@ const etapas = computed(() => {
         <section class="bg-gray-50 py-16">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-                <!-- Case: No active convocatoria -->
-                <div v-if="!announcementData" class="text-center py-12">
-                    <h2 class="text-2xl font-bold text-gray-700">No hay convocatorias activas en este momento.</h2>
-                    <p class="text-gray-500 mt-2">Por favor, vuelve más tarde.</p>
-                </div>
-
-                <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
                     <!-- LADO IZQUIERDO: ¿A quién va dirigido? y Bases -->
                     <div class="space-y-8">
                         <!-- ¿A quién va dirigido? -->
@@ -224,7 +219,9 @@ const etapas = computed(() => {
                     <!-- LADO DERECHO: Card Convocatoria y Calendario -->
                     <div class="space-y-8">
                         <!-- Card Principal de Convocatoria -->
-                        <div
+                         
+                        <!-- Case: Active or Closed Announcement -->
+                        <div v-if="announcementData"
                             class="bg-gradient-to-br from-[#2d4a7c] via-[#3a5a8c] to-[#4a6a9c] text-white rounded-3xl p-8 shadow-md">
                             <h2 class="text-3xl font-bold mb-4 text-center">{{ announcementData.name }}</h2>
                             <p class="text-base leading-relaxed mb-8 text-blue-50 line-clamp-4">
@@ -244,7 +241,13 @@ const etapas = computed(() => {
                             </div>
                         </div>
 
-                        <!-- Calendario de Actividades -->
+                         <!-- Case: NO active announcement -->
+                         <div v-else class="bg-gray-100 rounded-3xl p-8 shadow-inner text-center">
+                            <h2 class="text-2xl font-bold text-gray-700">No hay convocatorias activas</h2>
+                            <p class="text-gray-500 mt-2">Por favor, vuelve más tarde.</p>
+                        </div>
+
+                        <!-- Calendario de Actividades (Always visible, might imply default dates or empty if no announcement) -->
                         <div class="bg-white p-8 rounded-2xl shadow-md">
                             <h3 class="text-2xl font-bold text-gray-900 mb-8">Calendario de Actividades</h3>
 

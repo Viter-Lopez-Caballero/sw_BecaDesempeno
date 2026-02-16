@@ -1,3 +1,43 @@
+<script setup>
+import AdminLayout from '@/layouts/AdminLayout.vue';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
+import Pagination from '@/Shared/Pagination.vue';
+import { mdiFileDocumentMultiple, mdiAccountPlus, mdiAccountMultiple, mdiEye } from '@mdi/js';
+import debounce from 'lodash/debounce';
+
+const props = defineProps({
+    applications: Object,
+    evaluators: Array, // May be unused now in index, but kept if controller sends it
+    filters: Object,
+});
+
+const search = ref(props.filters.search || '');
+const status = ref(props.filters.status || '');
+
+const getStatusLabel = (status) => {
+    const labels = {
+        'pending': 'Pendiente',
+        'approved': 'Aprobada',
+        'rejected': 'Rechazada',
+    };
+    return labels[status] || status;
+};
+
+const cleanFilters = () => {
+    search.value = '';
+    status.value = '';
+    router.get(route('admin.applications.index'), {}, { preserveState: true, replace: true });
+};
+
+watch([search, status], debounce(() => {
+    router.get(route('admin.applications.index'), {
+        search: search.value,
+        status: status.value,
+    }, { preserveState: true, replace: true });
+}, 300));
+</script>
+
 <template>
     <Head title="Solicitudes" />
 
@@ -45,7 +85,7 @@
                          <input 
                             v-model="search" 
                             type="text" 
-                            placeholder="Buscar por Docente, Campus..." 
+                            placeholder="Buscar por Docente, Institución..." 
                             class="pl-10 w-full h-[45px] rounded-lg border border-gray-300 text-gray-700 focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition" 
                         />
                     </div>
@@ -66,27 +106,27 @@
             </div>
 
             <!-- Table -->
-            <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
-                                <th class="px-6 py-4 whitespace-nowrap">ID</th>
+                                <th class="px-6 py-4 whitespace-nowrap">#</th>
                                 <th class="px-6 py-4 whitespace-nowrap">Docente</th>
-                                <th class="px-6 py-4 whitespace-nowrap">Campus</th>
+                                <th class="px-6 py-4 whitespace-nowrap">Institución</th>
                                 <th class="px-6 py-4 whitespace-nowrap">Evaluador(es)</th>
                                 <th class="px-6 py-4 whitespace-nowrap">Estado</th>
                                 <th class="px-6 py-4 text-center whitespace-nowrap">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                            <tr v-for="application in applications.data" :key="application.id" class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">{{ application.id }}</td>
+                            <tr v-for="(application, index) in applications.data" :key="application.id" class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">{{ applications.meta.from + index }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
                                     <div class="font-semibold text-gray-800">{{ application.user?.name }}</div>
                                 </td>
                                  <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">
-                                    {{ application.user?.institucion?.name || 'N/A' }}
+                                    {{ application.campus }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <template v-if="application.evaluations && application.evaluations.length > 0">
@@ -110,11 +150,11 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span 
-                                        class="px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide"
+                                        class="px-3 py-1 inline-flex text-xs font-bold rounded-full"
                                         :class="{
-                                            'bg-green-100 text-green-700 border border-green-200': application.status === 'approved',
-                                            'bg-red-100 text-red-700 border border-red-200': application.status === 'rejected',
-                                            'bg-yellow-50 text-yellow-700 border border-yellow-200': application.status === 'pending'
+                                            'bg-green-100 text-green-800': application.status === 'approved',
+                                            'bg-red-100 text-red-800': application.status === 'rejected',
+                                            'bg-yellow-100 text-yellow-800': application.status === 'pending'
                                         }"
                                     >
                                         {{ getStatusLabel(application.status) }}
@@ -124,9 +164,13 @@
                                     <div class="flex items-center justify-center gap-2">
                                         <Link 
                                             :href="route('admin.applications.show', application.id)"
-                                            class="text-xs font-medium text-[#1B396A] hover:bg-gray-100 px-3 py-1.5 rounded-md transition-colors border border-transparent hover:border-gray-200"
+                                            class="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50 text-gray-700 transition text-xs font-medium uppercase gap-1"
                                         >
-                                            Detalles
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                            Ver Detalles
                                         </Link>
                                     </div>
                                 </td>
@@ -148,42 +192,4 @@
     </AdminLayout>
 </template>
 
-<script setup>
-import AdminLayout from '@/layouts/AdminLayout.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
-import Pagination from '@/Shared/Pagination.vue';
-import { mdiFileDocumentMultiple, mdiAccountPlus, mdiAccountMultiple } from '@mdi/js';
-import debounce from 'lodash/debounce';
 
-const props = defineProps({
-    applications: Object,
-    evaluators: Array, // May be unused now in index, but kept if controller sends it
-    filters: Object,
-});
-
-const search = ref(props.filters.search || '');
-const status = ref(props.filters.status || '');
-
-const getStatusLabel = (status) => {
-    const labels = {
-        'pending': 'Pendiente',
-        'approved': 'Aprobada',
-        'rejected': 'Rechazada',
-    };
-    return labels[status] || status;
-};
-
-const cleanFilters = () => {
-    search.value = '';
-    status.value = '';
-    router.get(route('admin.applications.index'), {}, { preserveState: true, replace: true });
-};
-
-watch([search, status], debounce(() => {
-    router.get(route('admin.applications.index'), {
-        search: search.value,
-        status: status.value,
-    }, { preserveState: true, replace: true });
-}, 300));
-</script>

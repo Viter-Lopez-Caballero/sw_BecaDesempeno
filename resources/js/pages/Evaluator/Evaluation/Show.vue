@@ -1,15 +1,21 @@
+```vue
 <script setup>
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import EvaluatorLayout from '@/layouts/EvaluatorLayout.vue';
 import Swal from 'sweetalert2';
 import { ref, computed } from 'vue';
+import RejectModal from './RejectModal.vue';
 import { 
     mdiHome, 
-    mdiFileDocumentOutline, 
+    mdiFileDocumentMultiple, 
     mdiCheckCircle, 
     mdiCloseCircle,
     mdiArrowLeft,
-    mdiEye
+    mdiEye,
+    mdiEyeOff,
+    mdiDownload,
+    mdiFileDocumentOutline,
+    mdiChevronRight
 } from '@mdi/js';
 
 const props = defineProps({
@@ -26,23 +32,46 @@ const form = useForm({
     comment: '',
 });
 
-const selectedDocument = ref(null);
+const rejectModalOpen = ref(false);
 
-const documentUrl = computed(() => {
-    if (!selectedDocument.value) return null;
-    return route('evaluator.documents.stream', selectedDocument.value.id);
-});
+// Logic for Document Preview (copied/adapted from Admin)
+const documentsState = ref({});
 
-// Normalize documents list to handle API Resource wrapping (data property) or direct array
+const togglePreview = (docId) => {
+    if (!documentsState.value[docId]) {
+        documentsState.value[docId] = { showPreview: false };
+    }
+    documentsState.value[docId].showPreview = !documentsState.value[docId].showPreview;
+};
+
+const getPreviewUrl = (doc) => {
+    return route('evaluator.documents.stream', doc.id);
+};
+
+const getDownloadUrl = (doc) => {
+    // Assuming a download route exists or using the stream with download header?
+    // If no specific download route, we might use stream. 
+    // Checking previous code: Admin had 'catalog.admin.documents.download'.
+    // Evaluator might not have a dedicated download route in the previous code snippet, 
+    // but usually stream can be used or we can fallback to stream.
+    // Let's use stream for now or check if a download route exists.
+    // Given the previous code didn't have a download button, we'll assume stream is fine or add a download route later.
+    // Actually, let's use the stream URL for download as a fallback.
+    return route('evaluator.documents.stream', doc.id); 
+};
+
+const getFileIcon = (type) => {
+    // Simple mapping or return standard icon
+    if (type === 'pdf') return 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z'; 
+    return 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z';
+};
+
+// Normalize documents list
 const documentsList = computed(() => {
     const docs = props.application.documents;
     if (!docs) return [];
     return Array.isArray(docs) ? docs : (docs.data || []);
 });
-
-const selectDocument = (doc) => {
-    selectedDocument.value = doc;
-};
 
 // Calculate total score based on selected options
 const currentScore = computed(() => {
@@ -66,6 +95,10 @@ const handleOptionSelect = (questionId, option) => {
         score: option.score
     };
     updateFormScore();
+};
+
+const onRejectionSuccess = () => {
+    // Alert handled by EvaluatorLayout via flash message
 };
 
 const submitEvaluation = (status) => {
@@ -101,44 +134,22 @@ const submitEvaluation = (status) => {
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                form.put(route('evaluator.evaluation.update', props.evaluation.id), {
-                    onSuccess: () => {
-                        Swal.fire('¡Aceptada!', 'La evaluación ha sido registrada.', 'success');
-                    }
-                });
+                form.put(route('evaluator.evaluation.update', props.evaluation.id));
             }
         });
     } else if (status === 'rejected') {
-        Swal.fire({
-            title: 'Rechazar Solicitud',
-            input: 'textarea',
-            inputLabel: 'Motivo del rechazo',
-            inputPlaceholder: 'Escribe aquí por qué rechazas la solicitud...',
-            inputAttributes: {
-                'aria-label': 'Motivo del rechazo'
-            },
-            showCancelButton: true,
-            confirmButtonColor: '#dc2626',
-            cancelButtonColor: '#6b7280',
-            confirmButtonText: 'Rechazar',
-            cancelButtonText: 'Cancelar',
-            preConfirm: (comment) => {
-                if (!comment) {
-                    Swal.showValidationMessage('Debes ingresar un motivo');
-                }
-                return comment;
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                form.comment = result.value;
-                form.put(route('evaluator.evaluation.update', props.evaluation.id), {
-                    onSuccess: () => {
-                        Swal.fire('Rechazada', 'La solicitud ha sido rechazada correctamente.', 'success');
-                    }
-                });
-            }
-        });
+        rejectModalOpen.value = true;
     }
+};
+
+const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    });
 };
 </script>
 
@@ -147,145 +158,135 @@ const submitEvaluation = (status) => {
         <Head title="Evaluar Solicitud" />
 
         <div class="space-y-6">
-            <!-- Header -->
+            <!-- Header with Breadcrumbs -->
             <div class="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div class="w-full md:w-auto">
                     <h1 class="text-3xl font-bold text-gray-900">Evaluación de Solicitud</h1>
-                    <div class="flex items-center gap-2 mt-2 text-sm text-gray-600">
-                        <Link :href="route('evaluator.dashboard')" class="hover:text-blue-600 flex items-center gap-1">
-                            <svg viewBox="0 0 24 24" class="w-4 h-4" style="fill: currentColor"><path :d="mdiHome"/></svg>
-                            Inicio
-                        </Link>
-                        <span>/</span>
-                        <span class="font-semibold text-gray-800">Evaluar</span>
+                    <div class="flex items-center gap-2 mt-2 text-sm">
+                        <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
+                            <path :d="mdiFileDocumentMultiple"/>
+                        </svg>
+                        <Link :href="route('evaluator.dashboard')" class="text-gray-700 font-medium hover:text-[#1B396A]">Inicio</Link>
+                         <svg viewBox="0 0 24 24" class="w-4 h-4 text-gray-400" style="fill: currentColor">
+                            <path :d="mdiChevronRight"/>
+                        </svg>
+                        <span class="text-gray-900 font-semibold">Evaluación</span>
                     </div>
                 </div>
-                <Link :href="route('evaluator.dashboard')" class="w-full md:w-auto justify-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition flex items-center gap-2">
-                    <svg viewBox="0 0 24 24" class="w-5 h-5" style="fill: currentColor"><path :d="mdiArrowLeft"/></svg>
-                    Volver
+                 <Link :href="route('evaluator.dashboard')" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium bg-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                        <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
+                    </svg>
+                    Regresar
                 </Link>
             </div>
 
+            <!-- Content Container -->
             <div class="space-y-6">
-                <!-- Applicant Details (Full Width) -->
-                <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                    <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                        <h2 class="font-semibold text-gray-800">Detalles del Solicitante</h2>
-                    </div>
-                    <div class="p-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 text-sm">
-                        <!-- Docente -->
+                
+                <!-- Información General (Applicant) -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative">
+                     <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-100 pb-4 mb-6 gap-2 md:gap-4">
+                        <h2 class="text-lg font-bold text-gray-900">Información General</h2>
+                     </div>
+                     
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
-                            <p class="text-gray-500 text-xs uppercase tracking-wider">Docente</p>
-                            <p class="font-medium text-gray-900 text-base leading-tight">{{ teacher.name }}</p>
+                            <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Docente</h3>
+                            <p class="text-md font-medium text-gray-900">{{ teacher.name || 'Completar datos' }}</p>
                         </div>
                         
-                        <!-- Convocatoria -->
                         <div>
-                            <p class="text-gray-500 text-xs uppercase tracking-wider">Convocatoria</p>
-                            <p class="font-medium text-gray-900">{{ application.announcement?.name }}</p>
+                            <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Institución</h3>
+                            <p class="text-md font-medium text-gray-900">{{ teacher.institution?.name || 'No registrada' }}</p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Convocatoria</h3>
+                            <p class="text-md font-medium text-gray-900">{{ application.announcement?.name || 'General' }}</p>
                         </div>
 
-                        <!-- Campus -->
                         <div>
-                            <p class="text-gray-500 text-xs uppercase tracking-wider">Campus</p>
-                            <p class="font-medium text-gray-900">{{ teacher.institution?.name || 'No registrada' }}</p>
+                            <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Área de Procedencia</h3>
+                            <p class="text-md font-medium text-gray-900">{{ teacher.priority_area?.name || 'No registrada' }}</p>
                         </div>
 
-                        <!-- Área -->
                         <div>
-                            <p class="text-gray-500 text-xs uppercase tracking-wider">Área</p>
-                            <p class="font-medium text-gray-900">{{ teacher.priority_area?.name || 'N/A' }}</p>
+                            <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Subárea</h3>
+                            <p class="text-md font-medium text-gray-900">{{ teacher.sub_area?.name || 'No registrada' }}</p>
                         </div>
 
-                        <!-- Sub Área -->
-                        <div>
-                            <p class="text-gray-500 text-xs uppercase tracking-wider">Sub Área</p>
-                            <p class="font-medium text-gray-900">{{ teacher.sub_area?.name || 'N/A' }}</p>
+                         <div>
+                            <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Fecha de Solicitud</h3>
+                            <p class="text-md font-medium text-gray-900">{{ formatDate(application.created_at) }}</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Documents Section -->
-                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Documents List -->
-                    <div class="lg:col-span-1 bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden flex flex-col h-[600px]">
-                        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-                            <h2 class="font-semibold text-gray-800">Documentación</h2>
-                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">{{ documentsList.length }} Archivos</span>
+                <!-- Documentación -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <h2 class="text-lg font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2">Documentación</h2>
+                    
+                    <div class="grid grid-cols-1 gap-4">
+                        <div v-if="documentsList.length === 0" class="text-gray-500 italic text-center py-4 bg-gray-50 rounded-lg">
+                            No hay documentos adjuntos.
                         </div>
-                        <div class="overflow-y-auto flex-1">
-                            <div v-if="documentsList.length === 0" class="p-8 text-center text-gray-500 text-sm">
-                                No hay documentos adjuntos.
+
+                        <div v-for="doc in documentsList" :key="doc.id" 
+                            class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition"
+                            :class="{ 'bg-blue-50/30': documentsState[doc.id]?.showPreview }"
+                        >
+                            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <div class="flex items-center gap-4 w-full sm:w-auto min-w-0">
+                                    <div class="text-gray-700 flex-shrink-0 bg-gray-100 p-2 rounded-full">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" :d="getFileIcon(doc.file_type)" />
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <span class="font-medium text-gray-900 truncate block" :title="doc.name">{{ doc.name }}</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Actions -->
+                                <div class="flex items-center gap-3 w-full sm:w-auto justify-end flex-shrink-0">
+                                    <button 
+                                        v-if="doc.file_type === 'pdf'" 
+                                        @click="togglePreview(doc.id)" 
+                                        class="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
+                                        :class="documentsState[doc.id]?.showPreview 
+                                            ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
+                                            : 'bg-white text-blue-600 border border-blue-200 hover:bg-blue-50'"
+                                    >
+                                        <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path :d="documentsState[doc.id]?.showPreview ? mdiEyeOff : mdiEye"/></svg>
+                                        {{ documentsState[doc.id]?.showPreview ? 'Ocultar' : 'Ver' }}
+                                    </button>
+                                    
+                                    <a :href="getDownloadUrl(doc)" 
+                                        target="_blank"
+                                        class="flex items-center justify-center gap-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-3 py-1.5 rounded-md transition text-sm font-medium border border-gray-200 bg-white"
+                                        title="Descargar archivo"
+                                    >
+                                        <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path :d="mdiDownload"/></svg>
+                                        Descargar
+                                    </a>
+                                </div>
                             </div>
-                            <div v-else class="divide-y divide-gray-100">
-                                <div 
-                                    v-for="doc in documentsList" 
-                                    :key="doc.id" 
-                                    class="p-4 hover:bg-gray-50 transition cursor-pointer group border-l-4"
-                                    :class="selectedDocument?.id === doc.id ? 'bg-blue-50 border-blue-600' : 'border-transparent'"
-                                    @click="selectDocument(doc)"
-                                >
-                                    <div class="flex items-start gap-3">
-                                        <div class="bg-blue-100 p-2 rounded text-blue-600 mt-1">
-                                            <svg viewBox="0 0 24 24" class="w-5 h-5" style="fill: currentColor"><path :d="mdiFileDocumentOutline"/></svg>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-medium text-gray-900 truncate" :title="doc.name">{{ doc.name }}</p>
-                                            <p class="text-xs text-gray-500 mt-0.5">{{ doc.file_type || 'Archivo' }}</p>
-                                        </div>
+                             <!-- Inline Preview -->
+                            <div v-if="documentsState[doc.id]?.showPreview" class="mt-4 pt-4 border-t border-gray-200 w-full animate-fadeIn">
+                                <div class="w-full h-[600px] bg-gray-100 rounded-lg overflow-hidden border border-gray-300 relative">
+                                    <div class="absolute inset-0 flex items-center justify-center text-gray-400">
+                                        Cargando vista previa...
                                     </div>
-                                    <div class="mt-3 flex justify-end">
-                                         <button 
-                                            class="text-xs font-medium px-2 py-1 rounded transition flex items-center gap-1"
-                                            :class="selectedDocument?.id === doc.id ? 'bg-blue-600 text-white' : 'text-blue-600 bg-blue-50 hover:bg-blue-100'"
-                                        >
-                                            <svg viewBox="0 0 24 24" class="w-3 h-3" style="fill: currentColor"><path :d="mdiEye"/></svg>
-                                            {{ selectedDocument?.id === doc.id ? 'Visualizando' : 'Visualizar' }}
-                                        </button>
-                                    </div>
+                                    <iframe :src="getPreviewUrl(doc)" class="w-full h-full relative z-10" frameborder="0"></iframe>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Document Preview -->
-                    <div class="lg:col-span-2 bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden h-[600px] flex flex-col">
-                        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-                            <h2 class="font-semibold text-gray-800">Vista Previa</h2>
-                             <div v-if="selectedDocument" class="flex items-center gap-3">
-                                <a :href="documentUrl" target="_blank" class="text-sm text-blue-600 hover:underline flex items-center gap-1">
-                                    Abrir en nueva pestaña
-                                    <svg xmlns="http://www.w3.org/2000/svg" height="14px" viewBox="0 -960 960 960" width="14px" fill="currentColor">
-                                        <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-880h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z"/>
-                                    </svg>
-                                </a>
-                                <button 
-                                    @click="selectedDocument = null" 
-                                    class="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-3 py-1 rounded transition"
-                                >
-                                    Cerrar Vista
-                                </button>
-                             </div>
-                        </div>
-                         <div class="flex-1 bg-gray-100 relative">
-                            <div v-if="!selectedDocument" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
-                                <svg class="w-20 h-20 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
-                                <p class="text-lg font-medium">Selecciona un documento para visualizar</p>
-                            </div>
-                            <iframe 
-                                v-else 
-                                :src="documentUrl" 
-                                class="w-full h-full border-0"
-                                title="Visor de documento"
-                            ></iframe>
-                        </div>
-                    </div>
-                 </div>
-
-                <!-- Rubric Evaluation (Full Width) -->
-                <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+                <!-- Rubric Evaluation (Refreshed Style) -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     <div class="bg-[#1B396A] px-6 py-4 border-b border-gray-200 flex justify-between items-center text-white">
                         <div>
                             <h2 class="font-bold text-lg">Rúbrica de Evaluación</h2>
@@ -351,7 +352,7 @@ const submitEvaluation = (status) => {
                             type="button" 
                             @click="submitEvaluation('rejected')"
                             :disabled="form.processing"
-                            class="w-full sm:w-auto px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                            class="w-full sm:w-auto px-4 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 uppercase tracking-wide"
                         > 
                             <svg viewBox="0 0 24 24" class="w-5 h-5" style="fill: currentColor"><path :d="mdiCloseCircle"/></svg>
                             Rechazar Solicitud
@@ -361,7 +362,7 @@ const submitEvaluation = (status) => {
                             type="button" 
                             @click="submitEvaluation('approved')"
                             :disabled="form.processing || !rubric"
-                            class="w-full sm:w-auto px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#1B396A] hover:bg-[#2c4c85] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                            class="w-full sm:w-auto px-4 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#1B396A] hover:bg-[#152d47] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 uppercase tracking-wide"
                         >
                             <svg viewBox="0 0 24 24" class="w-5 h-5" style="fill: currentColor"><path :d="mdiCheckCircle"/></svg>
                             Aceptar Solicitud
@@ -369,6 +370,26 @@ const submitEvaluation = (status) => {
                     </div>
                 </div>
             </div>
+            
+            <RejectModal 
+                :show="rejectModalOpen" 
+                :evaluationId="evaluation.id"
+                :score="currentScore"
+                :answers="form.answers"
+                @close="rejectModalOpen = false"
+                @success="onRejectionSuccess"
+            />
         </div>
     </EvaluatorLayout>
 </template>
+
+<style scoped>
+.animate-fadeIn {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>

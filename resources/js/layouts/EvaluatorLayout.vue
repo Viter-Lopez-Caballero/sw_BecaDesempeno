@@ -40,9 +40,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, provide } from 'vue';
+import { ref, onMounted, onUnmounted, provide, watch } from 'vue';
 import { menuConfigs } from '@/config/menu/menuConfig';
 import AppSidebar from '@/components/Sidebar/AppSidebar.vue';
+import { usePage } from '@inertiajs/vue3';
+import Swal from 'sweetalert2';
 
 const sidebarOpen = ref(false);
 const sidebarCollapsed = ref(false);
@@ -56,6 +58,30 @@ provide('isMobile', isMobile);
 const checkMobile = () => {
     isMobile.value = window.innerWidth < 1024;
 };
+
+// Watch for flash messages
+const page = usePage();
+
+watch(() => page.props.flash?.success, (newValue) => {
+    if (newValue) {
+        Swal.fire({
+            title: newValue,
+            icon: 'success',
+            confirmButtonColor: '#1B396A',
+        });
+    }
+});
+
+watch(() => page.props.flash?.error, (newValue) => {
+    if (newValue) {
+        Swal.fire({
+            title: 'Error',
+            text: newValue,
+            icon: 'error',
+            confirmButtonColor: '#d33',
+        });
+    }
+});
 
 onMounted(() => {
     checkMobile();

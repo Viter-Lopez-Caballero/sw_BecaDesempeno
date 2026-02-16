@@ -117,7 +117,8 @@ class RecognitionController extends Controller
 
         // Output PDF
         return response($pdf->Output('S'), 200)
-            ->header('Content-Type', 'application/pdf');
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'inline; filename="Reconocimiento.pdf"');
     }
 
     /**

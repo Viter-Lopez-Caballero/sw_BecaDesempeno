@@ -35,7 +35,7 @@ class RecognitionController extends Controller
                 'announcements.id as announcement_id',
                 'announcements.name as announcement_name',
                 'announcements.created_at as announcement_date',
-                \Illuminate\Support\Facades\DB::raw('COUNT(DISTINCT evaluations.id) as applications_reviewed'),
+                \Illuminate\Support\Facades\DB::raw("COUNT(DISTINCT CASE WHEN evaluations.status != 'pending' THEN evaluations.id END) as applications_reviewed"),
                 'recognitions.id as recognition_id',
                 \Illuminate\Support\Facades\DB::raw('COALESCE(recognitions.active, 0) as active'),
                 'recognitions.sent_at'
@@ -86,6 +86,7 @@ class RecognitionController extends Controller
             ->join('applications', 'evaluations.application_id', '=', 'applications.id')
             ->where('evaluations.evaluator_id', $userId)
             ->where('applications.announcement_id', $announcementId)
+            ->where('evaluations.status', '!=', 'pending')
             ->count();
 
         if ($applicationsReviewed === 0) {

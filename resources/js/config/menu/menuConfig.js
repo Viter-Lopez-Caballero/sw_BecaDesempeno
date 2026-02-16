@@ -15,6 +15,7 @@ import {
     mdiSchool,
     mdiStar,
     mdiFileTree,
+    mdiBell,
 } from "@mdi/js";
 
 // Helper to create consistent security items with dynamic route prefix

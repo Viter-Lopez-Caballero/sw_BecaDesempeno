@@ -1,5 +1,5 @@
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import LandingLayout from '@/layouts/LandingLayout.vue';
 import { alertaExito, alertaError, alertaCargando, cerrarAlerta } from '@/utils/alerts.js';
 
@@ -40,6 +40,11 @@ const submit = () => {
         onSuccess: () => {
             cerrarAlerta();
             alertaExito('¡Enlace enviado!', 'Revisa tu correo electrónico para restablecer tu contraseña');
+            
+            // Redirigir al login después de 2 segundos
+            setTimeout(() => {
+                router.visit(route('login'));
+            }, 2000);
         },
         onError: () => {
             cerrarAlerta();
@@ -53,96 +58,72 @@ const submit = () => {
     <LandingLayout>
         <Head title="Recuperar Contraseña" />
 
-        <div class="flex items-center justify-center min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-center min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
             <div class="max-w-md w-full">
                 <!-- Card Principal -->
-                <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
-                    <!-- Header con logo y color institucional -->
-                    <div class="bg-gradient-to-r from-[#1B396A] to-[#0f2347] px-8 py-10 text-center">
-                        <div class="mx-auto w-20 h-20 bg-white rounded-full flex items-center justify-center mb-4 shadow-lg">
-                            <img 
-                                src="/img/tecnm-logo.png" 
-                                alt="TecNM Logo" 
-                                class="w-12 h-12 object-contain"
-                            />
-                        </div>
-                        <h2 class="text-2xl font-bold text-white">
-                            ¿Olvidaste tu contraseña?
-                        </h2>
-                        <p class="mt-2 text-sm text-blue-100">
+                <div class="bg-white rounded-lg shadow-xl p-10 space-y-7">
+                    <!-- Title -->
+                    <div class="text-center">
+                        <h2 class="text-3xl text-[#1B396A] font-semibold">¿Olvidaste tu contraseña?</h2>
+                        <p class="mt-2 text-sm text-gray-600">
                             No te preocupes, te enviaremos instrucciones para restablecerla
                         </p>
                     </div>
 
-                    <!-- Formulario -->
-                    <div class="px-8 py-10">
-                        <form @submit.prevent="submit" class="space-y-6">
-                            <!-- Email -->
-                            <div>
-                                <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">
-                                    Correo Electrónico
-                                </label>
-                                <input
-                                    id="email"
-                                    v-model="form.email"
-                                    type="email"
-                                    autocomplete="email"
-                                    placeholder="tu.correo@ejemplo.com"
-                                    :class="[
-                                        'w-full px-4 py-3 rounded-lg border transition duration-200',
-                                        form.errors.email 
-                                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500' 
-                                            : 'border-gray-300 focus:border-[#1B396A] focus:ring-[#1B396A]'
-                                    ]"
-                                    @input="clearError('email')"
-                                />
-                                <p v-if="form.errors.email" class="mt-2 text-sm text-red-600">
-                                    {{ form.errors.email }}
-                                </p>
-                                <p v-else class="mt-2 text-sm text-gray-500">
-                                    Ingresa el correo electrónico asociado a tu cuenta
-                                </p>
+                    <!-- Form -->
+                    <form @submit.prevent="submit" class="space-y-5">
+                        <!-- Email -->
+                        <div>
+                            <label for="email" class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">
+                                Correo Electrónico:
+                            </label>
+                            <input
+                                id="email"
+                                v-model="form.email"
+                                type="email"
+                                autofocus
+                                autocomplete="email"
+                                class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
+                                :class="{ 'border-b-red-500': form.errors.email }"
+                                placeholder="tu.correo@ejemplo.com"
+                                @input="clearError('email')"
+                            />
+                            <div v-if="!form.errors.email" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Ingresa el correo electrónico asociado a tu cuenta</span>
                             </div>
-
-                            <!-- Botón Submit -->
-                            <button
-                                type="submit"
-                                :disabled="form.processing"
-                                class="w-full bg-gradient-to-r from-[#1B396A] to-[#0f2347] text-white py-3 px-4 rounded-lg font-semibold hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B396A] transition duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <span v-if="!form.processing">
-                                    Enviar enlace de recuperación
-                                </span>
-                                <span v-else class="flex items-center">
-                                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Enviando...
-                                </span>
-                            </button>
-                        </form>
-
-                        <!-- Link para volver -->
-                        <div class="mt-6 text-center">
-                            <Link 
-                                :href="route('login')" 
-                                class="text-[#1B396A] hover:text-[#0f2347] font-medium text-sm hover:underline transition"
-                            >
-                                ← Volver al inicio de sesión
-                            </Link>
+                            <div v-if="form.errors.email" class="mt-1 text-sm text-red-600">
+                                {{ form.errors.email }}
+                            </div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Footer informativo -->
-                <div class="mt-8 text-center">
-                    <p class="text-sm text-gray-600">
-                        Si tienes problemas para recuperar tu contraseña,
-                        <a href="/contacto" class="text-[#1B396A] hover:underline font-medium">
-                            contáctanos
-                        </a>
-                    </p>
+                        <!-- Submit Button -->
+                        <button
+                            type="submit"
+                            :disabled="form.processing"
+                            class="w-full bg-[#002B5C] cursor-pointer text-white py-2.5 px-4 rounded font-medium hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-800 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <span v-if="!form.processing">Enviar enlace de recuperación</span>
+                            <span v-else class="flex items-center justify-center">
+                                Enviando...
+                            </span>
+                        </button>
+
+                        <!-- Login Link -->
+                        <div class="text-center pt-4 border-t border-gray-200">
+                            <p class="text-sm text-gray-600">
+                                ¿Recordaste tu contraseña?
+                                <Link 
+                                    :href="route('login')" 
+                                    class="text-[#1B396A] hover:text-[#0f2347] font-medium hover:underline transition"
+                                >
+                                    Iniciar sesión
+                                </Link>
+                            </p>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

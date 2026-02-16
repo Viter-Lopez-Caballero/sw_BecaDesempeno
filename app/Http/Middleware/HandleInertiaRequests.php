@@ -38,6 +38,12 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
+        // Get unread notifications count for Admin, Evaluador, Docente
+        $unreadNotifications = 0;
+        if ($request->user() && $request->user()->hasAnyRole(['Admin', 'Evaluador', 'Docente'])) {
+            $unreadNotifications = \App\Models\Notification::unread()->count();
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -50,6 +56,7 @@ class HandleInertiaRequests extends Middleware
                 'primaryRole' => $request->user() ? $request->user()->getPrimaryRole() : null,
                 'layoutName' => $request->user() ? $request->user()->getLayoutName() : null,
             ],
+            'unreadNotifications' => $unreadNotifications,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

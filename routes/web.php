@@ -185,6 +185,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Recognitions
         Route::get('recognitions', [\App\Http\Controllers\Admin\RecognitionController::class, 'index'])->name('recognitions.index'); // reconocimientos
         Route::post('recognitions/toggle', [\App\Http\Controllers\Admin\RecognitionController::class, 'toggle'])->name('recognitions.toggle');
+        
+        // Notifications API
+        Route::get('notifications', [\App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('notifications/{id}/mark-as-read', [\App\Http\Controllers\Admin\NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
+        Route::post('notifications/mark-all-as-read', [\App\Http\Controllers\Admin\NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-as-read');
+        Route::delete('notifications/{id}', [\App\Http\Controllers\Admin\NotificationController::class, 'destroy'])->name('notifications.destroy');
     });
 
     Route::middleware(['role:Evaluador'])->prefix('evaluator')->name('evaluator.')->group(function () { // prefix evaluador -> evaluator

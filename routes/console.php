@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('convocatoria:update-status')->daily();
+Schedule::command('notifications:send-weekly')->weeklyOn(5, '9:00'); // Viernes a las 9:00 AM

@@ -121,7 +121,7 @@ class EvaluatorController extends Controller
             'comment' => $request->comment,
         ]);
 
-        return redirect()->route('evaluator.dashboard')->with('success', 'Evaluación registrada correctamente.');
+        return redirect()->route('evaluator.dashboard')->with('success', 'Solicitud evaluada correctamente.');
     }
 
     public function streamDocument($id)

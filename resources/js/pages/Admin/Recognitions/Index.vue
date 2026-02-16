@@ -142,7 +142,7 @@ const toggleReconocimiento = (userId, announcementId, currentStatus, application
                     <table class="w-full text-sm text-left">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
-                                <th scope="col" class="px-6 py-4 tracking-wider">ID</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">#</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Evaluador</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Convocatoria</th>
                                 <th scope="col" class="px-6 py-4 text-center tracking-wider">Acciones</th>
@@ -157,7 +157,6 @@ const toggleReconocimiento = (userId, announcementId, currentStatus, application
                                     <div class="flex items-center justify-center">
                                         <button
                                             @click="toggleReconocimiento(item.evaluator_id, item.announcement_id, item.active, item.applications_reviewed)"
-                                            :disabled="item.applications_reviewed === 0"
                                             :class="[
                                                 'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#1B396A] focus:ring-offset-2',
                                                 item.active ? 'bg-green-600' : 'bg-gray-300',

@@ -77,8 +77,13 @@ class TeacherController extends Controller
 
     public function convocatorias()
     {
-        // Fetch active announcements with calendar for date info
+        // Get IDs of announcements the user has ALREADY applied to (any status)
+        $appliedAnnouncementIds = \App\Models\Application::where('user_id', auth()->id())
+            ->pluck('announcement_id');
+
+        // Fetch active announcements excluding those already applied to
         $announcements = \App\Models\Announcement::where('status', 'activa')
+            ->whereNotIn('id', $appliedAnnouncementIds)
             ->with('calendar')
             ->orderByDesc('created_at')
             ->get();
@@ -110,9 +115,20 @@ class TeacherController extends Controller
             ->ordered()
             ->get();
 
+        // Get previous application documents for auto-fill
+        // We look for the latest *submitted* application (pending/approved/rejected doesn't matter, as long as it has files)
+        $previousApp = \App\Models\Application::where('user_id', auth()->id())
+            ->whereNotNull('status') // ensuring it was submitted
+            ->latest()
+            ->with('documents')
+            ->first();
+
+        $previousDocuments = $previousApp ? $previousApp->documents : [];
+
         return Inertia::render('Teacher/Announcements/Apply', [
             'announcement' => (new \App\Http\Resources\Catalog\AnnouncementResource($announcement))->resolve(),
             'catalog_documents' => \App\Http\Resources\Catalog\DocumentResource::collection($documents)->resolve(),
+            'previous_documents' => $previousDocuments,
         ]);
     }
 
@@ -120,10 +136,39 @@ class TeacherController extends Controller
     {
         $request->validate([
             'announcement_id' => 'required|exists:announcements,id',
-            'files' => 'required|array',
-            'files.*' => 'required|file|mimes:pdf|max:10240', // 10MB max
-            'file_types' => 'required|array', // Maps file index/key to document type name
+            'position_type' => 'required|string|max:255',
+            // Files are validated manually to allow mix of upload vs reuse
+            'files' => 'nullable|array',
+            'files.*' => 'file|mimes:pdf|max:10240', // 10MB max
+            'file_types' => 'required|array', // Maps key to document name
+            'reused_documents' => 'nullable|array', // Array of doc_ids to reuse
         ]);
+
+        // Custom validation for required documents
+        $announcement = \App\Models\Announcement::with('catalogDocuments')->findOrFail($request->announcement_id);
+        $requiredDocs = $announcement->catalogDocuments()->where('is_mandatory', true)->pluck('name')->toArray();
+        
+        $providedDocs = [];
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $key => $file) {
+                if (isset($request->file_types[$key])) {
+                    $providedDocs[] = $request->file_types[$key];
+                }
+            }
+        }
+        
+        // Add reused docs to provided list
+        if ($request->reused_documents) {
+            foreach ($request->reused_documents as $name => $docId) {
+                 $providedDocs[] = $name;
+            }
+        }
+
+        foreach ($requiredDocs as $req) {
+            if (!in_array($req, $providedDocs)) {
+                return back()->withErrors(['files' => "El documento '{$req}' es obligatorio."]);
+            }
+        }
 
         // Transaction
          \Illuminate\Support\Facades\DB::transaction(function () use ($request) {
@@ -131,20 +176,59 @@ class TeacherController extends Controller
                 'user_id' => auth()->id(),
                 'announcement_id' => $request->announcement_id,
                 'status' => 'pending',
+                'position_type' => $request->position_type,
             ]);
 
-            foreach ($request->file('files') as $key => $file) {
-                // Determine doc name/type based on frontend key mapping
-                $typeName = $request->file_types[$key] ?? 'Documento';
-                
-                $path = $file->store('documents/' . $application->id, 'public');
+            // Handle New Uploads
+            if ($request->hasFile('files')) {
+                foreach ($request->file('files') as $key => $file) {
+                    $typeName = $request->file_types[$key] ?? 'Documento';
+                    
+                    $path = $file->store('documents/' . $application->id, 'public');
 
-                \App\Models\Document::create([
-                    'application_id' => $application->id,
-                    'name' => $typeName,
-                    'file_path' => $path,
-                    'file_type' => $file->getClientOriginalExtension(),
-                ]);
+                    \App\Models\Document::create([
+                        'application_id' => $application->id,
+                        'name' => $typeName,
+                        'file_path' => $path,
+                        'file_type' => $file->getClientOriginalExtension(),
+                    ]);
+                }
+            }
+
+            // Handle Reused Documents
+            if ($request->reused_documents) {
+                foreach ($request->reused_documents as $name => $originalDocId) {
+                    // Start by checking if we already uploaded a new version of this doc (override)
+                    // If the user uploaded a file with this name, it's already handled above.
+                    // We need to ensure we don't duplicate. 
+                    // However, the frontend should ideally not send both for the same key.
+                    // But let's check DB to be safe.
+                    $exists = \App\Models\Document::where('application_id', $application->id)
+                        ->where('name', $name)
+                        ->exists();
+                    
+                    if (!$exists) {
+                        $originalDoc = \App\Models\Document::find($originalDocId);
+                        if ($originalDoc) {
+                             // We copy the record pointing to the SAME file path
+                             // This saves storage space. 
+                             // NOTE: If one deletes the file, it might break the other. 
+                             // Better approach: Copy field. 
+                             // Even better: Soft deletes protect us. 
+                             // Let's copy the file to be safe and independent.
+                             
+                             $newPath = 'documents/' . $application->id . '/' . basename($originalDoc->file_path);
+                             \Illuminate\Support\Facades\Storage::disk('public')->copy($originalDoc->file_path, $newPath);
+
+                             \App\Models\Document::create([
+                                'application_id' => $application->id,
+                                'name' => $name,
+                                'file_path' => $newPath,
+                                'file_type' => $originalDoc->file_type,
+                            ]);
+                        }
+                    }
+                }
             }
         });
 

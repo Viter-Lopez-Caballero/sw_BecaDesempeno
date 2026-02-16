@@ -16,7 +16,7 @@
 
             <div class="mb-4">
                 <textarea 
-                    v-model="form.comentario" 
+                    v-model="form.comment" 
                     class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" 
                     rows="4" 
                     placeholder="Escribe una descripción..."
@@ -24,9 +24,9 @@
                     required
                 ></textarea>
                 <div class="text-right text-xs text-gray-400 mt-1">
-                    {{ form.comentario.length }}/255
+                    {{ form.comment.length }}/255
                 </div>
-                <InputError :message="form.errors.comentario" class="mt-2" />
+                <InputError :message="form.errors.comment" class="mt-2" />
             </div>
         </template>
 
@@ -56,20 +56,27 @@ import { watch } from 'vue';
 
 const props = defineProps({
     show: Boolean,
-    applicationId: Number,
+    evaluationId: Number,
+    score: Number,
+    answers: Object,
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(['close', 'success']);
 
 const form = useForm({
     status: 'rejected',
-    comentario: '',
+    score: 0,
+    answers: {},
+    comment: '',
 });
 
 watch(() => props.show, (val) => {
     if (val) {
         form.reset();
         form.clearErrors();
+        // Sync score and answers from parent
+        form.score = props.score;
+        form.answers = props.answers;
     }
 });
 
@@ -78,10 +85,11 @@ const close = () => {
 };
 
 const submit = () => {
-    if (!props.applicationId) return;
+    if (!props.evaluationId) return;
 
-    form.post(route('admin.applications.verdict', props.applicationId), {
+    form.put(route('evaluator.evaluation.update', props.evaluationId), {
         onSuccess: () => {
+            emit('success');
             close();
         },
     });

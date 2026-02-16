@@ -122,13 +122,20 @@ class CurpController extends Controller
         // Generar nuevo código
         $verificationCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         
+        \Log::info('🔄 Reenviando código. Código anterior: ' . $user->email_verification_code . ' | Nuevo código: ' . $verificationCode);
+
         $user->update([
             'email_verification_code' => $verificationCode,
             'email_verification_code_expires_at' => now()->addHours(24),
         ]);
 
         // Reenviar correo
-        \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\VerificationCode($user, $verificationCode));
+        try {
+            \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\VerificationCode($user, $verificationCode));
+        } catch (\Exception $e) {
+            \Log::error('❌ Error al reenviar correo de verificación: ' . $e->getMessage());
+            // No retornamos error al usuario para evitar bloqueos si el SMTP falla
+        }
 
         return back()
             ->with('email', $user->email)

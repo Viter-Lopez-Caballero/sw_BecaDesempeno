@@ -30,20 +30,12 @@ Route::get('/', function () {
         ->paginate(3)
         ->withQueryString();
     
-    // Get announcement for timeline (Priority: Activa > Pendiente > Cerrada)
+    // Get announcement for timeline (Priority: Activa > Cerrada)
     $timelineAnnouncement = \App\Models\Announcement::query()
         ->with('calendar')
         ->where('status', 'activa')
         ->latest('created_at')
         ->first();
-
-    if (!$timelineAnnouncement) {
-        $timelineAnnouncement = \App\Models\Announcement::query()
-            ->with('calendar')
-            ->where('status', 'pendiente')
-            ->latest('created_at')
-            ->first();
-    }
 
     if (!$timelineAnnouncement) {
         $timelineAnnouncement = \App\Models\Announcement::query()
@@ -64,18 +56,11 @@ Route::get('/', function () {
 // (visits endpoint removed)
 
 Route::get('/announcement', function () { // /convocatoria -> /announcement
-    // Priority: Activa > Pendiente > Cerrada
+    // Priority: Activa > Cerrada
     $announcement = \App\Models\Announcement::with('calendar')
         ->where('status', 'activa')
         ->latest('created_at') // created_at
         ->first();
-
-    if (!$announcement) {
-        $announcement = \App\Models\Announcement::with('calendar')
-            ->where('status', 'pendiente')
-            ->latest('created_at')
-            ->first();
-    }
 
     if (!$announcement) {
         $announcement = \App\Models\Announcement::with('calendar')
@@ -137,8 +122,11 @@ Route::get('/email/verify', function () {
         };
     }
     
-    return \Inertia\Inertia::render('auth/VerifyEmail', [
-        'email' => session('email'),
+    // Obtener email del usuario autenticado o de la sesión
+    $email = auth()->user()?->email ?? session('email');
+
+    return \Inertia\Inertia::render('Auth/VerifyEmail', [
+        'email' => $email,
         'status' => session('status'),
     ]);
 })->name('verification.notice');

@@ -199,7 +199,7 @@ const deleteUser = async (id, name) => {
                             <tr>
                                 <th scope="col" class="px-6 py-4 tracking-wider">
                                     <button @click="sortBy('id')" class="flex items-center gap-1 hover:text-gray-200">
-                                        #
+                                        ID
                                         <svg v-if="sortField === 'id'" xmlns="http://www.w3.org/2000/svg" :class="sortDirection === 'asc' ? '' : 'rotate-180'" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
                                             <path d="M480-528 296-344l-56-56 240-240 240 240-56 56-184-184Z"/>
                                         </svg>

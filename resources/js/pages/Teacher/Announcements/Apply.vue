@@ -1,8 +1,11 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import TeacherLayout from '@/layouts/TeacherLayout.vue';
-import { mdiArrowLeft, mdiFileDocumentOutline, mdiCloudUpload, mdiCheckBold } from '@mdi/js';
-import { ref } from 'vue';
+import TextInput from '@/Components/TextInput.vue';
+import InputLabel from '@/Components/InputLabel.vue';
+import InputError from '@/Components/InputError.vue';
+import { mdiArrowLeft, mdiFileDocumentOutline, mdiCloudUpload, mdiCheckBold, mdiEye, mdiEyeOff, mdiRefresh } from '@mdi/js';
+import { ref, onMounted } from 'vue';
 
 const props = defineProps({
     announcement: Object,
@@ -10,54 +13,145 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    previous_documents: {
+        type: Array,
+        default: () => [],
+    },
 });
 
 const form = useForm({
     announcement_id: props.announcement.id,
-    files: [], // Array of File objects
-    file_types: [], // Array of strings (document names)
+    position_type: '', 
+    files: [], 
+    file_types: [], 
+    reused_documents: {}, 
 });
 
-// Temporary storage for display
-const uploadedFiles = ref({}); // Map docId -> File
+// State for display
+// Map docId -> { type: 'new'|'reused'|'empty', file: File|null, originalDoc: Object|null, showPreview: boolean }
+const documentState = ref({}); 
 
-const handleFileUpload = (event, docId, docName) => {
-    const file = event.target.files[0];
-    if (file) {
-        uploadedFiles.value[docId] = file;
+const initializeState = () => {
+    if (props.catalog_documents) {
+        props.catalog_documents.forEach(doc => {
+            if (!documentState.value[doc.id]) {
+                 documentState.value[doc.id] = { type: 'empty', file: null, originalDoc: null, showPreview: false, errorMessage: '' };
+            }
+        });
+    }
+
+    if (props.previous_documents && props.previous_documents.length > 0) {
+        props.previous_documents.forEach(prevDoc => {
+            const catalogDoc = props.catalog_documents.find(d => d.name === prevDoc.name);
+            if (catalogDoc) {
+                documentState.value[catalogDoc.id] = {
+                    type: 'reused',
+                    file: null,
+                    originalDoc: prevDoc,
+                    showPreview: false,
+                    errorMessage: ''
+                };
+            }
+        });
     }
 };
 
+// Initialize immediately
+initializeState();
+
+// Also update on mount or when props change to be safe (though setup runs once)
+onMounted(() => {
+    initializeState();
+});
+
+const handleFileUpload = (event, docId) => {
+    const file = event.target.files[0];
+    if (file) {
+        // Validate size (10MB)
+        if (file.size > 10 * 1024 * 1024) {
+             // Ensure state exists to set error
+             if (!documentState.value[docId]) {
+                 documentState.value[docId] = { type: 'empty', file: null, originalDoc: null, showPreview: false, errorMessage: '' };
+             }
+             documentState.value[docId].errorMessage = 'El archivo pesa más de 10MB.';
+             // Reset input
+             event.target.value = '';
+             return;
+        }
+
+        documentState.value[docId] = {
+            type: 'new',
+            file: file,
+            originalDoc: null,
+            showPreview: false, // Reset preview on new upload
+            errorMessage: ''
+        };
+    }
+};
+
+const togglePreview = (docId) => {
+    if (documentState.value[docId]) {
+        documentState.value[docId].showPreview = !documentState.value[docId].showPreview;
+    }
+};
+
+const getPreviewUrl = (state) => {
+    if (state.type === 'new' && state.file) {
+        return URL.createObjectURL(state.file);
+    } else if (state.type === 'reused' && state.originalDoc) {
+        return route('teacher.documents.stream', state.originalDoc.id);
+    }
+    return null;
+};
+
 const submit = () => {
-    // Reconstruct arrays for submission
     form.announcement_id = props.announcement.id; 
     form.files = [];
     form.file_types = [];
+    form.reused_documents = {};
 
-    // Order matters? Controller iterates arrays.
-    // We should iterate through our known documents and check if they are uploaded.
-    
-    // Validate all required?
-    let missing = [];
+    let hasErrors = false;
+    let fileIndexToDocId = {}; // Map form.files index -> docId
+
+    // Reset document errors
     props.catalog_documents.forEach(doc => {
-        if (doc.is_required) {
-            if (uploadedFiles.value[doc.id]) {
-                form.files.push(uploadedFiles.value[doc.id]);
-                form.file_types.push(doc.name); // Send the descriptive name
-            } else {
-                missing.push(doc.name);
-            }
-        } else {
-            // Optional documents
-            if (uploadedFiles.value[doc.id]) {
-                form.files.push(uploadedFiles.value[doc.id]);
-                form.file_types.push(doc.name);
-            }
+        if(documentState.value[doc.id]) {
+            documentState.value[doc.id].errorMessage = '';
+        }
+    });
+    
+    // Clear form errors
+    form.clearErrors();
+
+    props.catalog_documents.forEach(doc => {
+        const state = documentState.value[doc.id];
+        
+        // Safety check if state is still missing for some reason
+        if (!state) return;
+
+        if (doc.is_required && state.type === 'empty') {
+            state.errorMessage = 'Este documento es obligatorio.';
+            hasErrors = true;
+        }
+
+        if (state.type === 'new') {
+            // Track index for error mapping
+            const currentIndex = form.files.length;
+            fileIndexToDocId[currentIndex] = doc.id;
+
+            form.files.push(state.file);
+            form.file_types.push(doc.name);
+        } else if (state.type === 'reused') {
+            form.reused_documents[doc.name] = state.originalDoc.id;
         }
     });
 
-    if (missing.length > 0) {
-        alert('Por favor sube los siguientes documentos obligatorios:\n' + missing.join('\n'));
+    if (!form.position_type) {
+        form.setError('position_type', 'El tipo de plaza es obligatorio.');
+        hasErrors = true;
+    }
+
+    if (hasErrors) {
         return;
     }
 
@@ -65,10 +159,24 @@ const submit = () => {
         preserveScroll: true,
         onError: (errors) => {
             console.error('Validation Errors:', errors);
-            alert('Error al enviar la solicitud. Por favor revisa los archivos subidos. \nDetalles: ' + JSON.stringify(errors));
-        },
-        onSuccess: () => {
-            // Success handled by controller redirect
+            
+            // Map backend errors to inline errors
+            Object.keys(errors).forEach(key => {
+                if (key.startsWith('files.')) {
+                    const index = parseInt(key.split('.')[1]);
+                    const docId = fileIndexToDocId[index];
+                    if (docId && documentState.value[docId]) {
+                        // Translate specific message if needed, or just show it
+                        // The default message is "The files.X field must not be greater than..."
+                        // We can set a generic message or try to use the one provided
+                        if (errors[key].includes('greater than')) {
+                             documentState.value[docId].errorMessage = 'El archivo pesa más de 10MB.';
+                        } else {
+                             documentState.value[docId].errorMessage = errors[key];
+                        }
+                    }
+                }
+            });
         },
     });
 };
@@ -94,61 +202,125 @@ const submit = () => {
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Main Form (Left) -->
                 <div class="lg:col-span-2 space-y-6">
+                    
+                    <!-- 1. General Information Card -->
+                    <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+                        <h2 class="text-xl font-bold text-gray-900 mb-4 border-b pb-2">Información General</h2>
+                        
+                        <div>
+                            <label for="position_type" class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Tipo de Plaza <span class="text-red-500">*</span></label>
+                            <input 
+                                id="position_type"
+                                v-model="form.position_type"
+                                type="text"
+                                class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
+                                :class="{ 'border-b-red-500': form.errors.position_type }"
+                                placeholder="Ej. Titular A, Asociado B..."
+                            />
+                            <div v-if="!form.errors.position_type" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Ingresa el tipo de plaza que ocupas actualmente</span>
+                            </div>
+                            <p v-if="form.errors.position_type" class="mt-1 text-sm text-red-600">{{ form.errors.position_type }}</p>
+                        </div>
+                    </div>
+
+                    <!-- 2. Documentation Card -->
                     <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
                         <h2 class="text-xl font-bold text-gray-900 mb-4 border-b pb-2">Documentación Requerida</h2>
                         <p class="text-sm text-gray-600 mb-6">
-                            Descarga los formatos, llénalos correctamente y súbelos en formato PDF. Asegúrate de que sean legibles.
+                            Sube los documentos solicitados. Si participaste anteriormente, hemos cargado tus documentos previos automáticamente.
                         </p>
 
                         <!-- Dynamic Documents List -->
                         <div v-if="catalog_documents && catalog_documents.length > 0" class="space-y-6">
-                            <div v-for="doc in catalog_documents" :key="doc.id" class="flex flex-col sm:flex-row gap-4 p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition">
-                                <!-- Icon / Status -->
-                                <div class="flex-shrink-0 pt-1">
-                                    <div v-if="uploadedFiles[doc.id]" class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-                                        <svg viewBox="0 0 24 24" class="w-6 h-6" fill="currentColor"><path :d="mdiCheckBold"/></svg>
+                            <div v-for="doc in catalog_documents" :key="doc.id" class="p-4 border border-gray-100 rounded-lg transition" :class="documentState[doc.id]?.type !== 'empty' ? 'bg-blue-50/50 border-blue-100' : 'hover:bg-gray-50'">
+                                <div class="flex flex-col sm:flex-row gap-4">
+                                    <!-- Icon / Status -->
+                                    <div class="flex-shrink-0 pt-1">
+                                        <div v-if="documentState[doc.id]?.type !== 'empty'" class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 shadow-sm">
+                                            <svg viewBox="0 0 24 24" class="w-6 h-6" fill="currentColor"><path :d="mdiCheckBold"/></svg>
+                                        </div>
+                                        <div v-else class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
+                                             <svg viewBox="0 0 24 24" class="w-6 h-6" fill="currentColor"><path :d="mdiFileDocumentOutline"/></svg>
+                                        </div>
                                     </div>
-                                    <div v-else class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-[#1B396A]">
-                                         <svg viewBox="0 0 24 24" class="w-6 h-6" fill="currentColor"><path :d="mdiFileDocumentOutline"/></svg>
+
+                                    <!-- Info & Actions -->
+                                    <div class="flex-1">
+                                        <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                                            <div>
+                                                <div class="flex items-center gap-2 mb-1">
+                                                    <h4 class="font-semibold text-gray-900">{{ doc.name }}</h4>
+                                                    <span v-if="doc.is_required" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                        Obligatorio
+                                                    </span>
+                                                    <span v-else class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                        Opcional
+                                                    </span>
+                                                </div>
+                                                <p class="text-xs text-gray-500 mb-2">{{ doc.description || 'Sin descripción' }}</p>
+                                                
+                                                <!-- Status Message -->
+                                                <div v-if="documentState[doc.id]?.type === 'reused'" class="text-xs font-medium text-blue-600 flex items-center gap-1 mb-2">
+                                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                     Documento recuperado de solicitud anterior
+                                                </div>
+                                                <div v-if="documentState[doc.id]?.type === 'new'" class="text-xs font-medium text-green-600 flex items-center gap-1 mb-2">
+                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                                 Archivo nuevo seleccionado: {{ documentState[doc.id].file.name }}
+                                                </div>
+                                                
+                                                <!-- Download Template Link -->
+                                                <a v-if="doc.template_url" :href="doc.template_url" target="_blank" class="text-xs font-bold text-[#1B396A] hover:underline flex items-center gap-1 mb-1">
+                                                    Descargar Formato
+                                                </a>
+                                            </div>
+
+                                            <!-- Actions -->
+                                            <div class="flex flex-col gap-2 items-end">
+                                                
+                                                <!-- View Button (Toggle) -->
+                                                <button 
+                                                    v-if="documentState[doc.id] && documentState[doc.id].type !== 'empty'"
+                                                    @click="togglePreview(doc.id)"
+                                                    type="button"
+                                                    class="text-xs flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100 transition font-medium w-full justify-center"
+                                                >
+                                                    <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path :d="documentState[doc.id]?.showPreview ? mdiEyeOff : mdiEye"/></svg>
+                                                    {{ documentState[doc.id]?.showPreview ? 'Ocultar PDF' : 'Ver PDF' }}
+                                                </button>
+
+                                                <!-- Upload / Change Button -->
+                                                <label class="cursor-pointer inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transition w-full justify-center whitespace-nowrap">
+                                                    <span v-if="documentState[doc.id]?.type !== 'empty'" class="flex items-center gap-1">
+                                                        <svg viewBox="0 0 24 24" class="w-4 h-4 text-gray-500" fill="currentColor"><path :d="mdiRefresh"/></svg>
+                                                        Cambiar
+                                                    </span>
+                                                    <span v-else class="flex items-center gap-1">
+                                                        <svg viewBox="0 0 24 24" class="w-4 h-4 text-gray-500" fill="currentColor"><path :d="mdiCloudUpload"/></svg>
+                                                        Subir PDF
+                                                    </span>
+                                                    <input type="file" class="hidden" @change="(e) => handleFileUpload(e, doc.id)" accept=".pdf" />
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Error Message -->
+                                        <div v-if="documentState[doc.id]?.errorMessage" class="text-sm text-red-600 font-medium flex items-center gap-1 justify-end mt-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                            </svg>
+                                            {{ documentState[doc.id].errorMessage }}
+                                        </div>
                                     </div>
                                 </div>
-
-                                <!-- Info & Actions -->
-                                <div class="flex-1">
-                                    <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                                        <div>
-                                            <div class="flex items-center gap-2 mb-1">
-                                                <h4 class="font-semibold text-gray-900">{{ doc.name }}</h4>
-                                                <span v-if="doc.is_required" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                    Obligatorio
-                                                </span>
-                                                <span v-else class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                                    Opcional
-                                                </span>
-                                            </div>
-                                            <p class="text-xs text-gray-500 mb-2">{{ doc.description || 'Sin descripción' }}</p>
-                                            
-                                            <!-- Download Template Link -->
-                                            <a v-if="doc.template_url" :href="doc.template_url" target="_blank" class="text-xs font-medium text-[#1B396A] hover:underline flex items-center gap-1 mb-3">
-                                                <svg xmlns="http://www.w3.org/2000/svg" height="14px" viewBox="0 -960 960 960" width="14px" fill="currentColor">
-                                                    <path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
-                                                </svg>
-                                                Descargar Formato / Plantilla
-                                            </a>
-                                            <div v-else class="h-6"></div> <!-- Spacer -->
-                                        </div>
-
-                                        <!-- Upload Input -->
-                                        <div class="flex-shrink-0">
-                                            <label class="cursor-pointer inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none transition">
-                                                <svg viewBox="0 0 24 24" class="w-5 h-5 mr-2 text-gray-400" fill="currentColor"><path :d="mdiCloudUpload"/></svg>
-                                                {{ uploadedFiles[doc.id] ? 'Archivo seleccionado' : 'Subir PDF' }}
-                                                <input type="file" class="hidden" @change="(e) => handleFileUpload(e, doc.id, doc.name)" accept=".pdf" />
-                                            </label>
-                                            <p v-if="uploadedFiles[doc.id]" class="text-xs text-green-600 mt-1 text-center font-medium max-w-[150px] truncate">
-                                                {{ uploadedFiles[doc.id].name }}
-                                            </p>
-                                        </div>
+                                <!-- INLINE PREVIEW -->
+                                <div v-if="documentState[doc.id]?.showPreview && documentState[doc.id]?.type !== 'empty'" class="mt-4 border-t pt-4 w-full">
+                                    <div class="w-full h-[600px] bg-gray-100 rounded-lg overflow-hidden border border-gray-300">
+                                        <iframe :src="getPreviewUrl(documentState[doc.id])" class="w-full h-full" frameborder="0"></iframe>
                                     </div>
                                 </div>
                             </div>
@@ -156,11 +328,7 @@ const submit = () => {
 
                         <!-- Empty State -->
                         <div v-else class="flex flex-col items-center justify-center py-12 text-gray-500">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#9CA3AF" class="mb-4">
-                                <path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/>
-                            </svg>
-                            <p class="text-lg font-medium">No hay documentos configurados para esta convocatoria</p>
-                            <p class="text-sm">Por favor contacta al administrador</p>
+                             <p>No hay documentos configurados.</p>
                         </div>
                     </div>
                 </div>
@@ -169,27 +337,27 @@ const submit = () => {
                 <div class="lg:col-span-1">
                     <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6 sticky top-6">
                         <h3 class="text-lg font-bold text-gray-900 mb-4">Resumen</h3>
+                        
+                        <!-- Progress -->
                         <div class="space-y-3 mb-6">
-                            <div class="flex justify-between items-center text-sm">
-                                <span class="text-gray-600">Documentos requeridos:</span>
-                                <span class="font-bold text-gray-900">{{ catalog_documents.filter(d => d.is_required).length }}</span>
-                            </div>
                              <div class="flex justify-between items-center text-sm">
-                                <span class="text-gray-600">Documentos subidos:</span>
-                                <span class="font-bold text-gray-900">{{ Object.keys(uploadedFiles).length }}</span>
+                                <span class="text-gray-600">Documentos listos:</span>
+                                <span class="font-bold text-gray-900">
+                                    {{ Object.values(documentState).filter(s => s.type !== 'empty').length }} / {{ catalog_documents.filter(d => d.is_required).length }} (Req)
+                                </span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                <div class="bg-[#1B396A] h-2.5 rounded-full transition-all duration-500" :style="{ width: catalog_documents.length > 0 ? (Object.keys(uploadedFiles).length / catalog_documents.filter(d => d.is_required).length * 100) + '%' : '0%' }"></div>
+                                <div class="bg-[#1B396A] h-2.5 rounded-full transition-all duration-500" :style="{ width: catalog_documents.length > 0 ? (Object.values(documentState).filter(s => s.type !== 'empty').length / catalog_documents.filter(d => d.is_required).length * 100) + '%' : '0%' }"></div>
                             </div>
                         </div>
 
                         <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
                             <p class="text-xs text-blue-800">
-                                <strong>Nota:</strong> Al enviar esta solicitud, confirmas que la información proporcionada es verídica y aceptas los términos y condiciones de la convocatoria <strong>{{ announcement.name }}</strong>.
+                                <strong>Nota:</strong> Al enviar esta solicitud, confirmas que la información proporcionada es verídica y aceptas los términos y condiciones de la convocatoria.
                             </p>
                         </div>
 
-                        <button @click="submit" :disabled="form.processing || Object.keys(uploadedFiles).length < catalog_documents.filter(d => d.is_required).length"
+                        <button @click="submit" :disabled="form.processing"
                             class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#1B396A] hover:bg-[#0f2347] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B396A] disabled:opacity-50 disabled:cursor-not-allowed transition">
                             <span v-if="form.processing">Enviando...</span>
                             <span v-else>Enviar Solicitud</span>

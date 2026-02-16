@@ -168,19 +168,19 @@ const getStatusLabel = (status) => {
                             
                             <!-- Columna Izquierda: Datos Principales -->
                             <div class="flex-1">
-                                <h4 class="text-lg font-semibold text-gray-700 mb-1">{{ application.convocatoria_nombre }}</h4>
+                                <h4 class="text-lg font-semibold text-gray-700 mb-1">{{ application.announcement_name }}</h4>
                                 <p class="text-gray-600">
-                                    {{ application.docente_nombre }}
+                                    {{ application.teacher_name }}
                                 </p>
                             </div>
 
                             <!-- Columna Central: Metadata -->
                             <div class="flex flex-col gap-2 text-sm text-gray-600 md:px-4 md:border-l md:border-r border-gray-200">
                                  <div class="flex items-center gap-2">
-                                    <span>Evaluado el {{ application.fecha_evaluacion }}</span>
+                                    <span>Evaluado el {{ application.evaluation_date }}</span>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <span>{{ application.documentos_count }} Documentos adjuntos</span>
+                                    <span>{{ application.documents_count }} Documentos adjuntos</span>
                                 </div>
                                 <div class="flex items-center gap-2 font-medium">
                                     <span>Puntaje: {{ Math.round(application.score) }} pts</span>

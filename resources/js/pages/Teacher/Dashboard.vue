@@ -1,9 +1,10 @@
 <script setup>
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import TeacherLayout from '@/layouts/TeacherLayout.vue';
 import Pagination from '@/Shared/Pagination.vue';
 import { mdiHome } from '@mdi/js';
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
+import { alertaExito } from '@/utils/alerts';
 
 const props = defineProps({
     applications: Object,
@@ -18,6 +19,13 @@ watch(search, (value) => {
         preserveScroll: true,
         replace: true,
     });
+});
+
+onMounted(() => {
+    const page = usePage();
+    if (page.props.flash?.success) {
+        alertaExito('¡Éxito!', page.props.flash.success);
+    }
 });
 </script>
 
@@ -73,7 +81,7 @@ watch(search, (value) => {
                     <table class="w-full text-sm text-left uppercase">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
-                                <th scope="col" class="px-6 py-4 tracking-wider">ID</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">#</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Convocatoria</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Fecha de Postulación</th>
                                 <th scope="col" class="px-6 py-4 text-center tracking-wider">Estado</th>
@@ -81,20 +89,24 @@ watch(search, (value) => {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                            <tr v-for="application in applications.data" :key="application.id" class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 font-medium text-gray-900">{{ application.id }}</td>
+                            <tr v-for="(application, index) in applications.data" :key="application.id" class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 font-medium text-gray-900 leading-none">
+                                    {{ (applications.meta?.from || 1) + index }}
+                                </td>
                                 <td class="px-6 py-4 font-medium text-gray-900">{{ application.announcement?.name }}</td>
-                                <td class="px-6 py-4 text-gray-600">{{ new Date(application.created_at).toLocaleDateString() }}</td>
+                                <td class="px-6 py-4 text-gray-600 capitalize">
+                                    {{ new Date(application.created_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) }}
+                                </td>
                                 <td class="px-6 py-4 text-center">
                                     <span class="px-3 py-1 inline-flex text-xs font-bold rounded-full"
                                            :class="{
                                                'bg-green-100 text-green-800': application.status === 'approved',
-                                               'bg-red-100 text-red-800': application.status === 'rejected',
+                                               'bg-gray-100 text-gray-600': application.status === 'rejected',
                                                'bg-yellow-100 text-yellow-800': application.status === 'pending'
                                            }">
                                         {{ 
                                             application.status === 'approved' ? 'Aceptada' : 
-                                            application.status === 'rejected' ? 'Rechazada' : 'Pendiente' 
+                                            application.status === 'rejected' ? 'No Aprobada' : 'Pendiente' 
                                         }}
                                     </span>
                                 </td>

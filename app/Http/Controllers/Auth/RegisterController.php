@@ -21,7 +21,7 @@ class RegisterController extends Controller
      */
     public function create()
     {
-        return Inertia::render('auth/Register', [
+        return Inertia::render('Auth/Register', [
             'institutions' => \App\Models\Institution::orderBy('name')->get(['id', 'name']),
             'priorityAreas' => PriorityArea::with('subAreas')->orderBy('name')->get(['id', 'name']),
         ]);
@@ -32,7 +32,7 @@ class RegisterController extends Controller
      */
     public function createEvaluador()
     {
-        return Inertia::render('auth/RegisterEvaluator', [
+        return Inertia::render('Auth/RegisterEvaluator', [
             'institutions' => \App\Models\Institution::orderBy('name')->get(['id', 'name']),
             'priorityAreas' => PriorityArea::with('subAreas')->orderBy('name')->get(['id', 'name']),
         ]);
@@ -98,9 +98,11 @@ class RegisterController extends Controller
 
         Log::info('🔄 Redirigiendo a verification.notice con email: ' . $user->email);
 
-        // Redirigir a verificación sin iniciar sesión
+        // Iniciar sesión para mantener el contexto del usuario
+        \Illuminate\Support\Facades\Auth::login($user);
+
+        // Redirigir a verificación
         return redirect()->route('verification.notice')
-            ->with('email', $user->email)
             ->with('status', $mailStatus);
     }
 }

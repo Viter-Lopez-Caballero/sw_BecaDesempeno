@@ -19,6 +19,7 @@ class Application extends Model
         'announcement_id',
         'status',
         'admin_comment',
+        'position_type',
     ];
 
     // Relaciones

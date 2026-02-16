@@ -6,7 +6,7 @@ import { ref, watch } from 'vue';
 import { debounce } from 'lodash';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
-import { mdiStar, mdiDownload } from '@mdi/js';
+import { mdiStar, mdiDownload, mdiEye, mdiEyeOff } from '@mdi/js';
 
 const props = defineProps({
     recognitions: Object,
@@ -15,6 +15,11 @@ const props = defineProps({
 
 const search = ref(props.filters?.search || '');
 const rows = ref(props.filters?.rows || 10);
+const expandedRows = ref({});
+
+const togglePreview = (id) => {
+    expandedRows.value[id] = !expandedRows.value[id];
+};
 
 const rowOptions = [
     { label: '5 Registros', value: 5 },
@@ -119,6 +124,7 @@ watch(search, (value) => {
                     <table class="w-full text-sm text-left">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
+                                <th scope="col" class="px-6 py-4 tracking-wider text-center w-16">#</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Convocatoria</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Fecha de Emisión</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Año</th>
@@ -127,38 +133,63 @@ watch(search, (value) => {
                         </thead>
                         <tbody class="divide-y divide-gray-200">
                             <tr v-if="recognitions.data.length === 0">
-                                <td colspan="4" class="px-6 py-12 text-center text-gray-500">
+                                <td colspan="5" class="px-6 py-12 text-center text-gray-500">
                                     <div class="flex flex-col items-center justify-center">
                                         <svg viewBox="0 0 24 24" class="h-12 w-12 text-gray-300 mb-3" style="fill: currentColor"><path :d="mdiStar"/></svg>
                                         <p>Aún no tienes reconocimientos disponibles.</p>
                                     </div>
                                 </td>
                             </tr>
-                            <tr v-for="item in recognitions.data" :key="item.id" class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 font-medium text-gray-900">
-                                    {{ item.announcement }}
-                                </td>
-                                <td class="px-6 py-4 text-gray-600">
-                                    {{ item.date }}
-                                </td>
-                                <td class="px-6 py-4">
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
-                                        {{ item.year }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <div class="flex items-center justify-center">
-                                        <a 
-                                            :href="route('evaluator.recognitions.download', item.id)" 
-                                            target="_blank"
-                                            class="inline-flex items-center gap-1 text-xs font-semibold text-white bg-[#1B396A] hover:bg-[#234a85] border border-transparent px-3 py-1.5 rounded-md transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B396A]"
-                                        >
-                                            <svg viewBox="0 0 24 24" class="w-4 h-4" style="fill: currentColor"><path :d="mdiDownload"/></svg>
-                                            Descargar
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
+                            <template v-for="(item, index) in recognitions.data" :key="item.id">
+                                <tr class="hover:bg-gray-50 transition-colors" :class="{'bg-blue-50': expandedRows[item.id]}">
+                                    <td class="px-6 py-4 text-center font-bold text-gray-700">
+                                        {{ (recognitions.current_page - 1) * recognitions.per_page + index + 1 }}
+                                    </td>
+                                    <td class="px-6 py-4 font-medium text-gray-900">
+                                        {{ item.announcement }}
+                                    </td>
+                                    <td class="px-6 py-4 text-gray-600">
+                                        {{ item.date }}
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
+                                            {{ item.year }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <div class="flex items-center justify-center">
+                                            <button 
+                                                @click="togglePreview(item.id)"
+                                                class="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-md transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B396A]"
+                                                :class="expandedRows[item.id] ? 'bg-gray-200 text-gray-800' : 'text-white bg-[#1B396A] hover:bg-[#234a85]'"
+                                            >
+                                                <svg viewBox="0 0 24 24" class="w-4 h-4" style="fill: currentColor"><path :d="expandedRows[item.id] ? mdiEyeOff : mdiEye"/></svg>
+                                                {{ expandedRows[item.id] ? 'Ocultar' : 'Ver' }}
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- Expanded Preview Row -->
+                                <tr v-if="expandedRows[item.id]">
+                                    <td colspan="5" class="px-6 py-6 bg-gray-50 border-b border-gray-200">
+                                        <div class="flex flex-col gap-4 animate-fadeIn">
+                                            <div class="flex justify-between items-center">
+                                                <h3 class="font-bold text-gray-800 text-lg">Vista Previa del Reconocimiento</h3>
+                                            </div>
+                                            <div class="w-full h-[600px] border border-gray-300 rounded-lg overflow-hidden bg-white relative">
+                                                <div class="absolute inset-0 flex items-center justify-center text-gray-400 z-0">
+                                                    Cargando vista previa...
+                                                </div>
+                                                <iframe 
+                                                    :src="route('evaluator.recognitions.download', item.id)" 
+                                                    class="w-full h-full relative z-10" 
+                                                    frameborder="0"
+                                                ></iframe>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
                         </tbody>
                     </table>
                 </div>
@@ -206,5 +237,14 @@ watch(search, (value) => {
 }
 :deep(.vue-select-custom .vs__actions) {
     padding-right: 4px;
+}
+
+.animate-fadeIn {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 </style>

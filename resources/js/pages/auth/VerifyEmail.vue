@@ -107,9 +107,10 @@ const resendCode = () => {
             cerrarAlerta();
             alertaExito('¡Código reenviado!', 'Revisa tu bandeja de entrada');
         },
-        onError: () => {
+        onError: (errors) => {
             cerrarAlerta();
-            alertaError('Error al reenviar', 'No se pudo reenviar el código. Inténtalo de nuevo');
+            const msg = errors.email || 'No se pudo reenviar el código. Inténtalo de nuevo';
+            alertaError('Error al reenviar', msg);
         },
         onFinish: () => {
             isResending.value = false;
@@ -230,17 +231,17 @@ const resendCode = () => {
                         </p>
                     </div>
 
-                    <!-- Volver al login -->
+                    <!-- Volver al login (Cerrar Sesión Interno) -->
                     <div class="text-center">
-                        <Link
-                            :href="route('login')"
+                        <button
+                            @click="$inertia.post(route('logout'))"
                             class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm transition"
                         >
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                             </svg>
                             Volver e Iniciar Sesión
-                        </Link>
+                        </button>
                     </div>
                 </div>
             </div>

@@ -37,7 +37,7 @@ class ApplicationController extends Controller
         $applications = $query->paginate($filters->rows)->withQueryString();
 
         // Get Evaluators for the Assignment Modal
-        $evaluators = User::role('Evaluador')->select('id', 'name', 'email')->get();
+        $evaluators = User::role('Evaluador')->with('institution')->get();
 
         return Inertia::render('Admin/Applications/Index', [
             'applications' => ApplicationResource::collection($applications),
@@ -99,10 +99,16 @@ class ApplicationController extends Controller
 
     public function assignView($id)
     {
-        $application = \App\Models\Application::with(['user.institution', 'announcement', 'evaluations.evaluator'])
+        $application = \App\Models\Application::with([
+            'user.institution', 
+            'user.priorityArea', 
+            'user.subArea', 
+            'announcement', 
+            'evaluations.evaluator'
+        ])
             ->findOrFail($id);
 
-        $evaluators = User::role('Evaluador')->select('id', 'name', 'email')->get();
+        $evaluators = User::role('Evaluador')->with('institution')->get();
 
         return Inertia::render('Admin/Applications/AssignEvaluator', [
             'application' => (new ApplicationResource($application))->resolve(),

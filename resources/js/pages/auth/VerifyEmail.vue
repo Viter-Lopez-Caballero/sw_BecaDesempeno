@@ -78,6 +78,12 @@ const handlePaste = (event) => {
 };
 
 const submit = () => {
+    // Validación del lado del cliente
+    if (!form.code || form.code.length !== 6) {
+        alertaError('Código incompleto', 'Debes ingresar los 6 dígitos del código');
+        return;
+    }
+    
     alertaCargando('Verificando código', 'Por favor espera...');
     
     form.post('/email/verify/code', {

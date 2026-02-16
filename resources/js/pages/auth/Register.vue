@@ -58,7 +58,74 @@ watch(() => form.priority_area_id, async (newValue) => {
     }
 });
 
+const clearError = (field) => {
+    if (form.errors[field]) {
+        delete form.errors[field];
+    }
+};
+
 const submit = () => {
+    // Limpiar errores previos
+    form.clearErrors();
+    errorCurp.value = '';
+    
+    // Validación del lado del cliente
+    if (!form.curp) {
+        form.errors.curp = 'El CURP es obligatorio';
+        return;
+    }
+    if (form.curp.length !== 18) {
+        form.errors.curp = 'El CURP debe tener exactamente 18 caracteres';
+        return;
+    }
+    if (!curpEncontrado) {
+        errorCurp.value = 'Debes buscar y validar tu CURP primero';
+        alertaAdvertencia('CURP no validado', 'Debes buscar y validar tu CURP antes de continuar');
+        return;
+    }
+    if (!form.name) {
+        form.errors.name = 'El nombre completo es obligatorio';
+        return;
+    }
+    if (!form.email) {
+        form.errors.email = 'El correo electrónico es obligatorio';
+        return;
+    }
+    if (!form.email.includes('@')) {
+        form.errors.email = 'El correo electrónico debe contener un @';
+        return;
+    }
+    if (!form.password) {
+        form.errors.password = 'La contraseña es obligatoria';
+        return;
+    }
+    if (form.password.length < 8) {
+        form.errors.password = 'La contraseña debe tener al menos 8 caracteres';
+        return;
+    }
+    if (!form.password_confirmation) {
+        form.errors.password_confirmation = 'Debes confirmar tu contraseña';
+        return;
+    }
+    if (form.password !== form.password_confirmation) {
+        form.errors.password_confirmation = 'Las contraseñas no coinciden';
+        return;
+    }
+    if (!form.institution_id) {
+        form.errors.institution_id = 'Debes seleccionar una institución';
+        return;
+    }
+    if (!form.priority_area_id) {
+        form.errors.priority_area_id = 'Debes seleccionar un área prioritaria';
+        return;
+    }
+    if (!form.sub_area_id) {
+        form.errors.sub_area_id = 'Debes seleccionar una subárea prioritaria';
+        return;
+    }
+    
+    // Si todo está correcto, mostrar alerta de cargando y enviar
+    alertaCargando('Registrando cuenta', 'Por favor espera...');
     
     form.post(route('register'), {
         onSuccess: () => {
@@ -143,14 +210,13 @@ const buscarCurp = async () => {
                                     id="curp"
                                     v-model="form.curp"
                                     type="text"
-                                    required
                                     autofocus
                                     maxlength="18"
                                     :disabled="curpEncontrado"
                                     class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A] disabled:bg-gray-100"
                                     :class="{ 'border-b-red-500': form.errors.curp || errorCurp, 'border-b-green-500': curpEncontrado }"
                                     placeholder="Tu curp"
-                                    @input="form.curp = form.curp.toUpperCase()"
+                                    @input="form.curp = form.curp.toUpperCase(); clearError('curp'); errorCurp = ''"
                                 />
                                 <button
                                     type="button"
@@ -194,13 +260,13 @@ const buscarCurp = async () => {
                                     id="name"
                                     v-model="form.name"
                                     type="text"
-                                    required
                                     :readonly="curpEncontrado"
                                     class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
-                                    :class="{ 'bg-gray-100': curpEncontrado }"
+                                    :class="{ 'bg-gray-100': curpEncontrado, 'border-b-red-500': form.errors.name }"
                                     placeholder="Tu nombre"
+                                    @input="clearError('name')"
                                 />
-                                <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                <div v-if="!form.errors.name" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
@@ -220,12 +286,13 @@ const buscarCurp = async () => {
                                     id="email"
                                     v-model="form.email"
                                     type="email"
-                                    required
                                     autocomplete="email"
                                     class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
+                                    :class="{ 'border-b-red-500': form.errors.email }"
                                     placeholder="admin@example.com"
+                                    @input="clearError('email')"
                                 />
-                                <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                <div v-if="!form.errors.email" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
@@ -249,10 +316,11 @@ const buscarCurp = async () => {
                                         id="password"
                                         v-model="form.password"
                                         :type="showPassword ? 'text' : 'password'"
-                                        required
                                         autocomplete="new-password"
                                         class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 pr-10 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
+                                        :class="{ 'border-b-red-500': form.errors.password }"
                                         placeholder="••••••••"
+                                        @input="clearError('password')"
                                     />
                                     <button
                                         type="button"
@@ -263,11 +331,14 @@ const buscarCurp = async () => {
                                         <EyeOffIcon v-else size="20" class="text-gray-600" />
                                     </button>
                                 </div>
-                            <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <div v-if="!form.errors.password" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 <span>Por favor, introduce tu contraseña</span>
+                            </div>
+                            <div v-if="form.errors.password" class="mt-1 text-sm text-red-600">
+                                {{ form.errors.password }}
                             </div>
                             </div>
 
@@ -281,10 +352,11 @@ const buscarCurp = async () => {
                                         id="password_confirmation"
                                         v-model="form.password_confirmation"
                                         :type="showPasswordConfirmation ? 'text' : 'password'"
-                                        required
                                         autocomplete="new-password"
                                         class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 pr-10 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
+                                        :class="{ 'border-b-red-500': form.errors.password_confirmation }"
                                         placeholder="••••••••"
+                                        @input="clearError('password_confirmation')"
                                     />
                                     <button
                                         type="button"
@@ -295,11 +367,14 @@ const buscarCurp = async () => {
                                         <EyeOffIcon v-else size="20" class="text-gray-600" />
                                     </button>
                                 </div>
-                            <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <div v-if="!form.errors.password_confirmation" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 <span>Por favor, confirma tu contraseña</span>
+                            </div>
+                            <div v-if="form.errors.password_confirmation" class="mt-1 text-sm text-red-600">
+                                {{ form.errors.password_confirmation }}
                             </div>
                             </div>
                         </div>
@@ -317,7 +392,8 @@ const buscarCurp = async () => {
                                 placeholder="Buscar o seleccionar una institución..."
                                 :searchable="true"
                                 :clearable="true"
-                                class="vue-select-custom"
+                                :class="['vue-select-custom', { 'has-error': form.errors.institution_id }]"
+                                @update:modelValue="clearError('institution_id')"
                             >
                                 <template #no-options="{ search, searching }">
                                     <template v-if="searching">
@@ -326,7 +402,7 @@ const buscarCurp = async () => {
                                     <em v-else>Comienza a escribir para buscar...</em>
                                 </template>
                             </VueSelect>
-                            <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <div v-if="!form.errors.institution_id" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
@@ -352,7 +428,8 @@ const buscarCurp = async () => {
                                     placeholder="Buscar o seleccionar un área..."
                                     :searchable="true"
                                     :clearable="true"
-                                    class="vue-select-custom"
+                                    :class="['vue-select-custom', { 'has-error': form.errors.priority_area_id }]"
+                                    @update:modelValue="clearError('priority_area_id')"
                                 >
                                     <template #no-options="{ search, searching }">
                                         <template v-if="searching">
@@ -361,7 +438,7 @@ const buscarCurp = async () => {
                                         <em v-else>Comienza a escribir para buscar...</em>
                                     </template>
                                 </VueSelect>
-                                <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                <div v-if="!form.errors.priority_area_id" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
@@ -385,7 +462,8 @@ const buscarCurp = async () => {
                                     placeholder="Buscar o seleccionar una subárea..."
                                     :searchable="true"
                                     :clearable="true"
-                                    class="vue-select-custom"
+                                    :class="['vue-select-custom', { 'has-error': form.errors.sub_area_id }]"
+                                    @update:modelValue="clearError('sub_area_id')"
                                 >
                                     <template #no-options="{ search, searching }">
                                         <template v-if="searching">
@@ -394,7 +472,7 @@ const buscarCurp = async () => {
                                         <em v-else>Selecciona un Área Prioritaria primero...</em>
                                     </template>
                                 </VueSelect>
-                                <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                <div v-if="!form.errors.sub_area_id" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
@@ -455,7 +533,9 @@ const buscarCurp = async () => {
 .vue-select-custom :deep(.vs__dropdown-toggle):hover {
     border-bottom-color: rgba(27, 57, 106, 0.5);
 }
-
+.vue-select-custom.has-error :deep(.vs__dropdown-toggle) {
+    border-bottom-color: #EF4444;
+}
 .vue-select-custom :deep(.vs--open .vs__dropdown-toggle) {
     background: linear-gradient(to bottom right, #EFF6FF, #DBEAFE);
     border-bottom-color: #1B396A;

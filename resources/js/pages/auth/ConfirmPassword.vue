@@ -6,7 +6,43 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import { store } from '@/routes/password/confirm';
-import { Form, Head } from '@inertiajs/vue3';
+import { Form, Head, useForm } from '@inertiajs/vue3';
+import { alertaExito, alertaError, alertaCargando, cerrarAlerta } from '@/utils/alerts.js';
+
+const form = useForm({
+    password: '',
+});
+
+const clearError = (field: string) => {
+    if (form.errors[field]) {
+        delete form.errors[field];
+    }
+};
+
+const submit = () => {
+    // Limpiar errores previos
+    form.clearErrors();
+    
+    // Validación del lado del cliente
+    if (!form.password) {
+        form.errors.password = 'La contraseña es obligatoria';
+        return;
+    }
+    
+    alertaCargando('Confirmando contraseña', 'Por favor espera...');
+    
+    form.post(route('password.confirm'), {
+        onSuccess: () => {
+            cerrarAlerta();
+            alertaExito('¡Confirmado!', 'Contraseña confirmada correctamente');
+        },
+        onError: () => {
+            cerrarAlerta();
+            alertaError('Error', 'La contraseña es incorrecta');
+        },
+        onFinish: () => form.reset('password'),
+    });
+};
 </script>
 
 <template>
@@ -16,38 +52,37 @@ import { Form, Head } from '@inertiajs/vue3';
     >
         <Head title="Confirm password" />
 
-        <Form
-            v-bind="store.form()"
-            reset-on-success
-            v-slot="{ errors, processing }"
-        >
+        <form @submit.prevent="submit">
             <div class="space-y-6">
                 <div class="grid gap-2">
                     <Label htmlFor="password">Password</Label>
                     <Input
                         id="password"
+                        v-model="form.password"
                         type="password"
                         name="password"
                         class="mt-1 block w-full"
-                        required
+                        :class="{ 'border-red-500': form.errors.password }"
                         autocomplete="current-password"
                         autofocus
+                        @input="clearError('password')"
                     />
 
-                    <InputError :message="errors.password" />
+                    <InputError :message="form.errors.password" />
                 </div>
 
                 <div class="flex items-center">
                     <Button
+                        type="submit"
                         class="w-full"
-                        :disabled="processing"
+                        :disabled="form.processing"
                         data-test="confirm-password-button"
                     >
-                        <Spinner v-if="processing" />
+                        <Spinner v-if="form.processing" />
                         Confirm Password
                     </Button>
                 </div>
             </div>
-        </Form>
+        </form>
     </AuthLayout>
 </template>

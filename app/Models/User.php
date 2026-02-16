@@ -175,4 +175,21 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $query->orderBy($sortField, $sortDirection);
     }
+
+    /**
+     * Send the password reset notification.
+     *
+     * @param  string  $token
+     * @return void
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        $resetUrl = url(route('password.reset', [
+            'token' => $token,
+            'email' => $this->email,
+        ], false));
+
+        \Illuminate\Support\Facades\Mail::to($this->email)
+            ->send(new \App\Mail\PasswordResetMail($resetUrl, $this->name));
+    }
 }

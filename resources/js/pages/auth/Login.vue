@@ -29,7 +29,30 @@ const form = useForm({
 
 const showPassword = ref(false);
 
+const clearError = (field) => {
+    if (form.errors[field]) {
+        delete form.errors[field];
+    }
+};
+
 const submit = () => {
+    // Limpiar errores previos
+    form.clearErrors();
+    
+    // Validación del lado del cliente
+    if (!form.email) {
+        form.errors.email = 'El correo electrónico es obligatorio';
+        return;
+    }
+    if (!form.email.includes('@')) {
+        form.errors.email = 'El correo electrónico debe contener un @';
+        return;
+    }
+    if (!form.password) {
+        form.errors.password = 'La contraseña es obligatoria';
+        return;
+    }
+    
     alertaCargando('Iniciando sesión', 'Por favor espera...');
     
     form.post(route('login'), {
@@ -77,12 +100,12 @@ const submit = () => {
                                     id="email"
                                     v-model="form.email"
                                     type="email"
-                                    required
                                     autofocus
                                     autocomplete="email"
                                     class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
                                     :class="{ 'border-b-red-500': form.errors.email }"
                                     placeholder="admin@example.com"
+                                    @input="clearError('email')"
                                 />
                                 <div v-if="!form.errors.email" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -105,11 +128,11 @@ const submit = () => {
                                         id="password"
                                         v-model="form.password"
                                         :type="showPassword ? 'text' : 'password'"
-                                        required
                                         autocomplete="current-password"
                                         class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 pr-10 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
                                         :class="{ 'border-b-red-500': form.errors.password }"
                                         placeholder="••••••••"
+                                        @input="clearError('password')"
                                     />
                                     <button
                                         type="button"

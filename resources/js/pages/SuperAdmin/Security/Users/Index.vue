@@ -133,7 +133,7 @@ const deleteUser = async (id) => {
 };
 
 const handleExport = () => {
-    window.location.href = route('seguridad.users.export');
+    window.location.href = route('security.users.export');
 };
 
 const toggleImportSection = () => {
@@ -151,7 +151,7 @@ const submitImport = () => {
     
     alertaCargando('Importando', 'Por favor espera...');
     
-    importForm.post(route('seguridad.users.import'), {
+    importForm.post(route('security.users.import'), {
         preserveScroll: true,
         onSuccess: () => {
             cerrarAlerta();
@@ -167,7 +167,7 @@ const submitImport = () => {
 };
 
 const downloadTemplate = () => {
-    window.location.href = route('seguridad.users.template');
+    window.location.href = route('security.users.template');
 };
 </script>
 

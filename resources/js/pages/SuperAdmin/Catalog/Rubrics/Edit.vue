@@ -2,6 +2,7 @@
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
 import { mdiBookOpenPageVariant, mdiClipboardTextOutline } from '@mdi/js';
+import { alertaExito, alertaError, alertaCargando, cerrarAlerta } from '@/utils/alerts.js';
 
 const props = defineProps({
     title: String,
@@ -23,6 +24,12 @@ const form = useForm({
     }))
 });
 
+const clearError = (field) => {
+    if (form.errors[field]) {
+        delete form.errors[field];
+    }
+};
+
 const addQuestion = () => {
     form.questions.push({
         text: '',
@@ -37,7 +44,7 @@ const removeQuestion = (index) => {
 const addOption = (qIndex) => {
     const question = form.questions[qIndex];
     if (question.options.length >= 5) {
-        alert('Máximo 5 respuestas por pregunta.');
+        alertaError('Límite alcanzado', 'Máximo 5 respuestas por pregunta.');
         return;
     }
     question.options.push({ text: '', score: 0 });
@@ -52,29 +59,92 @@ const validateScore = (qIndex, oIndex) => {
     const question = form.questions[qIndex];
     const currentScore = question.options[oIndex].score;
     
+    // Limpiar error previo
+    delete form.errors[`questions.${qIndex}.options.${oIndex}.score`];
+    
     if (currentScore < 1 || currentScore > 5) {
-        alert('El puntaje debe estar entre 1 y 5.');
-        // Optional: Reset to nearest valid value?
+        form.errors[`questions.${qIndex}.options.${oIndex}.score`] = 'Puntaje: 1-5';
         return;
     }
 
+    // Verificar duplicados
     const duplicate = question.options.some((opt, idx) => idx !== oIndex && opt.score === currentScore);
     if (duplicate) {
-        alert('El puntaje debe ser único para esta pregunta.');
+        form.errors[`questions.${qIndex}.options.${oIndex}.score`] = 'Puntaje duplicado';
     }
 };
 
 const submit = () => {
-    // Validate all unique scores before submit
-    for (const q of form.questions) {
+    // Limpiar errores previos
+    form.clearErrors();
+    
+    // Validación del lado del cliente
+    if (!form.title || form.title.trim() === '') {
+        form.errors.title = 'El título de la rúbrica es obligatorio';
+        return;
+    }
+    
+    if (form.questions.length === 0) {
+        alertaError('Faltan preguntas', 'Debes agregar al menos una pregunta a la rúbrica');
+        return;
+    }
+    
+    // Validar cada pregunta
+    for (let i = 0; i < form.questions.length; i++) {
+        const q = form.questions[i];
+        
+        if (!q.text || q.text.trim() === '') {
+            form.errors[`questions.${i}.text`] = 'El texto de la pregunta es obligatorio';
+            return;
+        }
+        
+        if (q.options.length < 2) {
+            form.errors[`questions.${i}.text`] = 'Debe tener al menos 2 opciones de respuesta';
+            return;
+        }
+        
+        // Validar cada opción
+        for (let j = 0; j < q.options.length; j++) {
+            const opt = q.options[j];
+            if (!opt.text || opt.text.trim() === '') {
+                form.errors[`questions.${i}.options.${j}.text`] = 'El texto de la respuesta es obligatorio';
+                return;
+            }
+            if (!opt.score || opt.score < 1 || opt.score > 5) {
+                form.errors[`questions.${i}.options.${j}.score`] = 'Puntaje: 1-5';
+                return;
+            }
+        }
+        
+        // Validar puntajes únicos
         const scores = q.options.map(o => o.score);
         const uniqueScores = new Set(scores);
         if (scores.length !== uniqueScores.size) {
-            alert('Existen puntajes duplicados en una de las preguntas. Por favor corrígelos.');
+            // Marcar las opciones con puntajes duplicados
+            const scoreCount = {};
+            q.options.forEach((opt, idx) => {
+                if (scoreCount[opt.score]) {
+                    form.errors[`questions.${i}.options.${idx}.score`] = 'Puntaje duplicado';
+                } else {
+                    scoreCount[opt.score] = true;
+                }
+            });
             return;
         }
     }
-    form.put(route('catalog.rubrics.update', props.rubric.data.id));
+    
+    alertaCargando('Actualizando', 'Por favor espera mientras se actualiza la rúbrica');
+    
+    form.put(route('catalog.rubrics.update', props.rubric.data.id), {
+        onSuccess: () => {
+            cerrarAlerta();
+            alertaExito('¡Éxito!', 'Rúbrica actualizada correctamente');
+        },
+        onError: () => {
+            cerrarAlerta();
+            alertaError('Error', 'Hubo un problema al actualizar la rúbrica');
+        }
+    });
 };
 </script>
 
@@ -121,7 +191,13 @@ const submit = () => {
                      <!-- Título -->
                     <div>
                         <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Título de la Rúbrica: <span class="text-red-500">*</span></label>
-                        <input v-model="form.title" type="text" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" placeholder="Escribe el titulo..." required>
+                        <input v-model="form.title" type="text" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors.title }" placeholder="Escribe el titulo..." @input="clearError('title')">
+                        <div v-if="!form.errors.title" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Por favor, introduce el título de la rúbrica</span>
+                        </div>
                         <p v-if="form.errors.title" class="mt-1 text-sm text-red-600">{{ form.errors.title }}</p>
                     </div>
 
@@ -130,8 +206,8 @@ const submit = () => {
                         <div class="mb-4">
                              <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Pregunta {{ qIndex + 1 }}: <span class="text-red-500">*</span></label>
                              <div class="flex gap-2">
-                                 <input v-model="question.text" type="text" class="bg-white border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" placeholder="Escribe la pregunta..." required>
-                                 <button type="button" @click="removeQuestion(qIndex)" class="p-2 text-red-600 hover:bg-red-50 rounded-full border border-red-200 transition">
+                                 <input v-model="question.text" type="text" class="bg-white border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors[`questions.${qIndex}.text`] }" placeholder="Escribe la pregunta..." @input="clearError(`questions.${qIndex}.text`)">
+                                 <button type="button" @click="removeQuestion(qIndex)" class="p-2 text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition cursor-pointer" title="Eliminar pregunta">
                                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>
                                  </button>
                              </div>
@@ -149,15 +225,15 @@ const submit = () => {
                             <div v-for="(option, oIndex) in question.options" :key="oIndex" class="flex flex-col md:flex-row gap-4 items-start border-b border-gray-100 pb-3 last:border-0 last:pb-0">
                                 <div class="w-full md:flex-1">
                                     <label class="block text-xs font-medium text-gray-500 mb-1">Respuesta {{ oIndex + 1 }}:</label>
-                                    <input v-model="option.text" type="text" class="bg-white border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" placeholder="Escribe la respuesta..." required>
+                                    <input v-model="option.text" type="text" class="bg-white border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors[`questions.${qIndex}.options.${oIndex}.text`] }" placeholder="Escribe la respuesta..." @input="clearError(`questions.${qIndex}.options.${oIndex}.text`)">
                                     <p v-if="form.errors[`questions.${qIndex}.options.${oIndex}.text`]" class="text-red-600 text-xs mt-1">{{ form.errors[`questions.${qIndex}.options.${oIndex}.text`] }}</p>
                                 </div>
                                 <div class="w-full md:w-32 flex gap-2 items-end">
                                     <div class="flex-1">
                                         <label class="block text-xs font-medium text-gray-500 mb-1">Puntaje (1-5):</label>
-                                         <input v-model="option.score" type="number" min="1" max="5" class="bg-white border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" required @input="validateScore(qIndex, oIndex)">
+                                         <input v-model="option.score" type="number" class="bg-white border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors[`questions.${qIndex}.options.${oIndex}.score`] }" @input="validateScore(qIndex, oIndex)">
                                     </div>
-                                    <button type="button" @click="removeOption(qIndex, oIndex)" class="p-2.5 mb-[1px] text-red-600 hover:bg-red-50 rounded-lg border border-red-200 transition bg-white" title="Eliminar respuesta">
+                                    <button type="button" @click="removeOption(qIndex, oIndex)" class="p-2.5 mb-[1px] text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition cursor-pointer" title="Eliminar respuesta">
                                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>
                                     </button>
                                 </div>

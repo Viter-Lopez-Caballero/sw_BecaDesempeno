@@ -176,6 +176,11 @@ class PermissionSeeder extends Seeder
                 'recognitions.create',
                 'recognitions.edit',
                 'recognitions.toggle',
+                
+                // Documents (for viewing application documents)
+                'documents.index',
+                'documents.show',
+                'documents.download',
             ])->get();
             $admin->syncPermissions($adminPermissions);
             $this->command->info("✅ {$adminPermissions->count()} permissions assigned to Admin.");

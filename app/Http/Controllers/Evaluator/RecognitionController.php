@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use setasign\Fpdi\Fpdi;
 
 class RecognitionController extends Controller
@@ -65,14 +64,15 @@ class RecognitionController extends Controller
             ->first();
 
         if (!$recognition) {
-            abort(404);
+            abort(404, 'Reconocimiento no encontrado.');
         }
 
         // Path to the template
         $templatePath = storage_path('app/templates/reconocimiento_template.pdf');
 
         if (!file_exists($templatePath)) {
-            abort(500, 'La plantilla de reconocimiento no fue encontrada.');
+            // If template doesn't exist, generate a simple PDF without template
+            return $this->generateSimplePdf($recognition, $user);
         }
 
         // Initialize FPDI
@@ -118,5 +118,87 @@ class RecognitionController extends Controller
         // Output PDF
         return response($pdf->Output('S'), 200)
             ->header('Content-Type', 'application/pdf');
+    }
+
+    /**
+     * Generate a simple PDF without template
+     */
+    private function generateSimplePdf($recognition, $user)
+    {
+        // Require FPDF
+        require_once(base_path('vendor/setasign/fpdf/fpdf.php'));
+        
+        $pdf = new \FPDF('L', 'mm', 'A4');
+        
+        // Add a page
+        $pdf->AddPage();
+        
+        // Background with border
+        $pdf->SetDrawColor(27, 57, 106);
+        $pdf->SetLineWidth(1.5);
+        $pdf->Rect(10, 10, 277, 190);
+        
+        $pdf->SetLineWidth(0.3);
+        $pdf->Rect(15, 15, 267, 180);
+        
+        // Title
+        $pdf->SetFont('Arial', 'B', 28);
+        $pdf->SetTextColor(27, 57, 106);
+        $pdf->SetXY(20, 40);
+        $pdf->Cell(257, 15, iconv('UTF-8', 'ISO-8859-1', 'RECONOCIMIENTO'), 0, 1, 'C');
+        
+        // Subtitle
+        $pdf->SetFont('Arial', '', 12);
+        $pdf->SetTextColor(100, 100, 100);
+        $pdf->SetXY(20, 58);
+        $pdf->Cell(257, 8, iconv('UTF-8', 'ISO-8859-1', 'Se otorga el presente reconocimiento a:'), 0, 1, 'C');
+        
+        // Evaluator name
+        $pdf->SetFont('Arial', 'B', 22);
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->SetXY(20, 75);
+        $pdf->Cell(257, 12, iconv('UTF-8', 'ISO-8859-1', $user->name), 0, 1, 'C');
+        
+        // Line under name
+        $pdf->SetLineWidth(0.5);
+        $pdf->SetDrawColor(0, 0, 0);
+        $pdf->Line(80, 93, 217, 93);
+        
+        // Recognition text
+        $pdf->SetFont('Arial', '', 12);
+        $pdf->SetTextColor(60, 60, 60);
+        $pdf->SetXY(20, 100);
+        $pdf->Cell(257, 8, iconv('UTF-8', 'ISO-8859-1', 'Por su valiosa participaci\363n como evaluador en la convocatoria:'), 0, 1, 'C');
+        
+        // Announcement name
+        $pdf->SetFont('Arial', 'B', 15);
+        $pdf->SetTextColor(27, 57, 106);
+        $pdf->SetXY(20, 112);
+        $pdf->MultiCell(257, 8, iconv('UTF-8', 'ISO-8859-1', $recognition->convocatoria_nombre), 0, 'C');
+        
+        // Additional text
+        $pdf->SetFont('Arial', '', 11);
+        $pdf->SetTextColor(80, 80, 80);
+        $pdf->SetXY(20, 135);
+        $pdf->MultiCell(257, 6, iconv('UTF-8', 'ISO-8859-1', 'Agradecemos su compromiso y dedicaci\363n en el proceso de evaluaci\363n, contribuyendo al desarrollo acad\351mico y profesional de nuestros docentes.'), 0, 'C');
+        
+        // Date
+        $pdf->SetFont('Arial', 'I', 10);
+        $pdf->SetTextColor(100, 100, 100);
+        $dateText = "Emitido el " . \Carbon\Carbon::parse($recognition->sent_at)->isoFormat('D [de] MMMM [de] YYYY');
+        $pdf->SetXY(20, 160);
+        $pdf->Cell(257, 8, iconv('UTF-8', 'ISO-8859-1', $dateText), 0, 1, 'C');
+        
+        // Footer
+        $pdf->SetFont('Arial', '', 8);
+        $pdf->SetTextColor(120, 120, 120);
+        $pdf->SetXY(20, 180);
+        $pdf->Cell(257, 5, iconv('UTF-8', 'ISO-8859-1', 'Tecnol\363gico Nacional de M\351xico'), 0, 1, 'C');
+        
+        // Output PDF
+        $filename = 'Reconocimiento_' . str_replace(' ', '_', $user->name) . '.pdf';
+        return response($pdf->Output('I', $filename), 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'inline; filename="' . $filename . '"');
     }
 }

@@ -8,6 +8,7 @@ import { useCan } from '@/composables/usePermissions';
 import _ from 'lodash';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
+import { alertaPregunta, alertaExito, alertaError } from '@/utils/alerts.js';
 
 const props = defineProps({
     rubrics: {
@@ -80,26 +81,32 @@ const sortBy = (field) => {
 const toggleActive = (rubric) => {
     router.post(route('catalog.rubrics.toggle-active', rubric.id), {}, {
         preserveScroll: true,
-        onError: (errors) => {
-             // If error occurs, revert the checkbox visually or alert user
-             // Since it's a checkbox, the simplest (lazy) way to revert is to force a reload or just alert.
-             // We can also rely on the flash message if using a global toast, but let's be explicit.
-             if (errors.error) {
-                 alert(errors.error); // Show the backend error message
-                 // Reload to revert checkbox state visually if needed, though inertia might handle it if preserving state
-                 location.reload(); 
-             }
+        onSuccess: () => {
+            alertaExito('Actualizado', 'El estado de la rúbrica ha sido actualizado correctamente');
         },
-        onFinish: () => {
-             // Ensure state is synced
+        onError: (errors) => {
+            if (errors.error) {
+                alertaError('Error', errors.error);
+                location.reload(); 
+            } else {
+                alertaError('Error', 'No se pudo actualizar el estado de la rúbrica');
+            }
         }
     });
 };
 
 const deleteItem = (id) => {
-    if (confirm('¿Estás seguro de eliminar esta rúbrica?')) {
-        router.delete(route('catalog.rubrics.destroy', id));
-    }
+    alertaPregunta(
+        '¿Estás seguro?',
+        'Esta acción no se puede deshacer',
+        () => {
+            router.delete(route('catalog.rubrics.destroy', id), {
+                preserveScroll: true,
+                onSuccess: () => alertaExito('¡Eliminado!', 'La rúbrica ha sido eliminada exitosamente'),
+                onError: () => alertaError('Error', 'No se pudo eliminar la rúbrica')
+            });
+        }
+    );
 };
 </script>
 

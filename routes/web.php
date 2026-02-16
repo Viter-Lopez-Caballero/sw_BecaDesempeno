@@ -268,8 +268,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Announcements
-    Route::get('announcements/{announcement}/download', [AnnouncementController::class, 'download'])->name('announcements.download');
-    Route::put('announcements/{announcement}/documents', [AnnouncementController::class, 'updateDocumentos'])->name('announcements.updateDocuments');
+    Route::get('announcements/{announcement}/download', [AnnouncementController::class, 'download'])->name('announcements.download')->middleware('permission:announcements.index');
+    Route::put('announcements/{announcement}/documents', [AnnouncementController::class, 'updateDocumentos'])->name('announcements.updateDocuments')->middleware('permission:announcements.edit');
     Route::resource('announcements', AnnouncementController::class)->names([
         'index' => 'announcements.index',
         'create' => 'announcements.create',
@@ -312,7 +312,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // }); // Removed nested group closing brace
 
     // Modules accessible by permission (Admin/SuperAdmin)
-    Route::middleware(['can:documents.index'])->prefix('admin')->name('admin.')->group(function () {
+    Route::middleware(['role:Admin|Super Admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::resource('documents', \App\Http\Controllers\Admin\DocumentController::class)->only(['index', 'show']);
         Route::get('documents/{document}/download', [\App\Http\Controllers\Admin\DocumentController::class, 'download'])->name('documents.download');
         Route::get('documents/{document}/stream', [\App\Http\Controllers\Admin\DocumentController::class, 'stream'])->name('documents.stream');

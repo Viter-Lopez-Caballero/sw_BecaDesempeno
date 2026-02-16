@@ -15,6 +15,10 @@ const props = defineProps({
         type: String,
         required: true,
     },
+    requiredDocuments: {
+        type: Array,
+        default: () => [],
+    },
 });
 
 const form = useForm({
@@ -22,6 +26,7 @@ const form = useForm({
     description: '',
     file: null,
     image: null,
+    documents: [], // IDs de documentos seleccionados
     // Calendar Fields
     publication_start: '',
     registration_start: '',
@@ -101,6 +106,15 @@ const removeImage = () => {
     imagenNombre.value = null;
     imagenPreview.value = null;
     imagenUrl.value = null;
+};
+
+const toggleDocument = (docId) => {
+    const index = form.documents.indexOf(docId);
+    if (index > -1) {
+        form.documents.splice(index, 1);
+    } else {
+        form.documents.push(docId);
+    }
 };
 
 const submit = () => {
@@ -272,6 +286,45 @@ const submit = () => {
                                 <span>Sube el documento oficial de la convocatoria</span>
                             </div>
                             <p v-if="form.errors.file" class="mt-1 text-sm text-red-600">{{ form.errors.file }}</p>
+                        </div>
+                        
+                        <!-- Documentos Requeridos Section -->
+                        <div v-if="requiredDocuments && requiredDocuments.length > 0" class="col-span-2">
+                            <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Documentos Requeridos:</label>
+                            <div class="bg-[#F3F4F6] rounded-lg p-4 border border-gray-200">
+                                <p class="text-sm text-gray-600 mb-4">Selecciona los documentos que los docentes deberán subir al solicitar esta convocatoria:</p>
+                                
+                                <div class="space-y-2 max-h-64 overflow-y-auto pr-2">
+                                    <div v-for="doc in requiredDocuments" :key="doc.id" class="flex items-center gap-3 p-3 bg-white rounded-lg hover:bg-gray-50 transition border border-gray-100">
+                                        <input 
+                                            :id="`doc-${doc.id}`" 
+                                            type="checkbox" 
+                                            :checked="form.documents.includes(doc.id)" 
+                                            @change="toggleDocument(doc.id)" 
+                                            class="w-4 h-4 text-[#1B396A] bg-gray-100 border-gray-300 rounded focus:ring-[#1B396A] focus:ring-2" 
+                                        />
+                                        <label :for="`doc-${doc.id}`" class="flex-1 cursor-pointer">
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-medium text-gray-900">{{ doc.name }}</span>
+                                                <span v-if="doc.is_mandatory" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                    Obligatorio
+                                                </span>
+                                                <span class="text-xs font-medium uppercase px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">
+                                                    {{ doc.file_type }}
+                                                </span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-1">{{ doc.description || 'Sin descripción' }}</p>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+                                    <span class="text-sm text-gray-600">
+                                        <strong>{{ form.documents.length }}</strong> de <strong>{{ requiredDocuments.length }}</strong> documentos seleccionados
+                                    </span>
+                                    <p class="text-xs text-gray-500">Los documentos se vincularán al crear la convocatoria</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

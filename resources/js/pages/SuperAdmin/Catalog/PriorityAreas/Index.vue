@@ -236,7 +236,7 @@ const deleteItem = async (id) => {
                         </div>
 
                         <div class="flex justify-end gap-3 pt-4">
-                            <button @click="toggleImportSection" type="button" class="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition">
+                            <button @click="toggleImportSection" type="button" class="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition cursor-pointer">
                                 Cancelar
                             </button>
                             <button 

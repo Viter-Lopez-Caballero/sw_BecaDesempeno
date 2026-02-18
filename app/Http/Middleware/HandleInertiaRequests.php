@@ -41,7 +41,16 @@ class HandleInertiaRequests extends Middleware
         // Get unread notifications count for Admin, Evaluador, Docente
         $unreadNotifications = 0;
         if ($request->user() && $request->user()->hasAnyRole(['Admin', 'Evaluador', 'Docente'])) {
-            $unreadNotifications = \App\Models\Notification::unread()->count();
+            // Check if user_id column exists in notifications table
+            if (\Schema::hasColumn('notifications', 'user_id')) {
+                // Only count notifications assigned to this specific user
+                $unreadNotifications = \App\Models\Notification::unread()
+                    ->where('user_id', $request->user()->id)
+                    ->count();
+            } else {
+                // Fallback to old behavior (all notifications)
+                $unreadNotifications = \App\Models\Notification::unread()->count();
+            }
         }
 
         return [

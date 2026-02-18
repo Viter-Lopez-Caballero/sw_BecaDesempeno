@@ -224,15 +224,15 @@ const viewDetails = (id) => {
             </div>
 
             <!-- Tabs -->
-            <div class="bg-gray-900 rounded-lg overflow-hidden">
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
                 <div class="flex">
                     <button 
                         @click="switchTab('requeridos')" 
                         :class="[
-                            'flex-1 px-6 py-4 text-base font-medium transition-all flex items-center justify-center gap-2',
+                            'flex-1 px-6 py-4 text-base font-medium transition-all flex items-center justify-center gap-2 border-r border-gray-200',
                             currentTab === 'requeridos' 
-                                ? 'bg-[#2563EB] text-white' 
-                                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                                ? 'bg-[#1B396A] text-white' 
+                                : 'bg-white text-gray-700 hover:bg-gray-100'
                         ]"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
@@ -245,8 +245,8 @@ const viewDetails = (id) => {
                         :class="[
                             'flex-1 px-6 py-4 text-base font-medium transition-all flex items-center justify-center gap-2',
                             currentTab === 'docentes' 
-                                ? 'bg-[#2563EB] text-white' 
-                                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                                ? 'bg-[#1B396A] text-white' 
+                                : 'bg-white text-gray-700 hover:bg-gray-100'
                         ]"
                     >
                         <svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor">

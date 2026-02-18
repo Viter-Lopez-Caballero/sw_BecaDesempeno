@@ -160,13 +160,12 @@ const submit = () => {
 
 <style scoped>
 :deep(.vue-select-custom .vs__dropdown-toggle) {
-    background: linear-gradient(to bottom right, #F3F4F6, #E5E7EB);
+    background: #F3F4F6;
     border: none;
-    border-bottom: 2px solid #D1D5DB;
+    border-bottom: 2px solid #d1d5db;
     border-radius: 0.5rem;
     padding: 0.625rem 0.75rem;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    transition: all 0.2s;
+    min-height: 42px;
 }
 
 :deep(.vue-select-custom .vs__selected) {
@@ -188,7 +187,6 @@ const submit = () => {
 
 :deep(.vue-select-custom .vs__dropdown-toggle:focus-within) {
     border-bottom-color: #1B396A;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05), 0 0 0 3px rgba(27, 57, 106, 0.1);
 }
 
 :deep(.vue-select-custom .vs__dropdown-menu) {
@@ -209,16 +207,21 @@ const submit = () => {
 
 :deep(.vue-select-custom .vs__open-indicator) {
     fill: #1B396A;
-    transform: scale(0.70);
+    transform: scale(0.85);
 }
 
 :deep(.vue-select-custom .vs__actions) {
     padding-right: 4px;
 }
 
-:deep(.vue-select-custom .vs__clear) {
-    fill: #6B7280;
-    transform: scale(0.70);
+:deep(.vue-select-custom .vs__clear),
+:deep(.vue-select-custom .vs__open-indicator) {
+    fill: #1B396A;
+    transition: transform 0.2s;
+}
+
+:deep(.vue-select-custom .vs__open-indicator) {
+    transform: scale(0.85);
 }
 
 .vue-select-error :deep(.vs__dropdown-toggle) {

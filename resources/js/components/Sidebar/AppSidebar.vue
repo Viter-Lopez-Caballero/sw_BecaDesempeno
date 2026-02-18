@@ -73,7 +73,7 @@
                     <p class="text-sm font-medium truncate">{{ userName }}</p>
                     <p class="text-xs text-gray-400 truncate">{{ userEmail }}</p>
                 </div>
-                <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0 transition-transform duration-200" :class="{ 'rotate-180': profileMenuOpen }">
+                <svg viewBox="0 0 24 24" class="w-3.5 h-3.5 flex-shrink-0 transition-transform duration-200" :class="{ 'rotate-180': profileMenuOpen }">
                     <path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"/>
                 </svg>
             </button>
@@ -111,7 +111,7 @@
                             class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
                             @click="profileMenuOpen = false"
                         >
-                            <svg viewBox="0 0 24 24" class="w-5 h-5 mr-3 text-[#1e3a5f]">
+                            <svg viewBox="0 0 24 24" class="w-4 h-4 mr-3 text-[#1e3a5f]">
                                 <path fill="currentColor" :d="mdiAccount"/>
                             </svg>
                             <span class="font-medium">Perfil</span>
@@ -123,7 +123,7 @@
                             class="w-full flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-red-50 transition-colors duration-150 border-t border-gray-100"
                             @click="profileMenuOpen = false"
                         >
-                            <svg viewBox="0 0 24 24" class="w-5 h-5 mr-3 text-red-600">
+                            <svg viewBox="0 0 24 24" class="w-4 h-4 mr-3 text-red-600">
                                 <path fill="currentColor" :d="mdiLogout"/>
                             </svg>
                             <span class="font-medium">Cerrar sesión</span>

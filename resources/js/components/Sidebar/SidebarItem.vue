@@ -15,14 +15,14 @@
                     ]"
                 >
                     <div class="flex items-center">
-                        <svg viewBox="0 0 24 24" class="w-5 h-5 flex-shrink-0">
+                        <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0">
                             <path fill="currentColor" :d="item.icon || mdiViewModule"/>
                         </svg>
                         <span class="ml-3 text-sm font-medium">{{ item.label }}</span>
                     </div>
                     <svg
                         viewBox="0 0 24 24"
-                        class="w-4 h-4 transition-transform duration-200"
+                        class="w-3.5 h-3.5 transition-transform duration-200"
                         :class="{ 'rotate-90': isExpanded }"
                     >
                         <path fill="currentColor" d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"/>
@@ -54,7 +54,7 @@
                     ]"
                     :title="item.label"
                 >
-                    <svg viewBox="0 0 24 24" class="w-5 h-5 flex-shrink-0">
+                    <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0">
                         <path fill="currentColor" :d="item.icon || mdiViewModule"/>
                     </svg>
                 </Link>
@@ -78,7 +78,7 @@
             ]"
             :title="collapsed && !isMobile ? item.label : ''"
         >
-            <svg v-if="item.icon" viewBox="0 0 24 24" :class="[isChild ? 'w-4 h-4' : 'w-5 h-5', 'flex-shrink-0']">
+            <svg v-if="item.icon" viewBox="0 0 24 24" :class="[isChild ? 'w-3.5 h-3.5' : 'w-4 h-4', 'flex-shrink-0']">
                 <path fill="currentColor" :d="item.icon"/>
             </svg>
             <span v-show="!collapsed || isMobile || isChild" class="ml-3 text-sm font-medium">{{ item.label }}</span>

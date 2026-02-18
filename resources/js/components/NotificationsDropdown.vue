@@ -84,21 +84,39 @@
                                         <span v-if="!notification.read_at" class="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full"></span>
                                     </div>
                                     
-                                    <!-- Weekday Data -->
-                                    <div v-if="notification.data" class="grid grid-cols-2 gap-2 mb-2">
-                                        <div
-                                            v-for="(value, day) in notification.data"
-                                            :key="day"
-                                            class="bg-white border border-gray-200 rounded px-2 py-1 text-xs"
-                                        >
-                                            <span class="font-medium text-gray-700">{{ day }}:</span>
-                                            <span class="text-[#1B396A] font-bold ml-1">{{ value }}</span>
+                                    <!-- Notification Content Based on Type -->
+                                    <div v-if="notification.type === 'weekly_summary' && notification.data" class="mb-2">
+                                        <div class="bg-gradient-to-r from-[#1B396A] to-[#2d5a9e] text-white rounded px-3 py-2 text-sm font-semibold">
+                                            Total de Solicitudes: {{ notification.data.total || 0 }}
                                         </div>
                                     </div>
 
-                                    <!-- Total -->
-                                    <div v-if="notification.data" class="bg-gradient-to-r from-[#1B396A] to-[#2d5a9e] text-white rounded px-3 py-1.5 text-xs font-semibold inline-block mb-2">
-                                        Total Semanal: {{ calculateTotal(notification.data) }}
+                                    <div v-else-if="notification.type === 'evaluator_assignment' && notification.data" class="mb-2">
+                                        <p class="text-sm text-gray-700 mb-1">{{ notification.data.message }}</p>
+                                        <div class="bg-gradient-to-r from-[#1B396A] to-[#2d5a9e] text-white rounded px-3 py-2 text-sm font-semibold">
+                                            Evaluaciones asignadas: {{ notification.data.count || 0 }}
+                                        </div>
+                                    </div>
+
+                                    <div v-else-if="notification.type === 'application_verdict' && notification.data" class="mb-2">
+                                        <p class="text-sm" :class="notification.data.status === 'approved' ? 'text-green-700' : 'text-red-700'">
+                                            {{ notification.data.message }}
+                                        </p>
+                                    </div>
+
+                                    <div v-else-if="notification.type === 'announcement_stage_change' && notification.data" class="mb-2">
+                                        <p class="text-sm text-gray-700">{{ notification.data.message }}</p>
+                                        <div class="bg-blue-100 text-blue-800 rounded px-3 py-1 text-xs font-medium inline-block mt-1">
+                                            {{ notification.data.stage }}
+                                        </div>
+                                    </div>
+
+                                    <div v-else-if="notification.type === 'announcement_date_change' && notification.data" class="mb-2">
+                                        <p class="text-sm text-gray-700">{{ notification.data.message }}</p>
+                                    </div>
+
+                                    <div v-else-if="notification.data && typeof notification.data === 'object'" class="mb-2">
+                                        <p class="text-sm text-gray-700">{{ notification.data.message || JSON.stringify(notification.data) }}</p>
                                     </div>
 
                                     <p class="text-xs text-gray-500">
@@ -155,6 +173,25 @@ const unreadCount = computed(() => page.props.unreadNotifications || 0);
 // Check if there are unread notifications
 const hasUnread = computed(() => notifications.value.some(n => !n.read_at));
 
+// Get notification route based on user role
+const getNotificationRoute = (action) => {
+    // Use primaryRole or check roles array
+    const primaryRole = page.props.auth?.primaryRole;
+    const userRoles = page.props.auth?.roles;
+    
+    let prefix = 'admin';
+    
+    if (primaryRole === 'Admin' || (userRoles && userRoles.includes && userRoles.includes('Admin'))) {
+        prefix = 'admin';
+    } else if (primaryRole === 'Evaluador' || (userRoles && userRoles.includes && userRoles.includes('Evaluador'))) {
+        prefix = 'evaluator';
+    } else if (primaryRole === 'Docente' || (userRoles && userRoles.includes && userRoles.includes('Docente'))) {
+        prefix = 'teacher';
+    }
+    
+    return `${prefix}.notifications.${action}`;
+};
+
 // Toggle dropdown
 const toggleDropdown = async () => {
     isOpen.value = !isOpen.value;
@@ -167,7 +204,7 @@ const toggleDropdown = async () => {
 const loadNotifications = async () => {
     loading.value = true;
     try {
-        const response = await fetch(route('admin.notifications.index'), {
+        const response = await fetch(route(getNotificationRoute('index')), {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json',
@@ -185,7 +222,7 @@ const loadNotifications = async () => {
 // Mark as read
 const markAsRead = async (id) => {
     try {
-        await router.post(route('admin.notifications.mark-as-read', id), {}, {
+        await router.post(route(getNotificationRoute('mark-as-read'), id), {}, {
             preserveScroll: true,
             preserveState: true,
             onSuccess: () => {
@@ -209,7 +246,7 @@ const markAsRead = async (id) => {
 // Mark all as read
 const markAllAsRead = async () => {
     try {
-        await router.post(route('admin.notifications.mark-all-as-read'), {}, {
+        await router.post(route(getNotificationRoute('mark-all-as-read')), {}, {
             preserveScroll: true,
             preserveState: true,
             onSuccess: () => {
@@ -232,7 +269,7 @@ const markAllAsRead = async () => {
 // Delete notification
 const deleteNotification = async (id) => {
     try {
-        await router.delete(route('admin.notifications.destroy', id), {
+        await router.delete(route(getNotificationRoute('destroy'), id), {
             preserveScroll: true,
             preserveState: true,
             onSuccess: () => {

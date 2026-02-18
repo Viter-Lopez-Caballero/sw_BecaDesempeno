@@ -200,12 +200,14 @@ const deleteItem = async (id) => {
                             </svg>
                             <h2 class="text-xl font-semibold text-gray-800">Importar Instituciones</h2>
                         </div>
-                        <div class="flex items-center gap-2">                            <button @click="downloadTemplate" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-sm font-medium transition cursor-pointer">
+                        <div class="flex items-center gap-2">                            
+                            <button @click="downloadTemplate" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-sm font-medium transition cursor-pointer">
                                 <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
                                     <path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
                                 </svg>
                                 Descargar Plantilla
-                            </button>                            <button @click="toggleImportSection" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-sm font-medium transition cursor-pointer">
+                            </button>                            
+                            <button @click="toggleImportSection" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-sm font-medium transition cursor-pointer">
                                 <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
                                     <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/>
                                 </svg>
@@ -236,7 +238,7 @@ const deleteItem = async (id) => {
                         </div>
 
                         <div class="flex justify-end gap-3 pt-4">
-                            <button @click="toggleImportSection" type="button" class="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition">
+                            <button @click="toggleImportSection" type="button" class="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition cursor-pointer">
                                 Cancelar
                             </button>
                             <button 

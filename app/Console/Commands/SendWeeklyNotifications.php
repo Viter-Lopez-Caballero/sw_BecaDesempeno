@@ -77,18 +77,20 @@ class SendWeeklyNotifications extends Command
 
         $totalApplications = array_sum($weeklyData);
 
-        // Create notification in database
-        $notification = Notification::create([
-            'title' => 'Resumen Semanal de Solicitudes',
-            'data' => $weeklyData,
-            'type' => 'weekly_summary',
-        ]);
-
         // Get all administrators
         $admins = User::role('Admin')->get();
 
-        // Send email to each administrator
+        // Create notification and send email to each administrator
         foreach ($admins as $admin) {
+            // Create individual notification for each admin
+            Notification::create([
+                'user_id' => $admin->id,
+                'title' => 'Resumen Semanal de Solicitudes',
+                'data' => ['total' => $totalApplications],
+                'type' => 'weekly_summary',
+            ]);
+
+            // Send email
             try {
                 Mail::to($admin->email)->send(new WeeklyApplicationsSummary($weeklyData, $totalApplications));
                 $this->info("Email sent to {$admin->email}");
@@ -97,7 +99,7 @@ class SendWeeklyNotifications extends Command
             }
         }
 
-        $this->info("Weekly notification created and emails sent to {$admins->count()} administrators.");
+        $this->info("Weekly notifications created and emails sent to {$admins->count()} administrators.");
         $this->info("Total applications this week: {$totalApplications}");
     }
 }

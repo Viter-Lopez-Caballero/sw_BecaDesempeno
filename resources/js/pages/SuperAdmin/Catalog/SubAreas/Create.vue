@@ -203,17 +203,17 @@ const submit = () => {
     color: white;
 }
 
-:deep(.vue-select-custom .vs__open-indicator) {
-    fill: #1B396A;
-    transform: scale(0.70);
-}
-
 :deep(.vue-select-custom .vs__actions) {
     padding-right: 4px;
 }
 
-:deep(.vue-select-custom .vs__clear) {
-    fill: #6B7280;
+:deep(.vue-select-custom .vs__clear),
+:deep(.vue-select-custom .vs__open-indicator) {
+    fill: #1B396A;
+    transition: transform 0.2s;
+}
+
+:deep(.vue-select-custom .vs__open-indicator) {
     transform: scale(0.70);
 }
 

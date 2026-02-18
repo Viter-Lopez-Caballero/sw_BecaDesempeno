@@ -10,6 +10,7 @@ class Notification extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'title',
         'data',
         'type',
@@ -20,6 +21,14 @@ class Notification extends Model
         'data' => 'array',
         'read_at' => 'datetime',
     ];
+
+    /**
+     * Get the user that owns the notification
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     /**
      * Scope for unread notifications

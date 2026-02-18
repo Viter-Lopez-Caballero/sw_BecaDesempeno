@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 
@@ -17,10 +16,8 @@ class NotificationController extends Controller
         
         // Check if user_id column exists before filtering
         if (\Schema::hasColumn('notifications', 'user_id')) {
-            $query->where(function($q) {
-                $q->where('user_id', auth()->id())
-                  ->orWhereNull('user_id');
-            });
+            // Only show notifications assigned to this specific user
+            $query->where('user_id', auth()->id());
         }
         
         $notifications = $query
@@ -49,7 +46,7 @@ class NotificationController extends Controller
         $notification = Notification::findOrFail($id);
         $notification->markAsRead();
 
-        return back()->with('success', 'Notificación marcada como leída');
+        return response()->json(['success' => true]);
     }
 
     /**
@@ -57,9 +54,17 @@ class NotificationController extends Controller
      */
     public function markAllAsRead()
     {
-        Notification::whereNull('read_at')->update(['read_at' => now()]);
+        $query = Notification::whereNull('read_at');
+        
+        // Filter by user if user_id column exists
+        if (\Schema::hasColumn('notifications', 'user_id')) {
+            // Only mark as read notifications assigned to this specific user
+            $query->where('user_id', auth()->id());
+        }
+        
+        $query->update(['read_at' => now()]);
 
-        return back()->with('success', 'Todas las notificaciones marcadas como leídas');
+        return response()->json(['success' => true]);
     }
 
     /**
@@ -70,6 +75,6 @@ class NotificationController extends Controller
         $notification = Notification::findOrFail($id);
         $notification->delete();
 
-        return back()->with('success', 'Notificación eliminada correctamente');
+        return response()->json(['success' => true]);
     }
 }

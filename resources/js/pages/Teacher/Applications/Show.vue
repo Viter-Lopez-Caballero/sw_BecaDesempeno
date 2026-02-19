@@ -102,12 +102,26 @@ const getFileIcon = (type) => {
                     <p class="text-sm text-gray-600" v-if="application.status === 'pending'">
                         Tu solicitud está siendo revisada por el comité. Te notificaremos cuando haya una actualización.
                     </p>
-                    <div v-else class="text-sm">
+                     <div v-else class="text-sm">
                          <p class="text-gray-600 mb-1">Evaluada el {{ new Date(application.updated_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) }}</p>
                          <div v-if="application.status === 'rejected' && application.admin_comment" class="bg-gray-50 p-3 rounded-md border border-gray-100 mt-2">
                             <span class="font-bold text-gray-800 block mb-1">Motivo:</span>
                             <p class="text-gray-700">"{{ application.admin_comment }}"</p>
                          </div>
+                         
+                         <!-- Download Acceptance Letter -->
+                         <div v-if="application.status === 'approved'" class="mt-4">
+                            <a 
+                                :href="route('teacher.documents.downloadAcceptance', application.id)" 
+                                target="_blank"
+                                class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition shadow-sm text-sm"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Descargar Carta de Aceptación
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -91,7 +91,7 @@ class TeacherController extends Controller
         return Inertia::render('Teacher/Announcements/Index', [
             'announcements' => \App\Http\Resources\Catalog\AnnouncementResource::collection($announcements),
             'has_active_application' => \App\Models\Application::where('user_id', auth()->id())
-                ->whereIn('status', ['pending', 'approved'])
+                ->where('status', 'pending')
                 ->exists(),
         ]);
     }
@@ -100,14 +100,26 @@ class TeacherController extends Controller
     {
         $announcement = \App\Models\Announcement::with(['catalogDocuments', 'calendar'])->findOrFail($id);
 
-        // Check if user already has an active application (pending or approved)
-        $existing = \App\Models\Application::where('user_id', auth()->id())
-            ->whereIn('status', ['pending', 'approved'])
+        // Check if user already has an active application for THIS announcement
+        $alreadyApplied = \App\Models\Application::where('user_id', auth()->id())
+            ->where('announcement_id', $id)
             ->exists();
 
-        if ($existing) {
-             return redirect()->route('teacher.dashboard')->with('error', 'Ya tienes una solicitud en proceso. No puedes aplicar a otra.');
+        if ($alreadyApplied) {
+            return redirect()->route('teacher.dashboard')->with('error', 'Ya has aplicado a esta convocatoria.');
         }
+
+        // Check if user has any pending application (cannot have two pending at once)
+        $hasPending = \App\Models\Application::where('user_id', auth()->id())
+            ->where('status', 'pending')
+            ->exists();
+
+        if ($hasPending) {
+             return redirect()->route('teacher.dashboard')->with('error', 'Tienes una solicitud pendiente de veredicto. Espera a que sea evaluada.');
+        }
+        
+        // Allowed to proceed even if they have "approved" applications from other announcements
+
 
         // Get documents for this announcement (from catalog)
         $documents = $announcement->catalogDocuments()
@@ -140,7 +152,7 @@ class TeacherController extends Controller
             // Files are validated manually to allow mix of upload vs reuse
             'files' => 'nullable|array',
             'files.*' => 'file|mimes:pdf|max:10240', // 10MB max
-            'file_types' => 'required|array', // Maps key to document name
+            'file_types' => 'nullable|array', // Maps key to document name (empty when all reused)
             'reused_documents' => 'nullable|array', // Array of doc_ids to reuse
         ]);
 
@@ -233,5 +245,60 @@ class TeacherController extends Controller
         });
 
         return redirect()->route('teacher.dashboard')->with('success', 'Solicitud enviada correctamente.');
+    }
+    public function downloadAcceptance($id)
+    {
+        $application = \App\Models\Application::where('user_id', auth()->id())
+            ->where('id', $id)
+            ->where('status', 'approved')
+            ->with(['announcement', 'user'])
+            ->firstOrFail();
+
+        $user = $application->user;
+
+        // Path to the template
+        $template = \App\Models\Template::active()->type('acceptance')->first();
+        $templatePath = $template ? \Illuminate\Support\Facades\Storage::disk('public')->path($template->file_path) : null;
+
+        if (!$templatePath || !file_exists($templatePath)) {
+            return back()->with('error', 'No hay una plantilla de carta de aceptación activa.');
+        }
+
+        // Initialize FPDI
+        $pdf = new \setasign\Fpdi\Fpdi();
+
+        // Add a page
+        $pdf->AddPage();
+        $pdf->setSourceFile($templatePath);
+        
+        // Import page 1
+        $tplId = $pdf->importPage(1);
+        
+        // Use the imported page
+        $pdf->useTemplate($tplId, 0, 0, 210); // A4 Width
+
+        // --- Overlay Text Logic ---
+        $pdf->SetFont('Arial', 'B', 12);
+        $pdf->SetTextColor(0, 0, 0);
+
+        // Coordinates (approximate, adjust based on actual template)
+        // Name
+        $pdf->SetXY(20, 90); 
+        $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1', $user->name), 0, 1, 'L');
+
+        // Announcement
+        $pdf->SetXY(20, 100);
+        $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1', $application->announcement->name), 0, 1, 'L');
+
+        // Date
+        $pdf->SetFont('Arial', '', 10);
+        $pdf->SetXY(20, 50);
+        $dateText = \Carbon\Carbon::now()->isoFormat('D [de] MMMM [de] YYYY');
+        $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1', $dateText), 0, 1, 'R');
+
+        // Output PDF
+        return response($pdf->Output('S'), 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'inline; filename="Carta_Aceptacion.pdf"');
     }
 }

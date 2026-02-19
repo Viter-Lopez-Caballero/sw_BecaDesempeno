@@ -78,6 +78,12 @@ const getCatalogItems = (routePrefix) => [
         icon: mdiClipboardTextOutline,
         permission: "rubrics.index",
     },
+    {
+        label: "Plantillas",
+        route: `${routePrefix}templates.index`,
+        icon: mdiFileDocumentMultiple, // or mdiFileCertificate if imported
+        permission: "templates.index",
+    },
 ];
 
 export const menuConfigs = {

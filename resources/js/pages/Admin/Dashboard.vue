@@ -2,7 +2,7 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
 import Pagination from '@/Shared/Pagination.vue';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { debounce } from 'lodash';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
@@ -18,11 +18,31 @@ const props = defineProps({
     stats: Object,
     topInstitutions: Object,
     institutions: Object,
+    states: Array,
+    allInstitutions: Array,
     filters: Object,
 });
 
 const search = ref(props.filters?.search || '');
 const rows = ref(props.filters?.rows || 10);
+const stateId = ref(props.filters?.state_id || null);
+const institutionId = ref(props.filters?.institution_id || null);
+
+// Cascading: filter institutions by selected state
+const filteredInstitutions = computed(() => {
+    if (!stateId.value) return props.allInstitutions || [];
+    return (props.allInstitutions || []).filter(i => i.state_id === stateId.value);
+});
+
+// When state changes, clear institution if it doesn't belong to new state
+watch(stateId, (newStateId) => {
+    if (institutionId.value) {
+        const stillValid = (props.allInstitutions || []).some(
+            i => i.id === institutionId.value && i.state_id === newStateId
+        );
+        if (!stillValid) institutionId.value = null;
+    }
+});
 
 const rowOptions = [
     { label: '5 Registros', value: 5 },
@@ -31,24 +51,39 @@ const rowOptions = [
     { label: '50 Registros', value: 50 },
 ];
 
+const getFilters = () => ({
+    search: search.value,
+    rows: rows.value,
+    state_id: stateId.value,
+    institution_id: institutionId.value,
+});
+
 const onSearch = debounce((value) => {
-    router.get(route('admin.dashboard'), {
-        search: value,
-        rows: rows.value,
-    }, { preserveState: true, replace: true, preserveScroll: true });
+    router.get(route('admin.dashboard'), { ...getFilters(), search: value }, { preserveState: true, replace: true, preserveScroll: true });
 }, 500);
 
 const cleanFilters = () => {
     search.value = '';
     rows.value = 10;
+    stateId.value = null;
+    institutionId.value = null;
     router.get(route('admin.dashboard'), {}, { preserveState: true, replace: true });
 };
 
 const onRowsChange = () => {
-    router.get(route('admin.dashboard'), {
-        search: search.value,
-        rows: rows.value,
-    }, { preserveState: true, replace: true, preserveScroll: true });
+    router.get(route('admin.dashboard'), getFilters(), { preserveState: true, replace: true, preserveScroll: true });
+};
+
+const onFilterChange = () => {
+    router.get(route('admin.dashboard'), getFilters(), { preserveState: true, replace: true, preserveScroll: true });
+};
+
+const exportData = () => {
+    const params = new URLSearchParams();
+    if (search.value)        params.append('search', search.value);
+    if (institutionId.value) params.append('institution_id', institutionId.value);
+    if (stateId.value)       params.append('state_id', stateId.value);
+    window.location.href = route('admin.dashboard.export') + (params.toString() ? '?' + params.toString() : '');
 };
 
 watch(search, (value) => {
@@ -240,7 +275,7 @@ const getProgressWidth = (count) => {
                             </svg>
                             Limpiar Filtros
                         </button>
-                        <button class="w-full md:w-auto justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 text-sm font-medium transition cursor-pointer">
+                        <button @click="exportData" class="w-full md:w-auto justify-center px-4 py-2 bg-[#0D7239] text-white rounded-lg hover:bg-green-800 flex items-center gap-2 text-sm font-medium transition cursor-pointer">
                             <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
                                 <path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
                             </svg>
@@ -251,9 +286,11 @@ const getProgressWidth = (count) => {
                 
                 <div class="text-sm text-gray-500 mb-4">Buscar por nombre de campus o ID</div>
                 
-                <div class="flex flex-col md:flex-row gap-4 items-end">
-                    <div class="relative w-full md:flex-1">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                    <!-- Búsqueda -->
+                    <div class="relative">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Buscar</label>
+                        <div class="absolute bottom-0 left-0 pl-3 flex items-center pointer-events-none" style="height:45px">
                             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#1B396A">
                                 <path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/>
                             </svg>
@@ -261,11 +298,43 @@ const getProgressWidth = (count) => {
                         <input 
                             v-model="search" 
                             type="text" 
-                            placeholder="Buscar por ID, nombre, campus, etc." 
+                            placeholder="Buscar por ID, nombre, campus..." 
                             class="pl-10 w-full h-[45px] rounded-lg border border-gray-300 text-gray-700 focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition"
                         />
                     </div>
-                    <div class="w-full md:w-52 flex-shrink-0">
+                    <!-- Estado -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Filtrar por Estado</label>
+                        <VueSelect
+                            v-model="stateId"
+                            :options="states"
+                            :reduce="option => option.id"
+                            label="name"
+                            :clearable="true"
+                            placeholder="Todos los estados"
+                            class="vue-select-custom"
+                            @option:selected="onFilterChange"
+                            @option:deselected="onFilterChange"
+                        />
+                    </div>
+                    <!-- Institución -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Filtrar por Institución</label>
+                        <VueSelect
+                            v-model="institutionId"
+                            :options="filteredInstitutions"
+                            :reduce="option => option.id"
+                            label="name"
+                            :clearable="true"
+                            placeholder="Todas las instituciones"
+                            class="vue-select-custom"
+                            @option:selected="onFilterChange"
+                            @option:deselected="onFilterChange"
+                        />
+                    </div>
+                    <!-- Registros -->
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Registros</label>
                         <VueSelect 
                             v-model="rows" 
                             :options="rowOptions" 
@@ -288,7 +357,7 @@ const getProgressWidth = (count) => {
                             <tr>
                                 <th scope="col" class="px-6 py-4 tracking-wider">#</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Estado</th>
-                                <th scope="col" class="px-6 py-4 tracking-wider">Campus</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">Institución</th>
                                 <th scope="col" class="px-6 py-4 text-center tracking-wider">Aprobadas</th>
                                 <th scope="col" class="px-6 py-4 text-center tracking-wider">Rechazadas</th>
                             </tr>

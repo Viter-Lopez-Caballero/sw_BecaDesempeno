@@ -182,6 +182,11 @@ const formatDate = (dateString) => {
                             <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Fecha de Solicitud</h3>
                             <p class="text-md font-medium text-gray-900">{{ formatDate(application.created_at) }}</p>
                         </div>
+
+                        <div>
+                            <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Tipo de Plaza</h3>
+                            <p class="text-md font-medium text-gray-900">{{ application.position_type || 'No especificado' }}</p>
+                        </div>
                     </div>
                 </div>
 

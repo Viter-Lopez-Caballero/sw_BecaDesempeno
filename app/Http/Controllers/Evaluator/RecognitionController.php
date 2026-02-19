@@ -68,9 +68,11 @@ class RecognitionController extends Controller
         }
 
         // Path to the template
-        $templatePath = storage_path('app/templates/reconocimiento_template.pdf');
+        $template = \App\Models\Template::active()->type('recognition')->first();
+        
+        $templatePath = $template ? \Illuminate\Support\Facades\Storage::disk('public')->path($template->file_path) : null;
 
-        if (!file_exists($templatePath)) {
+        if (!$templatePath || !file_exists($templatePath)) {
             // If template doesn't exist, generate a simple PDF without template
             return $this->generateSimplePdf($recognition, $user);
         }

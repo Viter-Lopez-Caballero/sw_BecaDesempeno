@@ -153,6 +153,7 @@ class EvaluatorController extends Controller
     {
         $user = Auth::user();
         $search = $request->input('search');
+        $statusFilter = $request->input('status');
 
         // Statistics
         $totalAsignadas = \App\Models\Evaluation::where('evaluator_id', $user->id)->count();
@@ -163,7 +164,7 @@ class EvaluatorController extends Controller
         $rechazadas = \App\Models\Evaluation::where('evaluator_id', $user->id)->where('status', 'rejected')->count();
 
         // Completed Applications (History)
-        $applications = \App\Models\Evaluation::where('evaluator_id', $user->id)
+        $query = \App\Models\Evaluation::where('evaluator_id', $user->id)
             ->where('status', '!=', 'pending')
             ->with([
                 'application.announcement',
@@ -181,7 +182,13 @@ class EvaluatorController extends Controller
                         $q->where('name', 'like', "%{$search}%");
                      });
                 }
-            })
+            });
+
+        if ($statusFilter && in_array($statusFilter, ['approved', 'rejected', 'expired'])) {
+            $query->where('status', $statusFilter);
+        }
+
+        $applications = $query
             ->orderBy('updated_at', 'desc')
             ->paginate($request->input('rows', 10))
             ->withQueryString();
@@ -210,7 +217,7 @@ class EvaluatorController extends Controller
                 'aprobadas' => $aprobadas,
                 'rechazadas' => $rechazadas,
             ],
-            'filters' => $request->all(['search', 'rows']),
+            'filters' => $request->all(['search', 'rows', 'status']),
             'applications' => $applications,
         ]);
     }

@@ -1,6 +1,6 @@
 <script setup>
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { usePage } from '@inertiajs/vue3';
+import { usePage, router, Head, Link } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import Swal from 'sweetalert2';
 import RejectModal from './RejectModal.vue';
@@ -53,6 +53,7 @@ const getStatusLabel = (status) => {
         pending: 'Pendiente',
         approved: 'Aprobado',
         rejected: 'Rechazado',
+        expired: 'Expirada',
     };
     return labels[status] || status;
 };
@@ -231,6 +232,11 @@ const getFileIcon = (type) => {
                             <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Fecha de Solicitud</h3>
                             <p class="text-md font-medium text-gray-900">{{ formatDate(application.created_at) }}</p>
                         </div>
+
+                        <div>
+                            <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Tipo de Plaza</h3>
+                            <p class="text-md font-medium text-gray-900">{{ application.position_type || 'No especificado' }}</p>
+                        </div>
                     </div>
                 </div>
 
@@ -325,6 +331,7 @@ const getFileIcon = (type) => {
                                                 'bg-gray-400': ev.status === 'pending',
                                                 'bg-green-500': ev.status === 'approved',
                                                 'bg-red-500': ev.status === 'rejected',
+                                                'bg-gray-700': ev.status === 'expired',
                                             }"
                                         >
                                             {{ getStatusLabel(ev.status) }}

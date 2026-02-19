@@ -5,9 +5,12 @@ namespace App\Http\Controllers\SuperAdmin;
 use App\Http\Controllers\Controller;
 use App\Models\Institution;
 use App\Models\Application;
+use App\Models\State;
+use App\Exports\ApplicationsExport;
 use App\Http\Resources\RequestControlSummaryResource;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Maatwebsite\Excel\Facades\Excel;
 
 class RequestControlController extends Controller
 {
@@ -23,45 +26,49 @@ class RequestControlController extends Controller
 
         // Main Table: Institutions with Approved/Rejected counts (filterable)
         $search = $request->input('search');
-        $estado = $request->input('estado');
+        $stateId = $request->input('state_id');
+        $institutionId = $request->input('institution_id');
         $rows = $request->input('rows', 10);
         
         $institutions = Institution::with('state')
             ->withCount([
-                'users as approved_count' => function ($query) {
-                    $query->whereHas('applications', function ($q) {
-                        $q->where('status', 'approved');
-                    });
+                'applications as approved_count' => function ($query) {
+                    $query->where('status', 'approved');
                 },
-                'users as rejected_count' => function ($query) {
-                    $query->whereHas('applications', function ($q) {
-                        $q->where('status', 'rejected');
-                    });
+                'applications as rejected_count' => function ($query) {
+                    $query->where('status', 'rejected');
                 }
             ])
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
                       ->orWhere('id', 'like', "%{$search}%");
             })
-            ->when($estado, function ($query, $estado) {
-                $query->whereHas('state', function ($q) use ($estado) {
-                    $q->where('name', $estado);
-                });
-            })
+            ->when($stateId, fn($q) => $q->where('state_id', $stateId))
+            ->when($institutionId, fn($q) => $q->where('id', $institutionId))
             ->whereHas('users.applications', function($q) {
                 $q->whereIn('status', ['approved', 'rejected']);
             })
             ->paginate($rows)
             ->withQueryString();
 
-        // Get unique states for filter dropdown
-        $estados = \App\Models\State::orderBy('name')->get(['id', 'name']);
-
         return Inertia::render('SuperAdmin/Applications/Index', [
             'stats' => $stats,
             'institutions' => RequestControlSummaryResource::collection($institutions),
-            'states' => $estados,
-            'filters' => $request->all(['search', 'estado', 'rows']),
+            'states' => State::select('id', 'name')->orderBy('name')->get(),
+            'allInstitutions' => Institution::select('id', 'name', 'state_id')->orderBy('name')->get(),
+            'filters' => $request->all(['search', 'state_id', 'institution_id', 'rows']),
         ]);
+    }
+
+    public function export(Request $request)
+    {
+        return Excel::download(
+            new ApplicationsExport(
+                $request->input('search'),
+                $request->input('institution_id'),
+                $request->input('state_id'),
+            ),
+            'control_solicitudes_' . now()->format('Y-m-d') . '.xlsx'
+        );
     }
 }

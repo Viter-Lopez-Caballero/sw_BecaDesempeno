@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Institution;
 use App\Models\Application;
+use App\Models\State;
+use App\Exports\ApplicationsExport;
 use App\Http\Resources\RequestControlSummaryResource;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AdminController extends Controller
 {
@@ -30,26 +33,25 @@ class AdminController extends Controller
         // Main Table: Institutions with Approved/Rejected counts (filterable)
         $search = $request->input('search');
         $rows = $request->input('rows', 10);
-        
+        $stateId = $request->input('state_id');
+        $institutionId = $request->input('institution_id');
+
         $institutions = \App\Models\Institution::with('state')
             ->withCount([
-                'users as approved_count' => function ($query) {
-                    $query->whereHas('applications', function ($q) {
-                        $q->where('status', 'approved');
-                    });
+                'applications as approved_count' => function ($query) {
+                    $query->where('status', 'approved');
                 },
-                'users as rejected_count' => function ($query) {
-                    $query->whereHas('applications', function ($q) {
-                        $q->where('status', 'rejected');
-                    });
+                'applications as rejected_count' => function ($query) {
+                    $query->where('status', 'rejected');
                 }
             ])
             ->when($search, function ($query, $search) {
                  $query->where('name', 'like', "%{$search}%")
                        ->orWhere('id', 'like', "%{$search}%");
             })
-            ->whereHas('users.applications', function($q) { // users.applications is likely correct via HasManyThrough or similar? No, User hasMany Applications. Institution hasMany Users. So Institution hasManyThrough Applications? Or just check users with applications.
-                // Original was `users.solicitudes`. User model has `applications`.
+            ->when($stateId, fn($q) => $q->where('state_id', $stateId))
+            ->when($institutionId, fn($q) => $q->where('id', $institutionId))
+            ->whereHas('users.applications', function($q) {
                 $q->whereIn('status', ['approved', 'rejected']);
             })
             ->paginate($rows, ['*'], 'table_page')
@@ -59,7 +61,21 @@ class AdminController extends Controller
             'stats' => $stats,
             'topInstitutions' => $topInstitutions,
             'institutions' => RequestControlSummaryResource::collection($institutions),
-            'filters' => $request->all(['search', 'rows']),
+            'states' => State::select('id', 'name')->orderBy('name')->get(),
+            'allInstitutions' => Institution::select('id', 'name', 'state_id')->orderBy('name')->get(),
+            'filters' => $request->all(['search', 'rows', 'state_id', 'institution_id']),
         ]);
+    }
+
+    public function export(Request $request)
+    {
+        return Excel::download(
+            new ApplicationsExport(
+                $request->input('search'),
+                $request->input('institution_id'),
+                $request->input('state_id'),
+            ),
+            'solicitudes_admin_' . now()->format('Y-m-d') . '.xlsx'
+        );
     }
 }

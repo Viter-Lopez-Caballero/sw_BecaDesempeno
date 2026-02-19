@@ -19,11 +19,13 @@ class Evaluation extends Model
         'score',
         'answers',
         'comment',
+        'deadline_at',
     ];
 
     protected $casts = [
         'answers' => 'array',
         'score' => 'decimal:2',
+        'deadline_at' => 'datetime',
     ];
 
     // Relaciones

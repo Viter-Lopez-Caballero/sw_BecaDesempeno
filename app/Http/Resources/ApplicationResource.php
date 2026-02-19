@@ -41,7 +41,8 @@ class ApplicationResource extends JsonResource
             'teacher' => $this->user ? [
                 'name' => $this->user->name,
                 'email' => $this->user->email,
-                'department' => $this->user->priorityArea?->name ?? null, // priorityArea renamed? yes.
+                'department' => $this->user->priorityArea?->name ?? null,
+                'sub_area' => $this->user->subArea?->name ?? null,
                 'state' => $this->user->institution?->state?->name ?? null, // institucion -> institution
             ] : null,
             'campus' => $this->when(

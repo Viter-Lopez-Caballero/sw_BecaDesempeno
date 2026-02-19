@@ -23,7 +23,6 @@ class DocumentResource extends JsonResource
             'file_type' => $this->file_type,
             'file_size' => $this->file_size,
             'active' => $this->active,
-            'is_fundamental' => $this->is_fundamental,
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
             // Pivot data when loaded via announcement relationship
@@ -33,7 +32,7 @@ class DocumentResource extends JsonResource
             // Alias for frontend compatibility
             'is_required' => $this->whenPivotLoaded('announcement_document', function () {
                 return (bool) $this->pivot->is_mandatory;
-            }, $this->is_fundamental), // Fallback to is_fundamental if no pivot
+            }),
             // Template URL for download (if it has file)
             'template_url' => $this->file_path ? "/storage/{$this->file_path}" : null,
         ];

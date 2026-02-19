@@ -311,7 +311,12 @@ const deleteItem = async (id) => {
                                     </div>
                                 </th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">
-                                    Estado
+                                    <div @click="sortBy('state_name')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
+                                        Estado
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'state_name', 'opacity-50': sortField !== 'state_name' }">
+                                            <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/>
+                                        </svg>
+                                    </div>
                                 </th>
                                 <th v-if="useCan('institutions.edit') || useCan('institutions.delete')" scope="col" class="px-6 py-4 text-center tracking-wider">Acciones</th>
                             </tr>

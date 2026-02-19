@@ -51,7 +51,7 @@ class RubricController extends Controller
     public function create()
     {
         return Inertia::render('SuperAdmin/Catalog/Rubrics/Create', [
-            'title' => 'Crear Rúbrica',
+            'title' => 'Agregar Rúbrica',
             'routeName' => 'catalog.rubrics.',
         ]);
     }

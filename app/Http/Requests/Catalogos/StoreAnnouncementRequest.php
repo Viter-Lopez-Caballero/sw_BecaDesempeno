@@ -28,7 +28,7 @@ class StoreAnnouncementRequest extends FormRequest
             'registration_end' => ['required', 'date', 'after_or_equal:registration_start'],
             'evaluation_start' => ['required', 'date', 'after_or_equal:registration_end'],
             'evaluation_end' => ['required', 'date', 'after_or_equal:evaluation_start'],
-            'results_start' => ['required', 'date', 'after_or_equal:evaluation_fin'],
+            'results_start' => ['required', 'date', 'after_or_equal:evaluation_end'],
             'results_end' => ['required', 'date', 'after_or_equal:results_start'],
         ];
     }
@@ -46,7 +46,7 @@ class StoreAnnouncementRequest extends FormRequest
             'image.image' => 'El archivo debe ser una imagen.',
             'image.mimes' => 'La imagen debe ser de tipo: JPEG, PNG, JPG o GIF.',
             'image.max' => 'La imagen no puede exceder 2MB.',
-            
+
             'publication_start.required' => 'La fecha de inicio de publicación es obligatoria.',
             'publication_start.date' => 'La fecha de inicio de publicación debe ser una fecha válida.',
             'publication_start.after_or_equal' => 'La fecha de inicio de publicación debe ser igual o posterior a hoy.',
@@ -74,9 +74,9 @@ class StoreAnnouncementRequest extends FormRequest
             'results_end.required' => 'La fecha de fin de resultados es obligatoria.',
             'results_end.date' => 'La fecha de fin de resultados debe ser una fecha válida.',
             'results_end.after_or_equal' => 'La fecha de fin de resultados debe ser posterior o igual a la fecha de inicio de resultados.',
-            
+
             'publicacion_inicio.after_or_equal' => 'La fecha de inicio de publicación no puede ser anterior a hoy.',
-            
+
             'registro_inicio.required' => 'La fecha de inicio de registro es obligatoria.',
             'registro_inicio.after_or_equal' => 'El registro no puede iniciar antes de la publicación.',
 

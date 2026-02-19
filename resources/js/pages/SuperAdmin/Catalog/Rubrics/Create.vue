@@ -165,7 +165,7 @@ const submit = () => {
                          <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
                             <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
                         </svg>
-                        <span class="text-gray-900 font-semibold">Crear</span>
+                        <span class="text-gray-900 font-semibold">Agregar Rúbrica</span>
                     </div>
                 </div>
                 <Link :href="route('catalog.rubrics.index')" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium cursor-pointer">
@@ -193,7 +193,7 @@ const submit = () => {
                     </div>
 
                     <!-- Preguntas -->
-                    <div v-for="(question, qIndex) in form.questions" :key="qIndex" class="border p-4 rounded-lg bg-gray-50 relative">
+                    <div v-for="(question, qIndex) in form.questions" :key="qIndex" class="border border-gray-200 p-4 rounded-lg bg-gray-50 relative">
                         <div class="mb-4">
                              <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Pregunta {{ qIndex + 1 }}: <span class="text-red-500">*</span></label>
                              <div class="flex gap-2">
@@ -206,7 +206,7 @@ const submit = () => {
                         </div>
 
                         <div class="flex justify-start mb-4">
-                            <button type="button" @click="addOption(qIndex)" class="px-3 py-1.5 bg-[#1B396A] text-white rounded text-xs hover:bg-[#0f2347] transition flex items-center gap-1">
+                            <button type="button" @click="addOption(qIndex)" class="px-3 py-1.5 bg-[#1B396A] text-white rounded text-xs hover:bg-[#0f2347] transition flex items-center gap-1 cursor-pointer">
                                 <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
                                 Agregar Respuesta
                             </button>
@@ -224,7 +224,7 @@ const submit = () => {
                                         <label class="block text-xs font-medium text-gray-500 mb-1">Puntaje (1-5):</label>
                                          <input v-model="option.score" type="number" class="bg-white border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors[`questions.${qIndex}.options.${oIndex}.score`] }" @input="validateScore(qIndex, oIndex)">
                                     </div>
-                                    <button type="button" @click="removeOption(qIndex, oIndex)" class="p-2.5 mb-[1px] text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition cursor-pointer" title="Eliminar respuesta">
+                                    <button type="button" @click="removeOption(qIndex, oIndex)" class="p-2 mb-[1px] text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition cursor-pointer" title="Eliminar respuesta">
                                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>
                                     </button>
                                 </div>
@@ -239,7 +239,7 @@ const submit = () => {
                     </div>
 
                     <div class="flex justify-center mt-4 border-t pt-4 border-dashed border-gray-300">
-                         <button type="button" @click="addQuestion" class="px-6 py-2 bg-white text-[#1B396A] border-2 border-[#1B396A] rounded-lg hover:bg-[#1B396A] hover:text-white transition flex items-center gap-2 text-sm font-bold w-full justify-center">
+                         <button type="button" @click="addQuestion" class="px-6 py-2 bg-white text-[#1B396A] border-2 border-[#1B396A] rounded-lg hover:bg-[#1B396A] hover:text-white transition flex items-center gap-2 text-sm font-bold w-full justify-center cursor-pointer">
                             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
                             Agregar Nueva Pregunta
                         </button>
@@ -250,10 +250,10 @@ const submit = () => {
                         {{ form.errors.is_active }}
                     </div>
                     <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
-                        <Link :href="route('catalog.rubrics.index')" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition">
+                        <Link :href="route('catalog.rubrics.index')" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition cursor-pointer">
                             Cancelar
                         </Link>
-                        <button type="submit" :disabled="form.processing" class="px-6 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl disabled:opacity-75 flex items-center gap-2 font-medium">
+                        <button type="submit" :disabled="form.processing" class="px-6 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl disabled:opacity-75 flex items-center gap-2 font-medium cursor-pointer">
                             <span v-if="!form.processing">Guardar</span>
                             <span v-else>Guardando...</span>
                         </button>

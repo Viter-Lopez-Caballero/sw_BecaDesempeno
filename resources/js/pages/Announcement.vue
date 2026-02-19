@@ -69,7 +69,7 @@ const etapas = computed(() => {
             titulo: 'Publicación de Resultados',
             dateStartKey: 'results_start',
             dateEndKey: 'results_end',
-            color: '#1B396A'
+            color: '#2B6CB0'
         }
     ];
 

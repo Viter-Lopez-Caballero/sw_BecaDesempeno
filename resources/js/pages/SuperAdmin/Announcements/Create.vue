@@ -1,10 +1,12 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
 import { mdiBullhorn } from '@mdi/js';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
+import { alertaExito, alertaError, alertaCargando, cerrarAlerta } from '@/utils/alerts.js';
+import AnnouncementCalendar from '@/components/AnnouncementCalendar.vue';
 
 const props = defineProps({
     title: {
@@ -15,10 +17,6 @@ const props = defineProps({
         type: String,
         required: true,
     },
-    requiredDocuments: {
-        type: Array,
-        default: () => [],
-    },
 });
 
 const form = useForm({
@@ -26,7 +24,6 @@ const form = useForm({
     description: '',
     file: null,
     image: null,
-    documents: [], // IDs de documentos seleccionados
     // Calendar Fields
     publication_start: '',
     registration_start: '',
@@ -36,6 +33,27 @@ const form = useForm({
     results_start: '',
     results_end: '',
 });
+
+// ref bridge: v-model on a component requires ref (not reactive) so the full object can be replaced
+const calendarDates = ref({
+    publication_start:  form.publication_start,
+    registration_start: form.registration_start,
+    registration_end:   form.registration_end,
+    evaluation_start:   form.evaluation_start,
+    evaluation_end:     form.evaluation_end,
+    results_start:      form.results_start,
+    results_end:        form.results_end,
+});
+
+watch(calendarDates, (v) => {
+    form.publication_start  = v.publication_start;
+    form.registration_start = v.registration_start;
+    form.registration_end   = v.registration_end;
+    form.evaluation_start   = v.evaluation_start;
+    form.evaluation_end     = v.evaluation_end;
+    form.results_start      = v.results_start;
+    form.results_end        = v.results_end;
+}, { deep: true });
 
 const archivoPreview = ref(null);
 const archivoNombre = ref(null);
@@ -108,17 +126,54 @@ const removeImage = () => {
     imagenUrl.value = null;
 };
 
-const toggleDocument = (docId) => {
-    const index = form.documents.indexOf(docId);
-    if (index > -1) {
-        form.documents.splice(index, 1);
-    } else {
-        form.documents.push(docId);
+const clearError = (field) => {
+    if (form.errors[field]) {
+        delete form.errors[field];
     }
 };
 
 const submit = () => {
-    form.post(route(`${props.routeName}store`));
+    // Limpiar errores previos
+    form.clearErrors();
+    
+    // Validación del lado del cliente
+    if (!form.name) {
+        form.errors.name = 'El nombre es obligatorio';
+        return;
+    }
+    if (!form.publication_start) {
+        form.errors.publication_start = 'La fecha de publicación es obligatoria';
+        return;
+    }
+    if (!form.registration_start || !form.registration_end) {
+        if (!form.registration_start) form.errors.registration_start = 'La fecha de inicio de registro es obligatoria';
+        if (!form.registration_end) form.errors.registration_end = 'La fecha de fin de registro es obligatoria';
+        return;
+    }
+    if (!form.evaluation_start || !form.evaluation_end) {
+        if (!form.evaluation_start) form.errors.evaluation_start = 'La fecha de inicio de evaluación es obligatoria';
+        if (!form.evaluation_end) form.errors.evaluation_end = 'La fecha de fin de evaluación es obligatoria';
+        return;
+    }
+    if (!form.results_start || !form.results_end) {
+        if (!form.results_start) form.errors.results_start = 'La fecha de inicio de resultados es obligatoria';
+        if (!form.results_end) form.errors.results_end = 'La fecha de fin de resultados es obligatoria';
+        return;
+    }
+    
+    // Si todo está correcto, mostrar alerta de cargando y enviar
+    alertaCargando('Guardando', 'Por favor espera...');
+    
+    form.post(route(`${props.routeName}store`), {
+        onSuccess: () => {
+            cerrarAlerta();
+            alertaExito('¡Éxito!', 'Convocatoria creada correctamente');
+        },
+        onError: () => {
+            cerrarAlerta();
+            alertaError('Error', 'Por favor verifica los datos ingresados');
+        }
+    });
 };
 </script>
 
@@ -158,8 +213,8 @@ const submit = () => {
                         <!-- Nombre -->
                         <div class="col-span-1 md:col-span-2">
                             <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Nombre: <span class="text-red-500">*</span></label>
-                            <input v-model="form.name" type="text" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" placeholder="Nombre de la convocatoria" />
-                            <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <input v-model="form.name" type="text" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors.name }" placeholder="Nombre de la convocatoria" @input="clearError('name')" />
+                            <div v-if="!form.errors.name" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
@@ -171,17 +226,19 @@ const submit = () => {
                         <!-- Descripción -->
                         <div class="col-span-1 md:col-span-2">
                             <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Descripción:</label>
-                            <textarea v-model="form.description" rows="4" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" placeholder="Descripción de la convocatoria"></textarea>
+                            <textarea v-model="form.description" rows="4" class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]" :class="{ 'border-b-red-500': form.errors.description }" placeholder="Descripción de la convocatoria" @input="clearError('description')"></textarea>
                             <div class="flex items-center justify-between mt-1">
-                                <div class="flex items-center gap-1 text-xs text-gray-500">
+                                <div v-if="!form.errors.description" class="flex items-center gap-1 text-xs text-gray-500">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                     <span>Por favor, introduce la descripción de la convocatoria</span>
                                 </div>
+                                <div v-if="form.errors.description" class="text-sm text-red-600">
+                                    {{ form.errors.description }}
+                                </div>
                                 <span class="text-gray-400 text-sm">{{ form.description?.length || 0 }}/500</span>
                             </div>
-                            <p v-if="form.errors.description" class="mt-1 text-sm text-red-600">{{ form.errors.description }}</p>
                         </div>
 
                         <!-- Imagen de Convocatoria -->
@@ -287,119 +344,28 @@ const submit = () => {
                             </div>
                             <p v-if="form.errors.file" class="mt-1 text-sm text-red-600">{{ form.errors.file }}</p>
                         </div>
-                        
-                        <!-- Documentos Requeridos Section -->
-                        <div v-if="requiredDocuments && requiredDocuments.length > 0" class="col-span-2">
-                            <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Documentos Requeridos:</label>
-                            <div class="bg-[#F3F4F6] rounded-lg p-4 border border-gray-200">
-                                <p class="text-sm text-gray-600 mb-4">Selecciona los documentos que los docentes deberán subir al solicitar esta convocatoria:</p>
-                                
-                                <div class="space-y-2 max-h-64 overflow-y-auto pr-2">
-                                    <div v-for="doc in requiredDocuments" :key="doc.id" class="flex items-center gap-3 p-3 bg-white rounded-lg hover:bg-gray-50 transition border border-gray-100">
-                                        <input 
-                                            :id="`doc-${doc.id}`" 
-                                            type="checkbox" 
-                                            :checked="form.documents.includes(doc.id)" 
-                                            @change="toggleDocument(doc.id)" 
-                                            class="w-4 h-4 text-[#1B396A] bg-gray-100 border-gray-300 rounded focus:ring-[#1B396A] focus:ring-2" 
-                                        />
-                                        <label :for="`doc-${doc.id}`" class="flex-1 cursor-pointer">
-                                            <div class="flex items-center gap-2">
-                                                <span class="font-medium text-gray-900">{{ doc.name }}</span>
-                                                <span v-if="doc.is_mandatory" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                    Obligatorio
-                                                </span>
-                                                <span class="text-xs font-medium uppercase px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">
-                                                    {{ doc.file_type }}
-                                                </span>
-                                            </div>
-                                            <p class="text-xs text-gray-500 mt-1">{{ doc.description || 'Sin descripción' }}</p>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
-                                    <span class="text-sm text-gray-600">
-                                        <strong>{{ form.documents.length }}</strong> de <strong>{{ requiredDocuments.length }}</strong> documentos seleccionados
-                                    </span>
-                                    <p class="text-xs text-gray-500">Los documentos se vincularán al crear la convocatoria</p>
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Calendario Section -->
-                    <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                        <div class="flex items-center gap-2 mb-4">
+                    <div>
+                        <div class="flex items-center gap-2 mb-6">
                             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1B396A">
                                 <path d="M200-80q-33 0-56.5-23.5T120-160v-560q0-33 23.5-56.5T200-800h40v-80h80v80h320v-80h80v80h40q33 0 56.5 23.5T840-720v560q0 33-23.5 56.5T760-80H200Zm0-80h560v-400H200v400Zm0-480h560v-80H200v80Zm0 0v-80 80Z"/>
                             </svg>
                             <h2 class="text-xl font-bold text-gray-900">Calendario de la Convocatoria</h2>
                         </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Publicación -->
-                            <div class="space-y-4">
-                                <h3 class="font-semibold text-[#1B396A] border-b border-gray-200 pb-1">Publicación</h3>
-                                <div class="grid grid-cols-1 gap-4">
-                                    <div>
-                                        <label class="block mb-1 text-sm font-medium text-gray-700">Fecha de Publicación</label>
-                                        <input v-model="form.publication_start" type="date" :min="minDate" class="bg-white border text-gray-900 text-sm rounded-lg focus:ring-[#1B396A] focus:border-[#1B396A] block w-full p-2.5" />
-                                        <p v-if="form.errors.publication_start" class="mt-1 text-xs text-red-600">{{ form.errors.publication_start }}</p>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <!-- Registro -->
-                            <div class="space-y-4">
-                                <h3 class="font-semibold text-[#1B396A] border-b border-gray-200 pb-1">Registro de Solicitudes</h3>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block mb-1 text-sm font-medium text-gray-700">Inicio</label>
-                                        <input v-model="form.registration_start" type="date" :min="form.publication_start" class="bg-white border text-gray-900 text-sm rounded-lg focus:ring-[#1B396A] focus:border-[#1B396A] block w-full p-2.5" />
-                                        <p v-if="form.errors.registration_start" class="mt-1 text-xs text-red-600">{{ form.errors.registration_start }}</p>
-                                    </div>
-                                    <div>
-                                        <label class="block mb-1 text-sm font-medium text-gray-700">Fin</label>
-                                        <input v-model="form.registration_end" type="date" :min="form.registration_start" class="bg-white border text-gray-900 text-sm rounded-lg focus:ring-[#1B396A] focus:border-[#1B396A] block w-full p-2.5" />
-                                        <p v-if="form.errors.registration_end" class="mt-1 text-xs text-red-600">{{ form.errors.registration_end }}</p>
-                                    </div>
-                                </div>
-                            </div>
+                        <AnnouncementCalendar v-model="calendarDates" />
 
-                            <!-- Evaluación -->
-                            <div class="space-y-4">
-                                <h3 class="font-semibold text-[#1B396A] border-b border-gray-200 pb-1">Evaluación</h3>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block mb-1 text-sm font-medium text-gray-700">Inicio</label>
-                                        <input v-model="form.evaluation_start" type="date" :min="form.registration_end" class="bg-white border text-gray-900 text-sm rounded-lg focus:ring-[#1B396A] focus:border-[#1B396A] block w-full p-2.5" />
-                                        <p v-if="form.errors.evaluation_start" class="mt-1 text-xs text-red-600">{{ form.errors.evaluation_start }}</p>
-                                    </div>
-                                    <div>
-                                        <label class="block mb-1 text-sm font-medium text-gray-700">Fin</label>
-                                        <input v-model="form.evaluation_end" type="date" :min="form.evaluation_start" class="bg-white border text-gray-900 text-sm rounded-lg focus:ring-[#1B396A] focus:border-[#1B396A] block w-full p-2.5" />
-                                        <p v-if="form.errors.evaluation_end" class="mt-1 text-xs text-red-600">{{ form.errors.evaluation_end }}</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Resultados -->
-                            <div class="space-y-4">
-                                <h3 class="font-semibold text-[#1B396A] border-b border-gray-200 pb-1">Resultados</h3>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block mb-1 text-sm font-medium text-gray-700">Inicio</label>
-                                        <input v-model="form.results_start" type="date" :min="form.evaluation_end" class="bg-white border text-gray-900 text-sm rounded-lg focus:ring-[#1B396A] focus:border-[#1B396A] block w-full p-2.5" />
-                                        <p v-if="form.errors.results_start" class="mt-1 text-xs text-red-600">{{ form.errors.results_start }}</p>
-                                    </div>
-                                    <div>
-                                        <label class="block mb-1 text-sm font-medium text-gray-700">Fin</label>
-                                        <input v-model="form.results_end" type="date" :min="form.results_start" class="bg-white border text-gray-900 text-sm rounded-lg focus:ring-[#1B396A] focus:border-[#1B396A] block w-full p-2.5" />
-                                        <p v-if="form.errors.results_end" class="mt-1 text-xs text-red-600">{{ form.errors.results_end }}</p>
-                                    </div>
-                                </div>
-                            </div>
+                        <!-- Validation errors -->
+                        <div class="mt-4 space-y-1">
+                            <p v-if="form.errors.publication_start" class="text-xs text-red-600">Publicación: {{ form.errors.publication_start }}</p>
+                            <p v-if="form.errors.registration_start" class="text-xs text-red-600">Registro inicio: {{ form.errors.registration_start }}</p>
+                            <p v-if="form.errors.registration_end" class="text-xs text-red-600">Registro fin: {{ form.errors.registration_end }}</p>
+                            <p v-if="form.errors.evaluation_start" class="text-xs text-red-600">Evaluación inicio: {{ form.errors.evaluation_start }}</p>
+                            <p v-if="form.errors.evaluation_end" class="text-xs text-red-600">Evaluación fin: {{ form.errors.evaluation_end }}</p>
+                            <p v-if="form.errors.results_start" class="text-xs text-red-600">Resultados inicio: {{ form.errors.results_start }}</p>
+                            <p v-if="form.errors.results_end" class="text-xs text-red-600">Resultados fin: {{ form.errors.results_end }}</p>
                         </div>
                     </div>
 

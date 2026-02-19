@@ -45,20 +45,28 @@ class InstitutionController extends Controller
     {
         $filters = $this->getFiltersBase($request->query());
 
+        // Campos permitidos para ordenamiento
+        $allowedFields = ['id', 'name', 'state_name'];
+        $orderField = in_array($filters->order, $allowedFields) ? $filters->order : 'id';
+        $orderDirection = in_array($filters->direction, ['asc', 'desc']) ? $filters->direction : 'asc';
+
         $query = $this->model->query()
+            ->select('institutions.*')
+            ->leftJoin('states', 'states.id', '=', 'institutions.state_id')
             ->with('state')
             ->buscarGlobal($filters->search);
 
-        // Ordenamiento dinámico
-        $institutions = $query->orderBy($filters->order, $filters->direction ?? 'asc')
+        // Ordenamiento dinámico (incluye campo de relación)
+        $dbField = $orderField === 'state_name' ? 'states.name' : "institutions.{$orderField}";
+        $institutions = $query->orderBy($dbField, $orderDirection)
             ->paginate($filters->rows)
             ->withQueryString();
 
         return Inertia::render("{$this->source}Index", [
             'institutions' => InstitutionResource::collection($institutions), // Keep prop
-            'title'         => 'Instituciones',
-            'routeName'     => $this->routeName,
-            'filters'       => $filters
+            'title' => 'Instituciones',
+            'routeName' => $this->routeName,
+            'filters' => $filters
         ]);
     }
 
@@ -68,9 +76,9 @@ class InstitutionController extends Controller
     public function create(): Response
     {
         return Inertia::render("{$this->source}Create", [
-            'title'     => 'Agregar Institución',
+            'title' => 'Agregar Institución',
             'routeName' => $this->routeName,
-            'states'   => State::ordenado('name', 'asc')->get(['id', 'name']),
+            'states' => State::ordenado('name', 'asc')->get(['id', 'name']),
         ]);
     }
 
@@ -97,10 +105,10 @@ class InstitutionController extends Controller
     public function edit(Institution $institution): Response
     {
         return Inertia::render("{$this->source}Edit", [
-            'title'       => 'Editar Institución',
-            'routeName'   => $this->routeName,
+            'title' => 'Editar Institución',
+            'routeName' => $this->routeName,
             'institution' => new InstitutionResource($institution->load('state')),
-            'states'     => State::ordenado('name', 'asc')->get(['id', 'name']),
+            'states' => State::ordenado('name', 'asc')->get(['id', 'name']),
         ]);
     }
 

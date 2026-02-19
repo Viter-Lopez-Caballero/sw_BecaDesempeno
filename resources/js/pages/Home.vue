@@ -107,7 +107,7 @@ const etapas = computed(() => {
             descripcion: 'Publicación de Resultados.',
             icono: 'Award',
             dateStartKey: 'results_start',
-            color: '#0F172A' // Dark Blue/Gray
+            color: '#2B6CB0' // Azul medio — igual que en AnnouncementCalendar
         }
     ];
 

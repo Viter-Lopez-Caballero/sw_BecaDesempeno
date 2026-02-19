@@ -40,24 +40,34 @@ class PriorityAreaController extends Controller
     public function index(Request $request): Response
     {
         $filters = $this->getFiltersBase($request->query());
+
+        // Campos permitidos para ordenamiento (el frontend puede enviar 'nombre' o 'name')
+        $allowedFields = ['id', 'name', 'nombre'];
+        $orderField = in_array($filters->order, $allowedFields) ? $filters->order : 'name';
+        // Mapear alias frontend -> columna real en BD
+        if ($orderField === 'nombre') {
+            $orderField = 'name';
+        }
+        $orderDirection = in_array($filters->direction, ['asc', 'desc']) ? $filters->direction : 'asc';
+
         $query = $this->model->query()->buscarGlobal($filters->search);
 
-        $priorityAreas = $query->orderBy($filters->order, $filters->direction ?? 'asc')
+        $priorityAreas = $query->orderBy($orderField, $orderDirection)
             ->paginate($filters->rows)
             ->withQueryString();
 
         return Inertia::render("{$this->source}Index", [
             'priorityAreas' => PriorityAreaResource::collection($priorityAreas),
-            'title'         => 'Áreas Prioritarias',
-            'routeName'     => $this->routeName,
-            'filters'       => $filters
+            'title' => 'Áreas Prioritarias',
+            'routeName' => $this->routeName,
+            'filters' => $filters
         ]);
     }
 
     public function create(): Response
     {
         return Inertia::render("{$this->source}Create", [
-            'title'     => 'Agregar Área Prioritaria',
+            'title' => 'Agregar Área Prioritaria',
             'routeName' => $this->routeName,
         ]);
     }
@@ -76,8 +86,8 @@ class PriorityAreaController extends Controller
     public function edit(PriorityArea $priorityArea): Response
     {
         return Inertia::render("{$this->source}Edit", [
-            'title'        => 'Editar Área Prioritaria',
-            'routeName'    => $this->routeName,
+            'title' => 'Editar Área Prioritaria',
+            'routeName' => $this->routeName,
             'priorityArea' => new PriorityAreaResource($priorityArea),
         ]);
     }

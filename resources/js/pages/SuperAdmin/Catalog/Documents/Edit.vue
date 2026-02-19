@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
-import { mdiBookOpenPageVariant, mdiFileDocumentOutline } from '@mdi/js';
+import { mdiBookOpenPageVariant, mdiFileDocumentMultiple } from '@mdi/js';
 import { alertaExito, alertaError, alertaCargando, cerrarAlerta } from '@/utils/alerts.js';
 
 const props = defineProps({
@@ -20,18 +20,21 @@ const props = defineProps({
     },
 });
 
+// Handle both wrapped and unwrapped resource data
+const documentData = props.document.data || props.document;
+
 const form = useForm({
-    name: props.document.name,
-    description: props.document.description,
-    active: props.document.active,
+    name: documentData.name || '',
+    description: documentData.description || '',
+    active: documentData.active ?? false,
     archivo: null,
 });
 
 const archivoPreview = ref(null);
-const archivoNombre = ref(props.document.file_name || null);
-const archivoActual = ref(props.document.file_path || null);
-const archivoUrl = ref(props.document.file_path ? `/storage/${props.document.file_path}` : null);
-const archivoTipo = ref(props.document.file_type || null);
+const archivoNombre = ref(documentData.file_name || null);
+const archivoActual = ref(documentData.file_path || null);
+const archivoUrl = ref(documentData.file_path ? `/storage/${documentData.file_path}` : null);
+const archivoTipo = ref(documentData.file_type || null);
 
 const clearError = (field) => {
     if (form.errors[field]) {
@@ -45,67 +48,71 @@ const handleFileChange = (event) => {
         form.archivo = file;
         archivoNombre.value = file.name;
         archivoTipo.value = file.type;
-        archivoActual.value = null; // Marcar que se reemplazará el archivo actual
-        
-        if (file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                archivoPreview.value = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        } else if (file.type === 'application/pdf') {
-            if (archivoUrl.value && !props.document.file_path) {
-                URL.revokeObjectURL(archivoUrl.value);
-            }
-            archivoUrl.value = URL.createObjectURL(file);
-        } else {
-            archivoPreview.value = null;
-            if (archivoUrl.value && !props.document.file_path) {
-                URL.revokeObjectURL(archivoUrl.value);
-            }
-            archivoUrl.value = null;
+
+        // Limpiar URL de blob anterior
+        if (archivoUrl.value && archivoUrl.value.startsWith('blob:')) {
+            URL.revokeObjectURL(archivoUrl.value);
         }
+
+        // Crear URL del blob para preview instantánea
+        archivoUrl.value = URL.createObjectURL(file);
+        archivoPreview.value = archivoUrl.value;
     }
 };
 
 const removeFile = () => {
-    if (archivoUrl.value && !props.document.file_path) {
+    // Limpiar URL de blob si existe
+    if (archivoUrl.value && archivoUrl.value.startsWith('blob:')) {
         URL.revokeObjectURL(archivoUrl.value);
     }
-    
+
     form.archivo = null;
     archivoPreview.value = null;
-    archivoNombre.value = null;
-    archivoActual.value = null;
-    archivoUrl.value = null;
-    archivoTipo.value = null;
-    
-    const fileInput = document.getElementById('archivo');
-    if (fileInput) {
-        fileInput.value = '';
+
+    // Restaurar archivo original si existía
+    if (documentData.file_path) {
+        archivoActual.value = documentData.file_path;
+        archivoUrl.value = `/storage/${documentData.file_path}`;
+        archivoNombre.value = documentData.file_name || null;
+        archivoTipo.value = documentData.file_type || null;
+    } else {
+        archivoActual.value = null;
+        archivoUrl.value = null;
+        archivoNombre.value = null;
+        archivoTipo.value = null;
     }
+
+    const fileInput = document.getElementById('archivo-plantilla');
+    if (fileInput) fileInput.value = '';
+    const fileInputChange = document.getElementById('archivo-plantilla-change');
+    if (fileInputChange) fileInputChange.value = '';
 };
 
 const submit = () => {
     form.clearErrors();
-    
+
     if (!form.name) {
         form.errors.name = 'El nombre del documento es obligatorio';
         return;
     }
-    
+
+    if (!form.description) {
+        form.errors.description = 'La descripción del documento es obligatoria';
+        return;
+    }
+
     alertaCargando('Actualizando...', 'Por favor espera mientras se actualiza el documento');
-    form.post(route(`${props.routeName}update`, props.document.id), {
-        _method: 'put',
-        onSuccess: () => {
-            cerrarAlerta();
-            alertaExito('¡Actualizado!', 'El documento ha sido actualizado exitosamente');
-        },
-        onError: () => {
-            cerrarAlerta();
-            alertaError('Error', 'Hubo un problema al actualizar el documento');
-        }
-    });
+    form.transform(data => ({ ...data, _method: 'PUT' }))
+        .post(route(`${props.routeName}update`, documentData.id), {
+            onSuccess: () => {
+                cerrarAlerta();
+                alertaExito('¡Actualizado!', 'El documento ha sido actualizado exitosamente');
+            },
+            onError: () => {
+                cerrarAlerta();
+                alertaError('Error', 'Hubo un problema al actualizar el documento');
+            }
+        });
 };
 
 const viewCurrentFile = () => {
@@ -136,14 +143,14 @@ const viewCurrentFile = () => {
                         </svg>
                         <Link :href="route(`${routeName}index`)" class="flex items-center gap-2 hover:underline">
                             <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
-                                <path :d="mdiFileDocumentOutline"/>
+                                <path :d="mdiFileDocumentMultiple"/>
                             </svg>
-                            <span class="text-gray-700 font-medium">Documentos Requeridos</span>
+                            <span class="text-gray-700 font-medium">Documentos</span>
                         </Link>
                         <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
                             <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
                         </svg>
-                        <span class="text-gray-900 font-semibold">Editar</span>
+                        <span class="text-gray-900 font-semibold">Editar Documento</span>
                     </div>
                 </div>
                 <Link :href="route(`${routeName}index`)" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium cursor-pointer">
@@ -156,16 +163,6 @@ const viewCurrentFile = () => {
 
             <!-- Form Card -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 p-8">
-                <!-- Mensaje de documento fundamental -->
-                <div v-if="document.is_fundamental" class="mb-6 p-4 bg-amber-50 border-l-4 border-amber-400 rounded-r-lg">
-                    <div class="flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#F59E0B">
-                            <path d="m233-120 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Z"/>
-                        </svg>
-                        <p class="text-sm font-medium text-amber-800">Este es un documento fundamental del sistema. Solo puedes actualizar su información, no eliminarlo.</p>
-                    </div>
-                </div>
-
                 <form @submit.prevent="submit" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Nombre -->
@@ -181,12 +178,18 @@ const viewCurrentFile = () => {
                                 :class="{ 'border-b-red-500': form.errors.name }" 
                                 placeholder="Ej. Cédula Profesional" 
                             />
+                            <div v-if="!form.errors.name" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Por favor, introduce el nombre del documento</span>
+                            </div>
                             <p v-if="form.errors.name" class="mt-1 text-sm text-red-600">{{ form.errors.name }}</p>
                         </div>
 
                         <!-- Descripción -->
                         <div class="col-span-1 md:col-span-2">
-                            <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Descripción:</label>
+                            <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Descripción del Documento: <span class="text-red-500">*</span></label>
                             <textarea 
                                 v-model="form.description" 
                                 @input="clearError('description')" 
@@ -195,90 +198,91 @@ const viewCurrentFile = () => {
                                 :class="{ 'border-b-red-500': form.errors.description }" 
                                 placeholder="Descripción del documento..."
                             ></textarea>
+                            <div v-if="!form.errors.description" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Descripción detallada del documento</span>
+                            </div>
                             <p v-if="form.errors.description" class="mt-1 text-sm text-red-600">{{ form.errors.description }}</p>
                         </div>
 
-                        <!-- Archivo de Plantilla/Ejemplo -->
+                        <!-- Archivo de Plantilla -->
                         <div class="col-span-1 md:col-span-2">
                             <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">
                                 Archivo de Plantilla/Ejemplo:
                             </label>
-                            
-                            <!-- Archivo Actual -->
-                            <div v-if="archivoActual && !form.archivo" class="mb-4 p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-3">
-                                        <div class="flex items-center justify-center w-12 h-12 bg-green-600 rounded-lg">
-                                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="white">
-                                                <path d="M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"/>
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm font-medium text-gray-900">{{ archivoNombre }}</p>
-                                            <p class="text-xs text-gray-500">Archivo actual</p>
-                                        </div>
+
+                            <!-- Visor de archivo cuando hay uno (actual del servidor o nuevo) -->
+                            <div v-if="archivoUrl" class="border-2 border-gray-300 rounded-lg overflow-hidden">
+                                <!-- Header del archivo -->
+                                <div class="bg-gray-100 border-b border-gray-300 p-3 flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-900">Nombre del Archivo: {{ archivoNombre }}</p>
+                                        <p class="text-xs text-gray-600">
+                                            <span v-if="form.archivo">Tamaño: {{ (form.archivo.size / 1024 / 1024).toFixed(2) }} MB &nbsp;&bull;&nbsp; <span class="text-orange-600 font-medium">Nuevo archivo (reemplazará el actual)</span></span>
+                                            <span v-else class="text-green-700 font-medium">Archivo guardado actualmente</span>
+                                        </p>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <button type="button" @click="viewCurrentFile" class="text-blue-600 hover:text-blue-800 transition">
-                                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
-                                                <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z"/>
-                                            </svg>
+                                        <label for="archivo-plantilla-change" class="px-4 py-2 bg-[#1B396A] text-white text-sm rounded hover:bg-[#0f2347] transition cursor-pointer">
+                                            Cambiar Archivo
+                                        </label>
+                                        <button v-if="form.archivo" type="button" @click="removeFile"
+                                            class="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition cursor-pointer">
+                                            Cancelar
                                         </button>
-                                        <button type="button" @click="removeFile" class="text-red-600 hover:text-red-800 transition">
-                                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
-                                                <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/>
+                                    </div>
+                                </div>
+
+                                <!-- Visor integrado -->
+                                <div class="bg-gray-100" style="height: 500px;">
+                                    <iframe v-if="archivoTipo?.includes('pdf')"
+                                        :src="archivoUrl"
+                                        class="w-full h-full border-0"
+                                        title="Visor de archivo">
+                                    </iframe>
+                                    <div v-else-if="archivoTipo?.startsWith('image/')" class="h-full flex items-center justify-center bg-gray-900">
+                                        <img :src="archivoUrl" :alt="archivoNombre" class="max-h-full max-w-full object-contain" />
+                                    </div>
+                                    <div v-else class="h-full flex items-center justify-center bg-gray-50 p-6">
+                                        <div class="text-center">
+                                            <svg class="w-16 h-16 mx-auto text-[#1B396A] mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                             </svg>
-                                        </button>
+                                            <p class="text-gray-900 font-bold mb-2 text-lg">Archivo {{ form.archivo ? 'Seleccionado' : 'Actual' }}</p>
+                                            <p class="text-gray-600 font-medium mb-2 break-all">{{ archivoNombre }}</p>
+                                            <p class="text-sm text-gray-500">Vista previa no disponible para este tipo de archivo.</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Nuevo Archivo -->
-                            <div v-if="!archivoNombre" class="flex items-center justify-center w-full">
-                                <label class="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
+                            <!-- Drop zone cuando NO hay archivo -->
+                            <div v-else class="flex items-center justify-center w-full">
+                                <label for="archivo-plantilla" class="flex flex-col items-center justify-center w-full h-48 bg-gradient-to-br from-[#F3F4F6] to-[#E5E7EB] border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gradient-to-br hover:from-[#EFF6FF] hover:to-[#DBEAFE] hover:border-[#1B396A] transition-all">
                                     <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                        <svg xmlns="http://www.w3.org/2000/svg" height="40px" viewBox="0 -960 960 960" width="40px" fill="#6B7280">
-                                            <path d="M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
+                                        <svg class="w-10 h-10 mb-3 text-[#1B396A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                         </svg>
-                                        <p class="mt-2 text-sm text-gray-500"><span class="font-semibold">Click para subir</span> o arrastra el archivo</p>
-                                        <p class="text-xs text-gray-500">PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (MAX. 30MB)</p>
+                                        <p class="mb-2 text-sm text-gray-700">
+                                            <span class="font-semibold text-[#1B396A]">Arrastra archivos aquí</span> o haz clic para seleccionar
+                                        </p>
+                                        <p class="text-xs text-gray-500">Tamaño máximo: 30MB &nbsp;|&nbsp; PDF, DOC, DOCX, XLS, XLSX, JPG, PNG</p>
                                     </div>
-                                    <input id="archivo" type="file" class="hidden" @change="handleFileChange" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" />
+                                    <input id="archivo-plantilla" type="file" class="hidden" @change="handleFileChange" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" />
                                 </label>
                             </div>
 
-                            <!-- Preview del nuevo archivo -->
-                            <div v-else-if="form.archivo" class="mt-4 p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-3">
-                                        <div class="flex items-center justify-center w-12 h-12 bg-[#1B396A] rounded-lg">
-                                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="white">
-                                                <path d="M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"/>
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm font-medium text-gray-900">{{ archivoNombre }}</p>
-                                            <p class="text-xs text-gray-500">Nuevo archivo (reemplazará el actual)</p>
-                                        </div>
-                                    </div>
-                                    <button type="button" @click="removeFile" class="text-red-600 hover:text-red-800 transition">
-                                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor">
-                                            <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/>
-                                        </svg>
-                                    </button>
-                                </div>
+                            <!-- Input oculto para cambiar archivo -->
+                            <input id="archivo-plantilla-change" type="file" class="hidden" @change="handleFileChange" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" />
 
-                                <!-- Vista Previa de Imagen -->
-                                <div v-if="archivoPreview" class="mt-4">
-                                    <img :src="archivoPreview" alt="Preview" class="max-h-48 rounded-lg mx-auto" />
-                                </div>
-
-                                <!-- Vista Previa de PDF -->
-                                <div v-if="archivoUrl && archivoTipo === 'application/pdf'" class="mt-4">
-                                    <iframe :src="archivoUrl" class="w-full h-96 rounded-lg"></iframe>
-                                </div>
+                            <div class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Sube la plantilla o ejemplo del documento requerido</span>
                             </div>
-                            
                             <p v-if="form.errors.archivo" class="mt-1 text-sm text-red-600">{{ form.errors.archivo }}</p>
                         </div>
                     </div>

@@ -89,18 +89,13 @@ class PermissionSeeder extends Seeder
             ['name' => 'rubrics.edit', 'description' => 'Edit rubrics', 'module_key' => 'catalog'],
             ['name' => 'rubrics.delete', 'description' => 'Delete rubrics', 'module_key' => 'catalog'],
 
-            // Calendario permissions removed
-          
-            // Catalog Documents (CRUD)
-            ['name' => 'catalog.documents.index', 'description' => 'View document catalog', 'module_key' => 'catalog'],
-            ['name' => 'catalog.documents.create', 'description' => 'Create document catalog', 'module_key' => 'catalog'],
-            ['name' => 'catalog.documents.edit', 'description' => 'Edit document catalog', 'module_key' => 'catalog'],
-            ['name' => 'catalog.documents.delete', 'description' => 'Delete document catalog', 'module_key' => 'catalog'],
-
-            // Admin Documents Module
-            ['name' => 'documents.index', 'description' => 'View admin documents', 'module_key' => 'catalog'],
+            // Documents (Catalog)
+            ['name' => 'documents.index', 'description' => 'View documents catalog', 'module_key' => 'catalog'],
+            ['name' => 'documents.create', 'description' => 'Create documents', 'module_key' => 'catalog'],
+            ['name' => 'documents.edit', 'description' => 'Edit documents', 'module_key' => 'catalog'],
+            ['name' => 'documents.delete', 'description' => 'Delete documents', 'module_key' => 'catalog'],
             ['name' => 'documents.show', 'description' => 'View document details', 'module_key' => 'catalog'],
-            ['name' => 'documents.download', 'description' => 'Download admin documents', 'module_key' => 'catalog'],
+            ['name' => 'documents.download', 'description' => 'Download documents', 'module_key' => 'catalog'],
 
             // Applications Control (Summary by Institutions)
             ['name' => 'requests.index', 'description' => 'View request control (institution summary)', 'module_key' => 'request_control'],

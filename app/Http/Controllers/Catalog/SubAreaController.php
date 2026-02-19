@@ -41,25 +41,41 @@ class SubAreaController extends Controller
     public function index(Request $request): Response
     {
         $filters = $this->getFiltersBase($request->query());
-        $query = $this->model->query()->with('priorityArea')->buscarGlobal($filters->search);
 
-        $subAreas = $query->orderBy($filters->order, $filters->direction ?? 'asc')
+        // Campos permitidos para ordenamiento (frontend puede enviar 'nombre' como alias de 'name')
+        $allowedFields = ['id', 'nombre', 'name', 'area_prioritaria'];
+        $orderField = in_array($filters->order, $allowedFields) ? $filters->order : 'name';
+        // Mapear alias frontend -> columna real en BD
+        if ($orderField === 'nombre') {
+            $orderField = 'name';
+        }
+        $orderDirection = in_array($filters->direction, ['asc', 'desc']) ? $filters->direction : 'asc';
+
+        $query = $this->model->query()
+            ->select('sub_areas.*')
+            ->leftJoin('priority_areas', 'priority_areas.id', '=', 'sub_areas.priority_area_id')
+            ->with('priorityArea')
+            ->buscarGlobal($filters->search);
+
+        // Ordenamiento (incluye campo de relación)
+        $dbField = $orderField === 'area_prioritaria' ? 'priority_areas.name' : "sub_areas.{$orderField}";
+        $subAreas = $query->orderBy($dbField, $orderDirection)
             ->paginate($filters->rows)
             ->withQueryString();
 
         return Inertia::render("{$this->source}Index", [
-            'subAreas'  => SubAreaResource::collection($subAreas),
-            'title'     => 'Sub Áreas',
+            'subAreas' => SubAreaResource::collection($subAreas),
+            'title' => 'Sub Áreas',
             'routeName' => $this->routeName,
-            'filters'   => $filters
+            'filters' => $filters
         ]);
     }
 
     public function create(): Response
     {
         return Inertia::render("{$this->source}Create", [
-            'title'         => 'Agregar Sub Área',
-            'routeName'     => $this->routeName,
+            'title' => 'Agregar Sub Área',
+            'routeName' => $this->routeName,
             'priorityAreas' => PriorityArea::ordenado('name', 'asc')->get(['id', 'name']),
         ]);
     }
@@ -78,9 +94,9 @@ class SubAreaController extends Controller
     public function edit(SubArea $subArea): Response
     {
         return Inertia::render("{$this->source}Edit", [
-            'title'         => 'Editar Sub Área',
-            'routeName'     => $this->routeName,
-            'subArea'       => new SubAreaResource($subArea->load('priorityArea')),
+            'title' => 'Editar Sub Área',
+            'routeName' => $this->routeName,
+            'subArea' => new SubAreaResource($subArea->load('priorityArea')),
             'priorityAreas' => PriorityArea::ordenado('name', 'asc')->get(['id', 'name']),
         ]);
     }

@@ -188,8 +188,15 @@ const deleteItem = (id) => {
                     <table class="w-full text-sm text-left">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
-                                <th scope="col" class="px-6 py-4 tracking-wider">#</th>
-                                <th scope="col" class="px-6 py-4 tracking-wider">Título</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">ID</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">
+                                    <div @click="sortBy('title')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
+                                        Título
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'title', 'opacity-50': sortField !== 'title' }">
+                                            <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/>
+                                        </svg>
+                                    </div>
+                                </th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Activa</th>
                                 <th scope="col" class="px-6 py-4 text-center tracking-wider">Acciones</th>
                             </tr>

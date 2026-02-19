@@ -23,7 +23,7 @@ class StoreDocumentRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
+            'description' => 'required|string|max:1000',
             'archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,xlsx,xls|max:30720', // Input name from Vue
             'active' => 'boolean',
         ];

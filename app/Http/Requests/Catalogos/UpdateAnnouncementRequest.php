@@ -28,7 +28,7 @@ class UpdateAnnouncementRequest extends FormRequest
             'registration_end' => ['required', 'date', 'after_or_equal:registration_start'],
             'evaluation_start' => ['required', 'date', 'after_or_equal:registration_end'],
             'evaluation_end' => ['required', 'date', 'after_or_equal:evaluation_start'],
-            'results_start' => ['required', 'date', 'after_or_equal:evaluation_fin'],
+            'results_start' => ['required', 'date', 'after_or_equal:evaluation_end'],
             'results_end' => ['required', 'date', 'after_or_equal:results_start'],
         ];
     }
@@ -49,7 +49,7 @@ class UpdateAnnouncementRequest extends FormRequest
 
             'publication_start.required' => 'La fecha de inicio de publicación es obligatoria.',
             'publication_start.date' => 'La fecha de inicio de publicación debe ser una fecha válida.',
-            
+
             'registration_start.required' => 'La fecha de inicio de registro es obligatoria.',
             'registration_start.date' => 'La fecha de inicio de registro debe ser una fecha válida.',
             'registration_start.after_or_equal' => 'La fecha de inicio de registro debe ser posterior o igual a la fecha de publicación.',

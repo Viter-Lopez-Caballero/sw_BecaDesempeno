@@ -54,15 +54,22 @@ class DocumentController extends Controller
         $filters = $this->getFiltersBase($request->query());
         $activeTab = $request->query('tab', 'requeridos');
 
+        // Campos permitidos según la pestaña
+        $allowedDocFields = ['id', 'name', 'description'];
+        $allowedDocenteFields = ['id', 'user_name', 'institution_name', 'announcement_name', 'created_at'];
+        $orderDirection = in_array($filters->direction, ['asc', 'desc']) ? $filters->direction : 'asc';
+
         // Datos para la pestaña de Documentos Requeridos
         if ($activeTab === 'requeridos') {
+            $orderField = in_array($filters->order, $allowedDocFields) ? $filters->order : 'name';
+
             $query = $this->model->query()
                 ->when($filters->search, function ($q) use ($filters) {
-                    $q->where('name', 'LIKE', "%{$filters->search}%")
-                      ->orWhere('description', 'LIKE', "%{$filters->search}%");
-                });
+                $q->where('name', 'LIKE', "%{$filters->search}%")
+                    ->orWhere('description', 'LIKE', "%{$filters->search}%");
+            });
 
-            $documents = $query->orderBy($filters->order ?? 'id', $filters->direction ?? 'desc')
+            $documents = $query->orderBy($orderField, $orderDirection)
                 ->paginate($filters->rows)
                 ->withQueryString();
 
@@ -76,7 +83,8 @@ class DocumentController extends Controller
                 'current_page' => $documents->currentPage(),
                 'last_page' => $documents->lastPage(),
             ];
-        } else {
+        }
+        else {
             $documentsData = [
                 'data' => [],
                 'links' => [],
@@ -88,31 +96,41 @@ class DocumentController extends Controller
 
         // Datos para la pestaña de Documentos de Docentes
         if ($activeTab === 'docentes') {
+            $orderField = in_array($filters->order, $allowedDocenteFields) ? $filters->order : 'user_name';
+
+            // Mapa de campo virtual → columna real
+            $dbFieldMap = [
+                'user_name' => 'users.name',
+                'institution_name' => 'institutions.name',
+                'announcement_name' => 'announcements.name',
+                'created_at' => 'applications.created_at',
+                'id' => 'applications.id',
+            ];
+            $dbField = $dbFieldMap[$orderField] ?? 'users.name';
+
             $applicationsQuery = Application::query()
+                ->select('applications.*')
+                ->join('users', 'users.id', '=', 'applications.user_id')
+                ->leftJoin('institutions', 'institutions.id', '=', 'users.institution_id')
+                ->leftJoin('announcements', 'announcements.id', '=', 'applications.announcement_id')
                 ->with(['user.institution.state', 'user.priorityArea', 'announcement' => function ($query) {
-                    $query->withTrashed();
-                }])
+                $query->withTrashed();
+            }])
                 ->withCount('documents')
                 ->when($filters->search, function ($q) use ($filters) {
-                    $q->whereHas('user', function ($query) use ($filters) {
-                        $query->where('name', 'LIKE', "%{$filters->search}%")
-                              ->orWhere('email', 'LIKE', "%{$filters->search}%");
-                    })
-                    ->orWhereHas('user.institution', function ($query) use ($filters) {
-                        $query->where('name', 'LIKE', "%{$filters->search}%");
-                    })
-                    ->orWhereHas('announcement', function ($query) use ($filters) {
-                        $query->where('name', 'LIKE', "%{$filters->search}%");
-                    })
-                    ->orWhere('id', 'LIKE', "%{$filters->search}%");
-                });
+                $q->where('users.name', 'LIKE', "%{$filters->search}%")
+                    ->orWhere('users.email', 'LIKE', "%{$filters->search}%")
+                    ->orWhere('institutions.name', 'LIKE', "%{$filters->search}%")
+                    ->orWhere('announcements.name', 'LIKE', "%{$filters->search}%")
+                    ->orWhere('applications.id', 'LIKE', "%{$filters->search}%");
+            });
 
-            $applications = $applicationsQuery->orderBy($filters->order ?? 'created_at', $filters->direction ?? 'desc')
+            $applications = $applicationsQuery->orderBy($dbField, $orderDirection)
                 ->paginate($filters->rows)
                 ->withQueryString();
 
             $applicationsData = [
-                'data' => \App\Http\Resources\ApplicationResource::collection($applications->items())->resolve(), // Keep Resource name for now
+                'data' => \App\Http\Resources\ApplicationResource::collection($applications->items())->resolve(),
                 'meta' => [
                     'links' => $applications->linkCollection()->toArray(),
                     'from' => $applications->firstItem(),
@@ -123,7 +141,8 @@ class DocumentController extends Controller
                     'last_page' => $applications->lastPage(),
                 ]
             ];
-        } else {
+        }
+        else {
             $applicationsData = [
                 'data' => [],
                 'meta' => [
@@ -139,14 +158,15 @@ class DocumentController extends Controller
         }
 
         return Inertia::render("{$this->source}Index", [
-            'documents'  => $documentsData,
+            'documents' => $documentsData,
             'applications' => $applicationsData,
-            'title'       => 'Documentos',
-            'routeName'   => $this->routeName,
-            'filters'     => $filters,
-            'activeTab'   => $activeTab,
+            'title' => 'Documentos',
+            'routeName' => $this->routeName,
+            'filters' => $filters,
+            'activeTab' => $activeTab,
         ]);
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -154,7 +174,7 @@ class DocumentController extends Controller
     public function create(): Response
     {
         return Inertia::render("{$this->source}Create", [
-            'title'     => 'Agregar Documento',
+            'title' => 'Agregar Documento',
             'routeName' => $this->routeName,
         ]);
     }
@@ -165,13 +185,13 @@ class DocumentController extends Controller
     public function store(StoreDocumentRequest $request): RedirectResponse
     {
         $data = $request->validated();
-        
+
         // Manejar la subida del archivo
         if ($request->hasFile('archivo')) {
             $file = $request->file('archivo');
             $fileName = time() . '_' . $file->getClientOriginalName();
             $filePath = $file->storeAs('catalog_documents', $fileName, 'public'); // Changed folder name
-            
+
             $data['file_path'] = $filePath;
             $data['file_name'] = $file->getClientOriginalName();
             $data['file_type'] = $file->getClientMimeType();
@@ -179,7 +199,7 @@ class DocumentController extends Controller
         }
 
         $document = CatalogDocument::create($data);
-        
+
         // Vincular automáticamente a convocatorias activas si el documento está activo
         if ($document->active) {
             $activeAnnouncements = Announcement::where('status', 'activa')->pluck('id');
@@ -191,7 +211,7 @@ class DocumentController extends Controller
                 $document->announcements()->syncWithoutDetaching($syncData);
             }
         }
-        
+
         return redirect()->route("{$this->routeName}index")->with('success', 'Documento creado con éxito!');
     }
 
@@ -203,8 +223,8 @@ class DocumentController extends Controller
     {
         $application = Application::with([
             'user.institution.state', // Updated relationship name
-            'user.priorityArea', 
-            'user.subArea', 
+            'user.priorityArea',
+            'user.subArea',
             'announcement', // Updated relationship name
             'documents' // Updated relationship name
         ])->findOrFail($id);
@@ -220,11 +240,12 @@ class DocumentController extends Controller
      * Show the form for editing the specified resource.
      */
     public function edit(CatalogDocument $document): Response // Typehint updated
+
     {
         return Inertia::render("{$this->source}Edit", [
-            'title'      => 'Editar Documento',
-            'routeName'  => $this->routeName,
-            'document'  => new DocumentResource($document),
+            'title' => 'Editar Documento',
+            'routeName' => $this->routeName,
+            'document' => new DocumentResource($document),
         ]);
     }
 
@@ -234,18 +255,18 @@ class DocumentController extends Controller
     public function update(UpdateDocumentRequest $request, CatalogDocument $document): RedirectResponse
     {
         $data = $request->validated();
-        
+
         // Manejar nuevo archivo
         if ($request->hasFile('archivo')) {
             // Eliminar archivo anterior si existe
             if ($document->file_path) {
                 Storage::disk('public')->delete($document->file_path);
             }
-            
+
             $file = $request->file('archivo');
             $fileName = time() . '_' . $file->getClientOriginalName();
             $filePath = $file->storeAs('catalog_documents', $fileName, 'public');
-            
+
             $data['file_path'] = $filePath;
             $data['file_name'] = $file->getClientOriginalName();
             $data['file_type'] = $file->getClientMimeType();
@@ -262,19 +283,14 @@ class DocumentController extends Controller
     public function destroy($id): RedirectResponse
     {
         $document = CatalogDocument::findOrFail($id);
-        
-        // Verificar si es documento fundamental (no se puede eliminar)
-        if ($document->is_fundamental) {
-            return redirect()->route("{$this->routeName}index")
-                ->with('error', 'No se puede eliminar un documento fundamental. Solo puedes actualizarlo.');
-        }
-        
+
         // Eliminar archivo si existe
         if ($document->file_path) {
             Storage::disk('public')->delete($document->file_path);
         }
-        
-        $document->delete();
+
+        // Usar forceDelete para eliminar permanentemente de la base de datos
+        $document->forceDelete();
         return redirect()->route("{$this->routeName}index")->with('success', 'Documento eliminado con éxito');
     }
 
@@ -284,11 +300,11 @@ class DocumentController extends Controller
     public function download($id)
     {
         $document = CatalogDocument::findOrFail($id);
-        
+
         if (!$document->file_path || !Storage::disk('public')->exists($document->file_path)) {
             abort(404, 'Archivo no encontrado');
         }
-        
+
         return Storage::disk('public')->download(
             $document->file_path,
             $document->file_name
@@ -303,7 +319,7 @@ class DocumentController extends Controller
         $document = CatalogDocument::findOrFail($id);
         $newState = !$document->active;
         $document->update(['active' => $newState]);
-        
+
         // Si se está activando el documento, vincularlo a todas las convocatorias activas
         if ($newState) {
             $activeAnnouncements = Announcement::where('status', 'activa')->pluck('id');
@@ -315,7 +331,7 @@ class DocumentController extends Controller
                 $document->announcements()->syncWithoutDetaching($syncData);
             }
         }
-        
+
         return back()->with('success', 'Estado actualizado correctamente');
     }
 
@@ -323,6 +339,7 @@ class DocumentController extends Controller
      * Download a teacher's document (from Application/Solicitud).
      */
     public function downloadDocente(\App\Models\Document $document) // Typehint Document
+
     {
         if (!Storage::disk('public')->exists($document->file_path)) {
             return back()->with('error', 'El archivo no existe.');

@@ -31,7 +31,7 @@ const props = defineProps({
 
 const search = ref(props.filters.search);
 const rows = ref(props.filters.rows || 10);
-const sortField = ref(props.filters.order || 'nombre');
+const sortField = ref(props.filters.order || 'name');
 const sortDirection = ref(props.filters.direction || 'asc');
 
 const rowOptions = [
@@ -66,7 +66,7 @@ watch(search, (value) => {
 const cleanFilters = () => {
     search.value = '';
     rows.value = 10;
-    sortField.value = 'nombre';
+    sortField.value = 'name';
     sortDirection.value = 'asc';
     router.get(route(`${props.routeName}index`), {}, { preserveState: true, replace: true });
 };
@@ -190,15 +190,20 @@ const deleteItem = async (id) => {
                             <tr>
                                 <th scope="col" class="px-6 py-4 tracking-wider">ID</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">
-                                    <div @click="sortBy('nombre')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
+                                    <div @click="sortBy('name')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
                                         Nombre
-                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'nombre', 'opacity-50': sortField !== 'nombre' }">
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'name', 'opacity-50': sortField !== 'name' }">
                                             <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/>
                                         </svg>
                                     </div>
                                 </th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">
-                                    Área Prioritaria
+                                    <div @click="sortBy('area_prioritaria')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
+                                        Área Prioritaria
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'area_prioritaria', 'opacity-50': sortField !== 'area_prioritaria' }">
+                                            <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/>
+                                        </svg>
+                                    </div>
                                 </th>
                                 <th v-if="useCan('sub_areas.edit') || useCan('sub_areas.delete')" scope="col" class="px-6 py-4 text-center tracking-wider">Acciones</th>
                             </tr>

@@ -1,7 +1,7 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
-import { mdiFileDocumentOutline, mdiBookOpenPageVariant, mdiAccountSchool } from '@mdi/js';
+import { mdiFileDocumentMultiple, mdiBookOpenPageVariant, mdiAccountSchool } from '@mdi/js';
 
 const props = defineProps({
     application: {
@@ -48,7 +48,7 @@ const downloadFile = (id) => {
                         </svg>
                         <Link :href="route(`${routeName}index`, { tab: 'docentes' })" class="flex items-center gap-2 hover:underline">
                             <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
-                                <path :d="mdiFileDocumentOutline"/>
+                                <path :d="mdiFileDocumentMultiple"/>
                             </svg>
                             <span class="text-gray-700 font-medium">Documentos</span>
                         </Link>

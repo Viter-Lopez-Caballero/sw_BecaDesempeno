@@ -21,12 +21,10 @@ class CatalogDocument extends Model
         'file_type',
         'file_size',
         'active',
-        'is_fundamental',
     ];
 
     protected $casts = [
         'active' => 'boolean',
-        'is_fundamental' => 'boolean',
     ];
 
     /**

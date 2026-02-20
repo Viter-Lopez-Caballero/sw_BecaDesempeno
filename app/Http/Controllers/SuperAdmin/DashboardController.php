@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\State;
 use App\Models\Institution;
 use App\Models\Application;
+use App\Exports\ApplicationsExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DashboardController extends Controller
 {
@@ -17,6 +19,7 @@ class DashboardController extends Controller
         $search = $request->input('search');
         $institutionId = $request->input('institution_id');
         $stateId = $request->input('state_id');
+        $statusFilter = $request->input('status');
 
         // Base Query for Stats
         $query = Application::query()
@@ -38,6 +41,10 @@ class DashboardController extends Controller
 
         if ($stateId) {
             $query->where('states.id', $stateId);
+        }
+
+        if ($statusFilter && in_array($statusFilter, ['approved', 'rejected', 'expired'])) {
+            $query->where('applications.status', $statusFilter);
         }
 
         // --- Stats Cards ---
@@ -86,9 +93,23 @@ class DashboardController extends Controller
                 'search' => $search,
                 'institution_id' => $institutionId,
                 'state_id' => $stateId,
+                'status' => $statusFilter,
             ],
-            'institutions' => Institution::select('id', 'name')->orderBy('name')->get(),
+            'institutions' => Institution::select('id', 'name', 'state_id')->orderBy('name')->get(),
             'states' => State::select('id', 'name')->orderBy('name')->get(),
         ]);
+    }
+
+    public function export(Request $request)
+    {
+        return Excel::download(
+            new ApplicationsExport(
+                $request->input('search'),
+                $request->input('institution_id'),
+                $request->input('state_id'),
+                $request->input('status')
+            ),
+            'solicitudes_' . now()->format('Y-m-d') . '.xlsx'
+        );
     }
 }

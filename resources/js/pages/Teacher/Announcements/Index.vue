@@ -71,112 +71,128 @@ const getFase = (announcement) => {
                 </div>
             </div>
 
-            <!-- Grid de Convocatorias con diseño estilo Landing -->
-            <div v-if="announcements.data && announcements.data.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Diseño "Featured Card" para convocatoria única/principal -->
+            <div v-if="announcements.data && announcements.data.length > 0" class="max-w-5xl mx-auto">
                 <div 
                     v-for="announcement in announcements.data" 
                     :key="announcement.id"
                     :class="[
-                        'rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col',
+                        'rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col md:flex-row',
                         announcement.status === 'activa' 
-                            ? 'bg-white hover:scale-105 group' 
-                            : 'bg-white shadow-md border border-gray-200 hover:shadow-lg opacity-80'
+                            ? 'bg-white transform hover:-translate-y-1' 
+                            : 'bg-white shadow-md border border-gray-200 opacity-90'
                     ]"
                 >
-                    <!-- Imagen / Header visual -->
-                    <div class="h-48 bg-gradient-to-br overflow-hidden relative" :class="announcement.status === 'activa' ? 'from-gray-700 via-gray-600 to-gray-500' : 'from-gray-400 via-gray-300 to-gray-200'">
+                    <!-- Imagen (Izquierda en desktop, Arriba en mobile) -->
+                    <div class="md:w-2/5 relative h-64 md:h-auto overflow-hidden group">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10 md:hidden"></div>
+                        <div class="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-transparent z-10 hidden md:block"></div>
+                        
                         <img 
-                            :src="announcement.image_url || 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600&h=400&fit=crop'" 
+                            :src="announcement.image_url || 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80'" 
                             alt="Imagen de convocatoria" 
-                            :class="[
-                                'w-full h-full object-cover transition-transform duration-500',
-                                announcement.status === 'activa' ? 'group-hover:scale-110' : 'opacity-60'
-                            ]"
+                            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         />
-                        <div class="absolute inset-0 bg-gradient-to-t" :class="announcement.status === 'activa' ? 'from-black/40' : 'from-black/20'"></div>
+                        
+                        <!-- Fase Badge (Desktop: Over image top-left) -->
                     </div>
                     
-                    <div class="p-6 flex-1 flex flex-col">
-                        <div class="flex justify-between items-center mb-4 gap-2">
-                             <span 
+                    <!-- Contenido (Derecha en desktop) -->
+                    <div class="p-8 md:w-3/5 flex flex-col justify-center">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="text-sm font-semibold text-gray-500 uppercase tracking-widest">
+                                Convocatoria {{ new Date(announcement.created_at).getFullYear() }}
+                            </span>
+                            <span 
                                 :class="getFase(announcement).color"
-                                class="text-xs font-bold px-3 py-1.5 rounded-full shadow-md whitespace-nowrap"
+                                class="text-xs font-bold px-3 py-1.5 rounded-full shadow-sm border border-gray-100"
                             >
                                 {{ getFase(announcement).nombre }}
                             </span>
-                            <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-md">
-                                {{ new Date(announcement.created_at).getFullYear() }}
-                            </span>
                         </div>
 
-                        <h3 
-                            :class="[
-                                'text-xl font-bold mb-3',
-                                announcement.status === 'activa' 
-                                    ? 'text-gray-900 group-hover:text-[#1B396A] transition-colors' 
-                                    : 'text-gray-800'
-                            ]"
-                        >
+                        <h2 class="text-3xl font-bold text-gray-900 mt-0 mb-3 leading-tight">
                             {{ announcement.name }}
-                        </h3>
+                        </h2>
+                        <div class="w-20 h-1.5 bg-[#1B396A] rounded-full mb-4"></div>
                         
-                        <p class="text-gray-600 mb-4 text-sm line-clamp-3 leading-relaxed">
-                            {{ announcement.description || 'Sin descripción disponible.' }}
+                        <p class="text-gray-600 outline outline-0 text-lg mb-6 leading-relaxed">
+                            {{ announcement.description || 'Sin descripción disponible para esta convocatoria.' }}
                         </p>
 
-                        <!-- Document Link -->
-                        <div v-if="announcement.file_url" class="mb-4">
+                        <!-- Fechas Importantes (Si está activa) -->
+                        <div v-if="announcement.calendar && announcement.status === 'activa'" class="mb-6 bg-gray-50 rounded-lg p-4 border border-gray-100 grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase font-bold">Inicio de Registro</p>
+                                <p class="text-gray-800 font-medium font-mono">
+                                    {{ parseDateLocal(announcement.calendar.registration_start)?.toLocaleDateString() || 'N/A' }}
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase font-bold">Fin de Registro</p>
+                                <p class="text-red-600 font-medium font-mono">
+                                    {{ parseDateLocal(announcement.calendar.registration_end)?.toLocaleDateString() || 'N/A' }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-4 mt-auto items-center">
+                             <!-- Document Link -->
                             <a 
+                                v-if="announcement.file_url"
                                 :href="announcement.file_url" 
                                 target="_blank" 
-                                class="inline-flex items-center text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors group/pdf"
+                                class="text-[#1B396A] font-semibold hover:underline flex items-center gap-2 group/link"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor" class="mr-1 group-hover/pdf:scale-110 transition-transform">
-                                    <path d="M240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"/>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover/link:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
-                                Más sobre la convocatoria
+                                Bases Completas (PDF)
                             </a>
-                        </div>
-                        
-                        <div class="mt-auto pt-4 border-t border-gray-100">
-                             <!-- Estado de la solicitud (si ya tiene una) -->
-                             <div v-if="has_active_application" class="w-full text-center py-3 bg-blue-50 border border-blue-200 rounded-xl text-blue-700 font-medium">
-                                Ya tienes una solicitud en curso
-                             </div>
-                             
-                             <!-- Botón Solicitar -->
-                             <Link 
-                                v-else-if="getFase(announcement).canRegister" 
-                                :href="route('teacher.announcements.apply', announcement.id)"
-                                class="w-full flex items-center justify-center gap-2 py-3 bg-[#1B396A] text-white rounded-xl font-bold hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                             >
-                                <span>Solicitar Beca</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
-                                    <path d="M647-440H160v-80h487L423-744l57-56 320 320-320 320-57-56 224-224Z"/>
-                                </svg>
-                            </Link>
 
-                             <!-- Botón Deshabilitado (Fuera de fecha) -->
-                             <button 
-                                v-else 
-                                disabled
-                                class="w-full py-3 bg-gray-100 text-gray-400 border border-gray-300 rounded-xl font-medium cursor-not-allowed flex items-center justify-center gap-2"
-                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
-                                    <path d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280Zm-80-360h160v-80q0-33-23.5-56.5T480-800q-33 0-56.5 23.5T400-720v80ZM240-160v-400 400Z"/>
-                                </svg>
-                                {{ announcement.status === 'activa' ? 'Registro Cerrado' : 'Convocatoria Inactiva' }}
-                             </button>
+                             <!-- Botón Solicitar / Estado -->
+                             <div class="flex-1 w-full sm:w-auto">
+                                <div v-if="has_active_application" class="w-full text-center py-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 font-medium px-4">
+                                    <span class="flex items-center justify-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                        </svg>
+                                        Solicitud en revisión
+                                    </span>
+                                </div>
+                                
+                                <Link 
+                                    v-else-if="getFase(announcement).canRegister" 
+                                    :href="route('teacher.announcements.apply', announcement.id)"
+                                    class="w-full flex items-center justify-center gap-2 py-3.5 bg-[#1B396A] text-white rounded-lg font-bold hover:bg-[#152d47] transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 px-6"
+                                >
+                                    <span>Solicitar Beca</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                    </svg>
+                                </Link>
+
+                                <button 
+                                    v-else 
+                                    disabled
+                                    class="w-full py-3.5 bg-gray-100 text-gray-400 border border-gray-300 rounded-lg font-medium cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    {{ announcement.status === 'activa' ? 'Fuera de Periodo' : 'Convocatoria Inactiva' }}
+                                </button>
+                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-             <div v-else class="col-span-full py-16 flex flex-col items-center justify-center text-gray-500 bg-white rounded-2xl shadow-sm border border-gray-200">
-                <svg xmlns="http://www.w3.org/2000/svg" height="64px" viewBox="0 -960 960 960" width="64px" fill="#D1D5DB" class="mb-4">
-                    <path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/>
-                </svg>
-                <p class="text-xl font-bold text-gray-700">No hay convocatorias activas</p>
+            <!-- Empty State -->
+             <div v-else class="max-w-3xl mx-auto py-16 flex flex-col items-center justify-center text-gray-400 bg-white rounded-3xl border border-gray-100 shadow-sm">
+                <div class="bg-gray-50 p-6 rounded-full mb-4">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                </div>
+                <p class="text-xl font-bold text-gray-600">No hay convocatorias activas</p>
                 <p class="text-gray-500 mt-2">Mantente al pendiente para futuras oportunidades.</p>
             </div>
         </div>

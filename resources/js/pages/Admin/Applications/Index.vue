@@ -137,6 +137,11 @@ watch([search, status], debounce(() => {
                                             {{ application.evaluations.length }} Evaluadores
                                         </span>
                                     </template>
+                                    <template v-else-if="application.status === 'approved' || application.status === 'rejected'">
+                                        <span class="text-xs text-gray-400 italic">
+                                            Sin evaluadores
+                                        </span>
+                                    </template>
                                     <Link 
                                         v-else 
                                         :href="route('admin.applications.assign_view', application.id)"

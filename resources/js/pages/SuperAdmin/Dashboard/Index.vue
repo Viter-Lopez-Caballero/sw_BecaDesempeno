@@ -6,7 +6,7 @@ import { ref, watch, computed } from 'vue';
 import { debounce } from 'lodash';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
-import { mdiFileDocumentMultiple, mdiCheckCircle, mdiCloseCircle, mdiMagnify, mdiFilterVariant, mdiHome } from '@mdi/js';
+import { mdiFileDocumentMultiple, mdiCheckCircle, mdiCloseCircle, mdiMagnify, mdiFilterVariant, mdiHome, mdiDownload } from '@mdi/js';
 
 const props = defineProps({
     stats: Object,
@@ -19,6 +19,18 @@ const props = defineProps({
 const search = ref(props.filters.search || '');
 const institutionId = ref(props.filters.institution_id || null);
 const stateId = ref(props.filters.state_id || null);
+const statusFilter = ref(props.filters.status || null);
+
+const statusOptions = [
+    { label: 'Aprobadas', value: 'approved' },
+    { label: 'Rechazadas', value: 'rejected' },
+];
+
+// Cascading: filter institutions by selected state
+const filteredInstitutions = computed(() => {
+    if (!stateId.value) return props.institutions;
+    return props.institutions.filter(i => i.state_id === stateId.value);
+});
 
 // Chart Data Setup
 const chartData = computed(() => ({
@@ -90,6 +102,7 @@ const updateFilters = debounce(() => {
         search: search.value,
         institution_id: institutionId.value,
         state_id: stateId.value,
+        status: statusFilter.value,
     }, { preserveState: true, replace: true });
 }, 500);
 
@@ -97,12 +110,34 @@ const cleanFilters = () => {
     search.value = '';
     institutionId.value = null;
     stateId.value = null;
+    statusFilter.value = null;
     updateFilters();
 };
 
-watch([search, institutionId, stateId], () => {
+watch([search, institutionId, stateId, statusFilter], () => {
     updateFilters();
 });
+
+// When state changes, clear institution if it doesn't belong to the new state
+watch(stateId, (newStateId) => {
+    if (institutionId.value) {
+        const stillValid = props.institutions.some(
+            i => i.id === institutionId.value && i.state_id === newStateId
+        );
+        if (!stillValid) institutionId.value = null;
+    }
+});
+
+// Export with current filters
+const exportData = () => {
+    const params = new URLSearchParams();
+    if (search.value)        params.append('search', search.value);
+    if (institutionId.value) params.append('institution_id', institutionId.value);
+    if (stateId.value)       params.append('state_id', stateId.value);
+    if (statusFilter.value)  params.append('status', statusFilter.value);
+    window.location.href = route('superadmin.dashboard.export') + (params.toString() ? '?' + params.toString() : '');
+};
+
 
 </script>
 
@@ -122,6 +157,16 @@ watch([search, institutionId, stateId], () => {
                         <span class="text-gray-900 font-semibold">Inicio</span>
                     </div>
                 </div>
+                <!-- Export Button -->
+                <button
+                    @click="exportData"
+                    class="w-full md:w-auto justify-center px-4 py-2.5 bg-[#0D7239] text-white rounded-lg hover:bg-green-800 transition flex items-center gap-2 font-medium cursor-pointer"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                        <path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
+                    </svg>
+                    Exportar
+                </button>
             </div>
 
             <!-- Stats Cards -->
@@ -190,7 +235,7 @@ watch([search, institutionId, stateId], () => {
                     </button>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
                     <!-- Search -->
                     <div class="w-full">
                          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Buscar por nombre</label>
@@ -209,10 +254,10 @@ watch([search, institutionId, stateId], () => {
 
                     <!-- Campus Filter -->
                     <div class="w-full">
-                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Filtrar por Campus</label>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Filtrar por Institución</label>
                         <VueSelect
                             v-model="institutionId"
-                            :options="institutions"
+                            :options="filteredInstitutions"
                             :reduce="option => option.id"
                             label="name"
                             :clearable="true"
@@ -231,6 +276,20 @@ watch([search, institutionId, stateId], () => {
                             label="name"
                             :clearable="true"
                             placeholder="Todos los estados"
+                            class="vue-select-custom"
+                        />
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div class="w-full">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Filtrar por Estatus</label>
+                        <VueSelect
+                            v-model="statusFilter"
+                            :options="statusOptions"
+                            :reduce="option => option.value"
+                            :searchable="false"
+                            :clearable="true"
+                            placeholder="Todos los estatus"
                             class="vue-select-custom"
                         />
                     </div>

@@ -95,7 +95,14 @@ class PermissionSeeder extends Seeder
             ['name' => 'documents.edit', 'description' => 'Edit documents', 'module_key' => 'catalog'],
             ['name' => 'documents.delete', 'description' => 'Delete documents', 'module_key' => 'catalog'],
             ['name' => 'documents.show', 'description' => 'View document details', 'module_key' => 'catalog'],
+            ['name' => 'documents.show', 'description' => 'View document details', 'module_key' => 'catalog'],
             ['name' => 'documents.download', 'description' => 'Download documents', 'module_key' => 'catalog'],
+
+            // Templates (Catalog)
+            ['name' => 'templates.index', 'description' => 'View templates list', 'module_key' => 'catalog'],
+            ['name' => 'templates.create', 'description' => 'Create templates', 'module_key' => 'catalog'],
+            ['name' => 'templates.edit', 'description' => 'Edit templates (toggle)', 'module_key' => 'catalog'],
+            ['name' => 'templates.delete', 'description' => 'Delete templates', 'module_key' => 'catalog'],
 
             // Applications Control (Summary by Institutions)
             ['name' => 'requests.index', 'description' => 'View request control (institution summary)', 'module_key' => 'request_control'],

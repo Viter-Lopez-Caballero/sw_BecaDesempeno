@@ -151,6 +151,8 @@ const formatDate = (dateString) => {
         day: 'numeric' 
     });
 };
+
+const isReadOnly = computed(() => props.evaluation.status !== 'pending');
 </script>
 
 <template>
@@ -181,9 +183,29 @@ const formatDate = (dateString) => {
                 </Link>
             </div>
 
+            <!-- Read-Only Banner -->
+            <div v-if="isReadOnly" class="p-4 rounded-lg flex items-center gap-3 mb-6" 
+                :class="{
+                    'bg-green-50 border border-green-200 text-green-800': evaluation.status === 'approved',
+                    'bg-red-50 border border-red-200 text-red-800': evaluation.status === 'rejected',
+                    'bg-gray-100 border border-gray-300 text-gray-800': evaluation.status === 'expired'
+                }"
+            >
+                <div class="p-2 rounded-full bg-white bg-opacity-50">
+                    <svg v-if="evaluation.status === 'approved'" viewBox="0 0 24 24" class="w-6 h-6 fill-current"><path :d="mdiCheckCircle"/></svg>
+                    <svg v-else-if="evaluation.status === 'rejected'" viewBox="0 0 24 24" class="w-6 h-6 fill-current"><path :d="mdiCloseCircle"/></svg>
+                    <svg v-else viewBox="0 0 24 24" class="w-6 h-6 fill-current"><path :d="mdiClockOutline"/></svg>
+                </div>
+                <div class="font-medium">
+                    <span v-if="evaluation.status === 'approved'">Esta solicitud ya fue aprobada.</span>
+                    <span v-else-if="evaluation.status === 'rejected'">Esta solicitud ya fue rechazada.</span>
+                    <span v-else>El tiempo de evaluación ha expirado.</span>
+                </div>
+            </div>
+
             <!-- Content Container -->
             <div class="space-y-6">
-                
+
                 <!-- Información General (Applicant) -->
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative">
                      <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-100 pb-4 mb-6 gap-2 md:gap-4">
@@ -219,6 +241,11 @@ const formatDate = (dateString) => {
                          <div>
                             <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Fecha de Solicitud</h3>
                             <p class="text-md font-medium text-gray-900">{{ formatDate(application.created_at) }}</p>
+                        </div>
+
+                        <div>
+                            <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Tipo de Plaza</h3>
+                            <p class="text-md font-medium text-gray-900">{{ application.position_type || 'No especificado' }}</p>
                         </div>
                     </div>
                 </div>
@@ -285,7 +312,7 @@ const formatDate = (dateString) => {
                     </div>
                 </div>
 
-                <!-- Rubric Evaluation (Refreshed Style) -->
+                <!-- Rubric Evaluation (única instancia) -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     <div class="bg-[#1B396A] px-6 py-4 border-b border-gray-200 flex justify-between items-center text-white">
                         <div>

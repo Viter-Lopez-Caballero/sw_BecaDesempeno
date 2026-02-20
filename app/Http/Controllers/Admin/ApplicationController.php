@@ -72,6 +72,7 @@ class ApplicationController extends Controller
                         'application_id' => $applicationId,
                         'evaluator_id' => $userId,
                         'status' => 'pending',
+                        'deadline_at' => \Carbon\Carbon::now()->addWeekdays(7),
                     ]);
                 }
             }

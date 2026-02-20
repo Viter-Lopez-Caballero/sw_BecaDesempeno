@@ -150,6 +150,7 @@ use App\Http\Controllers\Catalog\SubAreaController;
 use App\Http\Controllers\Catalog\RubricController;
 use App\Http\Controllers\Catalog\AnnouncementController; // ConvocatoriaController renamed
 use App\Http\Controllers\Catalog\DocumentController; // DocumentoController renamed
+use App\Http\Controllers\Catalog\TemplateController;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Generic Dashboard Route (redirects by role)
@@ -172,12 +173,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ========================
     Route::middleware(['role:Super Admin'])->prefix('superadmin')->name('superadmin.')->group(function () {
         Route::get('dashboard', [\App\Http\Controllers\SuperAdmin\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('dashboard/export', [\App\Http\Controllers\SuperAdmin\DashboardController::class, 'export'])->name('dashboard.export');
         Route::get('control-applications', [\App\Http\Controllers\SuperAdmin\RequestControlController::class, 'index'])->name('control-applications'); // control-solicitudes
+        Route::get('control-applications/export', [\App\Http\Controllers\SuperAdmin\RequestControlController::class, 'export'])->name('control-applications.export');
     });
 
     Route::middleware(['role:Admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('dashboard', [AdminController::class, 'index'])->name('dashboard');
-        
+        Route::get('dashboard/export', [AdminController::class, 'export'])->name('dashboard.export');
         // Evaluators Management
         Route::get('evaluators', [\App\Http\Controllers\Admin\EvaluatorController::class, 'index'])->name('evaluators.index'); // evaluadores
         Route::delete('evaluators/{id}', [\App\Http\Controllers\Admin\EvaluatorController::class, 'destroy'])->name('evaluators.destroy');
@@ -217,6 +220,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['role:Docente'])->prefix('teacher')->name('teacher.')->group(function () { // prefix docente -> teacher
         Route::get('dashboard', [TeacherController::class, 'inicio'])->name('dashboard'); // inicio -> dashboard
         Route::get('applications/{id}', [TeacherController::class, 'show'])->name('applications.show');
+        Route::get('documents/acceptance/{id}', [TeacherController::class, 'downloadAcceptance'])->name('documents.downloadAcceptance');
         Route::get('documents/{id}/download', [TeacherController::class, 'download'])->name('documents.download');
         Route::get('documents/{id}/stream', [TeacherController::class, 'stream'])->name('documents.stream');
         
@@ -315,6 +319,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::resource('rubrics', RubricController::class);
         Route::post('rubrics/{rubric}/toggle-active', [RubricController::class, 'toggleActive'])->name('rubrics.toggle-active');
+
+        Route::post('templates/{template}/toggle-active', [TemplateController::class, 'toggleActive'])->name('templates.toggle-active');
+        Route::get('templates/{template}/stream', [TemplateController::class, 'stream'])->name('templates.stream');
+        Route::resource('templates', TemplateController::class);
     // }); // Removed nested group closing brace
 
     // Modules accessible by permission (Admin/SuperAdmin)

@@ -199,9 +199,6 @@
                                         <div class="flex flex-col gap-4 animate-fadeIn">
                                             <div class="flex justify-between items-center">
                                                 <h3 class="font-bold text-gray-800 text-lg">Vista Previa: {{ template.name }}</h3>
-                                                <button @click="togglePreview(template.id)" class="text-sm text-gray-500 hover:text-gray-700 underline">
-                                                    Cerrar Vista Previa
-                                                </button>
                                             </div>
                                             <div class="w-full h-[600px] border border-gray-300 rounded-lg overflow-hidden bg-white relative">
                                                 <div class="absolute inset-0 flex items-center justify-center text-gray-400 z-0">

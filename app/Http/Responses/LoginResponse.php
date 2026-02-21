@@ -45,7 +45,7 @@ class LoginResponse implements LoginResponseContract
                 // Reenviar correo de verificación
                 try {
                     \Illuminate\Support\Facades\Mail::to($user->email)
-                        ->send(new \App\Mail\VerificationCode($user, $verificationCode));
+                        ->queue(new \App\Mail\VerificationCode($user, $verificationCode));
                     Log::info('📧 Correo de verificación enviado a: ' . $user->email);
                     $message = 'Por favor verifica tu correo electrónico. Te hemos enviado un código de verificación.';
                 } catch (\Exception $e) {

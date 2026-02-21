@@ -19,24 +19,34 @@ class RequestControlController extends Controller
         // Global Statistics
         $stats = [
             'total' => Application::count(),
-            'pending' => Application::where('status', 'pending')->count(),
-            'approved' => Application::where('status', 'approved')->count(),
-            'rejected' => Application::where('status', 'rejected')->count(),
+            'pending' => Application::pending()->count(),
+            'approved' => Application::approved()->count(),
+            'rejected' => Application::rejected()->count(),
         ];
 
         // Main Table: Institutions with Approved/Rejected counts (filterable)
         $search = $request->input('search');
         $stateId = $request->input('state_id');
         $institutionId = $request->input('institution_id');
+        $statusFilter = $request->input('status'); // Added status filter
         $rows = $request->input('rows', 10);
         
         $institutions = Institution::with('state')
             ->withCount([
                 'applications as approved_count' => function ($query) {
-                    $query->where('status', 'approved');
+                    $query->approved();
                 },
                 'applications as rejected_count' => function ($query) {
-                    $query->where('status', 'rejected');
+                    $query->rejected();
+                },
+                'applications as filtered_applications_count' => function ($query) use ($statusFilter) {
+                    if ($statusFilter === 'pending') {
+                        $query->pending();
+                    } elseif ($statusFilter === 'approved') {
+                        $query->approved();
+                    } elseif ($statusFilter === 'rejected') {
+                        $query->rejected();
+                    }
                 }
             ])
             ->when($search, function ($query, $search) {

@@ -80,4 +80,63 @@ class Application extends Model
         // Allow sorting by related user name if needed, assuming basic sort for now
         return $query->orderBy($sortField, $sortDirection);
     }
+
+    /**
+     * Scope a query to only include applications of a given user.
+     */
+    public function scopeForCurrentUser($query)
+    {
+        return $query->where('user_id', auth()->id());
+    }
+
+    /**
+     * Scope a query to only include pending applications.
+     */
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
+
+    /**
+     * Scope a query to only include approved applications.
+     */
+    public function scopeApproved($query)
+    {
+        return $query->where('status', 'approved');
+    }
+
+    /**
+     * Scope a query to only include rejected applications.
+     */
+    public function scopeRejected($query)
+    {
+        return $query->where('status', 'rejected');
+    }
+
+    /**
+     * Scope to load teacher details with nested relationships and counts for Document Controller
+     */
+    public function scopeWithTeacherDetails($query)
+    {
+        return $query->select('applications.*')
+            ->join('users', 'users.id', '=', 'applications.user_id')
+            ->leftJoin('institutions', 'institutions.id', '=', 'users.institution_id')
+            ->leftJoin('announcements', 'announcements.id', '=', 'applications.announcement_id')
+            ->with(['user.institution.state', 'user.priorityArea', 'announcement' => function ($q) {
+                $q->withTrashed();
+            }])
+            ->withCount('documents');
+    }
+
+    /**
+     * Scope to search by teacher details (Name, Email, Institution, Announcement)
+     */
+    public function scopeSearchByTeacherDetails($query, $search)
+    {
+        return $query->where('users.name', 'LIKE', "%{$search}%")
+            ->orWhere('users.email', 'LIKE', "%{$search}%")
+            ->orWhere('institutions.name', 'LIKE', "%{$search}%")
+            ->orWhere('announcements.name', 'LIKE', "%{$search}%")
+            ->orWhere('applications.id', 'LIKE', "%{$search}%");
+    }
 }

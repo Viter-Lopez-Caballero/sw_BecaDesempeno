@@ -31,7 +31,7 @@ class NotificationService
         ]);
 
         // Send email
-        Mail::to($evaluator->email)->send(new EvaluatorAssigned(
+        Mail::to($evaluator->email)->queue(new EvaluatorAssigned(
             $evaluator->name,
             $evaluationsCount,
             5 // days limit
@@ -59,7 +59,7 @@ class NotificationService
         ]);
 
         // Send email
-        Mail::to($teacher->email)->send(new ApplicationVerdict(
+        Mail::to($teacher->email)->queue(new ApplicationVerdict(
             $teacher->name,
             $status,
             $announcementTitle
@@ -88,7 +88,7 @@ class NotificationService
             ]);
 
             // Send email
-            Mail::to($user->email)->send(new AnnouncementStageChange(
+            Mail::to($user->email)->queue(new AnnouncementStageChange(
                 $user->name,
                 $announcementTitle,
                 $newStage,
@@ -120,7 +120,7 @@ class NotificationService
             ]);
 
             // Send email
-            Mail::to($user->email)->send(new AnnouncementDateChange(
+            Mail::to($user->email)->queue(new AnnouncementDateChange(
                 $user->name,
                 $announcementTitle,
                 $changes

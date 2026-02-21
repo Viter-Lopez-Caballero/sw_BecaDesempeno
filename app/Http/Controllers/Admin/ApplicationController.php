@@ -7,6 +7,7 @@ use App\Http\Resources\ApplicationResource;
 use App\Models\Application;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Requests\RemoveEvaluatorRequest;
 use Illuminate\Support\Facades\DB;
 use App\Traits\Filterable;
 use Inertia\Inertia;
@@ -14,6 +15,14 @@ use Inertia\Inertia;
 class ApplicationController extends Controller
 {
     use Filterable;
+    
+    protected \App\Services\AssignmentService $assignmentService;
+
+    public function __construct(\App\Services\AssignmentService $assignmentService)
+    {
+        $this->assignmentService = $assignmentService;
+    }
+
     /**
      * Display a listing of Requests for Admin (with evaluator assignment).
      */
@@ -49,34 +58,12 @@ class ApplicationController extends Controller
     /**
      * Assign evaluators to a request.
      */
-    public function assignEvaluator(Request $request)
+    public function assignEvaluator(\App\Http\Requests\AssignEvaluatorRequest $request)
     {
-        $request->validate([
-            'application_id' => 'required|exists:applications,id',
-            'evaluator_ids' => 'required|array',
-            'evaluator_ids.*' => 'exists:users,id',
-        ]);
-
-        $applicationId = $request->application_id;
-        $evaluatorIds = $request->evaluator_ids;
-
-        DB::transaction(function () use ($applicationId, $evaluatorIds) {
-            foreach ($evaluatorIds as $userId) {
-                // Check if already assigned
-                $exists = \App\Models\Evaluation::where('application_id', $applicationId)
-                                    ->where('evaluator_id', $userId)
-                                    ->exists();
-                
-                if (!$exists) {
-                    \App\Models\Evaluation::create([
-                        'application_id' => $applicationId,
-                        'evaluator_id' => $userId,
-                        'status' => 'pending',
-                        'deadline_at' => \Carbon\Carbon::now()->addWeekdays(7),
-                    ]);
-                }
-            }
-        });
+        $this->assignmentService->assignEvaluators(
+            $request->application_id, 
+            $request->evaluator_ids
+        );
 
         return to_route('admin.applications.index')->with('success', 'Evaluadores asignados correctamente.');
     }
@@ -84,16 +71,12 @@ class ApplicationController extends Controller
     /**
      * Remove an evaluator from a request.
      */
-    public function removeEvaluator(Request $request)
+    public function removeEvaluator(RemoveEvaluatorRequest $request)
     {
-        $request->validate([
-            'application_id' => 'required|exists:applications,id',
-            'evaluator_id' => 'required|exists:users,id',
-        ]);
-
-        \App\Models\Evaluation::where('application_id', $request->application_id)
-                  ->where('evaluator_id', $request->evaluator_id)
-                  ->delete();
+        $this->assignmentService->removeEvaluator(
+            $request->application_id, 
+            $request->evaluator_id
+        );
 
         return back()->with('success', 'Evaluador removido.');
     }
@@ -140,14 +123,11 @@ class ApplicationController extends Controller
     /**
      * Submit Admin Verdict (Approve/Reject).
      */
-    public function verdict(Request $request, $id)
+    public function verdict(\App\Http\Requests\SubmitAdminVerdictRequest $request, $id)
     {
         $application = \App\Models\Application::findOrFail($id);
         
-        $validated = $request->validate([
-            'status' => 'required|in:approved,rejected',
-            'comentario' => 'required_if:status,rejected|nullable|string|max:1000',
-        ]);
+        $validated = $request->validated();
 
         $application->status = $validated['status'];
         if ($validated['status'] === 'rejected') {

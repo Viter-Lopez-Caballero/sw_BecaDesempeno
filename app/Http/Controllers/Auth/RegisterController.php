@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Validation\Rules;
+use App\Http\Requests\Auth\RegisterUserRequest;
 use Inertia\Inertia;
 
 class RegisterController extends Controller
@@ -41,20 +41,11 @@ class RegisterController extends Controller
     /**
      * Maneja el registro del usuario
      */
-    public function store(Request $request)
+    public function store(RegisterUserRequest $request)
     {
         Log::info('📝 RegisterController::store - Inicio del registro');
         
-        $request->validate([
-            'curp' => 'required|string|size:18',
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:users,email',
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'institution_id' => 'required|exists:institutions,id',
-            'priority_area_id' => 'required|exists:priority_areas,id',
-            'sub_area_id' => 'required|exists:sub_areas,id',
-            'role_type' => 'sometimes|string|in:evaluador,docente', // Optional parameter to determine role
-        ]);
+        $validated = $request->validated();
 
         // Generar código de verificación de 6 dígitos
         $verificationCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -88,7 +79,7 @@ class RegisterController extends Controller
 
         // Enviar correo de verificación
         try {
-            Mail::to($user->email)->send(new VerificationCode($user, $verificationCode));
+            Mail::to($user->email)->queue(new VerificationCode($user, $verificationCode));
             Log::info('📧 Correo enviado exitosamente a: ' . $user->email);
             $mailStatus = 'Código de verificación enviado a tu correo electrónico.';
         } catch (\Exception $e) {

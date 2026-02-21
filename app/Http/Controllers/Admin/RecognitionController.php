@@ -20,42 +20,13 @@ class RecognitionController extends Controller
         $rows = $request->input('rows', 10);
 
         // Query to get evaluators with their announcements (where they participated)
-        // JOIN: evaluations -> applications -> announcements
-        $recognitions = \Illuminate\Support\Facades\DB::table('evaluations')
-            ->join('users', 'evaluations.evaluator_id', '=', 'users.id')
-            ->join('applications', 'evaluations.application_id', '=', 'applications.id')
-            ->join('announcements', 'applications.announcement_id', '=', 'announcements.id')
-            ->leftJoin('recognitions', function ($join) {
-                $join->on('recognitions.user_id', '=', 'users.id')
-                     ->on('recognitions.announcement_id', '=', 'announcements.id');
-            })
-            ->select(
-                'users.id as evaluator_id',
-                'users.name as evaluator_name',
-                'announcements.id as announcement_id',
-                'announcements.name as announcement_name',
-                'announcements.created_at as announcement_date',
-                \Illuminate\Support\Facades\DB::raw("COUNT(DISTINCT CASE WHEN evaluations.status != 'pending' THEN evaluations.id END) as applications_reviewed"),
-                'recognitions.id as recognition_id',
-                \Illuminate\Support\Facades\DB::raw('COALESCE(recognitions.active, 0) as active'),
-                'recognitions.sent_at'
-            )
+        $recognitions = \App\Models\Evaluation::withRecognitionDetails()
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('users.name', 'like', "%{$search}%")
                       ->orWhere('announcements.name', 'like', "%{$search}%");
                 });
             })
-            ->groupBy(
-                'users.id',
-                'users.name',
-                'announcements.id',
-                'announcements.name',
-                'announcements.created_at',
-                'recognitions.id',
-                'recognitions.active',
-                'recognitions.sent_at'
-            )
             ->orderBy('announcements.created_at', 'desc') // Recent first
             ->orderBy('users.name', 'asc')
             ->paginate($rows)
@@ -70,23 +41,18 @@ class RecognitionController extends Controller
     /**
      * Toggle recognition status.
      */
-    public function toggle(Request $request)
+    public function toggle(\App\Http\Requests\ToggleRecognitionRequest $request)
     {
-        // $id is recognition_id if exists, or need user_id + announcement_id
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'announcement_id' => 'required|exists:announcements,id',
-        ]);
 
         $userId = $request->user_id;
         $announcementId = $request->announcement_id;
 
         // Verify evaluator reviewed at least 1 application of this announcement
-        $applicationsReviewed = \Illuminate\Support\Facades\DB::table('evaluations')
-            ->join('applications', 'evaluations.application_id', '=', 'applications.id')
-            ->where('evaluations.evaluator_id', $userId)
-            ->where('applications.announcement_id', $announcementId)
-            ->where('evaluations.status', '!=', 'pending')
+        $applicationsReviewed = \App\Models\Evaluation::where('evaluator_id', $userId)
+            ->whereHas('application', function ($query) use ($announcementId) {
+                $query->where('announcement_id', $announcementId);
+            })
+            ->where('status', '!=', 'pending')
             ->count();
 
         if ($applicationsReviewed === 0) {

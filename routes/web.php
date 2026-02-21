@@ -4,75 +4,12 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 
+use App\Http\Controllers\HomeController;
+
 /** @var \Illuminate\Contracts\Auth\Guard|\Illuminate\Contracts\Auth\StatefulGuard $auth */
-Route::get('/', function () {
-    // If user is authenticated, redirect to their dashboard
-    if (auth()->check()) {
-        /** @var \App\Models\User $user */
-        $user = auth()->user();
-        $role = $user->getPrimaryRole();
-        
-        return match ($role) {
-            'Super Admin' => redirect()->route('superadmin.dashboard'),
-            'Admin' => redirect()->route('admin.dashboard'),
-            'Evaluador' => redirect()->route('evaluator.dashboard'), // Updated route name
-            'Docente' => redirect()->route('teacher.dashboard'), // Updated route name
-            default => redirect()->route('dashboard.index'), // Updated route name
-        };
-    }
-    
-    // If not authenticated, show public page
-    // Convocatoria -> Announcement
-    $announcements = \App\Models\Announcement::query()
-        ->with('calendar') // relationship refactored to English
-        ->whereIn('status', ['activa', 'cerrada']) // column renamed to status
-        ->latest('created_at')
-        ->paginate(3)
-        ->withQueryString();
-    
-    // Get announcement for timeline (Priority: Activa > Cerrada)
-    $timelineAnnouncement = \App\Models\Announcement::query()
-        ->with('calendar')
-        ->where('status', 'activa')
-        ->latest('created_at')
-        ->first();
+Route::get('/', [HomeController::class, 'index'])->name('inicio');
 
-    if (!$timelineAnnouncement) {
-        $timelineAnnouncement = \App\Models\Announcement::query()
-            ->with('calendar')
-            ->where('status', 'cerrada')
-            ->latest('created_at')
-            ->first();
-    }
-    
-    return Inertia::render('Home', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Features::enabled(Features::registration()),
-        'announcements' => \App\Http\Resources\Catalog\AnnouncementResource::collection($announcements),
-        'timelineAnnouncement' => $timelineAnnouncement ? new \App\Http\Resources\Catalog\AnnouncementResource($timelineAnnouncement) : null,
-    ]);
-})->name('inicio');
-
-// (visits endpoint removed)
-
-Route::get('/announcement', function () { // /convocatoria -> /announcement
-    // Priority: Activa > Cerrada
-    $announcement = \App\Models\Announcement::with('calendar')
-        ->where('status', 'activa')
-        ->latest('created_at') // created_at
-        ->first();
-
-    if (!$announcement) {
-        $announcement = \App\Models\Announcement::with('calendar')
-            ->where('status', 'cerrada')
-            ->latest('created_at')
-            ->first();
-    }
-    
-    return Inertia::render('Announcement', [
-        'announcement' => $announcement ? new \App\Http\Resources\Catalog\AnnouncementResource($announcement) : null,
-    ]);
-})->name('announcement.show'); // convocatoria -> announcement.show
+Route::get('/announcement', [HomeController::class, 'showAnnouncement'])->name('announcement.show');
 
 Route::get('/documents', function () { // /documentos -> /documents
     return Inertia::render('Documents'); // View name
@@ -96,9 +33,7 @@ use App\Http\Controllers\CurpController;
 Route::post('/api/search-curp', [CurpController::class, 'search']);
 
 // API to get sub-areas
-Route::get('/api/sub-areas/{priority_area_id}', function ($priority_area_id) {
-    return \App\Models\SubArea::where('priority_area_id', $priority_area_id)->get(['id', 'name']);
-});
+Route::get('/api/sub-areas/{priority_area_id}', [SubAreaController::class, 'getByPriorityArea']);
 
 // Custom Register Routes (override Fortify)
 Route::get('/register', [RegisterController::class, 'create'])->name('register');
@@ -106,30 +41,7 @@ Route::get('/register/evaluator', [RegisterController::class, 'createEvaluador']
 Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
 
 // Email Verification Routes
-Route::get('/email/verify', function () {
-    // If user is authenticated and verified, redirect to dashboard
-    if (auth()->check() && auth()->user()->hasVerifiedEmail()) {
-        /** @var \App\Models\User $user */
-        $user = auth()->user();
-        $role = $user->getPrimaryRole();
-        
-        return match ($role) {
-            'Super Admin' => redirect()->route('superadmin.dashboard'),
-            'Admin' => redirect()->route('admin.dashboard'),
-            'Evaluador' => redirect()->route('evaluator.dashboard'),
-            'Docente' => redirect()->route('teacher.dashboard'),
-            default => redirect()->route('inicio'),
-        };
-    }
-    
-    // Obtener email del usuario autenticado o de la sesión
-    $email = auth()->user()?->email ?? session('email');
-
-    return \Inertia\Inertia::render('Auth/VerifyEmail', [
-        'email' => $email,
-        'status' => session('status'),
-    ]);
-})->name('verification.notice');
+Route::get('/email/verify', [HomeController::class, 'verifyEmailNotice'])->name('verification.notice');
 
 Route::post('/email/verify/code', [CurpController::class, 'verifyCode'])->name('verification.verify');
 Route::post('/email/verify/resend', [CurpController::class, 'resendCode'])->name('verification.resend');

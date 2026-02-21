@@ -7,9 +7,20 @@ use Inertia\Inertia;
 
 class TeacherController extends Controller
 {
+    protected \App\Services\ApplicationService $applicationService;
+    protected \App\Services\PdfGenerationService $pdfGenerationService;
+    protected \App\Services\FileService $fileService;
+
+    public function __construct(\App\Services\ApplicationService $applicationService, \App\Services\PdfGenerationService $pdfGenerationService, \App\Services\FileService $fileService)
+    {
+        $this->applicationService = $applicationService;
+        $this->pdfGenerationService = $pdfGenerationService;
+        $this->fileService = $fileService;
+    }
+
     public function inicio(Request $request)
     {
-        $query = \App\Models\Application::where('user_id', auth()->id())
+        $query = \App\Models\Application::forCurrentUser()
             ->with(['announcement']);
         
         if ($request->has('search')) {
@@ -34,7 +45,7 @@ class TeacherController extends Controller
 
     public function show($id)
     {
-        $application = \App\Models\Application::where('user_id', auth()->id())
+        $application = \App\Models\Application::forCurrentUser()
             ->with(['announcement', 'documents', 'user.institution.state', 'user.priorityArea', 'user.subArea'])
             ->findOrFail($id);
 
@@ -49,14 +60,10 @@ class TeacherController extends Controller
         
         // Check ownership via Application
         $application = \App\Models\Application::where('id', $document->application_id)
-            ->where('user_id', auth()->id())
+            ->forCurrentUser()
             ->firstOrFail();
 
-        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($document->file_path)) {
-            return back()->with('error', 'El archivo no existe.');
-        }
-
-        return \Illuminate\Support\Facades\Storage::disk('public')->download($document->file_path, $document->name);
+        return $this->fileService->download($document->file_path, $document->name);
     }
 
     public function stream($id)
@@ -64,34 +71,25 @@ class TeacherController extends Controller
         $document = \App\Models\Document::findOrFail($id);
         
         $application = \App\Models\Application::where('id', $document->application_id)
-            ->where('user_id', auth()->id())
+            ->forCurrentUser()
             ->firstOrFail();
 
-        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($document->file_path)) {
-            return back()->with('error', 'El archivo no existe.');
-        }
-
-        // Return inline response using the disk's full path
-        return response()->file(\Illuminate\Support\Facades\Storage::disk('public')->path($document->file_path));
+        return $this->fileService->responseFile($document->file_path);
     }
 
     public function convocatorias()
     {
-        // Get IDs of announcements the user has ALREADY applied to (any status)
-        $appliedAnnouncementIds = \App\Models\Application::where('user_id', auth()->id())
-            ->pluck('announcement_id');
-
         // Fetch active announcements excluding those already applied to
-        $announcements = \App\Models\Announcement::where('status', 'activa')
-            ->whereNotIn('id', $appliedAnnouncementIds)
+        $announcements = \App\Models\Announcement::activa()
+            ->notAppliedByCurrentUser()
             ->with('calendar')
             ->orderByDesc('created_at')
             ->get();
 
         return Inertia::render('Teacher/Announcements/Index', [
             'announcements' => \App\Http\Resources\Catalog\AnnouncementResource::collection($announcements),
-            'has_active_application' => \App\Models\Application::where('user_id', auth()->id())
-                ->where('status', 'pending')
+            'has_active_application' => \App\Models\Application::forCurrentUser()
+                ->pending()
                 ->exists(),
         ]);
     }
@@ -100,25 +98,11 @@ class TeacherController extends Controller
     {
         $announcement = \App\Models\Announcement::with(['catalogDocuments', 'calendar'])->findOrFail($id);
 
-        // Check if user already has an active application for THIS announcement
-        $alreadyApplied = \App\Models\Application::where('user_id', auth()->id())
-            ->where('announcement_id', $id)
-            ->exists();
+        $eligibilityError = $this->applicationService->checkApplicationEligibility(auth()->id(), $id);
 
-        if ($alreadyApplied) {
-            return redirect()->route('teacher.dashboard')->with('error', 'Ya has aplicado a esta convocatoria.');
+        if ($eligibilityError) {
+            return redirect()->route('teacher.dashboard')->with('error', $eligibilityError);
         }
-
-        // Check if user has any pending application (cannot have two pending at once)
-        $hasPending = \App\Models\Application::where('user_id', auth()->id())
-            ->where('status', 'pending')
-            ->exists();
-
-        if ($hasPending) {
-             return redirect()->route('teacher.dashboard')->with('error', 'Tienes una solicitud pendiente de veredicto. Espera a que sea evaluada.');
-        }
-        
-        // Allowed to proceed even if they have "approved" applications from other announcements
 
 
         // Get documents for this announcement (from catalog)
@@ -129,7 +113,7 @@ class TeacherController extends Controller
 
         // Get previous application documents for auto-fill
         // We look for the latest *submitted* application (pending/approved/rejected doesn't matter, as long as it has files)
-        $previousApp = \App\Models\Application::where('user_id', auth()->id())
+        $previousApp = \App\Models\Application::forCurrentUser()
             ->whereNotNull('status') // ensuring it was submitted
             ->latest()
             ->with('documents')
@@ -144,161 +128,35 @@ class TeacherController extends Controller
         ]);
     }
 
-    public function storeApplication(Request $request)
+    public function storeApplication(\App\Http\Requests\StoreApplicationRequest $request)
     {
-        $request->validate([
-            'announcement_id' => 'required|exists:announcements,id',
-            'position_type' => 'required|string|max:255',
-            // Files are validated manually to allow mix of upload vs reuse
-            'files' => 'nullable|array',
-            'files.*' => 'file|mimes:pdf|max:10240', // 10MB max
-            'file_types' => 'nullable|array', // Maps key to document name (empty when all reused)
-            'reused_documents' => 'nullable|array', // Array of doc_ids to reuse
-        ]);
-
-        // Custom validation for required documents
-        $announcement = \App\Models\Announcement::with('catalogDocuments')->findOrFail($request->announcement_id);
-        $requiredDocs = $announcement->catalogDocuments()->where('is_mandatory', true)->pluck('name')->toArray();
-        
-        $providedDocs = [];
-        if ($request->hasFile('files')) {
-            foreach ($request->file('files') as $key => $file) {
-                if (isset($request->file_types[$key])) {
-                    $providedDocs[] = $request->file_types[$key];
-                }
-            }
+        try {
+            $this->applicationService->createApplication(
+                auth()->id(),
+                $request->announcement_id,
+                $request->position_type,
+                $request->file('files'),
+                $request->file_types,
+                $request->reused_documents
+            );
+            
+            return redirect()->route('teacher.dashboard')->with('success', 'Solicitud enviada correctamente.');
+        } catch (\Exception $e) {
+            return back()->withErrors(['files' => $e->getMessage()]);
         }
-        
-        // Add reused docs to provided list
-        if ($request->reused_documents) {
-            foreach ($request->reused_documents as $name => $docId) {
-                 $providedDocs[] = $name;
-            }
-        }
-
-        foreach ($requiredDocs as $req) {
-            if (!in_array($req, $providedDocs)) {
-                return back()->withErrors(['files' => "El documento '{$req}' es obligatorio."]);
-            }
-        }
-
-        // Transaction
-         \Illuminate\Support\Facades\DB::transaction(function () use ($request) {
-            $application = \App\Models\Application::create([
-                'user_id' => auth()->id(),
-                'announcement_id' => $request->announcement_id,
-                'status' => 'pending',
-                'position_type' => $request->position_type,
-            ]);
-
-            // Handle New Uploads
-            if ($request->hasFile('files')) {
-                foreach ($request->file('files') as $key => $file) {
-                    $typeName = $request->file_types[$key] ?? 'Documento';
-                    
-                    $path = $file->store('documents/' . $application->id, 'public');
-
-                    \App\Models\Document::create([
-                        'application_id' => $application->id,
-                        'name' => $typeName,
-                        'file_path' => $path,
-                        'file_type' => $file->getClientOriginalExtension(),
-                    ]);
-                }
-            }
-
-            // Handle Reused Documents
-            if ($request->reused_documents) {
-                foreach ($request->reused_documents as $name => $originalDocId) {
-                    // Start by checking if we already uploaded a new version of this doc (override)
-                    // If the user uploaded a file with this name, it's already handled above.
-                    // We need to ensure we don't duplicate. 
-                    // However, the frontend should ideally not send both for the same key.
-                    // But let's check DB to be safe.
-                    $exists = \App\Models\Document::where('application_id', $application->id)
-                        ->where('name', $name)
-                        ->exists();
-                    
-                    if (!$exists) {
-                        $originalDoc = \App\Models\Document::find($originalDocId);
-                        if ($originalDoc) {
-                             // We copy the record pointing to the SAME file path
-                             // This saves storage space. 
-                             // NOTE: If one deletes the file, it might break the other. 
-                             // Better approach: Copy field. 
-                             // Even better: Soft deletes protect us. 
-                             // Let's copy the file to be safe and independent.
-                             
-                             $newPath = 'documents/' . $application->id . '/' . basename($originalDoc->file_path);
-                             \Illuminate\Support\Facades\Storage::disk('public')->copy($originalDoc->file_path, $newPath);
-
-                             \App\Models\Document::create([
-                                'application_id' => $application->id,
-                                'name' => $name,
-                                'file_path' => $newPath,
-                                'file_type' => $originalDoc->file_type,
-                            ]);
-                        }
-                    }
-                }
-            }
-        });
-
-        return redirect()->route('teacher.dashboard')->with('success', 'Solicitud enviada correctamente.');
     }
     public function downloadAcceptance($id)
     {
-        $application = \App\Models\Application::where('user_id', auth()->id())
+        $application = \App\Models\Application::forCurrentUser()
             ->where('id', $id)
-            ->where('status', 'approved')
+            ->approved()
             ->with(['announcement', 'user'])
             ->firstOrFail();
 
-        $user = $application->user;
-
-        // Path to the template
-        $template = \App\Models\Template::active()->type('acceptance')->first();
-        $templatePath = $template ? \Illuminate\Support\Facades\Storage::disk('public')->path($template->file_path) : null;
-
-        if (!$templatePath || !file_exists($templatePath)) {
-            return back()->with('error', 'No hay una plantilla de carta de aceptación activa.');
+        try {
+            return $this->pdfGenerationService->generateAcceptanceLetter($application);
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        // Initialize FPDI
-        $pdf = new \setasign\Fpdi\Fpdi();
-
-        // Add a page
-        $pdf->AddPage();
-        $pdf->setSourceFile($templatePath);
-        
-        // Import page 1
-        $tplId = $pdf->importPage(1);
-        
-        // Use the imported page
-        $pdf->useTemplate($tplId, 0, 0, 210); // A4 Width
-
-        // --- Overlay Text Logic ---
-        $pdf->SetFont('Arial', 'B', 12);
-        $pdf->SetTextColor(0, 0, 0);
-
-        // Coordinates (approximate, adjust based on actual template)
-        // Name
-        $pdf->SetXY(20, 90); 
-        $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1', $user->name), 0, 1, 'L');
-
-        // Announcement
-        $pdf->SetXY(20, 100);
-        $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1', $application->announcement->name), 0, 1, 'L');
-
-        // Date
-        $pdf->SetFont('Arial', '', 10);
-        $pdf->SetXY(20, 50);
-        $dateText = \Carbon\Carbon::now()->isoFormat('D [de] MMMM [de] YYYY');
-        $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1', $dateText), 0, 1, 'R');
-
-        // Output PDF
-        return response($pdf->Output('S'), 200)
-            ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'inline; filename="Carta_Aceptacion.pdf"');
     }
 }

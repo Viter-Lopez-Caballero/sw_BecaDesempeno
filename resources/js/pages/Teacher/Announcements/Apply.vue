@@ -6,6 +6,7 @@ import InputLabel from '@/components/InputLabel.vue';
 import InputError from '@/components/InputError.vue';
 import { mdiArrowLeft, mdiFileDocumentOutline, mdiCloudUpload, mdiCheckBold, mdiEye, mdiEyeOff, mdiRefresh } from '@mdi/js';
 import { ref, onMounted } from 'vue';
+import { alertaCargando, cerrarAlerta, alertaError } from '@/utils/alerts.js';
 
 const props = defineProps({
     announcement: Object,
@@ -174,9 +175,11 @@ const submit = () => {
         return;
     }
 
+    alertaCargando('Enviando', 'Por favor espera...');
     form.post(route('teacher.applications.store'), {
         preserveScroll: true,
         onError: (errors) => {
+            cerrarAlerta();
             console.error('Validation Errors:', errors);
             
             // Map backend errors to inline errors
@@ -185,9 +188,6 @@ const submit = () => {
                     const index = parseInt(key.split('.')[1]);
                     const docId = fileIndexToDocId[index];
                     if (docId && documentState.value[docId]) {
-                        // Translate specific message if needed, or just show it
-                        // The default message is "The files.X field must not be greater than..."
-                        // We can set a generic message or try to use the one provided
                         if (errors[key].includes('greater than')) {
                              documentState.value[docId].errorMessage = 'El archivo pesa más de 10MB.';
                         } else {
@@ -196,7 +196,9 @@ const submit = () => {
                     }
                 }
             });
+            alertaError('Error', 'Revisa los campos marcados en rojo.');
         },
+        onFinish: () => cerrarAlerta(),
     });
 };
 </script>
@@ -398,7 +400,7 @@ const submit = () => {
                         </div>
 
                         <button @click="submit" :disabled="form.processing"
-                            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#1B396A] hover:bg-[#0f2347] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B396A] disabled:opacity-50 disabled:cursor-not-allowed transition">
+                            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#1B396A] hover:bg-[#0f2347] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B396A] disabled:opacity-50 disabled:cursor-not-allowed transition cursor-pointer">
                             <span v-if="form.processing">Enviando...</span>
                             <span v-else>Enviar Solicitud</span>
                         </button>

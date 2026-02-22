@@ -8,6 +8,7 @@ import { useCan } from '@/composables/usePermissions';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
 import { mdiBullhorn } from '@mdi/js';
+import { alertaPregunta, alertaExito, alertaError } from '@/utils/alerts.js';
 
 const props = defineProps({
     announcements: {
@@ -95,9 +96,16 @@ const sortBy = (field) => {
     }, { preserveState: true, replace: true });
 };
 
-const deleteAnnouncement = (id) => {
-    if (confirm('¿Estás seguro de eliminar esta convocatoria?')) {
-        router.delete(route(`${props.routeName}destroy`, { announcement: id }));
+const deleteAnnouncement = async (id) => {
+    const confirmed = await alertaPregunta(
+        '¿Eliminar convocatoria?',
+        'Esta acción no se puede deshacer'
+    );
+    if (confirmed) {
+        router.delete(route(`${props.routeName}destroy`, { announcement: id }), {
+            onSuccess: () => alertaExito('¡Eliminado!', 'Convocatoria eliminada correctamente'),
+            onError: () => alertaError('Error', 'No se pudo eliminar la convocatoria')
+        });
     }
 };
 
@@ -233,7 +241,7 @@ const closeViewer = (id) => {
                         <h2 class="text-xl font-semibold text-gray-800">Filtro de Búsqueda</h2>
                     </div>
                     <button @click="cleanFilters"
-                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-sm font-medium transition">
+                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-sm font-medium transition cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px"
                             fill="currentColor">
                             <path
@@ -270,7 +278,7 @@ const closeViewer = (id) => {
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
                                 <th scope="col" class="px-6 py-4 text-center" style="width: 80px;">
-                                    #
+                                    ID
                                 </th>
                                 <th scope="col" class="px-6 py-4 text-left">
                                     <button @click="sortBy('name')"
@@ -354,7 +362,7 @@ const closeViewer = (id) => {
                                         <div class="flex items-center justify-center gap-2">
                                             <Link v-if="useCan('announcements.edit')"
                                                 :href="route(`${routeName}edit`, { announcement: announcement.id })"
-                                                class="text-[#1B396A] hover:text-[#0f2347] transition" title="Editar">
+                                                class="p-2 text-[#1B396A] border border-[#1B396A] rounded-full hover:bg-[#1B396A] hover:text-white transition cursor-pointer" title="Editar">
                                                 <svg xmlns="http://www.w3.org/2000/svg" height="20px"
                                                     viewBox="0 -960 960 960" width="20px" fill="currentColor">
                                                     <path
@@ -363,7 +371,7 @@ const closeViewer = (id) => {
                                             </Link>
                                             <button v-if="useCan('announcements.destroy')"
                                                 @click="deleteAnnouncement(announcement.id)"
-                                                class="text-red-600 hover:text-red-800 transition" title="Eliminar">
+                                                class="p-2 text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition cursor-pointer" title="Eliminar">
                                                 <svg xmlns="http://www.w3.org/2000/svg" height="20px"
                                                     viewBox="0 -960 960 960" width="20px" fill="currentColor">
                                                     <path

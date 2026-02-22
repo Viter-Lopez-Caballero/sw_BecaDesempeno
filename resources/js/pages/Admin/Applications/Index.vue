@@ -3,6 +3,8 @@ import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import Pagination from '@/Shared/Pagination.vue';
+import VueSelect from 'vue-select';
+import 'vue-select/dist/vue-select.css';
 import { mdiFileDocumentMultiple, mdiAccountPlus, mdiAccountMultiple, mdiEye } from '@mdi/js';
 import debounce from 'lodash/debounce';
 
@@ -14,6 +16,22 @@ const props = defineProps({
 
 const search = ref(props.filters.search || '');
 const status = ref(props.filters.status || '');
+const rows = ref(props.filters?.rows || 10);
+
+const rowOptions = [
+    { label: '5 Registros', value: 5 },
+    { label: '10 Registros', value: 10 },
+    { label: '25 Registros', value: 25 },
+    { label: '50 Registros', value: 50 },
+];
+
+const onRowsChange = () => {
+    router.get(route('admin.applications.index'), {
+        search: search.value,
+        status: status.value,
+        rows: rows.value,
+    }, { preserveState: true, replace: true, preserveScroll: true });
+};
 
 const getStatusLabel = (status) => {
     const labels = {
@@ -27,6 +45,7 @@ const getStatusLabel = (status) => {
 const cleanFilters = () => {
     search.value = '';
     status.value = '';
+    rows.value = 10;
     router.get(route('admin.applications.index'), {}, { preserveState: true, replace: true });
 };
 
@@ -34,6 +53,7 @@ watch([search, status], debounce(() => {
     router.get(route('admin.applications.index'), {
         search: search.value,
         status: status.value,
+        rows: rows.value,
     }, { preserveState: true, replace: true });
 }, 300));
 </script>
@@ -74,7 +94,7 @@ watch([search, status], debounce(() => {
                 </div>
                 <div class="text-sm text-gray-500 mb-4">Buscar y filtrar solicitudes</div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                     <!-- Search Input -->
                     <div class="relative w-full">
                          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -102,6 +122,19 @@ watch([search, status], debounce(() => {
                             <option value="rejected">Rechazada</option>
                         </select>
                     </div>
+                    <!-- Rows -->
+                    <div class="w-full md:w-52 flex-shrink-0">
+                        <VueSelect
+                            v-model="rows"
+                            :options="rowOptions"
+                            :reduce="option => option.value"
+                            :searchable="false"
+                            :clearable="false"
+                            placeholder="Registros"
+                            class="vue-select-custom"
+                            @option:selected="onRowsChange"
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -111,7 +144,7 @@ watch([search, status], debounce(() => {
                     <table class="w-full text-left">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
-                                <th class="px-6 py-4 whitespace-nowrap">#</th>
+                                <th class="px-6 py-4 whitespace-nowrap">ID</th>
                                 <th class="px-6 py-4 whitespace-nowrap">Docente</th>
                                 <th class="px-6 py-4 whitespace-nowrap">Institución</th>
                                 <th class="px-6 py-4 whitespace-nowrap">Evaluador(es)</th>
@@ -145,7 +178,7 @@ watch([search, status], debounce(() => {
                                     <Link 
                                         v-else 
                                         :href="route('admin.applications.assign_view', application.id)"
-                                        class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-full transition-colors"
+                                        class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-full transition-colors cursor-pointer"
                                     >
                                         <svg style="width:14px;height:14px" viewBox="0 0 24 24">
                                             <path fill="currentColor" :d="mdiAccountPlus" />
@@ -169,7 +202,7 @@ watch([search, status], debounce(() => {
                                     <div class="flex items-center justify-center gap-2">
                                         <Link 
                                             :href="route('admin.applications.show', application.id)"
-                                            class="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50 text-gray-700 transition text-xs font-medium uppercase gap-1"
+                                            class="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50 text-gray-700 transition text-xs font-medium uppercase gap-1 cursor-pointer"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
@@ -197,4 +230,39 @@ watch([search, status], debounce(() => {
     </AdminLayout>
 </template>
 
-
+<style scoped>
+:deep(.vue-select-custom .vs__dropdown-toggle) {
+    background: linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%);
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    min-height: 42px;
+}
+:deep(.vue-select-custom .vs__selected) {
+    color: #374151;
+    font-weight: 500;
+}
+:deep(.vue-select-custom .vs__search::placeholder) {
+    color: #9ca3af;
+}
+:deep(.vue-select-custom .vs__dropdown-menu) {
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+:deep(.vue-select-custom .vs__dropdown-option) {
+    padding: 0.75rem 1rem;
+    color: #374151;
+}
+:deep(.vue-select-custom .vs__dropdown-option--highlight) {
+    background: #1B396A;
+    color: white;
+}
+:deep(.vue-select-custom .vs__open-indicator) {
+    fill: #1B396A;
+    transform: scale(0.85);
+}
+:deep(.vue-select-custom .vs__actions) {
+    padding-right: 4px;
+}
+</style>

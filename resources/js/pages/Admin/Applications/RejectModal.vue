@@ -53,6 +53,7 @@ import SecondaryButton from '@/Components/SecondaryButton.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { useForm } from '@inertiajs/vue3';
 import { watch } from 'vue';
+import { alertaCargando, cerrarAlerta, alertaExito, alertaError } from '@/utils/alerts.js';
 
 const props = defineProps({
     show: Boolean,
@@ -80,9 +81,23 @@ const close = () => {
 const submit = () => {
     if (!props.applicationId) return;
 
+    // Validación client-side
+    form.clearErrors();
+    if (!form.comentario || form.comentario.trim() === '') {
+        form.errors.comentario = 'El motivo del rechazo es obligatorio';
+        return;
+    }
+
+    alertaCargando('Rechazando', 'Por favor espera...');
     form.post(route('admin.applications.verdict', props.applicationId), {
         onSuccess: () => {
+            cerrarAlerta();
+            alertaExito('Rechazada', 'La solicitud fue rechazada correctamente.');
             close();
+        },
+        onError: () => {
+            cerrarAlerta();
+            alertaError('Error', 'No se pudo rechazar la solicitud. Por favor verifica los datos.');
         },
     });
 };

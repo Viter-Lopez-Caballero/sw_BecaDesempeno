@@ -37,7 +37,7 @@ const closeModal = () => {
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- 1. Carta de Exclusividad Laboral -->
-                    <a href="https://edd.tecnm.mx/formatos/2025/CARTA_EXCLUSIVIDAD_EDD2025.docx" class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-md border-l-4 border-[#2B579A] hover:shadow-xl transition-all group">
+                    <a href="https://edd.tecnm.mx/formatos/2025/CARTA_EXCLUSIVIDAD_EDD2025.docx" class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-md border-l-4 border-[#2B579A] hover:shadow-xl transition-all group cursor-pointer">
                         <div class="flex-shrink-0">
                             <svg class="w-8 h-8 text-[#2B579A]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -56,7 +56,7 @@ const closeModal = () => {
                     </a>
 
                     <!-- 2. Formato de Liberación de Actividades Académicas -->
-                    <a href="https://edd.tecnm.mx/formatos/2025/Formato_Liberacion_de_Actividades_Academicas_2025.docx" class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-md border-l-4 border-[#2B579A] hover:shadow-xl transition-all group">
+                    <a href="https://edd.tecnm.mx/formatos/2025/Formato_Liberacion_de_Actividades_Academicas_2025.docx" class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-md border-l-4 border-[#2B579A] hover:shadow-xl transition-all group cursor-pointer">
                         <div class="flex-shrink-0">
                             <svg class="w-8 h-8 text-[#2B579A]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -75,7 +75,7 @@ const closeModal = () => {
                     </a>
 
                     <!-- 3. Formato de Constancia de Liberación de Actividades Docentes -->
-                    <a href="https://edd.tecnm.mx/formatos/2025/Formato_Constancia_de_Liberacion_de_Actividades_Docentes_2025.docx" class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-md border-l-4 border-[#2B579A] hover:shadow-xl transition-all group">
+                    <a href="https://edd.tecnm.mx/formatos/2025/Formato_Constancia_de_Liberacion_de_Actividades_Docentes_2025.docx" class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-md border-l-4 border-[#2B579A] hover:shadow-xl transition-all group cursor-pointer">
                         <div class="flex-shrink-0">
                             <svg class="w-8 h-8 text-[#2B579A]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

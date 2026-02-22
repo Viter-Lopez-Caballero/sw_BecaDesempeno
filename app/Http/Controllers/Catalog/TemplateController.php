@@ -9,6 +9,7 @@ use App\Models\Template;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use App\Services\TemplateService;
+use App\Services\FileService;
 use App\Http\Requests\Catalogos\StoreTemplateRequest;
 
 class TemplateController extends Controller
@@ -47,7 +48,7 @@ class TemplateController extends Controller
     public function toggleActive(Template $template)
     {
         $isActive = $this->templateService->toggleActiveStatus($template);
-        
+
         $message = $isActive ? 'Plantilla activada correctamente.' : 'Plantilla desactivada.';
         return redirect()->back()->with('success', $message);
     }
@@ -63,7 +64,7 @@ class TemplateController extends Controller
     {
         return $this->fileService->responseFile($template->file_path);
     }
-    
+
     public function download(Template $template)
     {
         return $this->fileService->download($template->file_path, $template->file_name);

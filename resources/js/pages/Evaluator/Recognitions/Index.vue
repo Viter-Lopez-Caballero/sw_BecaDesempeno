@@ -124,7 +124,7 @@ watch(search, (value) => {
                     <table class="w-full text-sm text-left">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
-                                <th scope="col" class="px-6 py-4 tracking-wider text-center w-16">#</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider text-center w-16">ID</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Convocatoria</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Fecha de Emisión</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Año</th>

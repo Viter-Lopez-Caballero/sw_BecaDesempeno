@@ -164,7 +164,7 @@ const getFase = (announcement) => {
                                 <Link 
                                     v-else-if="getFase(announcement).canRegister" 
                                     :href="route('teacher.announcements.apply', announcement.id)"
-                                    class="w-full flex items-center justify-center gap-2 py-3.5 bg-[#1B396A] text-white rounded-lg font-bold hover:bg-[#152d47] transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 px-6"
+                                    class="w-full flex items-center justify-center gap-2 py-3.5 bg-[#1B396A] text-white rounded-lg font-bold hover:bg-[#152d47] transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 px-6 cursor-pointer"
                                 >
                                     <span>Solicitar Beca</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, router } from '@inertiajs/vue3';
-import SuperAdminLayout from '@/layouts/SuperAdminLayout.vue';
+import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
 import Pagination from '@/Shared/Pagination.vue';
 import { ref, watch, computed } from 'vue';
 import { debounce } from 'lodash';
@@ -123,7 +123,7 @@ watch(search, (value) => {
 </style>
 
 <template>
-    <SuperAdminLayout>
+    <LayoutAuthenticated>
         <Head title="Control de Solicitudes - SuperAdmin" />
 
         <div class="space-y-6">
@@ -236,7 +236,7 @@ watch(search, (value) => {
                     <table class="w-full text-sm text-left">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
-                                <th scope="col" class="px-6 py-4 tracking-wider">#</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">ID</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Estado</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Institución</th>
                                 <th scope="col" class="px-6 py-4 text-center tracking-wider">Aprobadas</th>
@@ -276,5 +276,5 @@ watch(search, (value) => {
                 </div>
             </div>
         </div>
-    </SuperAdminLayout>
+    </LayoutAuthenticated>
 </template>

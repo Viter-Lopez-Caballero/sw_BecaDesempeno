@@ -2,8 +2,8 @@
 import { Head, useForm } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 import DynamicLayout from '@/layouts/DynamicLayout.vue';
-import EyeOffIcon from '@/components/icons/EyeIcon.vue';
-import EyeIcon from '@/components/icons/EyeOffIcon.vue';
+import EyeIcon from '@/components/icons/EyeIcon.vue';
+import EyeOffIcon from '@/components/icons/EyeOffIcon.vue';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
 
@@ -206,7 +206,7 @@ const updatePassword = () => {
                         <button
                             type="submit"
                             :disabled="profileForm.processing"
-                            class="bg-[#002B5C] text-white py-2.5 px-6 rounded font-medium hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-800 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            class="bg-[#002B5C] text-white py-2.5 px-6 rounded font-medium hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-800 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                         >
                             <span v-if="!profileForm.processing">Guardar Cambios</span>
                             <span v-else class="flex items-center justify-center">
@@ -245,7 +245,7 @@ const updatePassword = () => {
                             <button
                                 type="button"
                                 @click="showCurrentPassword = !showCurrentPassword"
-                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 transition"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 transition cursor-pointer"
                             >
                                 <EyeIcon v-if="!showCurrentPassword" size="20" class="text-gray-600" />
                                 <EyeOffIcon v-else size="20" class="text-gray-600" />
@@ -272,7 +272,7 @@ const updatePassword = () => {
                             <button
                                 type="button"
                                 @click="showPassword = !showPassword"
-                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 transition"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 transition cursor-pointer"
                             >
                                 <EyeIcon v-if="!showPassword" size="20" class="text-gray-600" />
                                 <EyeOffIcon v-else size="20" class="text-gray-600" />
@@ -299,7 +299,7 @@ const updatePassword = () => {
                             <button
                                 type="button"
                                 @click="showPasswordConfirmation = !showPasswordConfirmation"
-                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 transition"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 transition cursor-pointer"
                             >
                                 <EyeIcon v-if="!showPasswordConfirmation" size="20" class="text-gray-600" />
                                 <EyeOffIcon v-else size="20" class="text-gray-600" />
@@ -320,7 +320,7 @@ const updatePassword = () => {
                         <button
                             type="submit"
                             :disabled="passwordForm.processing"
-                            class="bg-[#002B5C] text-white py-2.5 px-6 rounded font-medium hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-800 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            class="bg-[#002B5C] text-white py-2.5 px-6 rounded font-medium hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-800 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                         >
                             <span v-if="!passwordForm.processing">Actualizar Contraseña</span>
                             <span v-else class="flex items-center justify-center">

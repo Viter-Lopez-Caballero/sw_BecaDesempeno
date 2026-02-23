@@ -30,7 +30,7 @@ class AnnouncementController extends Controller
     {
         $this->announcementService = $announcementService;
         $this->fileService = $fileService;
-        $this->source = 'SuperAdmin/Catalog/Announcements/';
+        $this->source = 'SuperAdmin/Announcements/';
         $this->model = new Announcement();
         $this->routeName = 'announcements.';
         $this->permissionPrefix = 'announcements.';
@@ -79,9 +79,9 @@ class AnnouncementController extends Controller
     {
         // Cargar documentos del catálogo disponibles
         $catalogDocuments = CatalogDocument::active()->ordered()->get();
-        
+
         return Inertia::render("{$this->source}Create", [
-            'title'     => 'Agregar Convocatoria',
+            'title' => 'Agregar Convocatoria',
             'routeName' => $this->routeName,
             'requiredDocuments' => \App\Http\Resources\Catalog\DocumentResource::collection($catalogDocuments)->resolve(),
         ]);
@@ -93,7 +93,7 @@ class AnnouncementController extends Controller
     public function store(StoreAnnouncementRequest $request): RedirectResponse
     {
         $this->announcementService->createAnnouncement($request->validated(), $request);
-        
+
         return redirect()->route("{$this->routeName}index")->with('success', 'Convocatoria creada con éxito!');
     }
 
@@ -113,13 +113,13 @@ class AnnouncementController extends Controller
         // Cargar documentos del catálogo y documentos vinculados
         $catalogDocuments = CatalogDocument::active()->ordered()->get();
         $linkedDocuments = $announcement->catalogDocuments->pluck('id')->toArray();
-        
+
         return Inertia::render("{$this->source}Edit", [
-            'title'                  => 'Editar Convocatoria',
-            'routeName'              => $this->routeName,
-            'announcement'           => new AnnouncementResource($announcement->load('calendar')),
-            'requiredDocuments'      => \App\Http\Resources\Catalog\DocumentResource::collection($catalogDocuments)->resolve(),
-            'linkedDocuments'        => $linkedDocuments,
+            'title' => 'Editar Convocatoria',
+            'routeName' => $this->routeName,
+            'announcement' => new AnnouncementResource($announcement->load('calendar')),
+            'requiredDocuments' => \App\Http\Resources\Catalog\DocumentResource::collection($catalogDocuments)->resolve(),
+            'linkedDocuments' => $linkedDocuments,
         ]);
     }
 
@@ -162,13 +162,13 @@ class AnnouncementController extends Controller
         // Sincronizar documentos vinculados
         $documents = $request->input('documents', []);
         $syncData = [];
-        
+
         foreach ($documents as $docId) {
             $syncData[$docId] = ['is_mandatory' => true]; // Por defecto obligatorio
         }
-        
+
         $announcement->catalogDocuments()->sync($syncData);
-        
+
         return redirect()->route("{$this->routeName}edit", $announcement->id)
             ->with('success', 'Documentos actualizados correctamente');
     }

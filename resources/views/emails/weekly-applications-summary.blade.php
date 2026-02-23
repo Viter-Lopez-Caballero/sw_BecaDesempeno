@@ -43,6 +43,7 @@
 
         .content {
             padding: 50px 60px;
+            text-align: center;
         }
 
         .greeting {
@@ -50,7 +51,6 @@
             font-size: 20px;
             font-weight: 600;
             margin-bottom: 20px;
-            text-align: center;
         }
 
         .message {
@@ -58,50 +58,62 @@
             font-size: 15px;
             line-height: 1.8;
             margin-bottom: 35px;
-            text-align: center;
         }
 
         .summary-section {
-            background: linear-gradient(to bottom right, #F3F4F6, #E5E7EB);
-            border-radius: 16px;
-            padding: 35px 30px;
-            margin: 35px 0;
-            border: 2px solid #D1D5DB;
+            background: #f3f6fb;
+            border-radius: 14px;
+            padding: 28px 20px;
+            margin: 0 0 36px 0;
+            border: 1.5px solid #dbeafe;
         }
 
         .summary-title {
             color: #1B396A;
             font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            text-align: center;
+            font-weight: 700;
+            margin-bottom: 22px;
+            letter-spacing: 0.5px;
+            text-align: left;
         }
 
         .weekday-item {
             display: flex;
-            justify-content: space-between;
+            flex-wrap: wrap;
             align-items: center;
-            padding: 15px 20px;
-            background-color: #ffffff;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border-left: 4px solid #1B396A;
+            justify-content: space-between;
+            background: #fff;
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-bottom: 12px;
+            border: 1px solid #e0e7ef;
+            box-shadow: 0 2px 8px rgba(27,57,106,0.04);
+        }
+
+        .weekday-item:last-child {
+            margin-bottom: 0;
         }
 
         .weekday-name {
-            color: #374151;
-            font-size: 14px;
+            color: #1B396A;
+            font-size: 15px;
             font-weight: 600;
+            text-align: left;
         }
 
         .weekday-count {
-            color: #1B396A;
-            font-size: 20px;
+            color: #fff;
+            background: #1B396A;
+            border-radius: 6px;
+            padding: 6px 14px;
+            font-size: 15px;
             font-weight: 700;
+            letter-spacing: 1px;
+            text-align: right;
         }
 
         .total-section {
-            background: linear-gradient(135deg, #1B396A 0%, #0f2347 100%);
+            background: #1B396A;
             padding: 20px;
             border-radius: 12px;
             margin-top: 25px;
@@ -109,7 +121,7 @@
         }
 
         .total-label {
-            color: #93C5FD;
+            color: #c7d2fe;
             font-size: 14px;
             font-weight: 600;
             text-transform: uppercase;
@@ -118,7 +130,7 @@
         }
 
         .total-number {
-            color: #ffffff;
+            color: #fff;
             font-size: 48px;
             font-weight: 800;
         }
@@ -128,6 +140,7 @@
             border-left: 4px solid #1B396A;
             padding: 18px 20px;
             margin: 25px 0;
+            text-align: left;
             border-radius: 8px;
         }
 
@@ -166,7 +179,7 @@
             margin: 0;
         }
 
-        /* Responsive Design */
+        /* Responsive Design para Móviles */
         @media only screen and (max-width: 600px) {
             body {
                 padding: 15px 8px;
@@ -182,7 +195,7 @@
             }
 
             .header-title {
-                font-size: 18px;
+                font-size: 15px;
                 line-height: 1.3;
             }
 
@@ -200,24 +213,40 @@
             }
 
             .summary-section {
-                padding: 20px 12px;
-                margin: 20px 0;
+                padding: 15px 8px;
             }
 
             .weekday-item {
-                padding: 12px 15px;
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 15px;
+                gap: 10px;
             }
 
-            .weekday-name {
-                font-size: 12px;
+            .weekday-name,
+            .weekday-count {
+                flex: unset;
+                width: 100%;
+                text-align: left;
+                box-sizing: border-box;
             }
 
             .weekday-count {
-                font-size: 16px;
+                font-size: 14px;
+                padding: 6px 10px;
             }
 
             .total-number {
-                font-size: 36px;
+                font-size: 32px;
+            }
+
+            .info-box {
+                padding: 12px 15px;
+                margin: 15px 0;
+            }
+
+            .info-box p {
+                font-size: 11px;
             }
 
             .footer {
@@ -226,6 +255,7 @@
 
             .footer p {
                 font-size: 10px;
+                line-height: 1.6;
             }
         }
     </style>

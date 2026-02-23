@@ -49,21 +49,21 @@
 
         .content {
             padding: 50px 60px;
+            text-align: center;
         }
 
         .greeting {
             color: #1B396A;
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 600;
-            margin-bottom: 25px;
-            text-align: center;
+            margin-bottom: 20px;
         }
 
         .field-section {
             background: linear-gradient(to bottom right, #F3F4F6, #E5E7EB);
             border-radius: 16px;
-            padding: 30px;
-            margin: 25px 0;
+            padding: 35px 30px;
+            margin: 35px 0;
             border: 2px solid #D1D5DB;
         }
 
@@ -119,6 +119,7 @@
             border-left: 4px solid #1B396A;
             padding: 18px 20px;
             margin: 25px 0;
+            text-align: left;
             border-radius: 8px;
         }
 
@@ -159,12 +160,12 @@
             }
 
             .header-title {
-                font-size: 20px;
+                font-size: 15px;
                 line-height: 1.3;
             }
 
             .header-subtitle {
-                font-size: 12px;
+                font-size: 11px;
             }
 
             .content {

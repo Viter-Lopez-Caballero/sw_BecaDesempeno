@@ -11,16 +11,19 @@ use App\Http\Requests\RemoveEvaluatorRequest;
 use Illuminate\Support\Facades\DB;
 use App\Traits\Filterable;
 use Inertia\Inertia;
+use App\Services\NotificationService;
 
 class ApplicationController extends Controller
 {
     use Filterable;
-    
-    protected \App\Services\AssignmentService $assignmentService;
 
-    public function __construct(\App\Services\AssignmentService $assignmentService)
+    protected \App\Services\AssignmentService $assignmentService;
+    protected NotificationService $notificationService;
+
+    public function __construct(\App\Services\AssignmentService $assignmentService, NotificationService $notificationService)
     {
         $this->assignmentService = $assignmentService;
+        $this->notificationService = $notificationService;
     }
 
     /**
@@ -30,15 +33,15 @@ class ApplicationController extends Controller
     {
         $filters = $this->getFiltersBase($request->query());
         $status = $request->input('status');
-        
+
         // Merge status into filters object for view
         $filters->status = $status;
 
         $query = \App\Models\Application::with([
-                'user.institution', 
-                'evaluations.evaluator', // Relationship rename? Check Application model
-                'announcement'
-            ])
+            'user.institution',
+            'evaluations.evaluator', // Relationship rename? Check Application model
+            'announcement'
+        ])
             ->buscarGlobal($filters->search)
             ->porEstatus($status)
             ->ordenado($filters->order, $filters->direction);
@@ -61,7 +64,7 @@ class ApplicationController extends Controller
     public function assignEvaluator(\App\Http\Requests\AssignEvaluatorRequest $request)
     {
         $this->assignmentService->assignEvaluators(
-            $request->application_id, 
+            $request->application_id,
             $request->evaluator_ids
         );
 
@@ -74,7 +77,7 @@ class ApplicationController extends Controller
     public function removeEvaluator(RemoveEvaluatorRequest $request)
     {
         $this->assignmentService->removeEvaluator(
-            $request->application_id, 
+            $request->application_id,
             $request->evaluator_id
         );
 
@@ -84,10 +87,10 @@ class ApplicationController extends Controller
     public function assignView($id)
     {
         $application = \App\Models\Application::with([
-            'user.institution', 
-            'user.priorityArea', 
-            'user.subArea', 
-            'announcement', 
+            'user.institution',
+            'user.priorityArea',
+            'user.subArea',
+            'announcement',
             'evaluations.evaluator'
         ])
             ->findOrFail($id);
@@ -106,13 +109,13 @@ class ApplicationController extends Controller
     public function show($id)
     {
         $application = \App\Models\Application::with([
-                'user.institution', 
-                'user.priorityArea',
-                'user.subArea',
-                'evaluations.evaluator', 
-                'documents', 
-                'announcement'
-            ])
+            'user.institution',
+            'user.priorityArea',
+            'user.subArea',
+            'evaluations.evaluator',
+            'documents',
+            'announcement'
+        ])
             ->findOrFail($id);
 
         return Inertia::render('Admin/Applications/Show', [
@@ -126,7 +129,7 @@ class ApplicationController extends Controller
     public function verdict(\App\Http\Requests\SubmitAdminVerdictRequest $request, $id)
     {
         $application = \App\Models\Application::findOrFail($id);
-        
+
         $validated = $request->validated();
 
         $application->status = $validated['status'];
@@ -134,6 +137,14 @@ class ApplicationController extends Controller
             $application->admin_comment = $validated['comentario'];
         }
         $application->save();
+
+        // Enviar notificación al docente
+        $this->notificationService->notifyApplicationVerdict(
+            $application->id,
+            $application->user_id,
+            $validated['status'],
+            $application->announcement->name // Use 'name' instead of 'title' as seen in model
+        );
 
         return to_route('admin.applications.show', $id)->with('success', 'Veredicto registrado correctamente.');
     }

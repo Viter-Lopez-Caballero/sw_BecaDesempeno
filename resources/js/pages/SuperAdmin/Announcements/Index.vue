@@ -123,13 +123,23 @@ const viewFile = (announcement) => {
         expandedRows.value[announcement.id] = false;
         currentFile.value = null;
     } else {
-        currentFile.value = {
-            url: `/storage/${announcement.file_path}`,
-            name: announcement.file_name,
-            type: announcement.file_type,
-            announcement: announcement.name,
-            id: announcement.id
-        };
+        if (announcement.file_path) {
+            currentFile.value = {
+                url: announcement.file_url,
+                name: announcement.file_name,
+                type: announcement.file_type,
+                announcement: announcement.name,
+                id: announcement.id
+            };
+        } else if (announcement.image_path) {
+            currentFile.value = {
+                url: announcement.image_url,
+                name: 'Imagen de Convocatoria',
+                type: 'image/png', // Generic image type
+                announcement: announcement.name,
+                id: announcement.id
+            };
+        }
         expandedRows.value[announcement.id] = true;
     }
 };

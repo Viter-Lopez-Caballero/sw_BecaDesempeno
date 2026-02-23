@@ -31,11 +31,11 @@ class NotificationService
         ]);
 
         // Send email
-        Mail::to($evaluator->email)->queue(new EvaluatorAssigned(
+        Mail::to($evaluator->email)->send(new EvaluatorAssigned(
             $evaluator->name,
             $evaluationsCount,
             5 // days limit
-        ));
+            ));
     }
 
     /**
@@ -59,11 +59,11 @@ class NotificationService
         ]);
 
         // Send email
-        Mail::to($teacher->email)->queue(new ApplicationVerdict(
+        Mail::to($teacher->email)->send(new ApplicationVerdict(
             $teacher->name,
             $status,
             $announcementTitle
-        ));
+            ));
     }
 
     /**
@@ -88,12 +88,12 @@ class NotificationService
             ]);
 
             // Send email
-            Mail::to($user->email)->queue(new AnnouncementStageChange(
+            Mail::to($user->email)->send(new AnnouncementStageChange(
                 $user->name,
                 $announcementTitle,
                 $newStage,
                 $stageDate
-            ));
+                ));
         }
     }
 
@@ -120,11 +120,11 @@ class NotificationService
             ]);
 
             // Send email
-            Mail::to($user->email)->queue(new AnnouncementDateChange(
+            Mail::to($user->email)->send(new AnnouncementDateChange(
                 $user->name,
                 $announcementTitle,
                 $changes
-            ));
+                ));
         }
     }
 }

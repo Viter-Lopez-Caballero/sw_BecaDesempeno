@@ -16,7 +16,7 @@ class RenapoSeeder extends Seeder
     {
         $renapos = [
             [
-                'curp' => 'OAMB460801MJCZCU84',
+                'curp' => 'JAFD040301HMSMLGA3',
                 'nombres' => 'DIEGO EDUARDO',
                 'apellidoPaterno' => 'JAIMEZ',
                 'apellidoMaterno' => 'FLORES',

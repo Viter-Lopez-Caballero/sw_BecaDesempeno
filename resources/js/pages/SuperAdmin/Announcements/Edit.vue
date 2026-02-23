@@ -56,13 +56,13 @@ function getCalendarDate(announcement, field) {
 const archivoPreview = ref(null);
 const archivoNombre = ref(props.announcement.data?.file_name || null);
 const archivoActual = ref(props.announcement.data?.file_path || null);
-const archivoUrl = ref(props.announcement.data?.file_path ? `/storage/${props.announcement.data.file_path}` : null);
+const archivoUrl = ref(props.announcement.data?.file_url || props.announcement.file_url || null);
 const archivoTipo = ref(props.announcement.data?.file_type || null);
 
 const imagenPreview = ref(null);
 const imagenNombre = ref(null);
 const imagenActual = ref(props.announcement.data?.image_path || null);
-const imagenUrl = ref(props.announcement.data?.image_path ? `/storage/${props.announcement.data.image_path}` : null);
+const imagenUrl = ref(props.announcement.data?.image_url || props.announcement.image_url || null);
 
 const statusOptions = [
     { id: 'pendiente', label: 'Pendiente' },
@@ -137,7 +137,7 @@ const removeFile = () => {
     
     // Restaurar archivo original si existe
     if (archivoActual.value) {
-        archivoUrl.value = `/storage/${archivoActual.value}`;
+        archivoUrl.value = props.announcement.data?.file_url || props.announcement.file_url || null;
         archivoNombre.value = props.announcement.data?.file_name || null;
         archivoTipo.value = props.announcement.data?.file_type || null;
     } else {
@@ -158,7 +158,7 @@ const removeImage = () => {
     
     // Restaurar imagen original si existe
     if (imagenActual.value) {
-        imagenUrl.value = `/storage/${imagenActual.value}`;
+        imagenUrl.value = props.announcement.data?.image_url || props.announcement.image_url || null;
         imagenNombre.value = null; 
     } else {
         imagenUrl.value = null;

@@ -7,9 +7,16 @@ use App\Models\CatalogDocument;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Services\NotificationService;
 
 class AnnouncementService
 {
+    protected NotificationService $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
     /**
      * Store a new announcement with its files, calendar, and document relations.
      */
@@ -23,7 +30,7 @@ class AnnouncementService
                 $file = $request->file('file');
                 $fileName = Str::uuid() . '_' . $file->getClientOriginalName();
                 $filePath = $file->storeAs('announcements', $fileName, 'public');
-                
+
                 $data['file_path'] = $filePath;
                 $data['file_name'] = $file->getClientOriginalName();
                 $data['file_type'] = $file->getClientMimeType();
@@ -40,11 +47,11 @@ class AnnouncementService
 
             // Enforce single active announcement
             if (isset($data['status']) && $data['status'] === 'activa') {
-                 Announcement::where('status', 'activa')->update(['status' => 'cerrada']);
+                Announcement::where('status', 'activa')->update(['status' => 'cerrada']);
             }
 
             $announcement = Announcement::create($data);
-            
+
             // Create Calendar
             $announcement->calendar()->create([
                 'publication_start' => $request->publication_start,
@@ -55,10 +62,10 @@ class AnnouncementService
                 'results_start' => $request->results_start,
                 'results_end' => $request->results_end,
             ]);
-            
+
             // Bind documents
             $this->syncDocuments($announcement, $request->documents);
-            
+
             return $announcement;
         });
     }
@@ -74,11 +81,11 @@ class AnnouncementService
                 if ($announcement->file_path) {
                     Storage::disk('public')->delete($announcement->file_path);
                 }
-                
+
                 $file = $request->file('file');
                 $fileName = Str::uuid() . '_' . $file->getClientOriginalName();
                 $filePath = $file->storeAs('announcements', $fileName, 'public');
-                
+
                 $data['file_path'] = $filePath;
                 $data['file_name'] = $file->getClientOriginalName();
                 $data['file_type'] = $file->getClientMimeType();
@@ -105,19 +112,56 @@ class AnnouncementService
 
             $announcement->update($data);
 
+            // Detectar cambios en las fechas para notificar
+            $calendar = $announcement->calendar;
+            $newDates = [
+                'publication_start' => $request->publication_start,
+                'registration_start' => $request->registration_start,
+                'registration_end' => $request->registration_end,
+                'evaluation_start' => $request->evaluation_start,
+                'evaluation_end' => $request->evaluation_end,
+                'results_start' => $request->results_start,
+                'results_end' => $request->results_end,
+            ];
+
+            $dateLabels = [
+                'publication_start' => 'Inicio de Publicación',
+                'registration_start' => 'Inicio de Registro',
+                'registration_end' => 'Fin de Registro',
+                'evaluation_start' => 'Inicio de Evaluación',
+                'evaluation_end' => 'Fin de Evaluación',
+                'results_start' => 'Inicio de Resultados',
+                'results_end' => 'Fin de Resultados',
+            ];
+
+            $changes = [];
+            if ($calendar) {
+                foreach ($newDates as $key => $value) {
+                    $oldValue = $calendar->$key instanceof \Carbon\Carbon ? $calendar->$key->toDateString() : $calendar->$key;
+                    if ($value && $oldValue != $value) {
+                        $changes[] = [
+                            'label' => $dateLabels[$key],
+                            'old' => $oldValue,
+                            'new' => $value
+                        ];
+                    }
+                }
+            }
+
             // Update or Create Calendar
             $announcement->calendar()->updateOrCreate(
-                ['announcement_id' => $announcement->id],
-                [
-                    'publication_start' => $request->publication_start,
-                    'registration_start' => $request->registration_start,
-                    'registration_end' => $request->registration_end,
-                    'evaluation_start' => $request->evaluation_start,
-                    'evaluation_end' => $request->evaluation_end,
-                    'results_start' => $request->results_start,
-                    'results_end' => $request->results_end,
-                ]
+            ['announcement_id' => $announcement->id],
+                $newDates
             );
+
+            // Si hubo cambios, notificar
+            if (!empty($changes)) {
+                $this->notificationService->notifyAnnouncementDateChange(
+                    $announcement->id,
+                    $announcement->name,
+                    $changes
+                );
+            }
 
             return $announcement;
         });
@@ -135,7 +179,7 @@ class AnnouncementService
             if ($announcement->file_path) {
                 Storage::disk('public')->delete($announcement->file_path);
             }
-            
+
             $announcement->delete();
         });
     }
@@ -152,7 +196,8 @@ class AnnouncementService
                 $syncData[$docId] = ['is_mandatory' => true];
             }
             $announcement->catalogDocuments()->sync($syncData);
-        } else {
+        }
+        else {
             // Default active documents
             $activeDocuments = CatalogDocument::where('active', true)->pluck('id');
             if ($activeDocuments->isNotEmpty()) {

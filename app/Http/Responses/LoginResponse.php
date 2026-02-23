@@ -74,9 +74,11 @@ class LoginResponse implements LoginResponseContract
             'Admin' => 'admin.dashboard',
             'Evaluador' => 'evaluator.dashboard',
             'Docente' => 'teacher.dashboard',
-            default => 'inicio',
+            default => 'dashboard.index',
         };
         
-        return redirect()->intended(route($redirectRoute));
+        // Usar redirect() directamente en lugar de intended() para evitar 
+        // problemas de sincronización de roles/permisos en la sesión
+        return redirect()->route($redirectRoute);
     }
 }

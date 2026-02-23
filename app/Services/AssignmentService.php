@@ -5,10 +5,17 @@ namespace App\Services;
 use App\Models\Evaluation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Services\NotificationService;
 use Exception;
 
 class AssignmentService
 {
+    protected NotificationService $notificationService;
+
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
     /**
      * Asigna uno o más evaluadores a una solicitud específica en una transacción.
      *
@@ -22,9 +29,9 @@ class AssignmentService
             foreach ($evaluatorIds as $userId) {
                 // Verificamos que no exista una evaluación previa para ese dúo
                 $exists = Evaluation::where('application_id', $applicationId)
-                                    ->where('evaluator_id', $userId)
-                                    ->exists();
-                
+                    ->where('evaluator_id', $userId)
+                    ->exists();
+
                 if (!$exists) {
                     Evaluation::create([
                         'application_id' => $applicationId,
@@ -32,6 +39,15 @@ class AssignmentService
                         'status' => 'pending',
                         'deadline_at' => Carbon::now()->addWeekdays(7),
                     ]);
+
+                    // Contar cuántas evaluaciones tiene el evaluador
+                    $evaluationsCount = Evaluation::where('evaluator_id', $userId)
+                        ->where('status', 'pending')
+                        ->count();
+
+                    // Enviar notificación (se recomienda fuera del loop o manejar cuidadosamente)
+                    // Según la guía, se envía notificación individual
+                    $this->notificationService->notifyEvaluatorAssignment($userId, $evaluationsCount);
                 }
             }
         });
@@ -47,7 +63,7 @@ class AssignmentService
     public function removeEvaluator(int $applicationId, int $evaluatorId): void
     {
         Evaluation::where('application_id', $applicationId)
-                  ->where('evaluator_id', $evaluatorId)
-                  ->delete();
+            ->where('evaluator_id', $evaluatorId)
+            ->delete();
     }
 }

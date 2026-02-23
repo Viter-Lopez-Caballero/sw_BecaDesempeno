@@ -35,7 +35,7 @@ class NotificationService
             $evaluator->name,
             $evaluationsCount,
             5 // days limit
-        ));
+            ));
     }
 
     /**
@@ -63,7 +63,7 @@ class NotificationService
             $teacher->name,
             $status,
             $announcementTitle
-        ));
+            ));
     }
 
     /**
@@ -93,7 +93,7 @@ class NotificationService
                 $announcementTitle,
                 $newStage,
                 $stageDate
-            ));
+                ));
         }
     }
 
@@ -124,7 +124,7 @@ class NotificationService
                 $user->name,
                 $announcementTitle,
                 $changes
-            ));
+                ));
         }
     }
 }

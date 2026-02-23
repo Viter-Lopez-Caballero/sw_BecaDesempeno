@@ -7,6 +7,7 @@ use App\Models\Announcement;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\NotificationService;
 
 class UpdateAnnouncementStatus extends Command
 {
@@ -41,8 +42,8 @@ class UpdateAnnouncementStatus extends Command
         // Buscamos convocatorias pendientes que tengan calendario con publication_start <= hoy
         $pendientes = \App\Models\Announcement::where('status', 'pendiente')
             ->whereHas('calendar', function ($query) use ($today) {
-                $query->where('publication_start', '<=', $today);
-            })
+            $query->where('publication_start', '<=', $today);
+        })
             ->with('calendar')
             ->get();
 
@@ -54,7 +55,16 @@ class UpdateAnnouncementStatus extends Command
                     ->update(['status' => 'cerrada']);
 
                 $announcement->update(['status' => 'activa']);
-                
+
+                // Notificar el cambio de etapa
+                $notificationService = app(NotificationService::class);
+                $notificationService->notifyAnnouncementStageChange(
+                    $announcement->id,
+                    $announcement->name,
+                    'Registro de Solicitudes',
+                    $announcement->calendar->registration_start ?? null
+                );
+
                 $this->info("Convocatoria activada: {$announcement->name}");
                 Log::info("Cron Convocatorias: Convocatoria ID {$announcement->id} activada.");
             });
@@ -65,12 +75,22 @@ class UpdateAnnouncementStatus extends Command
         // (Es decir, ayer fue el último día)
         $activas = \App\Models\Announcement::where('status', 'activa')
             ->whereHas('calendar', function ($query) use ($today) {
-                $query->where('results_end', '<', $today);
-            })
+            $query->where('results_end', '<', $today);
+        })
             ->get();
 
         foreach ($activas as $announcement) {
             $announcement->update(['status' => 'cerrada']);
+
+            // Notificar el cambio de etapa
+            $notificationService = app(NotificationService::class);
+            $notificationService->notifyAnnouncementStageChange(
+                $announcement->id,
+                $announcement->name,
+                'Publicación de Resultados',
+                $announcement->calendar->results_start ?? null
+            );
+
             $this->info("Convocatoria cerrada: {$announcement->name}");
             Log::info("Cron Convocatorias: Convocatoria ID {$announcement->id} cerrada (finalizó periodo).");
         }

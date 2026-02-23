@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Auth;
 
 class Module extends Model
 {
@@ -15,7 +14,8 @@ class Module extends Model
     protected $fillable = [
         'name',
         'description',
-        'key'
+        'key',
+        'user_id'
     ];
 
     /*
@@ -47,11 +47,5 @@ class Module extends Model
         return $this->belongsTo(User::class);
     }
 
-    protected static function boot()
-    {
-        parent::boot();
-        static::saving(function ($rec) {
-            $rec->user_id = Auth::id();
-        });
-    }
+
 }

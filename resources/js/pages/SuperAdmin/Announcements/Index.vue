@@ -8,6 +8,7 @@ import { useCan } from '@/composables/usePermissions';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
 import { mdiBullhorn } from '@mdi/js';
+import { alertaPregunta, alertaExito, alertaError } from '@/utils/alerts.js';
 
 const props = defineProps({
     announcements: {
@@ -37,11 +38,11 @@ const props = defineProps({
 });
 
 const search = ref(props.filters.search);
-const showViewer = ref(false);
 const currentFile = ref(null);
 const rows = ref(props.filters.rows || 10);
 const sortField = ref(props.filters.order || 'id');
 const sortDirection = ref(props.filters.direction || 'asc');
+const expandedRows = ref({});
 
 const rowOptions = [
     { label: '5 Registros', value: 5 },
@@ -95,9 +96,16 @@ const sortBy = (field) => {
     }, { preserveState: true, replace: true });
 };
 
-const deleteAnnouncement = (id) => {
-    if (confirm('¿Estás seguro de eliminar esta convocatoria?')) {
-        router.delete(route(`${props.routeName}destroy`, { announcement: id }));
+const deleteAnnouncement = async (id) => {
+    const confirmed = await alertaPregunta(
+        '¿Eliminar convocatoria?',
+        'Esta acción no se puede deshacer'
+    );
+    if (confirmed) {
+        router.delete(route(`${props.routeName}destroy`, { announcement: id }), {
+            onSuccess: () => alertaExito('¡Eliminado!', 'Convocatoria eliminada correctamente'),
+            onError: () => alertaError('Error', 'No se pudo eliminar la convocatoria')
+        });
     }
 };
 
@@ -111,21 +119,36 @@ const getStatusBadge = (status) => {
 };
 
 const viewFile = (announcement) => {
-    if (announcement.file_path) {
-        currentFile.value = {
-            url: `/storage/${announcement.file_path}`,
-            name: announcement.file_name,
-            type: announcement.file_type,
-            announcement: announcement.name,
-            id: announcement.id
-        };
-        showViewer.value = true;
+    if (expandedRows.value[announcement.id]) {
+        expandedRows.value[announcement.id] = false;
+        currentFile.value = null;
+    } else {
+        if (announcement.file_path) {
+            currentFile.value = {
+                url: announcement.file_url,
+                name: announcement.file_name,
+                type: announcement.file_type,
+                announcement: announcement.name,
+                id: announcement.id
+            };
+        } else if (announcement.image_path) {
+            currentFile.value = {
+                url: announcement.image_url,
+                name: 'Imagen de Convocatoria',
+                type: 'image/png', // Generic image type
+                announcement: announcement.name,
+                id: announcement.id
+            };
+        }
+        expandedRows.value[announcement.id] = true;
     }
 };
 
-const closeViewer = () => {
-    showViewer.value = false;
-    currentFile.value = null;
+const closeViewer = (id) => {
+    expandedRows.value[id] = false;
+    if (Object.values(expandedRows.value).every(v => v === false)) {
+        currentFile.value = null;
+    }
 };
 </script>
 
@@ -228,7 +251,7 @@ const closeViewer = () => {
                         <h2 class="text-xl font-semibold text-gray-800">Filtro de Búsqueda</h2>
                     </div>
                     <button @click="cleanFilters"
-                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-sm font-medium transition">
+                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-sm font-medium transition cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px"
                             fill="currentColor">
                             <path
@@ -265,7 +288,7 @@ const closeViewer = () => {
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
                                 <th scope="col" class="px-6 py-4 text-center" style="width: 80px;">
-                                    #
+                                    ID
                                 </th>
                                 <th scope="col" class="px-6 py-4 text-left">
                                     <button @click="sortBy('name')"
@@ -296,74 +319,126 @@ const closeViewer = () => {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                            <tr v-for="(announcement, index) in announcements.data" :key="announcement.id"
-                                class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 text-center text-gray-900 font-medium">{{ announcements.meta.from + index }}</td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
-                                        <svg viewBox="0 0 24 24" class="w-5 h-5 flex-shrink-0" style="fill: #1B396A;">
-                                            <path :d="mdiBullhorn" />
-                                        </svg>
-                                        <span class="text-gray-900 font-medium">{{ announcement.name }}</span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <span v-if="announcement.status === 'activa'"
-                                        class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                        Activa
-                                    </span>
-                                    <span v-else-if="announcement.status === 'cerrada'"
-                                        class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                        Cerrada
-                                    </span>
-                                    <span v-else-if="announcement.status === 'pendiente'"
-                                        class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                        Pendiente
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <div v-if="announcement.file_path" class="flex items-center justify-center gap-2">
-                                        <button @click="viewFile(announcement)"
-                                            class="inline-flex items-center gap-1 text-green-600 hover:text-green-800 font-medium transition"
-                                            title="Ver archivo">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            <template v-for="(announcement, index) in announcements.data" :key="announcement.id">
+                                <tr 
+                                    class="hover:bg-gray-50 transition"
+                                    :class="{'bg-blue-50': expandedRows[announcement.id]}"
+                                >
+                                    <td class="px-6 py-4 text-center text-gray-900 font-medium">{{ announcements.meta.from + index }}</td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-2">
+                                            <svg viewBox="0 0 24 24" class="w-5 h-5 flex-shrink-0" style="fill: #1B396A;">
+                                                <path :d="mdiBullhorn" />
                                             </svg>
-                                        </button>
-                                        <a :href="route('announcements.download', announcement.id)"
-                                            class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium transition"
-                                            title="Descargar archivo">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                            </svg>
-                                        </a>
-                                    </div>
-                                    <span v-else class="text-gray-400 text-xs">Sin archivo</span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <Link v-if="useCan('announcements.edit')"
-                                            :href="route(`${routeName}edit`, { announcement: announcement.id })"
-                                            class="text-[#1B396A] hover:text-[#0f2347] transition" title="Editar">
-                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px"
-                                                viewBox="0 -960 960 960" width="20px" fill="currentColor">
-                                                <path
-                                                    d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z" />
-                                            </svg>
-                                        </Link>
-                                        <button v-if="useCan('announcements.destroy')"
-                                            @click="deleteAnnouncement(announcement.id)"
-                                            class="text-red-600 hover:text-red-800 transition" title="Eliminar">
-                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px"
-                                                viewBox="0 -960 960 960" width="20px" fill="currentColor">
-                                                <path
-                                                    d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+                                            <span class="text-gray-900 font-medium">{{ announcement.name }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <span v-if="announcement.status === 'activa'"
+                                            class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            Activa
+                                        </span>
+                                        <span v-else-if="announcement.status === 'cerrada'"
+                                            class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                            Cerrada
+                                        </span>
+                                        <span v-else-if="announcement.status === 'pendiente'"
+                                            class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                            Pendiente
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <div v-if="announcement.file_path" class="flex items-center justify-center gap-2">
+                                            <button @click="viewFile(announcement)"
+                                                class="p-2 border rounded-full transition group cursor-pointer flex items-center justify-center"
+                                                :class="expandedRows[announcement.id] ? 'bg-[#1B396A] text-white border-[#1B396A]' : 'text-[#1B396A] border-[#1B396A] hover:bg-[#1B396A] hover:text-white'"
+                                                title="Ver archivo">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                </svg>
+                                            </button>
+                                            <a :href="route('announcements.download', announcement.id)"
+                                                class="p-2 text-blue-600 border border-blue-600 rounded-full hover:bg-blue-600 hover:text-white transition group cursor-pointer flex items-center justify-center"
+                                                title="Descargar archivo">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                </svg>
+                                            </a>
+                                        </div>
+                                        <span v-else class="text-gray-400 text-xs text-center block">Sin archivo</span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center justify-center gap-2">
+                                            <Link v-if="useCan('announcements.edit')"
+                                                :href="route(`${routeName}edit`, { announcement: announcement.id })"
+                                                class="p-2 text-[#1B396A] border border-[#1B396A] rounded-full hover:bg-[#1B396A] hover:text-white transition cursor-pointer" title="Editar">
+                                                <svg xmlns="http://www.w3.org/2000/svg" height="20px"
+                                                    viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                                    <path
+                                                        d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z" />
+                                                </svg>
+                                            </Link>
+                                            <button v-if="useCan('announcements.destroy')"
+                                                @click="deleteAnnouncement(announcement.id)"
+                                                class="p-2 text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition cursor-pointer" title="Eliminar">
+                                                <svg xmlns="http://www.w3.org/2000/svg" height="20px"
+                                                    viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                                    <path
+                                                        d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Inline Preview Row -->
+                                <tr v-if="expandedRows[announcement.id]">
+                                    <td colspan="5" class="px-6 py-6 bg-gray-50 border-b border-gray-200">
+                                        <div class="flex flex-col gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
+                                            <div class="flex justify-between items-center">
+                                                <h3 class="font-bold text-gray-800 text-lg">Vista Previa: {{ announcement.name }}</h3>
+                                            </div>
+                                            <div class="w-full h-[600px] border border-gray-300 rounded-xl overflow-hidden bg-white shadow-inner relative">
+                                                <div class="absolute inset-0 flex items-center justify-center text-gray-400 z-0">
+                                                    <div class="text-center">
+                                                        <svg class="w-12 h-12 mx-auto animate-pulse mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                        </svg>
+                                                        <span>Cargando vista previa...</span>
+                                                    </div>
+                                                </div>
+                                                <iframe v-if="announcement.file_path && currentFile?.type?.includes('pdf')" 
+                                                    :src="currentFile?.url" 
+                                                    class="w-full h-full relative z-10" 
+                                                    frameborder="0"
+                                                ></iframe>
+                                                <div v-else-if="announcement.file_path && currentFile?.type?.startsWith('image/')" class="w-full h-full flex items-center justify-center bg-gray-900 relative z-10">
+                                                    <img :src="currentFile?.url" :alt="currentFile?.name" class="max-h-full max-w-full object-contain shadow-lg" />
+                                                </div>
+                                                <div v-else class="h-full flex items-center justify-center relative z-10 bg-white">
+                                                    <div class="text-center p-12">
+                                                        <div class="bg-gray-100 p-6 rounded-full inline-block mb-4">
+                                                            <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                            </svg>
+                                                        </div>
+                                                        <h4 class="text-xl font-bold text-gray-900 mb-2">Vista previa no disponible</h4>
+                                                        <p class="text-gray-500 mb-6 max-w-sm mx-auto">Este tipo de archivo no se puede visualizar directamente en el navegador.</p>
+                                                        <a :href="route('announcements.download', announcement.id)" 
+                                                            class="inline-flex items-center gap-2 px-6 py-3 bg-[#1B396A] text-white rounded-xl hover:bg-[#0f2347] transition shadow-md hover:shadow-lg font-bold">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                            </svg>
+                                                            Descargar Archivo
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
                         </tbody>
                     </table>
                 </div>
@@ -375,50 +450,6 @@ const closeViewer = () => {
                 </div>
             </div>
 
-            <!-- Visor de Archivos -->
-            <Transition name="slide-up">
-                <div v-if="showViewer" class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                    <div class="bg-gradient-to-r from-[#1B396A] to-[#2B4A7E] px-6 py-4 flex items-center justify-between">
-                        <div class="text-white">
-                            <h3 class="text-lg font-bold">{{ currentFile?.announcement }}</h3>
-                            <p class="text-sm text-blue-100 mt-1">{{ currentFile?.name }}</p>
-                        </div>
-                        <button @click="closeViewer" class="text-white hover:text-gray-200 transition">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                    <div class="p-6">
-                        <div class="bg-gray-100 rounded-lg overflow-hidden" style="height: 600px;">
-                            <iframe v-if="currentFile?.type?.includes('pdf')" 
-                                :src="currentFile?.url" 
-                                class="w-full h-full border-0"
-                                title="Visor de archivo">
-                            </iframe>
-                            <div v-else-if="currentFile?.type?.startsWith('image/')" class="h-full flex items-center justify-center bg-gray-900">
-                                <img :src="currentFile?.url" :alt="currentFile?.name" class="max-h-full max-w-full object-contain" />
-                            </div>
-                            <div v-else class="h-full flex items-center justify-center">
-                                <div class="text-center">
-                                    <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
-                                    <p class="text-gray-600 font-medium mb-2">Vista previa no disponible</p>
-                                    <p class="text-sm text-gray-500 mb-4">Este tipo de archivo no se puede visualizar en el navegador</p>
-                                    <a :href="route('announcements.download', currentFile?.id)" 
-                                        class="inline-flex items-center gap-2 px-4 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                        </svg>
-                                        Descargar Archivo
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </Transition>
         </div>
     </LayoutAuthenticated>
 </template>
@@ -466,18 +497,4 @@ const closeViewer = () => {
     padding-right: 4px;
 }
 
-.slide-up-enter-active,
-.slide-up-leave-active {
-    transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-    opacity: 0;
-    transform: translateY(20px);
-}
-
-.slide-up-leave-to {
-    opacity: 0;
-    transform: translateY(-20px);
-}
 </style>

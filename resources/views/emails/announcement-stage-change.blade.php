@@ -19,7 +19,7 @@
         }
 
         .email-container {
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
             background-color: #ffffff;
             border-radius: 20px;
@@ -35,14 +35,15 @@
 
         .header-title {
             color: #ffffff;
-            font-size: 26px;
+            font-size: 28px;
             font-weight: 700;
             margin: 0;
             letter-spacing: -0.5px;
         }
 
         .content {
-            padding: 40px 50px;
+            padding: 50px 60px;
+            text-align: center;
         }
 
         .greeting {
@@ -56,14 +57,15 @@
             color: #4B5563;
             font-size: 15px;
             line-height: 1.8;
-            margin-bottom: 25px;
+            margin-bottom: 35px;
         }
 
         .announcement-box {
-            background: #F3F4F6;
-            border-radius: 12px;
-            padding: 20px;
-            margin: 25px 0;
+            background: linear-gradient(120deg, #f8fafc 60%, #e0e7ef 100%);
+            border-radius: 14px;
+            padding: 28px 24px;
+            margin: 28px 0 36px 0;
+            border: 1.5px solid #dbeafe;
         }
 
         .announcement-label {
@@ -82,52 +84,133 @@
         }
 
         .stage-box {
-            background: linear-gradient(to bottom right, #DBEAFE, #BFDBFE);
-            border-radius: 12px;
-            padding: 25px;
-            margin: 25px 0;
-            text-align: center;
-            border-left: 4px solid #3B82F6;
+            background: #f3f6fb;
+            border-radius: 14px;
+            padding: 28px 20px;
+            margin: 0 0 36px 0;
+            border: 1.5px solid #dbeafe;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
         }
 
         .stage-label {
-            color: #1E40AF;
-            font-size: 14px;
+            color: #1B396A;
+            font-size: 15px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 10px;
+            margin-bottom: 0;
+            flex: 1 1 180px;
+            text-align: left;
         }
 
         .stage-name {
-            color: #1E3A8A;
-            font-size: 22px;
+            color: #fff;
+            background: #1B396A;
+            border-radius: 6px;
+            padding: 8px 18px;
+            font-size: 18px;
             font-weight: 700;
-            margin-bottom: 10px;
+            letter-spacing: 1px;
+            flex: 1 1 180px;
+            text-align: center;
         }
 
         .stage-date {
-            color: #1E40AF;
-            font-size: 14px;
-            font-weight: 500;
+            color: #1B396A;
+            background: #e0e7ef;
+            border-radius: 6px;
+            padding: 8px 18px;
+            font-size: 15px;
+            font-weight: 600;
+            flex: 1 1 180px;
+            text-align: right;
         }
 
         .footer {
-            background-color: #F9FAFB;
-            padding: 25px 30px;
+            padding: 30px 40px;
+            background: linear-gradient(to right, #F9FAFB, #F3F4F6);
             text-align: center;
-            border-top: 1px solid #E5E7EB;
+            border-top: 2px solid #E5E7EB;
         }
 
         .footer-text {
             color: #6B7280;
             font-size: 12px;
-            line-height: 1.5;
+            line-height: 1.8;
+            margin: 0;
         }
 
+        /* Responsive Design para Móviles */
         @media only screen and (max-width: 600px) {
+            body {
+                padding: 15px 8px;
+            }
+
+            .email-container {
+                max-width: 100%;
+                border-radius: 10px;
+            }
+
+            .header {
+                padding: 20px 12px;
+            }
+
+            .header-title {
+                font-size: 15px;
+                line-height: 1.3;
+            }
+
             .content {
-                padding: 30px 25px;
+                padding: 25px 15px;
+            }
+
+            .greeting {
+                font-size: 16px;
+            }
+
+            .message {
+                font-size: 13px;
+                line-height: 1.6;
+            }
+
+            .announcement-box {
+                padding: 15px;
+                margin: 15px 0;
+            }
+
+            .stage-box {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 15px;
+                gap: 12px;
+            }
+
+            .stage-label,
+            .stage-name,
+            .stage-date {
+                flex: unset;
+                width: 100%;
+                text-align: left;
+                box-sizing: border-box;
+            }
+
+            .stage-name,
+            .stage-date {
+                font-size: 14px;
+                padding: 8px 12px;
+            }
+
+            .footer {
+                padding: 18px 12px;
+            }
+
+            .footer-text {
+                font-size: 10px;
+                line-height: 1.6;
             }
         }
     </style>
@@ -151,10 +234,10 @@
             </div>
 
             <div class="stage-box">
-                <p class="stage-label">Nueva Etapa</p>
-                <p class="stage-name">{{ $newStage }}</p>
+                <span class="stage-label">Nueva Etapa</span>
+                <span class="stage-name">{{ $newStage }}</span>
                 @if($stageDate)
-                    <p class="stage-date">Fecha: {{ $stageDate }}</p>
+                    <span class="stage-date">{{ \Carbon\Carbon::parse($stageDate)->translatedFormat('d \d\e F \d\e\l Y') }}</span>
                 @endif
             </div>
 
@@ -165,8 +248,10 @@
 
         <div class="footer">
             <p class="footer-text">
+                <strong>Programa de Estímulos al Desempeño del Personal Docente - TecNM</strong><br>
                 Este es un mensaje automático del Sistema de Becas TecNM.<br>
-                Por favor, no respondas a este correo.
+                Por favor, no respondas a este correo.<br>
+                © {{ date('Y') }} Tecnológico Nacional de México. Todos los derechos reservados.
             </p>
         </div>
     </div>

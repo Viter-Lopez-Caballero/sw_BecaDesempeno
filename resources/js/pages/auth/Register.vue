@@ -129,7 +129,8 @@ const submit = () => {
     
     form.post(route('register'), {
         onSuccess: () => {
-            // Mantener la alerta de cargando mientras redirige
+            cerrarAlerta();
+            alertaExito('¡Registro exitoso!', 'Revisa tu correo para verificar tu cuenta');
         },
         onError: () => {
             cerrarAlerta();

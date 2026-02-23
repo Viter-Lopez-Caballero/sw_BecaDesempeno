@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Services\FileService;
 
 class DocumentController extends Controller
 {
@@ -25,20 +26,17 @@ class DocumentController extends Controller
     private string $source;
     private string $permissionPrefix;
     private string $routeName;
+    private \App\Services\CatalogDocumentService $catalogDocumentService;
+    protected FileService $fileService;
 
-    public function __construct()
+    public function __construct(\App\Services\CatalogDocumentService $catalogDocumentService, FileService $fileService)
     {
+        $this->fileService = $fileService;
         $this->source = 'SuperAdmin/Catalog/Documents/';
         $this->model = new CatalogDocument();
-        $this->routeName = 'catalog.documents.'; // Route name change
-        $this->permissionPrefix = 'catalog.documents.';
-
-        // Middleware de permisos - Assuming permissions are 'documents.index' etc or we map them.
-        // If DB has 'documentos.index', we might break access.
-        // User said "Visual text in Spanish, Code in English".
-        // Permissions are code/logic. So 'documents.index' is better.
-        // I will use 'documents.' and add a todo to migrate permissions.
+        $this->routeName = 'catalog.documents.';
         $this->permissionPrefix = 'documents.';
+        $this->catalogDocumentService = $catalogDocumentService;
 
         $this->middleware("permission:{$this->permissionPrefix}index")->only(['index', 'show']);
         $this->middleware("permission:{$this->permissionPrefix}create")->only(['store', 'create']);
@@ -108,22 +106,10 @@ class DocumentController extends Controller
             ];
             $dbField = $dbFieldMap[$orderField] ?? 'users.name';
 
-            $applicationsQuery = Application::query()
-                ->select('applications.*')
-                ->join('users', 'users.id', '=', 'applications.user_id')
-                ->leftJoin('institutions', 'institutions.id', '=', 'users.institution_id')
-                ->leftJoin('announcements', 'announcements.id', '=', 'applications.announcement_id')
-                ->with(['user.institution.state', 'user.priorityArea', 'announcement' => function ($query) {
-                $query->withTrashed();
-            }])
-                ->withCount('documents')
+            $applicationsQuery = Application::withTeacherDetails()
                 ->when($filters->search, function ($q) use ($filters) {
-                $q->where('users.name', 'LIKE', "%{$filters->search}%")
-                    ->orWhere('users.email', 'LIKE', "%{$filters->search}%")
-                    ->orWhere('institutions.name', 'LIKE', "%{$filters->search}%")
-                    ->orWhere('announcements.name', 'LIKE', "%{$filters->search}%")
-                    ->orWhere('applications.id', 'LIKE', "%{$filters->search}%");
-            });
+                    $q->searchByTeacherDetails($filters->search);
+                });
 
             $applications = $applicationsQuery->orderBy($dbField, $orderDirection)
                 ->paginate($filters->rows)
@@ -184,33 +170,7 @@ class DocumentController extends Controller
      */
     public function store(StoreDocumentRequest $request): RedirectResponse
     {
-        $data = $request->validated();
-
-        // Manejar la subida del archivo
-        if ($request->hasFile('archivo')) {
-            $file = $request->file('archivo');
-            $fileName = time() . '_' . $file->getClientOriginalName();
-            $filePath = $file->storeAs('catalog_documents', $fileName, 'public'); // Changed folder name
-
-            $data['file_path'] = $filePath;
-            $data['file_name'] = $file->getClientOriginalName();
-            $data['file_type'] = $file->getClientMimeType();
-            $data['file_size'] = $file->getSize();
-        }
-
-        $document = CatalogDocument::create($data);
-
-        // Vincular automáticamente a convocatorias activas si el documento está activo
-        if ($document->active) {
-            $activeAnnouncements = Announcement::where('status', 'activa')->pluck('id');
-            if ($activeAnnouncements->isNotEmpty()) {
-                $syncData = [];
-                foreach ($activeAnnouncements as $convId) {
-                    $syncData[$convId] = ['is_mandatory' => true];
-                }
-                $document->announcements()->syncWithoutDetaching($syncData);
-            }
-        }
+        $this->catalogDocumentService->createDocument($request->validated(), $request);
 
         return redirect()->route("{$this->routeName}index")->with('success', 'Documento creado con éxito!');
     }
@@ -254,26 +214,8 @@ class DocumentController extends Controller
      */
     public function update(UpdateDocumentRequest $request, CatalogDocument $document): RedirectResponse
     {
-        $data = $request->validated();
-
-        // Manejar nuevo archivo
-        if ($request->hasFile('archivo')) {
-            // Eliminar archivo anterior si existe
-            if ($document->file_path) {
-                Storage::disk('public')->delete($document->file_path);
-            }
-
-            $file = $request->file('archivo');
-            $fileName = time() . '_' . $file->getClientOriginalName();
-            $filePath = $file->storeAs('catalog_documents', $fileName, 'public');
-
-            $data['file_path'] = $filePath;
-            $data['file_name'] = $file->getClientOriginalName();
-            $data['file_type'] = $file->getClientMimeType();
-            $data['file_size'] = $file->getSize();
-        }
-
-        $document->update($data);
+        $this->catalogDocumentService->updateDocument($document, $request->validated(), $request);
+        
         return redirect()->route("{$this->routeName}index")->with('success', 'Documento actualizado con éxito!');
     }
 
@@ -285,9 +227,7 @@ class DocumentController extends Controller
         $document = CatalogDocument::findOrFail($id);
 
         // Eliminar archivo si existe
-        if ($document->file_path) {
-            Storage::disk('public')->delete($document->file_path);
-        }
+        $this->fileService->delete($document->file_path);
 
         // Usar forceDelete para eliminar permanentemente de la base de datos
         $document->forceDelete();
@@ -301,14 +241,7 @@ class DocumentController extends Controller
     {
         $document = CatalogDocument::findOrFail($id);
 
-        if (!$document->file_path || !Storage::disk('public')->exists($document->file_path)) {
-            abort(404, 'Archivo no encontrado');
-        }
-
-        return Storage::disk('public')->download(
-            $document->file_path,
-            $document->file_name
-        );
+        return $this->fileService->download($document->file_path, $document->file_name);
     }
 
     /**
@@ -341,11 +274,7 @@ class DocumentController extends Controller
     public function downloadDocente(\App\Models\Document $document) // Typehint Document
 
     {
-        if (!Storage::disk('public')->exists($document->file_path)) {
-            return back()->with('error', 'El archivo no existe.');
-        }
-
-        return Storage::disk('public')->download($document->file_path, $document->name);
+        return $this->fileService->download($document->file_path, $document->name);
     }
 
     /**
@@ -353,10 +282,6 @@ class DocumentController extends Controller
      */
     public function streamDocente(\App\Models\Document $document)
     {
-        if (!Storage::disk('public')->exists($document->file_path)) {
-            return back()->with('error', 'El archivo no existe.');
-        }
-
-        return response()->file(Storage::disk('public')->path($document->file_path));
+        return $this->fileService->responseFile($document->file_path);
     }
 }

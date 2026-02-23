@@ -125,7 +125,7 @@ const deleteModule = async (id) => {
                         <span class="text-gray-900 font-semibold">Módulos</span>
                     </div>
                 </div>
-                <Link v-if="useCan('modules.create')" :href="route(`${routeName}create`)" class="w-full md:w-auto justify-center px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium">
+                <Link v-if="useCan('modules.create')" :href="route(`${routeName}create`)" class="w-full md:w-auto justify-center px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
                     </svg>

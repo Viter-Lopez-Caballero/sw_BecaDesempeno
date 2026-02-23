@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests\Catalogos\StorePriorityAreaRequest;
 use App\Http\Requests\Catalogos\UpdatePriorityAreaRequest;
+use App\Http\Requests\Catalogos\ImportPriorityAreasRequest;
 use App\Http\Resources\Catalog\PriorityAreaResource;
 use App\Models\PriorityArea;
 use App\Traits\Filterable;
@@ -115,12 +116,8 @@ class PriorityAreaController extends Controller
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\PriorityAreasTemplateExport, 'plantilla_areas_prioritarias.xlsx');
     }
 
-    public function import(Request $request)
+    public function import(ImportPriorityAreasRequest $request)
     {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv',
-        ]);
-
         \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\PriorityAreasImport, $request->file('file'));
 
         return redirect()->back()->with('success', 'Áreas Prioritarias importadas correctamente.');

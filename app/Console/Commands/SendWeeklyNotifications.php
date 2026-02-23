@@ -92,7 +92,7 @@ class SendWeeklyNotifications extends Command
 
             // Send email
             try {
-                Mail::to($admin->email)->send(new WeeklyApplicationsSummary($weeklyData, $totalApplications));
+                Mail::to($admin->email)->queue(new WeeklyApplicationsSummary($weeklyData, $totalApplications));
                 $this->info("Email sent to {$admin->email}");
             } catch (\Exception $e) {
                 $this->error("Failed to send email to {$admin->email}: {$e->getMessage()}");

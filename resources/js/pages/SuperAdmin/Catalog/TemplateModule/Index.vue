@@ -1,3 +1,85 @@
+<script setup>
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
+import { ref, computed, watch } from 'vue';
+import { mdiBookOpenPageVariant, mdiFileDocumentMultiple, mdiStar, mdiSchool } from '@mdi/js';
+import { alertaPregunta, alertaExito, alertaError } from '@/utils/alerts.js';
+import { useCan } from '@/composables/usePermissions';
+import VueSelect from 'vue-select';
+import 'vue-select/dist/vue-select.css';
+
+const props = defineProps({
+    templates: Array,
+});
+
+const activeTab = ref('recognition'); // recognition | acceptance
+const expandedRows = ref({});
+const search = ref('');
+const rows = ref(10);
+
+const rowOptions = [
+    { label: '5 Registros', value: 5 },
+    { label: '10 Registros', value: 10 },
+    { label: '25 Registros', value: 25 },
+    { label: '50 Registros', value: 50 },
+];
+
+const resetFilters = () => {
+    search.value = '';
+    rows.value = 10;
+};
+
+const filteredTemplates = computed(() => {
+    let filtered = props.templates.filter(t => t.type === activeTab.value);
+    
+    if (search.value) {
+        const query = search.value.toLowerCase();
+        filtered = filtered.filter(t => 
+            t.name.toLowerCase().includes(query) || 
+            t.file_name.toLowerCase().includes(query)
+        );
+    }
+    
+    return filtered.slice(0, rows.value);
+});
+
+const toggleActive = (template) => {
+  router.post(route('catalog.templates.toggle-active', template.id), {}, {
+      preserveScroll: true,
+      preserveState: true,
+      onSuccess: () => {
+          const msg = template.is_active 
+            ? 'Plantilla desactivada correctamente.' 
+            : 'Plantilla activada correctamente.';
+          alertaExito('¡Actualizado!', msg);
+      }
+  });
+};
+
+const deleteTemplate = async (template) => {
+    const confirmed = await alertaPregunta(
+        '¿Estás seguro?',
+        'Esta acción eliminará la plantilla permanentemente.'
+    );
+
+    if (confirmed) {
+        router.delete(route('catalog.templates.destroy', template.id), {
+            onSuccess: () => {
+                alertaExito('¡Eliminado!', 'La plantilla ha sido eliminada.');
+            }
+        });
+    }
+};
+
+const togglePreview = (id) => {
+    if (expandedRows.value[id]) {
+        expandedRows.value[id] = false;
+    } else {
+        expandedRows.value[id] = true;
+    }
+};
+</script>
+
 <template>
     <LayoutAuthenticated>
         <Head title="Plantillas de Documentos" />
@@ -105,6 +187,7 @@
                             :clearable="false"
                             placeholder="Registros"
                             class="vue-select-custom"
+                            @option:selected="() => {}"
                         />
                     </div>
                 </div>
@@ -116,7 +199,7 @@
                     <table class="w-full text-sm text-left">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
-                                <th scope="col" class="px-6 py-4 tracking-wider w-16 text-center">#</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider w-16 text-center">ID</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Nombre</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Archivo</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider text-center">Activa</th>
@@ -199,9 +282,6 @@
                                         <div class="flex flex-col gap-4 animate-fadeIn">
                                             <div class="flex justify-between items-center">
                                                 <h3 class="font-bold text-gray-800 text-lg">Vista Previa: {{ template.name }}</h3>
-                                                <button @click="togglePreview(template.id)" class="text-sm text-gray-500 hover:text-gray-700 underline">
-                                                    Cerrar Vista Previa
-                                                </button>
                                             </div>
                                             <div class="w-full h-[600px] border border-gray-300 rounded-lg overflow-hidden bg-white relative">
                                                 <div class="absolute inset-0 flex items-center justify-center text-gray-400 z-0">
@@ -225,92 +305,6 @@
         </div>
     </LayoutAuthenticated>
 </template>
-
-<script setup>
-import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
-import { ref, computed, watch } from 'vue';
-import { mdiBookOpenPageVariant, mdiFileDocumentMultiple, mdiStar, mdiSchool } from '@mdi/js';
-import { alertaPregunta, alertaExito, alertaError } from '@/utils/alerts.js';
-import { useCan } from '@/composables/usePermissions';
-import VueSelect from 'vue-select';
-import 'vue-select/dist/vue-select.css';
-
-const props = defineProps({
-    templates: Array,
-});
-
-const activeTab = ref('recognition'); // recognition | acceptance
-const expandedRows = ref({});
-const search = ref('');
-const rows = ref(10);
-
-const rowOptions = [
-    { label: '5 Registros', value: 5 },
-    { label: '10 Registros', value: 10 },
-    { label: '25 Registros', value: 25 },
-    { label: '50 Registros', value: 50 },
-];
-
-const resetFilters = () => {
-    search.value = '';
-    rows.value = 10;
-};
-
-const filteredTemplates = computed(() => {
-    let filtered = props.templates.filter(t => t.type === activeTab.value);
-    
-    if (search.value) {
-        const query = search.value.toLowerCase();
-        filtered = filtered.filter(t => 
-            t.name.toLowerCase().includes(query) || 
-            t.file_name.toLowerCase().includes(query)
-        );
-    }
-    
-    // Default sort by latest (assuming API returns latest first, but good to ensure)
-    // The previous implementation utilized props.templates which came from Template::latest()->get()
-    
-    return filtered.slice(0, rows.value);
-});
-
-const toggleActive = (template) => {
-  router.post(route('catalog.templates.toggle-active', template.id), {}, {
-      preserveScroll: true,
-      preserveState: true,
-      onSuccess: () => {
-          const msg = template.is_active 
-            ? 'Plantilla desactivada correctamente.' 
-            : 'Plantilla activada correctamente.';
-          alertaExito('¡Actualizado!', msg);
-      }
-  });
-};
-
-const deleteTemplate = async (template) => {
-    const confirmed = await alertaPregunta(
-        '¿Estás seguro?',
-        'Esta acción eliminará la plantilla permanentemente.'
-    );
-
-    if (confirmed) {
-        router.delete(route('catalog.templates.destroy', template.id), {
-            onSuccess: () => {
-                alertaExito('¡Eliminado!', 'La plantilla ha sido eliminada.');
-            }
-        });
-    }
-};
-
-const togglePreview = (id) => {
-    if (expandedRows.value[id]) {
-        expandedRows.value[id] = false;
-    } else {
-        // Close others? Optional: expandedRows.value = {}; 
-        expandedRows.value[id] = true;
-    }
-};
-</script>
 
 <style scoped>
 :deep(.vue-select-custom .vs__dropdown-toggle) {
@@ -355,4 +349,3 @@ const togglePreview = (id) => {
     padding-right: 4px;
 }
 </style>
-```

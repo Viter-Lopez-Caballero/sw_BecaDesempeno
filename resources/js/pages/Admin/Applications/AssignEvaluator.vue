@@ -10,7 +10,7 @@ import {
     mdiDelete,
     mdiAccountSchool
 } from '@mdi/js';
-import { alertaExito } from '@/utils/alerts.js';
+import { alertaExito, alertaError, alertaCargando, cerrarAlerta } from '@/utils/alerts.js';
 
 const props = defineProps({
     application: Object,
@@ -54,10 +54,19 @@ const removeEvaluator = (id) => {
 };
 
 const submit = () => {
+    if (selectedEvaluatorIds.value.length === 0) return;
+    // Limpiar errores previos
+    form.clearErrors();
+    alertaCargando('Asignando', 'Por favor espera...');
     form.post(route('admin.applications.assign'), {
         preserveScroll: true,
         onSuccess: () => {
+            cerrarAlerta();
             alertaExito('Asignación Completada', 'Los evaluadores han sido asignados correctamente.');
+        },
+        onError: () => {
+            cerrarAlerta();
+            alertaError('Error', 'No se pudo completar la asignación. Por favor verifica los datos.');
         }
     });
 };
@@ -111,7 +120,7 @@ const filterEvaluators = (options, search) => {
                         <span class="text-gray-900 font-semibold">Asignar Evaluador</span>
                     </div>
                 </div>
-                 <Link :href="route('admin.applications.index')" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium bg-white">
+                 <Link :href="route('admin.applications.index')" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium bg-white cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
                     </svg>
@@ -256,12 +265,12 @@ const filterEvaluators = (options, search) => {
                         </div>
 
                         <div class="flex items-center justify-end gap-3 pt-2">
-                             <Link :href="route('admin.applications.index')" class="px-6 py-2.5 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg text-center transition font-semibold text-sm uppercase tracking-wider shadow-sm">
+                             <Link :href="route('admin.applications.index')" class="px-6 py-2.5 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg text-center transition font-semibold text-sm uppercase tracking-wider shadow-sm cursor-pointer">
                                 Cancelar
                             </Link>
                             <button 
                                 type="submit" 
-                                class="px-6 py-2.5 bg-[#1B396A] text-white rounded-lg font-semibold uppercase text-sm tracking-wider hover:bg-[#152d47] transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                class="px-6 py-2.5 bg-[#1B396A] text-white rounded-lg font-semibold uppercase text-sm tracking-wider hover:bg-[#152d47] transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
                                 :disabled="form.processing || selectedEvaluatorIds.length === 0"
                             >
                                 <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path :d="mdiAccountPlus"/></svg>

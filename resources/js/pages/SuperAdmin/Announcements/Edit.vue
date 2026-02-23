@@ -56,13 +56,13 @@ function getCalendarDate(announcement, field) {
 const archivoPreview = ref(null);
 const archivoNombre = ref(props.announcement.data?.file_name || null);
 const archivoActual = ref(props.announcement.data?.file_path || null);
-const archivoUrl = ref(props.announcement.data?.file_path ? `/storage/${props.announcement.data.file_path}` : null);
+const archivoUrl = ref(props.announcement.data?.file_url || props.announcement.file_url || null);
 const archivoTipo = ref(props.announcement.data?.file_type || null);
 
 const imagenPreview = ref(null);
 const imagenNombre = ref(null);
 const imagenActual = ref(props.announcement.data?.image_path || null);
-const imagenUrl = ref(props.announcement.data?.image_path ? `/storage/${props.announcement.data.image_path}` : null);
+const imagenUrl = ref(props.announcement.data?.image_url || props.announcement.image_url || null);
 
 const statusOptions = [
     { id: 'pendiente', label: 'Pendiente' },
@@ -137,7 +137,7 @@ const removeFile = () => {
     
     // Restaurar archivo original si existe
     if (archivoActual.value) {
-        archivoUrl.value = `/storage/${archivoActual.value}`;
+        archivoUrl.value = props.announcement.data?.file_url || props.announcement.file_url || null;
         archivoNombre.value = props.announcement.data?.file_name || null;
         archivoTipo.value = props.announcement.data?.file_type || null;
     } else {
@@ -158,7 +158,7 @@ const removeImage = () => {
     
     // Restaurar imagen original si existe
     if (imagenActual.value) {
-        imagenUrl.value = `/storage/${imagenActual.value}`;
+        imagenUrl.value = props.announcement.data?.image_url || props.announcement.image_url || null;
         imagenNombre.value = null; 
     } else {
         imagenUrl.value = null;
@@ -243,7 +243,7 @@ const submit = () => {
                         <span class="text-gray-900 font-semibold">Editar Convocatoria</span>
                     </div>
                 </div>
-                <Link :href="route(`${routeName}index`)" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium">
+                <Link :href="route(`${routeName}index`)" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
                     </svg>
@@ -324,7 +324,7 @@ const submit = () => {
                                             Cambiar Imagen
                                         </label>
                                         <button v-if="form.image" type="button" @click="removeImage" 
-                                            class="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition">
+                                            class="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition cursor-pointer">
                                             Revertir
                                         </button>
                                     </div>
@@ -458,7 +458,7 @@ const submit = () => {
                         <Link :href="route(`${routeName}index`)" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition">
                             Cancelar
                         </Link>
-                        <button :disabled="form.processing" type="submit" class="px-6 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl disabled:opacity-75 flex items-center gap-2 font-medium">
+                        <button :disabled="form.processing" type="submit" class="px-6 py-2 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl disabled:opacity-75 flex items-center gap-2 font-medium cursor-pointer">
                             <span v-if="!form.processing">Actualizar</span>
                             <span v-else>Guardando...</span>
                         </button>

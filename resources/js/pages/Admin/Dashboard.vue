@@ -355,7 +355,7 @@ const getProgressWidth = (count) => {
                     <table class="w-full text-sm text-left">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
-                                <th scope="col" class="px-6 py-4 tracking-wider">#</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">ID</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Estado</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Institución</th>
                                 <th scope="col" class="px-6 py-4 text-center tracking-wider">Aprobadas</th>

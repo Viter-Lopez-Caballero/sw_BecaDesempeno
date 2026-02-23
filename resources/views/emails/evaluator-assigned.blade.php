@@ -19,7 +19,7 @@
         }
 
         .email-container {
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
             background-color: #ffffff;
             border-radius: 20px;
@@ -35,14 +35,15 @@
 
         .header-title {
             color: #ffffff;
-            font-size: 26px;
+            font-size: 28px;
             font-weight: 700;
             margin: 0;
             letter-spacing: -0.5px;
         }
 
         .content {
-            padding: 40px 50px;
+            padding: 50px 60px;
+            text-align: center;
         }
 
         .greeting {
@@ -56,71 +57,137 @@
             color: #4B5563;
             font-size: 15px;
             line-height: 1.8;
-            margin-bottom: 25px;
+            margin-bottom: 35px;
         }
 
         .info-box {
-            background: linear-gradient(to bottom right, #EEF2FF, #E0E7FF);
-            border-radius: 12px;
-            padding: 25px;
-            margin: 25px 0;
-            border-left: 4px solid #1B396A;
-        }
-
-        .info-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .info-item:last-child {
-            margin-bottom: 0;
+            background: linear-gradient(to bottom right, #F3F4F6, #E5E7EB);
+            border-radius: 16px;
+            padding: 35px 30px;
+            margin: 35px 0;
+            border: 2px solid #D1D5DB;
+            text-align: center;
         }
 
         .info-label {
-            color: #374151;
+            color: #1B396A;
             font-size: 14px;
             font-weight: 600;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            display: block;
         }
 
         .info-value {
+            background-color: #ffffff;
+            border: 2px dashed #1B396A;
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 42px;
+            font-weight: 800;
             color: #1B396A;
-            font-size: 24px;
-            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+            min-width: 100px;
         }
 
         .warning-box {
-            background: linear-gradient(to bottom right, #FEF3C7, #FDE68A);
-            border-radius: 12px;
-            padding: 20px;
+            background-color: #FEF3C7;
+            border: 1px solid #FCD34D;
+            border-radius: 8px;
+            padding: 15px 20px;
             margin: 25px 0;
-            border-left: 4px solid #F59E0B;
+            text-align: left;
         }
 
         .warning-text {
             color: #92400E;
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 12px;
             margin: 0;
+            line-height: 1.6;
         }
 
         .footer {
-            background-color: #F9FAFB;
-            padding: 25px 30px;
+            padding: 30px 40px;
+            background: linear-gradient(to right, #F9FAFB, #F3F4F6);
             text-align: center;
-            border-top: 1px solid #E5E7EB;
+            border-top: 2px solid #E5E7EB;
         }
 
         .footer-text {
             color: #6B7280;
             font-size: 12px;
-            line-height: 1.5;
+            line-height: 1.8;
+            margin: 0;
         }
 
+        /* Responsive Design para Móviles */
         @media only screen and (max-width: 600px) {
+            body {
+                padding: 15px 8px;
+            }
+
+            .email-container {
+                max-width: 100%;
+                border-radius: 10px;
+            }
+
+            .header {
+                padding: 20px 12px;
+            }
+
+            .header-title {
+                font-size: 15px;
+                line-height: 1.3;
+            }
+
             .content {
-                padding: 30px 25px;
+                padding: 25px 15px;
+            }
+
+            .greeting {
+                font-size: 16px;
+            }
+
+            .message {
+                font-size: 13px;
+                line-height: 1.6;
+            }
+
+            .info-box {
+                padding: 20px 12px;
+                margin: 20px 0;
+                border-radius: 12px;
+            }
+
+            .info-label {
+                font-size: 11px;
+                letter-spacing: 1px;
+            }
+
+            .info-value {
+                padding: 15px;
+                font-size: 28px;
+            }
+
+            .warning-box {
+                padding: 12px;
+                margin: 15px 0;
+            }
+
+            .warning-text {
+                font-size: 11px;
+            }
+
+            .footer {
+                padding: 18px 12px;
+            }
+
+            .footer-text {
+                font-size: 10px;
+                line-height: 1.6;
             }
         }
     </style>
@@ -135,20 +202,18 @@
             <p class="greeting">Hola {{ $evaluatorName }},</p>
 
             <p class="message">
-                Se te han asignado nuevas evaluaciones en el Sistema de Becas TecNM. 
+                Se te han asignado nuevas evaluaciones en el Sistema de Becas TecNM.<br>
                 Por favor, revisa tu panel de evaluaciones para comenzar con la revisión.
             </p>
 
             <div class="info-box">
-                <div class="info-item">
-                    <span class="info-label">Evaluaciones asignadas:</span>
-                    <span class="info-value">{{ $evaluationsCount }}</span>
-                </div>
+                <span class="info-label">Evaluaciones asignadas</span>
+                <div class="info-value">{{ $evaluationsCount }}</div>
             </div>
 
             <div class="warning-box">
                 <p class="warning-text">
-                    ⏰ Tienes {{ $daysLimit }} días calendario para completar las evaluaciones a partir de hoy. 
+                    ⏰ Tienes {{ $daysLimit }} días calendario para completar las evaluaciones a partir de hoy.<br>
                     Pasado este tiempo, las asignaciones serán removidas automáticamente.
                 </p>
             </div>
@@ -160,8 +225,10 @@
 
         <div class="footer">
             <p class="footer-text">
+                <strong>Programa de Estímulos al Desempeño del Personal Docente - TecNM</strong><br>
                 Este es un mensaje automático del Sistema de Becas TecNM.<br>
-                Por favor, no respondas a este correo.
+                Por favor, no respondas a este correo.<br>
+                © {{ date('Y') }} Tecnológico Nacional de México. Todos los derechos reservados.
             </p>
         </div>
     </div>

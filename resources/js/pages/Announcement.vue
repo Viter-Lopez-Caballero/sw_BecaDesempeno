@@ -209,7 +209,7 @@ const etapas = computed(() => {
                                 class="mx-auto block w-full sm:w-64 text-center
                                     bg-[#1B396A] text-white font-bold
                                     px-8 py-3 rounded-xl hover:bg-[#1B396A]
-                                    transition shadow-lg transform hover:-translate-y-1"
+                                    transition shadow-lg transform hover:-translate-y-1 cursor-pointer"
                             >
                                 Iniciar Sesión
                             </Link>

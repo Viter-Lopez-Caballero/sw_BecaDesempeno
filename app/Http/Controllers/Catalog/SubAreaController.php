@@ -118,4 +118,13 @@ class SubAreaController extends Controller
     {
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\SubAreasExport, 'sub-areas.xlsx');
     }
+
+    /**
+     * API endpoint to get sub-areas by priority area id.
+     * Moved from a closure in routes/web.php
+     */
+    public function getByPriorityArea($priority_area_id)
+    {
+        return SubArea::where('priority_area_id', $priority_area_id)->get(['id', 'name']);
+    }
 }

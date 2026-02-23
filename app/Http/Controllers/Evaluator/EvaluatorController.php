@@ -13,17 +13,22 @@ class EvaluatorController extends Controller
 {
     public function inicio(Request $request)
     {
-        $user = Auth::user();
+        $user = $request->user();
         $search = $request->input('search');
 
-        // Statistics
-        $totalAsignadas = \App\Models\Evaluation::where('evaluator_id', $user->id)->count();
-        $pendientes = \App\Models\Evaluation::where('evaluator_id', $user->id)->where('status', 'pending')->count();
+        // Statistics using advanced Eloquent relationship scopes (1 Query)
+        $user->loadCount([
+            'evaluations as total',
+            'evaluations as pendientes' => fn($q) => $q->pending()
+        ]);
+        
+        $totalAsignadas = $user->total;
+        $pendientes = $user->pendientes;
         $evaluadas = $totalAsignadas - $pendientes;
 
         // Pending Applications
         $applications = \App\Models\Evaluation::where('evaluator_id', $user->id)
-            ->where('status', 'pending')
+            ->pending()
             ->with([
                 'application.announcement',
                 'application.user.subArea', 
@@ -31,15 +36,8 @@ class EvaluatorController extends Controller
                     $query->withCount('documents');
                 }
             ])
-            ->whereHas('application', function ($query) use ($search) {
-                if ($search) {
-                     $query->whereHas('announcement', function ($q) use ($search) {
-                        $q->where('name', 'like', "%{$search}%");
-                     })
-                     ->orWhereHas('user', function ($q) use ($search) {
-                        $q->where('name', 'like', "%{$search}%");
-                     });
-                }
+            ->when($search, function ($query, $search) {
+                $query->searchByTeacherOrAnnouncement($search);
             })
             ->orderBy('created_at', 'desc')
             ->paginate($request->input('rows', 10))
@@ -101,14 +99,8 @@ class EvaluatorController extends Controller
         ]);
     }
 
-    public function evaluar(Request $request, $id)
+    public function evaluar(\App\Http\Requests\StoreEvaluationVerdictRequest $request, $id)
     {
-        $request->validate([
-            'status' => 'required|in:approved,rejected',
-            'score' => 'required|numeric|min:0',
-            'answers' => 'required|array',
-            'comment' => 'required_if:status,rejected|nullable|string|max:1000',
-        ]);
 
         $evaluation = \App\Models\Evaluation::where('id', $id)
             ->where('evaluator_id', Auth::id())
@@ -138,30 +130,28 @@ class EvaluatorController extends Controller
         }
 
         $path = $document->file_path;
-        
-        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
-            abort(404, 'El archivo no existe.');
-        }
-
-        // Return the file for streaming (inline view)
-        return \Illuminate\Support\Facades\Storage::disk('public')->response($path, $document->name, [
-            'Content-Disposition' => 'inline; filename="' . $document->name . '"'
-        ]);
+        return app(\App\Services\FileService::class)->responseFile($path);
     }
 
     public function index(Request $request)
     {
-        $user = Auth::user();
+        $user = $request->user();
         $search = $request->input('search');
         $statusFilter = $request->input('status');
 
-        // Statistics
-        $totalAsignadas = \App\Models\Evaluation::where('evaluator_id', $user->id)->count();
-        $pendientes = \App\Models\Evaluation::where('evaluator_id', $user->id)->where('status', 'pending')->count();
+        // Statistics using loadCount (1 Query instead of 4)
+        $user->loadCount([
+            'evaluations as total',
+            'evaluations as pendientes' => fn($q) => $q->pending(),
+            'evaluations as aprobadas' => fn($q) => $q->approved(),
+            'evaluations as rechazadas' => fn($q) => $q->rejected(),
+        ]);
+
+        $totalAsignadas = $user->total;
+        $pendientes = $user->pendientes;
         $evaluadas = $totalAsignadas - $pendientes;
-        
-        $aprobadas = \App\Models\Evaluation::where('evaluator_id', $user->id)->where('status', 'approved')->count();
-        $rechazadas = \App\Models\Evaluation::where('evaluator_id', $user->id)->where('status', 'rejected')->count();
+        $aprobadas = $user->aprobadas;
+        $rechazadas = $user->rechazadas;
 
         // Completed Applications (History)
         $query = \App\Models\Evaluation::where('evaluator_id', $user->id)
@@ -173,19 +163,18 @@ class EvaluatorController extends Controller
                     $query->withCount('documents');
                 }
             ])
-            ->whereHas('application', function ($query) use ($search) {
-                if ($search) {
-                     $query->whereHas('announcement', function ($q) use ($search) {
-                        $q->where('name', 'like', "%{$search}%");
-                     })
-                     ->orWhereHas('user', function ($q) use ($search) {
-                        $q->where('name', 'like', "%{$search}%");
-                     });
-                }
+            ->when($search, function ($query, $search) {
+                $query->searchByTeacherOrAnnouncement($search);
             });
 
-        if ($statusFilter && in_array($statusFilter, ['approved', 'rejected', 'expired'])) {
-            $query->where('status', $statusFilter);
+        if ($statusFilter && in_array($statusFilter, ['approved', 'rejected'])) {
+            if ($statusFilter === 'approved') {
+                $query->approved();
+            } else {
+                $query->rejected();
+            }
+        } elseif ($statusFilter === 'expired') {
+            $query->where('status', 'expired');
         }
 
         $applications = $query

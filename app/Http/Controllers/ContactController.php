@@ -7,7 +7,7 @@ use App\Models\Institution;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ContactFormMail;
 use App\Mail\ContactConfirmationMail;
-use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\ContactFormRequest;
 
 class ContactController extends Controller
 {
@@ -31,30 +31,8 @@ class ContactController extends Controller
         }
     }
 
-    public function sendContact(Request $request)
+    public function sendContact(ContactFormRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'institution_id' => 'required|exists:institutions,id',
-            'message' => 'required|string|max:1000',
-        ], [
-            'name.required' => 'El nombre es obligatorio',
-            'email.required' => 'El correo electrónico es obligatorio',
-            'email.email' => 'El correo electrónico debe ser válido',
-            'institution_id.required' => 'Debes seleccionar una institución',
-            'institution_id.exists' => 'La institución seleccionada no es válida',
-            'message.required' => 'El mensaje es obligatorio',
-            'message.max' => 'El mensaje no puede exceder 1000 caracteres',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         try {
             // Get Institution
             $institution = \App\Models\Institution::with('state')->find($request->institution_id);
@@ -66,11 +44,11 @@ class ContactController extends Controller
                 'message' => $request->message,
             ];
 
-            // Send to Admin
-            Mail::to('tecnmpedpd@gmail.com')->send(new ContactFormMail($data));
+            // 1. Correo a la institución (tecnmpedpd@gmail.com por ahora)
+            Mail::to('tecnmpedpd@gmail.com')->queue(new ContactFormMail($data));
 
-            // Send Confirmation
-            Mail::to($request->email)->send(new ContactConfirmationMail($data));
+            // 2. Correo de confirmación al usuario
+            Mail::to($request->email)->queue(new ContactConfirmationMail($data));
 
             return response()->json([
                 'success' => true,

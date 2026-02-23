@@ -2,7 +2,7 @@
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { usePage, router, Head, Link } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
-import Swal from 'sweetalert2';
+import { alertaPregunta, alertaExito } from '@/utils/alerts.js';
 import RejectModal from './RejectModal.vue';
 import { 
     mdiEye, 
@@ -27,12 +27,7 @@ const documentsState = ref({});
 // Watch for flash messages
 watch(() => page.props.flash?.success, (successMessage) => {
     if (successMessage) {
-        Swal.fire({
-            icon: 'success',
-            title: '¡Éxito!',
-            text: successMessage,
-            confirmButtonColor: '#1B396A',
-        });
+        alertaExito('¡Éxito!', successMessage);
     }
 }, { immediate: true });
 
@@ -68,26 +63,21 @@ const formatDate = (dateString) => {
     });
 };
 
-const approveRequest = () => {
-    Swal.fire({
-        title: '¿Aprobar solicitud?',
-        text: "Esta acción finalizará el proceso y notificará al docente.",
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#1B396A',
-        cancelButtonColor: '#9CA3AF',
-        confirmButtonText: 'Sí, aprobar',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            processing.value = true;
-            router.post(route('admin.applications.verdict', props.application.id), {
-                status: 'approved'
-            }, {
-                onFinish: () => processing.value = false
-            });
-        }
-    });
+const approveRequest = async () => {
+    const confirmed = await alertaPregunta(
+        '¿Aprobar solicitud?',
+        'Esta acción finalizará el proceso y notificará al docente.'
+    );
+    if (confirmed) {
+        processing.value = true;
+        router.post(route('admin.applications.verdict', props.application.id), {
+            status: 'approved'
+        }, {
+            preserveScroll: true,
+            onSuccess: () => alertaExito('¡Aprobada!', 'La solicitud fue aprobada correctamente.'),
+            onFinish: () => processing.value = false
+        });
+    }
 };
 
 const rejectRequest = () => {
@@ -138,7 +128,7 @@ const getFileIcon = (type) => {
                         <span class="text-gray-900 font-semibold">Detalles</span>
                     </div>
                 </div>
-                 <Link :href="route('admin.applications.index')" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium bg-white">
+                 <Link :href="route('admin.applications.index')" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium bg-white cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
                     </svg>
@@ -353,7 +343,7 @@ const getFileIcon = (type) => {
                     <div class="w-full flex gap-4">
                         <button 
                             @click="approveRequest"
-                            class="flex-1 bg-[#1B396A] text-white py-2.5 rounded-lg text-sm font-semibold uppercase tracking-wider hover:bg-[#152d47] transition shadow-md"
+                            class="flex-1 bg-[#1B396A] text-white py-2.5 rounded-lg text-sm font-semibold uppercase tracking-wider hover:bg-[#152d47] transition shadow-md cursor-pointer"
                             :disabled="processing"
                         >
                             Aprobar
@@ -361,7 +351,7 @@ const getFileIcon = (type) => {
                         
                         <button 
                              @click="rejectRequest"
-                            class="flex-1 bg-[#d32f2f] text-white py-2.5 rounded-lg text-sm font-semibold uppercase tracking-wider hover:bg-[#b71c1c] transition shadow-md"
+                            class="flex-1 bg-[#d32f2f] text-white py-2.5 rounded-lg text-sm font-semibold uppercase tracking-wider hover:bg-[#b71c1c] transition shadow-md cursor-pointer"
                             :disabled="processing"
                         >
                             Rechazar
@@ -369,7 +359,7 @@ const getFileIcon = (type) => {
                         
                         <Link
                             :href="route('admin.applications.index')"
-                            class="px-6 py-2.5 bg-white border border-gray-300 rounded-lg text-sm font-semibold uppercase tracking-wider text-gray-700 hover:bg-gray-50 transition shadow-sm text-center"
+                            class="px-6 py-2.5 bg-white border border-gray-300 rounded-lg text-sm font-semibold uppercase tracking-wider text-gray-700 hover:bg-gray-50 transition shadow-sm text-center cursor-pointer"
                         >
                             Cancelar
                         </Link>

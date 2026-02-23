@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Catalog;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Catalogos\StoreInstitutionRequest;
 use App\Http\Requests\Catalogos\UpdateInstitutionRequest;
+use App\Http\Requests\Catalogos\ImportInstitutionsRequest;
 use App\Http\Resources\Catalog\InstitutionResource;
 use App\Models\State; // Renamed from Estado
 use App\Models\Institution; // Renamed from Institucion
@@ -141,12 +142,8 @@ class InstitutionController extends Controller
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\InstitutionsTemplateExport, 'plantilla_instituciones.xlsx');
     }
 
-    public function import(Request $request)
+    public function import(ImportInstitutionsRequest $request)
     {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv',
-        ]);
-
         \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\InstitutionsImport, $request->file('file'));
 
         return redirect()->back()->with('success', 'Instituciones importadas correctamente.');

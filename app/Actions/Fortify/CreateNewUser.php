@@ -55,7 +55,7 @@ class CreateNewUser implements CreatesNewUsers
         $user->assignRole('Docente');
 
         // Enviar correo de verificación
-        Mail::to($user->email)->send(new VerificationCode($user, $verificationCode));
+        Mail::to($user->email)->queue(new VerificationCode($user, $verificationCode));
 
         return $user;
     }

@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { CheckCircle, Clock, ClipboardCheck, Award } from 'lucide-vue-next';
 
 const props = defineProps({
     modelValue: {
@@ -24,10 +25,7 @@ const phases = [
         colorLight: '#dce6f5',
         startKey:   'publication_start',
         endKey:     null,           // single day
-        icon: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                   d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-               </svg>`
+        iconName:   'CheckCircle'
     },
     {
         key:        'registro',
@@ -38,10 +36,7 @@ const phases = [
         colorLight: '#d0f2e3',
         startKey:   'registration_start',
         endKey:     'registration_end',
-        icon: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-               </svg>`
+        iconName:   'Clock'
     },
     {
         key:        'evaluacion',
@@ -52,10 +47,7 @@ const phases = [
         colorLight: '#fdf6d0',
         startKey:   'evaluation_start',
         endKey:     'evaluation_end',
-        icon: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                   d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-               </svg>`
+        iconName:   'ClipboardCheck'
     },
     {
         key:        'resultados',
@@ -66,12 +58,14 @@ const phases = [
         colorLight: '#dbeafe',
         startKey:   'results_start',
         endKey:     'results_end',
-        icon: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                   d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
-               </svg>`
+        iconName:   'Award'
     }
 ];
+
+const getIconComponent = (name) => {
+    const icons = { CheckCircle, Clock, ClipboardCheck, Award };
+    return icons[name];
+};
 
 // ─── State ───────────────────────────────────────────────────────────────────
 const activePhase    = ref(null);   // key of the phase being configured
@@ -79,6 +73,7 @@ const dragStart      = ref(null);   // Date object
 const dragEnd        = ref(null);   // Date object
 const isDragging     = ref(false);
 const hoverDay       = ref(null);
+const errMessage     = ref('');
 
 // Local dates - sync from props
 const dates = ref({ ...props.modelValue });
@@ -88,7 +83,7 @@ watch(() => props.modelValue, (v) => { dates.value = { ...v }; }, { deep: true }
 // ─── Calendar navigation ─────────────────────────────────────────────────────
 const today = new Date();
 const viewYear  = ref(today.getFullYear());
-const viewMonth = ref(today.getMonth()); // 0-indexed
+const viewMonth = ref(today.getMonth()); // Base month for the multi-view
 
 const MONTHS_ES = [
     'Enero','Febrero','Marzo','Abril','Mayo','Junio',
@@ -105,16 +100,37 @@ const nextMonth = () => {
     else viewMonth.value++;
 };
 
-// Build grid of days for the current month view (padded to start on Sunday)
-const calendarDays = computed(() => {
-    const firstDay = new Date(viewYear.value, viewMonth.value, 1).getDay();
-    const daysInMonth = new Date(viewYear.value, viewMonth.value + 1, 0).getDate();
+// Returns year/month for the Nth offset month from viewYear/viewMonth
+const getOffsetMonth = (offset) => {
+    let m = viewMonth.value + offset;
+    let y = viewYear.value;
+    while (m > 11) { m -= 12; y++; }
+    while (m < 0) { m += 12; y--; }
+    return { year: y, month: m };
+};
+
+// Build grid of days for a specific year/month
+const getDaysInMonth = (y, m) => {
+    const firstDay = new Date(y, m, 1).getDay();
+    const daysInMonthCount = new Date(y, m + 1, 0).getDate();
     const days = [];
     for (let i = 0; i < firstDay; i++) days.push(null);
-    for (let d = 1; d <= daysInMonth; d++) {
-        days.push(new Date(viewYear.value, viewMonth.value, d));
+    for (let d = 1; d <= daysInMonthCount; d++) {
+        days.push(new Date(y, m, d));
     }
     return days;
+};
+
+const visibleMonths = computed(() => {
+    return [0, 1, 2, 3].map(offset => {
+        const { year, month } = getOffsetMonth(offset);
+        return {
+            year,
+            month,
+            label: `${MONTHS_ES[month]} ${year}`,
+            days: getDaysInMonth(year, month)
+        };
+    });
 });
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -170,61 +186,96 @@ const formatRange = (phase) => {
 
 const phaseConfigured = (phase) => !!dates.value[phase.startKey];
 
+// ─── Validation Logic ────────────────────────────────────────────────────────
+const validateDates = (newDates) => {
+    errMessage.value = '';
+    
+    // Order of sequences to check
+    const order = [
+        { name: 'Publicación', start: 'publication_start', end: 'publication_start' },
+        { name: 'Registro', start: 'registration_start', end: 'registration_end' },
+        { name: 'Evaluación', start: 'evaluation_start', end: 'evaluation_end' },
+        { name: 'Resultados', start: 'results_start', end: 'results_end' }
+    ];
+
+    for (let i = 0; i < order.length; i++) {
+        const current = order[i];
+        const curStart = newDates[current.start];
+        const curEnd = newDates[current.end];
+
+        if (curStart && curEnd && curStart > curEnd) {
+            errMessage.value = `Error en ${current.name}: La fecha de inicio no puede ser posterior a la de fin.`;
+            return false;
+        }
+
+        if (i > 0) {
+            const prev = order[i - 1];
+            const prevEnd = newDates[prev.end];
+            if (prevEnd && curStart && curStart <= prevEnd) {
+                errMessage.value = `Advertencia: La etapa de ${current.name} debe iniciar después de que termine la etapa de ${prev.name}.`;
+                return false;
+            }
+        }
+    }
+    return true;
+};
+
 // ─── Interaction ─────────────────────────────────────────────────────────────
 const selectPhase = (phaseKey) => {
     activePhase.value = activePhase.value === phaseKey ? null : phaseKey;
     dragStart.value = null;
     dragEnd.value = null;
     isDragging.value = false;
-};
-
-const onMouseDown = (day) => {
-    if (!day || !activePhase.value) return;
-    isDragging.value = true;
-    dragStart.value = day;
-    dragEnd.value = day;
+    errMessage.value = '';
 };
 
 const onMouseEnter = (day) => {
     if (!day) return;
     hoverDay.value = day;
-    if (isDragging.value) dragEnd.value = day;
 };
 
-const onMouseUp = (day) => {
-    if (!isDragging.value || !dragStart.value || !day || !activePhase.value) {
-        isDragging.value = false;
+const onDayClick = (day) => {
+    if (!day || !activePhase.value) return;
+    
+    const phase = phases.find(p => p.key === activePhase.value);
+    if (!phase) return;
+
+    // If it's a single day phase (Publicación), finalize immediately
+    if (!phase.endKey) {
+        applyPhaseDates(phase, day, day);
+        dragStart.value = null;
         return;
     }
-    isDragging.value = false;
 
-    const phase = phases.find(p => p.key === activePhase.value);
-    if (!phase) return;
+    if (!dragStart.value) {
+        // First click: set start
+        dragStart.value = day;
+    } else {
+        // Second click: finalize range
+        const lo = dragStart.value <= day ? dragStart.value : day;
+        const hi = dragStart.value <= day ? day : dragStart.value;
 
-    const lo = dragStart.value <= day ? dragStart.value : day;
-    const hi = dragStart.value <= day ? day : dragStart.value;
-
-    const updated = { ...dates.value };
-    updated[phase.startKey] = toDateStr(lo);
-    if (phase.endKey) updated[phase.endKey] = toDateStr(hi);
-
-    dates.value = updated;
-    emit('update:modelValue', updated);
-
-    dragStart.value = null;
-    dragEnd.value = null;
+        if (applyPhaseDates(phase, lo, hi)) {
+            dragStart.value = null;
+        } else {
+            // If validation fails, stay on "waiting for second date" but maybe they clicked a bad date
+            // Let's keep the start date they chose so they can try another end date
+        }
+    }
 };
 
-// Click without drag (single day click)
-const onDayClick = (day) => {
-    if (!day || !activePhase.value || isDragging.value) return;
-    const phase = phases.find(p => p.key === activePhase.value);
-    if (!phase) return;
+const applyPhaseDates = (phase, start, end) => {
     const updated = { ...dates.value };
-    updated[phase.startKey] = toDateStr(day);
-    if (phase.endKey) updated[phase.endKey] = toDateStr(day);
-    dates.value = updated;
-    emit('update:modelValue', updated);
+    updated[phase.startKey] = toDateStr(start);
+    if (phase.endKey) updated[phase.endKey] = toDateStr(end);
+    
+    if (validateDates(updated)) {
+        dates.value = updated;
+        emit('update:modelValue', updated);
+        errMessage.value = '';
+        return true;
+    }
+    return false;
 };
 
 const clearPhase = (phase) => {
@@ -233,13 +284,15 @@ const clearPhase = (phase) => {
     if (phase.endKey) updated[phase.endKey] = '';
     dates.value = updated;
     emit('update:modelValue', updated);
+    errMessage.value = '';
+    dragStart.value = null;
 };
 
 // ─── Day style ───────────────────────────────────────────────────────────────
 const dayStyle = (day) => {
     if (!day) return {};
-    // Drag preview takes priority
-    if (activePhase.value && isInDragPreview(day)) {
+    // Drag/Multi-click preview takes priority
+    if (activePhase.value && (isDragging.value || dragStart.value) && isInDragPreview(day)) {
         const ph = phases.find(p => p.key === activePhase.value);
         return { background: ph.colorLight, color: ph.color, borderRadius: '6px', fontWeight: '700' };
     }
@@ -267,7 +320,7 @@ const dayLabel = (day) => {
 </script>
 
 <template>
-    <div class="space-y-6 select-none" @mouseup.prevent="onMouseUp(hoverDay)">
+    <div class="space-y-6 select-none">
 
         <!-- Phase selector cards -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -294,11 +347,11 @@ const dayLabel = (day) => {
 
                 <!-- Icon -->
                 <div class="p-2 rounded-lg" :style="{ background: activePhase === phase.key ? phase.color : '#F3F4F6' }">
-                    <span
-                        v-html="phase.icon"
-                        class="block"
+                    <component 
+                        :is="getIconComponent(phase.iconName)"
+                        class="w-6 h-6 block"
                         :style="{ color: activePhase === phase.key ? '#fff' : phase.color }"
-                    ></span>
+                    />
                 </div>
 
                 <!-- Info -->
@@ -319,7 +372,7 @@ const dayLabel = (day) => {
                         <button
                             type="button"
                             @click.stop="clearPhase(phase)"
-                            class="flex-shrink-0 text-gray-400 hover:text-red-500 transition"
+                            class="flex-shrink-0 text-gray-400 hover:text-red-500 transition cursor-pointer"
                             title="Limpiar"
                         >
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -339,9 +392,42 @@ const dayLabel = (day) => {
             </button>
         </div>
 
-        <!-- Instruction banner -->
+        <!-- Global Navigation -->
+        <div class="flex items-center justify-center gap-8 bg-white py-3 px-6 rounded-xl border border-gray-200 shadow-sm">
+            <button type="button" @click="prevMonth"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-[#1B396A] transition font-bold border border-gray-100 hover:border-[#1B396A] cursor-pointer">
+                <svg class="w-5 h-5 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"/>
+                </svg>
+                Anterior
+            </button>
+            <div class="h-6 w-px bg-gray-200"></div>
+            <button type="button" @click="nextMonth"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-[#1B396A] transition font-bold border border-gray-100 hover:border-[#1B396A] cursor-pointer">
+                Siguiente
+                <svg class="w-5 h-5 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Error / Warning message (Permanent) -->
+        <div v-if="errMessage" 
+            class="px-4 py-3 rounded-lg text-sm flex items-center gap-2 font-medium shadow-sm border border-red-200 bg-red-100 text-red-700">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span>{{ errMessage }}</span>
+            <button @click="errMessage = ''" class="ml-auto text-red-400 hover:text-red-700">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Instruction banner (Permanent while active) -->
         <div
-            v-if="activePhase"
+            v-if="activePhase && !dragStart"
             class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium"
             :style="{ background: phases.find(p => p.key === activePhase)?.colorLight, color: phases.find(p => p.key === activePhase)?.color }"
         >
@@ -352,98 +438,83 @@ const dayLabel = (day) => {
             <span>
                 Configurando: <strong>{{ phases.find(p => p.key === activePhase)?.label }}</strong> —
                 {{ phases.find(p => p.key === activePhase)?.endKey
-                    ? 'Arrastra para seleccionar un rango o haz clic en un día.'
-                    : 'Haz clic en el día de publicación.' }}
+                    ? 'Selecciona la fecha inicial y luego la final.'
+                    : 'Selecciona el día de publicación.' }}
             </span>
-            <button type="button" @click="activePhase = null" class="ml-auto text-current hover:opacity-60 transition">
+            <button type="button" @click="activePhase = null" class="ml-auto text-current hover:opacity-60 transition cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
             </button>
         </div>
 
-        <!-- Calendar -->
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <!-- Month navigation -->
-            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                <button
-                    type="button"
-                    @click="prevMonth"
-                    class="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition"
-                >
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                    </svg>
-                </button>
-                <h3 class="text-lg font-bold text-gray-900">
-                    {{ MONTHS_ES[viewMonth] }} {{ viewYear }}
-                </h3>
-                <button
-                    type="button"
-                    @click="nextMonth"
-                    class="p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition"
-                >
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                    </svg>
-                </button>
-            </div>
+        <!-- Multi-Month Calendar Grid -->
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div v-for="mInfo in visibleMonths" :key="`${mInfo.year}-${mInfo.month}`" 
+                class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+                
+                <!-- Month header -->
+                <div class="flex items-center justify-center px-6 py-4 border-b border-gray-100 bg-gray-50/30">
+                    <h3 class="text-base font-bold text-gray-800">{{ mInfo.label }}</h3>
+                </div>
 
-            <!-- Day headers -->
-            <div class="grid grid-cols-7 border-b border-gray-100">
-                <div
-                    v-for="d in DAYS_ES"
-                    :key="d"
-                    class="py-2 text-center text-xs font-semibold text-gray-500 uppercase"
-                >{{ d }}</div>
-            </div>
+                <!-- Day headers -->
+                <div class="grid grid-cols-7 border-b border-gray-100 bg-white">
+                    <div v-for="d in DAYS_ES" :key="d"
+                        class="py-2 text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest"
+                    >{{ d }}</div>
+                </div>
 
-            <!-- Day grid -->
-            <div
-                class="grid grid-cols-7 gap-1 p-3"
-                :class="activePhase ? 'cursor-crosshair' : 'cursor-default'"
-            >
-                <div
-                    v-for="(day, idx) in calendarDays"
-                    :key="idx"
-                    class="relative flex flex-col items-center justify-start pt-1 pb-1 min-h-[56px] rounded-lg transition-all duration-100"
-                    :class="[
-                        !day ? '' : (activePhase ? 'hover:ring-2 hover:ring-offset-1' : ''),
-                        day && sameDay(day, new Date()) && !phaseForDay(day) ? 'ring-1 ring-gray-400' : ''
-                    ]"
-                    :style="[
-                        dayStyle(day),
-                        activePhase && day ? { '--tw-ring-color': phases.find(p => p.key === activePhase)?.color } : {}
-                    ]"
-                    @mousedown.prevent="onMouseDown(day)"
-                    @mouseenter="onMouseEnter(day)"
-                    @click="onDayClick(day)"
-                >
-                    <!-- Day number -->
-                    <span
-                        v-if="day"
-                        class="text-sm font-semibold leading-none"
-                        :class="phaseForDay(day) || isInDragPreview(day) ? '' : 'text-gray-700'"
+                <!-- Day grid -->
+                <div class="grid grid-cols-7 gap-1 p-3 bg-white flex-1" :class="activePhase ? 'cursor-crosshair' : 'cursor-default'">
+                    <div
+                        v-for="(day, idx) in mInfo.days"
+                        :key="idx"
+                        class="relative flex flex-col items-center justify-start pt-1 pb-1 min-h-[56px] rounded-lg transition-all duration-100 group"
+                        :class="[
+                            !day ? 'invisible' : (activePhase ? 'hover:ring-2 hover:ring-offset-1' : ''),
+                            day && sameDay(day, new Date()) && !phaseForDay(day) ? 'ring-1 ring-gray-400' : ''
+                        ]"
+                        :style="[
+                            dayStyle(day),
+                            activePhase && day ? { '--tw-ring-color': phases.find(p => p.key === activePhase)?.color } : {}
+                        ]"
+                        @mouseenter="onMouseEnter(day)"
+                        @click="onDayClick(day)"
                     >
-                        {{ day.getDate() }}
-                    </span>
+                        <!-- Day number -->
+                        <span v-if="day" class="text-sm font-bold leading-none"
+                            :class="phaseForDay(day) || isInDragPreview(day) ? '' : 'text-gray-700'">
+                            {{ day.getDate() }}
+                        </span>
 
-                    <!-- Phase label badge -->
-                    <span
-                        v-if="day && dayLabel(day)"
-                        class="mt-1 text-[9px] font-bold leading-none tracking-wider opacity-90"
-                    >
-                        {{ dayLabel(day) }}
-                    </span>
+                        <!-- Phase label badge -->
+                        <span v-if="day && dayLabel(day)" class="mt-1 text-[8px] font-extrabold leading-none tracking-tighter opacity-90">
+                            {{ dayLabel(day) }}
+                        </span>
+
+                        <!-- Selection helper (dot on hover) -->
+                        <div v-if="activePhase && day && !phaseForDay(day) && !isInDragPreview(day)" 
+                             class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div class="w-2.5 h-2.5 rounded-full shadow-sm animate-bounce" 
+                                 :style="{ background: phases.find(p => p.key === activePhase)?.color }"></div>
+                        </div>
+
+                        <!-- Active Start Date indicator -->
+                        <div v-if="dragStart && sameDay(day, dragStart)" 
+                             class="absolute -bottom-1 left-1/2 -translate-x-1/2">
+                            <div class="w-1.5 h-1.5 rounded-full bg-white ring-3 ring-black/40"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Legend -->
-            <div class="flex flex-wrap items-center justify-center gap-4 px-6 py-3 border-t border-gray-100 bg-gray-50">
-                <div v-for="phase in phases" :key="phase.key" class="flex items-center gap-1.5">
-                    <div class="w-3 h-3 rounded" :style="{ background: phase.color }"></div>
-                    <span class="text-xs text-gray-600">{{ phase.label }}</span>
-                </div>
+        <!-- Legend -->
+        <div class="flex flex-wrap items-center justify-center gap-6 px-6 py-4 border border-gray-200 bg-gray-50 rounded-xl shadow-inner">
+            <div v-for="phase in phases" :key="phase.key" class="flex items-center gap-2">
+                <div class="w-4 h-4 rounded-md shadow-sm" :style="{ background: phase.color }"></div>
+                <span class="text-xs font-semibold text-gray-700">{{ phase.label }}</span>
             </div>
         </div>
 

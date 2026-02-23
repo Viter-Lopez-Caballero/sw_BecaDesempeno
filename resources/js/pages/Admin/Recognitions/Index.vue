@@ -6,6 +6,7 @@ import { ref, watch } from 'vue';
 import { debounce } from 'lodash';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
+import { mdiStar } from '@mdi/js';
 import { alertaExito, alertaError } from '@/utils/alerts.js';
 
 const props = defineProps({
@@ -87,8 +88,8 @@ const toggleReconocimiento = (userId, announcementId, currentStatus, application
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900">Reconocimientos</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="#1B396A">
-                            <path d="m233-120 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Z"/>
+                        <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
+                            <path :d="mdiStar"/>
                         </svg>
                         <span class="text-gray-900 font-semibold">Reconocimientos</span>
                     </div>
@@ -142,7 +143,7 @@ const toggleReconocimiento = (userId, announcementId, currentStatus, application
                     <table class="w-full text-sm text-left">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
-                                <th scope="col" class="px-6 py-4 tracking-wider">#</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">ID</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Evaluador</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">Convocatoria</th>
                                 <th scope="col" class="px-6 py-4 text-center tracking-wider">Acciones</th>

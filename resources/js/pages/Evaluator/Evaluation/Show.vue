@@ -1,8 +1,7 @@
-```vue
 <script setup>
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import EvaluatorLayout from '@/layouts/EvaluatorLayout.vue';
-import Swal from 'sweetalert2';
+import { alertaPregunta, alertaAdvertencia } from '@/utils/alerts.js';
 import { ref, computed } from 'vue';
 import RejectModal from './RejectModal.vue';
 import { 
@@ -101,20 +100,14 @@ const onRejectionSuccess = () => {
     // Alert handled by EvaluatorLayout via flash message
 };
 
-const submitEvaluation = (status) => {
+const submitEvaluation = async (status) => {
     // Validation: Ensure all rubric questions are answered
     if (props.rubric && props.rubric.questions) {
         const totalQuestions = props.rubric.questions.length;
         const answeredCount = Object.keys(form.answers).length;
         
         if (answeredCount < totalQuestions) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Rúbrica incompleta',
-                text: 'Debes evaluar todos los criterios de la rúbrica antes de finalizar.',
-                confirmButtonColor: '#1B396A',
-                confirmButtonText: 'Entendido'
-            });
+            alertaAdvertencia('Rúbrica incompleta', 'Debes evaluar todos los criterios de la rúbrica antes de finalizar.');
             return;
         }
     }
@@ -123,20 +116,13 @@ const submitEvaluation = (status) => {
     form.score = currentScore.value; // Ensure score is up to date
 
     if (status === 'approved') {
-        Swal.fire({
-            title: '¿Aceptar Solicitud?',
-            text: `La solicitud será aprobada con una puntuación de ${currentScore.value} puntos.`,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#1B396A',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Sí, Aceptar',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                form.put(route('evaluator.evaluation.update', props.evaluation.id));
-            }
-        });
+        const confirmed = await alertaPregunta(
+            '¿Aceptar Solicitud?',
+            `La solicitud será aprobada con una puntuación de ${currentScore.value} puntos.`
+        );
+        if (confirmed) {
+            form.put(route('evaluator.evaluation.update', props.evaluation.id));
+        }
     } else if (status === 'rejected') {
         rejectModalOpen.value = true;
     }
@@ -175,7 +161,7 @@ const isReadOnly = computed(() => props.evaluation.status !== 'pending');
                         <span class="text-gray-900 font-semibold">Evaluación</span>
                     </div>
                 </div>
-                 <Link :href="route('evaluator.dashboard')" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium bg-white">
+                 <Link :href="route('evaluator.dashboard')" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium bg-white cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
                     </svg>
@@ -379,7 +365,7 @@ const isReadOnly = computed(() => props.evaluation.status !== 'pending');
                             type="button" 
                             @click="submitEvaluation('rejected')"
                             :disabled="form.processing"
-                            class="w-full sm:w-auto px-4 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 uppercase tracking-wide"
+                            class="w-full sm:w-auto px-4 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 uppercase tracking-wide cursor-pointer"
                         > 
                             <svg viewBox="0 0 24 24" class="w-5 h-5" style="fill: currentColor"><path :d="mdiCloseCircle"/></svg>
                             Rechazar Solicitud
@@ -389,7 +375,7 @@ const isReadOnly = computed(() => props.evaluation.status !== 'pending');
                             type="button" 
                             @click="submitEvaluation('approved')"
                             :disabled="form.processing || !rubric"
-                            class="w-full sm:w-auto px-4 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#1B396A] hover:bg-[#152d47] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 uppercase tracking-wide"
+                            class="w-full sm:w-auto px-4 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#1B396A] hover:bg-[#152d47] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 uppercase tracking-wide cursor-pointer"
                         >
                             <svg viewBox="0 0 24 24" class="w-5 h-5" style="fill: currentColor"><path :d="mdiCheckCircle"/></svg>
                             Aceptar Solicitud

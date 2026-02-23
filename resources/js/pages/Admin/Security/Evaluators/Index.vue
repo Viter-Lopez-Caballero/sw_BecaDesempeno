@@ -101,12 +101,12 @@ const sortBy = (field) => {
 };
 
 const deleteUser = async (id, name) => {
-    const result = await alertaPregunta(
+    const confirmed = await alertaPregunta(
         '¿Eliminar evaluador?',
         `Se eliminará a ${name}`
     );
     
-    if (result.isConfirmed) {
+    if (confirmed) {
         router.delete(route('admin.evaluators.destroy', id), {
             preserveScroll: true,
             onSuccess: () => {

@@ -89,6 +89,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Application::class);
     }
 
+    public function evaluations(): HasMany
+    {
+        return $this->hasMany(Evaluation::class, 'evaluator_id');
+    }
+
     public function announcements(): BelongsToMany
     {
         return $this->belongsToMany(Announcement::class, 'announcement_user')
@@ -190,6 +195,6 @@ class User extends Authenticatable implements MustVerifyEmail
         ], false));
 
         \Illuminate\Support\Facades\Mail::to($this->email)
-            ->send(new \App\Mail\PasswordResetMail($resetUrl, $this->name));
+            ->queue(new \App\Mail\PasswordResetMail($resetUrl, $this->name));
     }
 }

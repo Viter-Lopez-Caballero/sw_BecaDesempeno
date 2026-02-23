@@ -95,18 +95,19 @@ const toggleActive = (rubric) => {
     });
 };
 
-const deleteItem = (id) => {
-    alertaPregunta(
+const deleteItem = async (id) => {
+    const confirmed = await alertaPregunta(
         '¿Estás seguro?',
-        'Esta acción no se puede deshacer',
-        () => {
-            router.delete(route('catalog.rubrics.destroy', id), {
-                preserveScroll: true,
-                onSuccess: () => alertaExito('¡Eliminado!', 'La rúbrica ha sido eliminada exitosamente'),
-                onError: () => alertaError('Error', 'No se pudo eliminar la rúbrica')
-            });
-        }
+        'Esta acción no se puede deshacer'
     );
+
+    if (confirmed) {
+        router.delete(route('catalog.rubrics.destroy', id), {
+            preserveScroll: true,
+            onSuccess: () => alertaExito('¡Eliminado!', 'La rúbrica ha sido eliminada exitosamente'),
+            onError: () => alertaError('Error', 'No se pudo eliminar la rúbrica')
+        });
+    }
 };
 </script>
 
@@ -133,7 +134,7 @@ const deleteItem = (id) => {
                         <span class="text-gray-900 font-semibold">Rúbricas</span>
                     </div>
                 </div>
-                <Link :href="route('catalog.rubrics.create')" class="w-full md:w-auto justify-center px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium">
+                <Link :href="route('catalog.rubrics.create')" class="w-full md:w-auto justify-center px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
                     </svg>
@@ -213,12 +214,12 @@ const deleteItem = (id) => {
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <Link :href="route('catalog.rubrics.edit', rubric.id)" class="p-2 text-[#1B396A] border border-[#1B396A] rounded-full hover:bg-[#1B396A] hover:text-white transition group" title="Editar">
+                                        <Link :href="route('catalog.rubrics.edit', rubric.id)" class="p-2 text-[#1B396A] border border-[#1B396A] rounded-full hover:bg-[#1B396A] hover:text-white transition group cursor-pointer" title="Editar">
                                             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                                                 <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/>
                                             </svg>
                                         </Link>
-                                        <button @click="deleteItem(rubric.id)" class="p-2 text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition group" title="Eliminar">
+                                        <button @click="deleteItem(rubric.id)" class="p-2 text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition group cursor-pointer" title="Eliminar">
                                             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                                                 <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
                                             </svg>

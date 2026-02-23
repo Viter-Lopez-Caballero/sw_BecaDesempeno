@@ -163,12 +163,8 @@ class UserController extends SecurityController
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\UsersTemplateExport, 'plantilla_usuarios.xlsx');
     }
     
-    public function import(Request $request) 
+    public function import(\App\Http\Requests\Security\ImportUsersRequest $request) 
     {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv',
-        ]);
-        
         // Obtener automáticamente el rol de Evaluador
         $evaluadorRole = Role::where('name', 'Evaluador')->first();
         

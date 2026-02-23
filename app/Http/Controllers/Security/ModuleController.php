@@ -81,7 +81,10 @@ class ModuleController extends SecurityController
      */
     public function store(StoreModuleRequest $request)
     {
-        Module::create($request->validated());
+        $data = $request->validated();
+        $data['user_id'] = $request->user()->id;
+        
+        Module::create($data);
         return redirect()->route("{$this->routeName}index")->with('success', 'Módulo creado con éxito!');
     }
 

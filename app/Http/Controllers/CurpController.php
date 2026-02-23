@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Services\CurpService;
+use App\Http\Requests\SearchCurpRequest;
+use App\Http\Requests\VerifyCurpCodeRequest;
+use App\Http\Requests\ResendCurpCodeRequest;
 use Illuminate\Http\Request;
 
 class CurpController extends Controller
@@ -18,16 +21,12 @@ class CurpController extends Controller
     /**
      * Busca datos por CURP
      */
-    public function search(Request $request)
+    public function search(SearchCurpRequest $request)
     {
         \Log::info('🔍 CurpController->buscar() llamado', [
             'curp' => $request->curp,
             'ip' => $request->ip(),
             'method' => $request->method()
-        ]);
-
-        $request->validate([
-            'curp' => 'required|string|size:18',
         ]);
 
         $datos = $this->curpService->buscarPorCurp($request->curp);
@@ -51,12 +50,8 @@ class CurpController extends Controller
     /**
      * Verifica el código de 6 dígitos
      */
-    public function verifyCode(Request $request)
+    public function verifyCode(VerifyCurpCodeRequest $request)
     {
-        $request->validate([
-            'code' => 'required|string|size:6',
-        ]);
-
         $user = User::where('email_verification_code', $request->code)
             ->where('email_verification_code_expires_at', '>', now())
             ->whereNull('email_verified_at')
@@ -78,7 +73,7 @@ class CurpController extends Controller
         \Illuminate\Support\Facades\Auth::loginUsingId($user->id, true);
         
         // Regenerar la sesión para seguridad
-        request()->session()->regenerate();
+        $request->session()->regenerate();
 
         // Redirigir según el rol
         $role = $user->getPrimaryRole();
@@ -98,7 +93,7 @@ class CurpController extends Controller
     /**
      * Reenviar código de verificación
      */
-    public function resendCode(Request $request)
+    public function resendCode(ResendCurpCodeRequest $request)
     {
         // Obtener email de la sesión o del request
         $email = $request->email ?? session('email');
@@ -131,7 +126,7 @@ class CurpController extends Controller
 
         // Reenviar correo
         try {
-            \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\VerificationCode($user, $verificationCode));
+            \Illuminate\Support\Facades\Mail::to($user->email)->queue(new \App\Mail\VerificationCode($user, $verificationCode));
         } catch (\Exception $e) {
             \Log::error('❌ Error al reenviar correo de verificación: ' . $e->getMessage());
             // No retornamos error al usuario para evitar bloqueos si el SMTP falla

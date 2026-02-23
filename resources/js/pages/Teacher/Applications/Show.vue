@@ -56,7 +56,7 @@ const getFileIcon = (type) => {
                         <span class="text-gray-900 font-semibold">Detalles de Solicitud</span>
                     </div>
                 </div>
-                 <Link :href="route('teacher.dashboard')" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium bg-white">
+                 <Link :href="route('teacher.dashboard')" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium bg-white cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
                     </svg>
@@ -192,7 +192,7 @@ const getFileIcon = (type) => {
                                     <button 
                                         v-if="doc.file_type === 'pdf'" 
                                         @click="togglePreview(doc.id)" 
-                                        class="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
+                                        class="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 cursor-pointer"
                                         :class="documentsState[doc.id]?.showPreview 
                                             ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
                                             : 'bg-white text-blue-600 border border-blue-200 hover:bg-blue-50'"

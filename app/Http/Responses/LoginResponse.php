@@ -45,7 +45,7 @@ class LoginResponse implements LoginResponseContract
                 // Reenviar correo de verificación
                 try {
                     \Illuminate\Support\Facades\Mail::to($user->email)
-                        ->send(new \App\Mail\VerificationCode($user, $verificationCode));
+                        ->queue(new \App\Mail\VerificationCode($user, $verificationCode));
                     Log::info('📧 Correo de verificación enviado a: ' . $user->email);
                     $message = 'Por favor verifica tu correo electrónico. Te hemos enviado un código de verificación.';
                 } catch (\Exception $e) {
@@ -74,9 +74,11 @@ class LoginResponse implements LoginResponseContract
             'Admin' => 'admin.dashboard',
             'Evaluador' => 'evaluator.dashboard',
             'Docente' => 'teacher.dashboard',
-            default => 'inicio',
+            default => 'dashboard.index',
         };
         
-        return redirect()->intended(route($redirectRoute));
+        // Usar redirect() directamente en lugar de intended() para evitar 
+        // problemas de sincronización de roles/permisos en la sesión
+        return redirect()->route($redirectRoute);
     }
 }

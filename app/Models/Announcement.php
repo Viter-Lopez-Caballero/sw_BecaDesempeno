@@ -91,4 +91,29 @@ class Announcement extends Model
     {
         return $query->orderBy($sortField, $sortDirection);
     }
+
+    /**
+     * Scope a query to exclude announcements the current user has already applied to.
+     */
+    public function scopeNotAppliedByCurrentUser($query)
+    {
+        $appliedAnnouncementIds = \App\Models\Application::forCurrentUser()->pluck('announcement_id');
+        return $query->whereNotIn('id', $appliedAnnouncementIds);
+    }
+
+    /**
+     * Scope a query to only include active announcements.
+     */
+    public function scopeActiva($query)
+    {
+        return $query->where('status', 'activa');
+    }
+
+    /**
+     * Scope a query to only include closed announcements.
+     */
+    public function scopeCerrada($query)
+    {
+        return $query->where('status', 'cerrada');
+    }
 }

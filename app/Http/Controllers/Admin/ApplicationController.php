@@ -7,13 +7,25 @@ use App\Http\Resources\ApplicationResource;
 use App\Models\Application;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Requests\RemoveEvaluatorRequest;
 use Illuminate\Support\Facades\DB;
 use App\Traits\Filterable;
 use Inertia\Inertia;
+use App\Services\NotificationService;
 
 class ApplicationController extends Controller
 {
     use Filterable;
+
+    protected \App\Services\AssignmentService $assignmentService;
+    protected NotificationService $notificationService;
+
+    public function __construct(\App\Services\AssignmentService $assignmentService, NotificationService $notificationService)
+    {
+        $this->assignmentService = $assignmentService;
+        $this->notificationService = $notificationService;
+    }
+
     /**
      * Display a listing of Requests for Admin (with evaluator assignment).
      */
@@ -21,15 +33,15 @@ class ApplicationController extends Controller
     {
         $filters = $this->getFiltersBase($request->query());
         $status = $request->input('status');
-        
+
         // Merge status into filters object for view
         $filters->status = $status;
 
         $query = \App\Models\Application::with([
-                'user.institution', 
-                'evaluations.evaluator', // Relationship rename? Check Application model
-                'announcement'
-            ])
+            'user.institution',
+            'evaluations.evaluator', // Relationship rename? Check Application model
+            'announcement'
+        ])
             ->buscarGlobal($filters->search)
             ->porEstatus($status)
             ->ordenado($filters->order, $filters->direction);
@@ -49,34 +61,12 @@ class ApplicationController extends Controller
     /**
      * Assign evaluators to a request.
      */
-    public function assignEvaluator(Request $request)
+    public function assignEvaluator(\App\Http\Requests\AssignEvaluatorRequest $request)
     {
-        $request->validate([
-            'application_id' => 'required|exists:applications,id',
-            'evaluator_ids' => 'required|array',
-            'evaluator_ids.*' => 'exists:users,id',
-        ]);
-
-        $applicationId = $request->application_id;
-        $evaluatorIds = $request->evaluator_ids;
-
-        DB::transaction(function () use ($applicationId, $evaluatorIds) {
-            foreach ($evaluatorIds as $userId) {
-                // Check if already assigned
-                $exists = \App\Models\Evaluation::where('application_id', $applicationId)
-                                    ->where('evaluator_id', $userId)
-                                    ->exists();
-                
-                if (!$exists) {
-                    \App\Models\Evaluation::create([
-                        'application_id' => $applicationId,
-                        'evaluator_id' => $userId,
-                        'status' => 'pending',
-                        'deadline_at' => \Carbon\Carbon::now()->addWeekdays(7),
-                    ]);
-                }
-            }
-        });
+        $this->assignmentService->assignEvaluators(
+            $request->application_id,
+            $request->evaluator_ids
+        );
 
         return to_route('admin.applications.index')->with('success', 'Evaluadores asignados correctamente.');
     }
@@ -84,16 +74,12 @@ class ApplicationController extends Controller
     /**
      * Remove an evaluator from a request.
      */
-    public function removeEvaluator(Request $request)
+    public function removeEvaluator(RemoveEvaluatorRequest $request)
     {
-        $request->validate([
-            'application_id' => 'required|exists:applications,id',
-            'evaluator_id' => 'required|exists:users,id',
-        ]);
-
-        \App\Models\Evaluation::where('application_id', $request->application_id)
-                  ->where('evaluator_id', $request->evaluator_id)
-                  ->delete();
+        $this->assignmentService->removeEvaluator(
+            $request->application_id,
+            $request->evaluator_id
+        );
 
         return back()->with('success', 'Evaluador removido.');
     }
@@ -101,10 +87,10 @@ class ApplicationController extends Controller
     public function assignView($id)
     {
         $application = \App\Models\Application::with([
-            'user.institution', 
-            'user.priorityArea', 
-            'user.subArea', 
-            'announcement', 
+            'user.institution',
+            'user.priorityArea',
+            'user.subArea',
+            'announcement',
             'evaluations.evaluator'
         ])
             ->findOrFail($id);
@@ -123,13 +109,13 @@ class ApplicationController extends Controller
     public function show($id)
     {
         $application = \App\Models\Application::with([
-                'user.institution', 
-                'user.priorityArea',
-                'user.subArea',
-                'evaluations.evaluator', 
-                'documents', 
-                'announcement'
-            ])
+            'user.institution',
+            'user.priorityArea',
+            'user.subArea',
+            'evaluations.evaluator',
+            'documents',
+            'announcement'
+        ])
             ->findOrFail($id);
 
         return Inertia::render('Admin/Applications/Show', [
@@ -140,20 +126,25 @@ class ApplicationController extends Controller
     /**
      * Submit Admin Verdict (Approve/Reject).
      */
-    public function verdict(Request $request, $id)
+    public function verdict(\App\Http\Requests\SubmitAdminVerdictRequest $request, $id)
     {
         $application = \App\Models\Application::findOrFail($id);
-        
-        $validated = $request->validate([
-            'status' => 'required|in:approved,rejected',
-            'comentario' => 'required_if:status,rejected|nullable|string|max:1000',
-        ]);
+
+        $validated = $request->validated();
 
         $application->status = $validated['status'];
         if ($validated['status'] === 'rejected') {
             $application->admin_comment = $validated['comentario'];
         }
         $application->save();
+
+        // Enviar notificación al docente
+        $this->notificationService->notifyApplicationVerdict(
+            $application->id,
+            $application->user_id,
+            $validated['status'],
+            $application->announcement->name // Use 'name' instead of 'title' as seen in model
+        );
 
         return to_route('admin.applications.show', $id)->with('success', 'Veredicto registrado correctamente.');
     }

@@ -10,9 +10,16 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 
 use App\Http\Resources\ApplicationResource;
+use App\Services\FileService;
 
 class DocumentController extends Controller
 {
+    protected FileService $fileService;
+
+    public function __construct(FileService $fileService)
+    {
+        $this->fileService = $fileService;
+    }
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -60,19 +67,11 @@ class DocumentController extends Controller
 
     public function download(\App\Models\Document $document) // Documento -> Document
     {
-        if (!Storage::disk('public')->exists($document->file_path)) {
-            return back()->with('error', 'El archivo no existe.');
-        }
-
-        return Storage::disk('public')->download($document->file_path, $document->name);
+        return $this->fileService->download($document->file_path, $document->name);
     }
 
     public function stream(\App\Models\Document $document)
     {
-        if (!Storage::disk('public')->exists($document->file_path)) {
-            return back()->with('error', 'El archivo no existe.');
-        }
-
-        return response()->file(Storage::disk('public')->path($document->file_path));
+        return $this->fileService->responseFile($document->file_path);
     }
 }

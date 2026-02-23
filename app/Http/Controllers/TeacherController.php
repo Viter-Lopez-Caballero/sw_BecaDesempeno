@@ -79,10 +79,12 @@ class TeacherController extends Controller
 
     public function convocatorias()
     {
-        // Fetch active announcements excluding those already applied to
+        // Fetch active announcements (including those already applied to)
+        $userId = auth()->id();
         $announcements = \App\Models\Announcement::activa()
-            ->notAppliedByCurrentUser()
-            ->with('calendar')
+            ->with(['calendar', 'applications' => function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            }])
             ->orderByDesc('created_at')
             ->get();
 

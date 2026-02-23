@@ -59,6 +59,9 @@ class PermissionSeeder extends Seeder
             ['name' => 'recognitions.create', 'description' => 'Create recognitions', 'module_key' => 'recognitions'],
             ['name' => 'recognitions.edit', 'description' => 'Edit recognitions', 'module_key' => 'recognitions'],
             ['name' => 'recognitions.toggle', 'description' => 'Toggle recognitions active status', 'module_key' => 'recognitions'],
+            
+            // Teacher Recognitions
+            ['name' => 'teacher.recognitions.index', 'description' => 'View my teacher recognitions', 'module_key' => 'recognitions'],
 
             // Catalog
             ['name' => 'catalog.index', 'description' => 'View catalog', 'module_key' => 'catalog'],
@@ -110,7 +113,7 @@ class PermissionSeeder extends Seeder
 
             // Teacher Specific
             ['name' => 'teacher.dashboard', 'description' => 'View teacher dashboard', 'module_key' => 'dashboard'],
-            ['name' => 'teacher.applications.show', 'description' => 'View teacher application details', 'module_key' => 'dashboard'],
+            ['name' => 'teacher.applications.show', 'description' => 'View teacher application details', 'module_key' => 'applications'],
 
             ['name' => 'evaluator.evaluations.index', 'description' => 'View my evaluations history', 'module_key' => 'evaluations'],
             ['name' => 'evaluator.evaluations.show', 'description' => 'View evaluation details in history', 'module_key' => 'evaluations'],
@@ -205,6 +208,9 @@ class PermissionSeeder extends Seeder
                 
                 // Documents
                 'teacher.applications.show',
+
+                // Teacher Recognitions
+                'teacher.recognitions.index',
             ])->get();
             $docente->syncPermissions($docentePermissions);
             $this->command->info("✅ {$docentePermissions->count()} permissions assigned to Docente.");

@@ -23,6 +23,11 @@ const page = usePage();
 const rejectModalOpen = ref(false);
 const processing = ref(false);
 const documentsState = ref({});
+const expandedComments = ref({});
+
+const toggleComment = (id) => {
+    expandedComments.value[id] = !expandedComments.value[id];
+};
 
 // Watch for flash messages
 watch(() => page.props.flash?.success, (successMessage) => {
@@ -300,18 +305,34 @@ const getFileIcon = (type) => {
                         <table class="w-full text-left">
                             <thead class="bg-[#1B396A] text-white">
                                 <tr>
-                                    <th class="px-6 py-3 text-xs uppercase font-semibold w-12 whitespace-nowrap">#</th>
+                                <th class="px-6 py-3 text-xs uppercase font-semibold w-12 whitespace-nowrap">#</th>
                                     <th class="px-6 py-3 text-xs uppercase font-semibold whitespace-nowrap">Nombre</th>
                                     <th class="px-6 py-3 text-xs uppercase font-semibold whitespace-nowrap">Comentarios</th>
                                     <th class="px-6 py-3 text-xs uppercase font-semibold text-right whitespace-nowrap">Estado</th>
+                                    <th class="px-6 py-3 text-xs uppercase font-semibold text-center whitespace-nowrap">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100">
                                 <tr v-for="(ev, index) in application.evaluations" :key="ev.id">
                                     <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{{ index + 1 }}</td>
                                     <td class="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">{{ ev.evaluator?.name }}</td>
-                                    <td class="px-6 py-4 text-sm">
-                                        <span v-if="ev.comment" class="text-gray-800">{{ ev.comment }}</span>
+                                    <td class="px-6 py-4 text-sm whitespace-normal break-words max-w-xs">
+                                        <div v-if="ev.comment" class="text-gray-800">
+                                            <span v-if="!expandedComments[ev.id] && ev.comment.length > 100">
+                                                {{ ev.comment.substring(0, 100) }}...
+                                                <br>
+                                                <button @click="toggleComment(ev.id)" class="text-[#1B396A] hover:text-[#152d47] font-semibold text-xs mt-1 cursor-pointer inline-flex items-center gap-1 focus:outline-none">
+                                                    Ver más
+                                                </button>
+                                            </span>
+                                            <span v-else>
+                                                {{ ev.comment }}
+                                                <br>
+                                                <button v-if="ev.comment.length > 100" @click="toggleComment(ev.id)" class="text-[#1B396A] hover:text-[#152d47] font-semibold text-xs mt-1 cursor-pointer inline-flex items-center gap-1 focus:outline-none">
+                                                    Ver menos
+                                                </button>
+                                            </span>
+                                        </div>
                                         <span v-else class="text-gray-400 italic">Sin comentarios</span>
                                     </td>
                                     <td class="px-6 py-4 text-right whitespace-nowrap">
@@ -327,9 +348,18 @@ const getFileIcon = (type) => {
                                             {{ getStatusLabel(ev.status) }}
                                         </span>
                                     </td>
+                                    <td class="px-6 py-4 text-center whitespace-nowrap">
+                                        <Link v-if="ev.status !== 'pending' && ev.status !== 'expired'" :href="route('admin.applications.evaluation.show', { application: application.id, evaluation: ev.id })" 
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-semibold transition"
+                                            title="Ver Respuestas de la Rúbrica"
+                                        >
+                                            <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path :d="mdiEye"/></svg>
+                                            Respuestas
+                                        </Link>
+                                    </td>
                                 </tr>
                                 <tr v-if="!application.evaluations || application.evaluations.length === 0">
-                                    <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-500 italic">
+                                    <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500 italic">
                                         No se han asignado evaluadores aún.
                                     </td>
                                 </tr>

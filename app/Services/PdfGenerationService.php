@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use setasign\Fpdi\Fpdi;
 use Carbon\Carbon;
 use Exception;
+use App\Models\Recognition;
 
 class PdfGenerationService
 {
@@ -134,9 +135,79 @@ class PdfGenerationService
     }
 
     /**
+     * Genera un certificado de reconocimiento para Docentes por su participación.
+     *
+     * @param Recognition $recognition
+     * @param \App\Models\User $user
+     * @return \Illuminate\Http\Response
+     * @throws Exception Si falla la carga de la plantilla.
+     */
+    public function generateTeacherRecognitionPdf(Recognition $recognition, $user)
+    {
+        // 1. Fetch Template
+        $template = Template::active()->type('recognition')->first();
+
+        // Si no hay plantilla, fallar o usar generador simple
+        if (!$template || !Storage::disk('public')->exists($template->file_path)) {
+            return $this->generateSimplePdf($recognition, $user, 'docente');
+        }
+
+        $templatePath = Storage::disk('public')->path($template->file_path);
+
+        // 2. Init FPDI
+        $pdf = new Fpdi('L', 'mm', 'A4'); // Landscape A4 is typical for certificates
+        $pdf->AddPage();
+
+        // 3. Set source file
+        try {
+            $pdf->setSourceFile($templatePath);
+        } catch (\Exception $e) {
+            throw new Exception("Error al procesar la plantilla PDF: " . $e->getMessage());
+        }
+
+        // Import page 1
+        $tplId = $pdf->importPage(1);
+
+        // Use the imported page and place it at point 0,0 with a width of 297mm (A4 Landscape)
+        $pdf->useTemplate($tplId, 0, 0, 297);
+
+        // --- Overlay Text Logic ---
+        // Fonts
+        $pdf->SetFont('Arial', 'B', 24);
+        $pdf->SetTextColor(0, 0, 0); // Black
+
+        // 1. Teacher Name (Centered)
+        $pdf->SetXY(0, 90); 
+        $pdf->Cell(297, 10, iconv('UTF-8', 'ISO-8859-1', $user->name), 0, 1, 'C');
+
+        // 2. Reason / Announcement Text (Centered below name)
+        $pdf->SetFont('Arial', '', 14);
+        $text = "Por su destacada participación en la convocatoria:";
+        $pdf->SetXY(0, 110);
+        $pdf->Cell(297, 10, iconv('UTF-8', 'ISO-8859-1', $text), 0, 1, 'C');
+
+        $pdf->SetFont('Arial', 'B', 16);
+        $pdf->SetXY(0, 120);
+        // Use announcement name
+        $announcementName = $recognition->announcement ? $recognition->announcement->name : 'Convocatoria General';
+        $pdf->Cell(297, 10, iconv('UTF-8', 'ISO-8859-1', $announcementName), 0, 1, 'C');
+
+        // 3. Date (Bottom Right or Centered)
+        $pdf->SetFont('Arial', 'I', 12);
+        $dateText = "Emitido el " . Carbon::parse($recognition->sent_at)->isoFormat('D [de] MMMM [de] YYYY');
+        $pdf->SetXY(0, 160);
+        $pdf->Cell(297, 10, iconv('UTF-8', 'ISO-8859-1', $dateText), 0, 1, 'C');
+
+        // Output PDF
+        return response($pdf->Output('S'), 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'inline; filename="Reconocimiento_Docente.pdf"');
+    }
+
+    /**
      * Generate a simple PDF without template
      */
-    private function generateSimplePdf($recognition, $user)
+    private function generateSimplePdf($recognition, $user, $type = 'evaluator')
     {
         // Require FPDF
         require_once(base_path('vendor/setasign/fpdf/fpdf.php'));

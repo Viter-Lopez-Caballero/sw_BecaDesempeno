@@ -104,6 +104,21 @@ const getFileIcon = (type) => {
                     </p>
                      <div v-else class="text-sm">
                          <p class="text-gray-600 mb-1">Evaluada el {{ new Date(application.updated_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) }}</p>
+                         <!-- Default Acceptance Message -->
+                         <div v-if="application.status === 'approved'" class="bg-green-50 p-4 rounded-md border border-green-200 mt-3 shadow-sm">
+                            <div class="flex items-start gap-3">
+                                <svg class="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <div>
+                                    <span class="font-bold text-green-800 block mb-1">¡Felicidades!</span>
+                                    <p class="text-green-800 text-sm leading-relaxed">
+                                        Tras la revisión de su expediente por parte del Comité Dictaminador, nos es grato informarle que su solicitud ha sido dictaminada exitosamente como <strong>APROBADA</strong> de acuerdo a las bases de la presente convocatoria. Agradecemos su destacada participación.
+                                    </p>
+                                </div>
+                            </div>
+                         </div>
+                         
                          <div v-if="application.status === 'rejected' && application.admin_comment" class="bg-gray-50 p-3 rounded-md border border-gray-100 mt-2">
                             <span class="font-bold text-gray-800 block mb-1">Motivo:</span>
                             <p class="text-gray-700">"{{ application.admin_comment }}"</p>

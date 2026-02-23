@@ -62,6 +62,14 @@ class Announcement extends Model
         return $this->hasOne(Calendar::class);
     }
 
+    /**
+     * Obtiene las solicitudes de esta convocatoria.
+     */
+    public function applications(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Application::class);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Scopes

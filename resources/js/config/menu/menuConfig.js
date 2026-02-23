@@ -160,6 +160,12 @@ export const menuConfigs = {
             permission: "announcements.index",
         },
         {
+            label: "Reconocimientos",
+            route: "teacher.recognitions.index",
+            icon: mdiStar,
+            permission: "teacher.recognitions.index",
+        },
+        {
             label: "Seguridad",
             icon: mdiSecurity,
             items: getSecurityItems("security."),

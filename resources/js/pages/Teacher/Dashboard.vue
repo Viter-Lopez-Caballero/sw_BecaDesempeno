@@ -60,7 +60,7 @@ onMounted(() => {
                 <div class="text-sm text-gray-500 mb-4">Buscar solicitudes</div>
                 <div class="flex flex-col md:flex-row gap-4 items-end">
                     <div class="relative w-full md:flex-1">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <div class="absolute bottom-0 left-0 pl-3 flex items-center pointer-events-none" style="height:45px">
                             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#1B396A">
                                 <path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/>
                             </svg>
@@ -69,7 +69,7 @@ onMounted(() => {
                             v-model="search" 
                             type="text" 
                             placeholder="Buscar por ID o convocatoria..."
-                            class="pl-10 w-full h-[45px] rounded-lg border border-gray-300 text-gray-700 focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition" 
+                            class="pl-10 w-full h-[45px] rounded-lg border border-gray-300 text-gray-700 focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition text-sm" 
                         />
                     </div>
                 </div>
@@ -137,3 +137,64 @@ onMounted(() => {
         </div>
     </TeacherLayout>
 </template>
+
+<style scoped>
+:deep(.vue-select-custom .vs__dropdown-toggle) {
+    background: linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%);
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    height: 45px;
+    overflow: hidden;
+}
+:deep(.vue-select-custom .vs__selected-options) {
+    flex-wrap: nowrap !important;
+    min-width: 0;
+    flex: 1;
+}
+:deep(.vue-select-custom .vs__selected) {
+    color: #374151;
+    font-weight: 500;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    margin: 0;
+}
+:deep(.vue-select-custom .vs__search) {
+    max-width: 10px;
+    margin: 0;
+}
+:deep(.vue-select-custom .vs__search::placeholder) {
+    color: #9ca3af;
+}
+:deep(.vue-select-custom .vs__dropdown-menu) {
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+:deep(.vue-select-custom .vs__dropdown-option) {
+    padding: 0.75rem 1rem;
+    color: #374151;
+}
+:deep(.vue-select-custom .vs__dropdown-option--highlight) {
+    background: #1B396A;
+    color: white;
+}
+:deep(.vue-select-custom .vs__clear),
+:deep(.vue-select-custom .vs__open-indicator) {
+    fill: #1B396A;
+    transition: transform 0.2s;
+}
+:deep(.vue-select-custom .vs__open-indicator) {
+    transform: scale(0.85);
+}
+:deep(.vue-select-custom .vs__actions) {
+    padding-right: 8px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+</style>

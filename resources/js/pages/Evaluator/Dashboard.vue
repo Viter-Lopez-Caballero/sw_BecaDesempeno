@@ -6,7 +6,12 @@ import { ref, watch } from 'vue';
 import { debounce } from 'lodash';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
-import { mdiHome } from '@mdi/js';
+import { 
+    mdiFileDocumentMultiple, 
+    mdiClockOutline, 
+    mdiCheckCircle,
+    mdiHome 
+} from '@mdi/js';
 
 const props = defineProps({
     stats: Object,
@@ -70,41 +75,41 @@ watch(search, (value) => {
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Total Asignadas -->
-                <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-600 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Asignadas</p>
-                        <p class="text-3xl font-bold text-gray-900 mt-1">{{ stats.total }}</p>
-                    </div>
-                    <div class="p-3 bg-blue-50 rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#2563EB">
-                            <path d="M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"/>
-                        </svg>
+                <div class="bg-white rounded-lg shadow-md border-l-4 border-[#1B396A] p-4 hover:shadow-lg transition-shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Total Asignadas</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ stats.total }}</p>
+                        </div>
+                        <div class="p-2">
+                             <svg viewBox="0 0 24 24" class="w-8 h-8 text-[#1B396A]" style="fill: currentColor"><path :d="mdiFileDocumentMultiple"/></svg>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Pendientes -->
-                <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Pendientes</p>
-                        <p class="text-3xl font-bold text-gray-900 mt-1">{{ stats.pendientes }}</p>
-                    </div>
-                    <div class="p-3 bg-yellow-50 rounded-full">
-                         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#EAB308">
-                            <path d="M160-200h80v-340h-80v340Zm240 0h80v-558h-80v558Zm240 0h80v-248h-80v248ZM107-56q-20.92 0-35.96-15.04Q56-86.08 56-107v-746q0-20.92 15.04-35.96Q86.08-904 107-904h746q20.92 0 35.96 15.04Q904-873.92 904-853v746q0 20.92-15.04 35.96Q873.92-56 853-56H107Zm0-80h746v-746H107v746Zm0-746v746-746Z"/>
-                        </svg>
+                <div class="bg-white rounded-lg shadow-md border-l-4 border-[#EAB308] p-4 hover:shadow-lg transition-shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Pendientes</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ stats.pendientes }}</p>
+                        </div>
+                        <div class="p-2">
+                             <svg viewBox="0 0 24 24" class="w-8 h-8 text-[#EAB308]" style="fill: currentColor"><path :d="mdiClockOutline"/></svg>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Evaluadas -->
-                <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-600 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Evaluadas</p>
-                        <p class="text-3xl font-bold text-gray-900 mt-1">{{ stats.evaluadas }}</p>
-                    </div>
-                    <div class="p-3 bg-green-50 rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#16A34A">
-                            <path d="M268-240 42-466l57-56 170 170 56 56-57 56Zm226 0L268-466l56-57 170 170 368-368 56 57-424 424Zm0-226-57-56 198-198 57 56-198 198Z"/>
-                        </svg>
+                <div class="bg-white rounded-lg shadow-md border-l-4 border-[#10B981] p-4 hover:shadow-lg transition-shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Evaluadas</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ stats.evaluadas }}</p>
+                        </div>
+                        <div class="p-2">
+                             <svg viewBox="0 0 24 24" class="w-8 h-8 text-[#10B981]" style="fill: currentColor"><path :d="mdiCheckCircle"/></svg>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -132,7 +137,7 @@ watch(search, (value) => {
                 
                 <div class="flex flex-col md:flex-row gap-4 items-end mb-6">
                     <div class="relative w-full md:flex-1">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <div class="absolute bottom-0 left-0 pl-3 flex items-center pointer-events-none" style="height:45px">
                             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#1B396A">
                                 <path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/>
                             </svg>
@@ -141,7 +146,7 @@ watch(search, (value) => {
                             v-model="search" 
                             type="text" 
                             placeholder="Buscar..." 
-                            class="pl-10 w-full h-[45px] rounded-lg border border-gray-300 text-gray-700 focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition"
+                            class="pl-10 w-full h-[45px] rounded-lg border border-gray-300 text-gray-700 focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition text-sm"
                         />
                     </div>
                     <div class="w-full md:w-52 flex-shrink-0">
@@ -231,11 +236,27 @@ watch(search, (value) => {
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
     padding: 0.5rem;
-    min-height: 42px;
+    height: 45px;
+    overflow: hidden;
+}
+:deep(.vue-select-custom .vs__selected-options) {
+    flex-wrap: nowrap !important;
+    min-width: 0;
+    flex: 1;
 }
 :deep(.vue-select-custom .vs__selected) {
     color: #374151;
     font-weight: 500;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    margin: 0;
+}
+:deep(.vue-select-custom .vs__search) {
+    max-width: 10px;
+    margin: 0;
 }
 :deep(.vue-select-custom .vs__search::placeholder) {
     color: #9ca3af;
@@ -253,11 +274,19 @@ watch(search, (value) => {
     background: #1B396A;
     color: white;
 }
+:deep(.vue-select-custom .vs__clear),
 :deep(.vue-select-custom .vs__open-indicator) {
     fill: #1B396A;
+    transition: transform 0.2s;
+}
+:deep(.vue-select-custom .vs__open-indicator) {
     transform: scale(0.85);
 }
 :deep(.vue-select-custom .vs__actions) {
-    padding-right: 4px;
+    padding-right: 8px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 </style>

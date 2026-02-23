@@ -107,11 +107,27 @@ const getProgressWidth = (count) => {
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
     padding: 0.5rem;
-    min-height: 42px;
+    height: 45px;
+    overflow: hidden;
+}
+:deep(.vue-select-custom .vs__selected-options) {
+    flex-wrap: nowrap !important;
+    min-width: 0;
+    flex: 1;
 }
 :deep(.vue-select-custom .vs__selected) {
     color: #374151;
     font-weight: 500;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    margin: 0;
+}
+:deep(.vue-select-custom .vs__search) {
+    max-width: 10px;
+    margin: 0;
 }
 :deep(.vue-select-custom .vs__search::placeholder) {
     color: #9ca3af;
@@ -129,12 +145,20 @@ const getProgressWidth = (count) => {
     background: #1B396A;
     color: white;
 }
+:deep(.vue-select-custom .vs__clear),
 :deep(.vue-select-custom .vs__open-indicator) {
     fill: #1B396A;
+    transition: transform 0.2s;
+}
+:deep(.vue-select-custom .vs__open-indicator) {
     transform: scale(0.85);
 }
 :deep(.vue-select-custom .vs__actions) {
-    padding-right: 4px;
+    padding-right: 8px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 </style>
 
@@ -159,61 +183,61 @@ const getProgressWidth = (count) => {
             <!-- Summary Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- Total Solicitudes -->
-                <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+                <div class="bg-white rounded-lg shadow-md border-l-4 border-[#1B396A] p-4 hover:shadow-lg transition-shadow">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm font-medium text-gray-500 mb-1">Total Solicitudes</p>
-                            <p class="text-3xl font-bold text-gray-900">{{ stats.total }}</p>
+                            <p class="text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Total Solicitudes</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ stats.total }}</p>
                         </div>
-                        <div class="p-3 bg-blue-50 rounded-full">
-                            <svg viewBox="0 0 24 24" class="w-8 h-8" style="fill: #1B396A;">
+                        <div class="p-2">
+                             <svg viewBox="0 0 24 24" class="w-8 h-8 text-[#1B396A]" style="fill: currentColor">
                                 <path :d="mdiFileDocumentMultiple"/>
-                            </svg>
+                             </svg>
                         </div>
                     </div>
                 </div>
 
                 <!-- Pendientes -->
-                <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+                <div class="bg-white rounded-lg shadow-md border-l-4 border-[#EAB308] p-4 hover:shadow-lg transition-shadow">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm font-medium text-gray-500 mb-1">Pendientes</p>
-                            <p class="text-3xl font-bold text-yellow-600">{{ stats.pending }}</p>
+                            <p class="text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Pendientes</p>
+                            <p class="text-2xl font-bold text-[#ca8a04]">{{ stats.pending }}</p>
                         </div>
-                        <div class="p-3 bg-yellow-50 rounded-full">
-                            <svg viewBox="0 0 24 24" class="w-8 h-8" style="fill: #ca8a04;">
+                        <div class="p-2">
+                             <svg viewBox="0 0 24 24" class="w-8 h-8 text-[#ca8a04]" style="fill: currentColor">
                                 <path :d="mdiClockOutline"/>
-                            </svg>
+                             </svg>
                         </div>
                     </div>
                 </div>
 
                 <!-- Aprobadas -->
-                <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+                <div class="bg-white rounded-lg shadow-md border-l-4 border-[#10B981] p-4 hover:shadow-lg transition-shadow">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm font-medium text-gray-500 mb-1">Aprobadas</p>
-                            <p class="text-3xl font-bold text-green-600">{{ stats.approved }}</p>
+                            <p class="text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Aprobadas</p>
+                            <p class="text-2xl font-bold text-[#16a34a]">{{ stats.approved }}</p>
                         </div>
-                        <div class="p-3 bg-green-50 rounded-full">
-                            <svg viewBox="0 0 24 24" class="w-8 h-8" style="fill: #16a34a;">
+                        <div class="p-2">
+                             <svg viewBox="0 0 24 24" class="w-8 h-8 text-[#16a34a]" style="fill: currentColor">
                                 <path :d="mdiCheckCircle"/>
-                            </svg>
+                             </svg>
                         </div>
                     </div>
                 </div>
 
                 <!-- Rechazadas -->
-                <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+                <div class="bg-white rounded-lg shadow-md border-l-4 border-[#EF4444] p-4 hover:shadow-lg transition-shadow">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-sm font-medium text-gray-500 mb-1">Rechazadas</p>
-                            <p class="text-3xl font-bold text-red-600">{{ stats.rejected }}</p>
+                            <p class="text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Rechazadas</p>
+                            <p class="text-2xl font-bold text-[#dc2626]">{{ stats.rejected }}</p>
                         </div>
-                        <div class="p-3 bg-red-50 rounded-full">
-                            <svg viewBox="0 0 24 24" class="w-8 h-8" style="fill: #dc2626;">
+                        <div class="p-2">
+                             <svg viewBox="0 0 24 24" class="w-8 h-8 text-[#dc2626]" style="fill: currentColor">
                                 <path :d="mdiCloseCircle"/>
-                            </svg>
+                             </svg>
                         </div>
                     </div>
                 </div>
@@ -287,7 +311,6 @@ const getProgressWidth = (count) => {
                 <div class="text-sm text-gray-500 mb-4">Buscar por nombre de campus o ID</div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-                    <!-- Búsqueda -->
                     <div class="relative">
                         <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Buscar</label>
                         <div class="absolute bottom-0 left-0 pl-3 flex items-center pointer-events-none" style="height:45px">
@@ -299,7 +322,7 @@ const getProgressWidth = (count) => {
                             v-model="search" 
                             type="text" 
                             placeholder="Buscar por ID, nombre, campus..." 
-                            class="pl-10 w-full h-[45px] rounded-lg border border-gray-300 text-gray-700 focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition"
+                            class="pl-10 w-full h-[45px] rounded-lg border border-gray-300 text-gray-700 focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition text-sm"
                         />
                     </div>
                     <!-- Estado -->

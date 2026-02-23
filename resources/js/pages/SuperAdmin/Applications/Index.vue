@@ -91,11 +91,27 @@ watch(search, (value) => {
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
     padding: 0.5rem;
-    min-height: 42px;
+    height: 45px;
+    overflow: hidden; /* Prevent content from ever leaving the box */
+}
+:deep(.vue-select-custom .vs__selected-options) {
+    flex-wrap: nowrap !important; /* Force single line */
+    min-width: 0; /* Critical for flex truncation */
+    flex: 1;
 }
 :deep(.vue-select-custom .vs__selected) {
     color: #374151;
     font-weight: 500;
+    max-width: 100%; /* Fill available space */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    margin: 0;
+}
+:deep(.vue-select-custom .vs__search) {
+    max-width: 10px;
+    margin: 0;
 }
 :deep(.vue-select-custom .vs__search::placeholder) {
     color: #9ca3af;
@@ -113,12 +129,20 @@ watch(search, (value) => {
     background: #1B396A;
     color: white;
 }
+:deep(.vue-select-custom .vs__clear),
 :deep(.vue-select-custom .vs__open-indicator) {
     fill: #1B396A;
+    transition: transform 0.2s;
+}
+:deep(.vue-select-custom .vs__open-indicator) {
     transform: scale(0.85);
 }
 :deep(.vue-select-custom .vs__actions) {
-    padding-right: 4px;
+    padding-right: 8px;
+    flex-shrink: 0; /* Protect icons from shrinking */
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 </style>
 

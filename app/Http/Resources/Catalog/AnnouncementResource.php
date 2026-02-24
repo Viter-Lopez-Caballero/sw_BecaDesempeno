@@ -32,6 +32,13 @@ class AnnouncementResource extends JsonResource
                 fn() => $this->calendar?->registration_end ?? null
             ),
             'created_at' => $this->created_at->toDateTimeString(),
+            'user_application' => $this->whenLoaded('applications', function () {
+                $application = $this->applications->first();
+                return $application ? [
+                    'id' => $application->id,
+                    'status' => $application->status,
+                ] : null;
+            }),
         ];
     }
 }

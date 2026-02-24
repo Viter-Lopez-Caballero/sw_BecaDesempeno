@@ -152,15 +152,28 @@ const getFase = (announcement) => {
 
                              <!-- Botón Solicitar / Estado -->
                              <div class="flex-1 w-full sm:w-auto">
-                                <div v-if="has_active_application" class="w-full text-center py-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 font-medium px-4">
+                                <!-- Estado 1: Ya aplicó a ESTA convocatoria -->
+                                <div v-if="announcement.user_application" class="w-full text-center py-3 bg-gray-100 border border-gray-200 rounded-lg text-gray-600 font-medium px-4 cursor-not-allowed">
                                     <span class="flex items-center justify-center gap-2">
+                                        <!-- Icono Check -->
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                                         </svg>
-                                        Solicitud en revisión
+                                        Beca solicitada
                                     </span>
                                 </div>
                                 
+                                <!-- Estado 2: Tiene revisión global pendiente (no puede aplicar a OTRAS) -->
+                                <div v-else-if="has_active_application" class="w-full text-center py-3 bg-gray-100 border border-gray-200 rounded-lg text-gray-500 font-medium px-4">
+                                    <span class="flex items-center justify-center gap-2 text-sm">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd" />
+                                        </svg>
+                                        Otra revisión en curso
+                                    </span>
+                                </div>
+                                
+                                <!-- Estado 3: Puede aplicar -->
                                 <Link 
                                     v-else-if="getFase(announcement).canRegister" 
                                     :href="route('teacher.announcements.apply', announcement.id)"

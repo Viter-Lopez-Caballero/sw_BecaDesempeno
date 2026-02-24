@@ -18,13 +18,13 @@
                 <textarea 
                     v-model="form.comment" 
                     class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" 
-                    rows="4" 
+                    rows="6" 
                     placeholder="Escribe una descripción..."
-                    maxlength="255"
+                    maxlength="855"
                     required
                 ></textarea>
                 <div class="text-right text-xs text-gray-400 mt-1">
-                    {{ form.comment.length }}/255
+                    {{ form.comment.length }}/855
                 </div>
                 <InputError :message="form.errors.comment" class="mt-2" />
             </div>

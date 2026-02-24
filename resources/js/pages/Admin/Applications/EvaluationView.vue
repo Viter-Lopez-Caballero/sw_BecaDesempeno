@@ -1,0 +1,169 @@
+<script setup>
+import { Head, Link } from '@inertiajs/vue3';
+import AdminLayout from '@/layouts/AdminLayout.vue';
+import { computed, ref } from 'vue';
+import { 
+    mdiFileDocumentMultiple, 
+    mdiChevronRight
+} from '@mdi/js';
+
+const props = defineProps({
+    evaluation: Object,
+    application: Object,
+    rubric: Object,
+    teacher: Object,
+});
+
+// Since it's read only, answers are derived from the evaluation dictionary
+const evaluateAnswers = computed(() => props.evaluation.answers || {});
+
+const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    });
+};
+
+const getStatusLabel = (status) => {
+    const labels = {
+        pending: 'Pendiente',
+        approved: 'Aprobada',
+        rejected: 'Rechazada',
+        expired: 'Expirada',
+    };
+    return labels[status] || status;
+};
+
+// Use the explicit score property of the evaluation
+const currentScore = computed(() => {
+    return Math.round(Number(props.evaluation.score) || 0);
+});
+</script>
+
+<template>
+    <AdminLayout>
+        <Head title="Respuestas del Evaluador" />
+
+        <div class="space-y-6">
+            <!-- Header with Breadcrumbs -->
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="w-full md:w-auto">
+                    <h1 class="text-3xl font-bold text-gray-900">Respuestas del Evaluador</h1>
+                    <div class="flex items-center gap-2 mt-2 text-sm">
+                        <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
+                            <path :d="mdiFileDocumentMultiple"/>
+                        </svg>
+                        <Link :href="route('admin.applications.index')" class="text-gray-700 font-medium hover:text-[#1B396A]">Solicitudes</Link>
+                         <svg viewBox="0 0 24 24" class="w-4 h-4 text-gray-400" style="fill: currentColor">
+                            <path :d="mdiChevronRight"/>
+                        </svg>
+                        <Link :href="route('admin.applications.show', application.id || application.data?.id)" class="text-gray-700 font-medium hover:text-[#1B396A]">Detalles</Link>
+                         <svg viewBox="0 0 24 24" class="w-4 h-4 text-gray-400" style="fill: currentColor">
+                            <path :d="mdiChevronRight"/>
+                        </svg>
+                        <span class="text-gray-900 font-semibold">Respuestas</span>
+                    </div>
+                </div>
+                <Link :href="route('admin.applications.show', application.id || application.data?.id)" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium bg-white cursor-pointer shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                        <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
+                    </svg>
+                    Regresar
+                </Link>
+            </div>
+
+            <div class="space-y-6 max-w-5xl mx-auto">
+                <!-- Info Header -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-100 pb-4 mb-6 gap-2">
+                        <h2 class="text-lg font-bold text-gray-900">Datos de la Evaluación</h2>
+                         <!-- Badge Status -->
+                        <span class="px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm self-start md:self-auto"
+                            :class="{
+                                'bg-gray-400': evaluation.status === 'pending',
+                                'bg-green-500': evaluation.status === 'approved',
+                                'bg-red-500': evaluation.status === 'rejected',
+                                'bg-gray-700': evaluation.status === 'expired',
+                            }">
+                            {{ getStatusLabel(evaluation.status) }}
+                        </span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Evaluador Asignado</h3>
+                            <p class="text-md font-medium text-gray-900">{{ evaluation.evaluator?.name || 'Sistema' }}</p>
+                        </div>
+                        <div>
+                            <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Docente</h3>
+                            <p class="text-md font-medium text-gray-900">{{ teacher?.name || 'Sin docente' }}</p>
+                        </div>
+                        <div>
+                            <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Instituto</h3>
+                            <p class="text-md font-medium text-gray-900">{{ teacher?.institution?.name || application.campus || application.data?.campus || 'N/A' }}</p>
+                        </div>
+                        <div v-if="evaluation.status === 'rejected' && evaluation.comment" class="md:col-span-3">
+                            <h3 class="text-xs uppercase text-red-600 font-bold mb-1">Motivo / Comentario del Evaluador:</h3>
+                            <p class="text-md text-red-800 bg-red-50 p-3 rounded border border-red-200 italic shadow-sm">"{{ evaluation.comment }}"</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content Grid -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="bg-[#1B396A] px-6 py-4 border-b border-gray-200 flex justify-between items-center text-white">
+                        <div>
+                            <h2 class="font-bold text-lg">Criterios Seleccionados</h2>
+                            <p class="text-blue-100 text-sm">Vista solo lectura de las calificaciones emitidas</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs opacity-80 uppercase tracking-widest">Puntuación Total</p>
+                            <p class="text-3xl font-bold">{{ currentScore }} <span class="text-lg font-normal">pts</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 space-y-8">
+                        <div v-if="!rubric" class="text-center py-8 text-gray-500">
+                            No hay rubric disponible.
+                        </div>
+
+                        <div v-else v-for="(question, qIndex) in rubric.questions" :key="question.id" class="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
+                            <div class="mb-3">
+                                <span class="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1 block">Criterio {{ qIndex + 1 }}</span>
+                                <h3 class="text-lg font-medium text-gray-900">{{ question.text }}</h3>
+                            </div>
+                            
+                            <div class="mt-3 space-y-3">
+                                <template v-for="option in question.options" :key="option.id">
+                                    <div v-if="evaluateAnswers[question.id]?.option_id == option.id" 
+                                        class="relative flex items-center p-4 rounded-lg border transition-all duration-200 border-blue-500 bg-blue-50 ring-1 ring-blue-500"
+                                    >
+                                        <div class="flex items-center h-5">
+                                            <svg class="h-5 w-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                            </svg>
+                                        </div>
+                                        <div class="ml-3 flex-1 flex justify-between items-center">
+                                            <span class="text-sm font-bold text-blue-900">
+                                                {{ option.text }}
+                                            </span>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
+                                                {{ Math.round(Number(option.score)) }} pts
+                                            </span>
+                                        </div>
+                                    </div>
+                                </template>
+                                <div v-if="!evaluateAnswers[question.id]" class="p-4 rounded-lg border border-red-200 bg-red-50 text-red-700 text-sm italic">
+                                    El evaluador no registró respuesta para este criterio.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </AdminLayout>
+</template>

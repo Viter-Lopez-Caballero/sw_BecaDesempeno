@@ -138,6 +138,16 @@ class ApplicationController extends Controller
         }
         $application->save();
 
+        if ($validated['status'] === 'approved') {
+            \App\Models\Recognition::firstOrCreate([
+                'user_id' => $application->user_id,
+                'announcement_id' => $application->announcement_id,
+            ], [
+                'active' => true,
+                'sent_at' => now(),
+            ]);
+        }
+
         // Enviar notificación al docente
         $this->notificationService->notifyApplicationVerdict(
             $application->id,
@@ -146,6 +156,36 @@ class ApplicationController extends Controller
             $application->announcement->name // Use 'name' instead of 'title' as seen in model
         );
 
-        return to_route('admin.applications.show', $id)->with('success', 'Veredicto registrado correctamente.');
+        return to_route('admin.applications.index')->with('success', 'Veredicto registrado correctamente.');
+    }
+
+    /**
+     * View a specific evaluation responses in Read-Only mode.
+     */
+    public function showEvaluation($application_id, $evaluation_id)
+    {
+        $application = \App\Models\Application::with([
+            'user.institution',
+            'user.priorityArea',
+            'user.subArea',
+            'announcement'
+        ])->findOrFail($application_id);
+
+        $evaluation = \App\Models\Evaluation::with('evaluator')
+            ->where('application_id', $application_id)
+            ->findOrFail($evaluation_id);
+
+        // Fetch active rubric
+        $rubric = \App\Models\Rubric::with(['questions.options'])
+            ->where('is_active', true)
+            ->first();
+
+        // Pass structured view similarly to Evaluator view but strictly read only
+        return Inertia::render('Admin/Applications/EvaluationView', [
+            'application' => (new ApplicationResource($application))->resolve(),
+            'evaluation' => $evaluation,
+            'rubric' => $rubric,
+            'teacher' => $application->user,
+        ]);
     }
 }

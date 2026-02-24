@@ -18,13 +18,13 @@
                 <textarea 
                     v-model="form.comentario" 
                     class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" 
-                    rows="4" 
+                    rows="6" 
                     placeholder="Escribe una descripción..."
-                    maxlength="255"
+                    maxlength="855"
                     required
                 ></textarea>
                 <div class="text-right text-xs text-gray-400 mt-1">
-                    {{ form.comentario.length }}/255
+                    {{ form.comentario.length }}/855
                 </div>
                 <InputError :message="form.errors.comentario" class="mt-2" />
             </div>
@@ -70,6 +70,7 @@ const form = useForm({
 watch(() => props.show, (val) => {
     if (val) {
         form.reset();
+        form.comentario = 'Estimado docente: Le informamos que tras revisar su expediente, su solicitud no cumple con los criterios y lineamientos establecidos en las bases vigentes de la presente convocatoria, por lo cual no ha sido aprobada. Agradecemos su participación.';
         form.clearErrors();
     }
 });

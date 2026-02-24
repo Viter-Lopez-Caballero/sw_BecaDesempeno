@@ -143,6 +143,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('announcements/{id}/apply', [TeacherController::class , 'solicitar'])->name('announcements.apply'); // solicitar
             Route::post('announcements/apply', [TeacherController::class , 'storeApplication'])->name('applications.store');
 
+            // Teacher Recognitions
+            Route::get('recognitions', [\App\Http\Controllers\Teacher\RecognitionController::class, 'index'])->name('recognitions.index');
+            Route::get('recognitions/{recognition}/download', [\App\Http\Controllers\Teacher\RecognitionController::class, 'download'])->name('recognitions.download');
+
             // Notifications API
             Route::get('notifications', [\App\Http\Controllers\NotificationController::class , 'index'])->name('notifications.index');
             Route::post('notifications/{id}/mark-as-read', [\App\Http\Controllers\NotificationController::class , 'markAsRead'])->name('notifications.mark-as-read');
@@ -191,6 +195,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('applications/evaluator', [ApplicationController::class , 'removeEvaluator'])->name('applications.remove-evaluator');
             Route::get('applications/{id}', [ApplicationController::class , 'show'])->name('applications.show');
             Route::post('applications/{id}/verdict', [ApplicationController::class , 'verdict'])->name('applications.verdict');
+            Route::get('applications/{application}/evaluations/{evaluation}', [ApplicationController::class , 'showEvaluation'])->name('applications.evaluation.show');
         }
         );
 

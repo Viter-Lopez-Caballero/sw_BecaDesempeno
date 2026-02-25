@@ -32,8 +32,8 @@ const getPreviewUrl = (doc) => {
     return route('catalog.documents.streamDocente', doc.id);
 };
 
-const getFileIcon = () => {
-    return 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z';
+const getFileIcon = (type) => {
+    return 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5-3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z'; 
 };
 </script>
 
@@ -43,8 +43,8 @@ const getFileIcon = () => {
 
         <div class="space-y-6">
             <!-- Header -->
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="w-full md:w-auto">
                     <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
@@ -54,7 +54,7 @@ const getFileIcon = () => {
                         <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
                             <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
                         </svg>
-                        <Link :href="route(`${routeName}index`, { tab: 'docentes' })" class="flex items-center gap-2 hover:underline">
+                        <Link :href="route(`${routeName}index`, { tab: 'docentes' })" class="flex items-center gap-2 hover:text-[#1B396A] transition">
                             <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
                                 <path :d="mdiFileDocumentMultiple"/>
                             </svg>
@@ -66,7 +66,7 @@ const getFileIcon = () => {
                         <span class="text-gray-900 font-semibold">Detalles</span>
                     </div>
                 </div>
-                <Link :href="route(`${routeName}index`, { tab: 'docentes' })" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium">
+                <Link :href="route(`${routeName}index`, { tab: 'docentes' })" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium bg-white cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
                     </svg>
@@ -75,112 +75,116 @@ const getFileIcon = () => {
             </div>
 
             <!-- Información del Profesor -->
-            <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1B396A">
-                        <path d="M234-276q51-39 114-61.5T480-360q69 0 132 22.5T726-276q35-41 54.5-93T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 59 19.5 111t54.5 93Zm246-164q-59 0-99.5-40.5T340-580q0-59 40.5-99.5T480-720q59 0 99.5 40.5T620-580q0 59-40.5 99.5T480-440Zm0 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"/>
-                    </svg>
-                    Información del Profesor
-                </h2>
+            <div class="bg-white overflow-hidden shadow-md rounded-lg border border-gray-200 p-8">
+                <div class="flex justify-between items-start mb-8 relative">
+                    <h3 class="text-xl font-bold text-gray-900">Información del Profesor</h3>
+                </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-y-8 gap-x-12 mb-10">
                     <div>
-                        <label class="block text-sm font-medium text-gray-500 mb-1">Profesor</label>
-                        <p class="text-base font-semibold text-gray-900">{{ application.teacher?.name || 'N/A' }}</p>
+                        <p class="text-sm font-medium text-gray-600 mb-1">Profesor</p>
+                        <p class="text-gray-900 font-medium text-base">{{ application.teacher?.name || 'N/A' }}</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-500 mb-1">Correo Electrónico</label>
-                        <p class="text-base text-gray-700">{{ application.teacher?.email || 'N/A' }}</p>
+                        <p class="text-sm font-medium text-gray-600 mb-1">Correo Electrónico</p>
+                        <p class="text-gray-900 font-medium text-base">{{ application.teacher?.email || 'N/A' }}</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-500 mb-1">Área</label>
-                        <p class="text-base text-gray-700">{{ application.teacher?.department || 'N/A' }}</p>
+                        <p class="text-sm font-medium text-gray-600 mb-1">Área</p>
+                        <p class="text-gray-900 font-medium text-base leading-snug">{{ application.teacher?.department || 'N/A' }}</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-500 mb-1">Subárea</label>
-                        <p class="text-base text-gray-700">{{ application.teacher?.sub_area || 'N/A' }}</p>
+                        <p class="text-sm font-medium text-gray-600 mb-1">Subárea</p>
+                        <p class="text-gray-900 font-medium text-base">{{ application.teacher?.sub_area || 'N/A' }}</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-500 mb-1">Institución</label>
-                        <p class="text-base text-gray-700">{{ application.campus || 'N/A' }}</p>
+                        <p class="text-sm font-medium text-gray-600 mb-1">Institución</p>
+                        <p class="text-gray-900 font-medium text-base leading-snug">{{ application.campus || 'N/A' }}</p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-500 mb-1">Estado</label>
-                        <p class="text-base text-gray-700">{{ application.teacher?.state || 'N/A' }}</p>
+                        <p class="text-sm font-medium text-gray-600 mb-1">Estado</p>
+                        <p class="text-gray-900 font-medium text-base">{{ application.teacher?.state || 'N/A' }}</p>
                     </div>
-                    <div v-if="application.announcement" class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-500 mb-1">Convocatoria</label>
-                        <p class="text-base text-gray-700">{{ application.announcement.name }}</p>
+                    <div v-if="application.announcement" class="md:col-span-3">
+                        <p class="text-sm font-medium text-gray-600 mb-1">Convocatoria</p>
+                        <p class="text-gray-900 font-medium text-base leading-snug">{{ application.announcement.name }}</p>
                     </div>
                 </div>
-            </div>
 
-            <!-- Documentación -->
-            <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1B396A">
-                        <path d="M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520Z"/>
-                    </svg>
-                    Documentación
-                </h2>
-
-                <div class="grid grid-cols-1 gap-4">
-                    <div v-if="!application.documents || application.documents.length === 0"
-                        class="text-gray-500 italic text-center py-8 bg-gray-50 rounded-lg">
-                        No hay documentos cargados.
-                    </div>
-
-                    <div v-for="doc in application.documents" :key="doc.id"
-                        class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition"
-                        :class="{ 'bg-blue-50/30': documentsState[doc.id]?.showPreview }">
-
-                        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                            <!-- Nombre del documento -->
-                            <div class="flex items-center gap-4 w-full sm:w-auto min-w-0">
-                                <div class="text-gray-700 flex-shrink-0 bg-gray-100 p-2 rounded-full">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                                        <path stroke-linecap="round" stroke-linejoin="round" :d="getFileIcon()" />
-                                    </svg>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <span class="font-medium text-gray-900 truncate block" :title="doc.name">{{ doc.name }}</span>
-                                    <span class="text-xs text-gray-500 uppercase">{{ doc.file_type }}</span>
-                                </div>
-                            </div>
-
-                            <!-- Acciones -->
-                            <div class="flex items-center gap-3 w-full sm:w-auto justify-end flex-shrink-0">
-                                <button
-                                    v-if="doc.file_type === 'pdf'"
-                                    @click="togglePreview(doc.id)"
-                                    class="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
-                                    :class="documentsState[doc.id]?.showPreview
-                                        ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                                        : 'bg-white text-blue-600 border border-blue-200 hover:bg-blue-50'"
-                                >
-                                    <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor">
-                                        <path :d="documentsState[doc.id]?.showPreview ? mdiEyeOff : mdiEye"/>
-                                    </svg>
-                                    {{ documentsState[doc.id]?.showPreview ? 'Ocultar' : 'Ver' }}
-                                </button>
-
-                                <a :href="route('catalog.documents.downloadDocente', doc.id)"
-                                    class="flex items-center justify-center gap-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 px-3 py-1.5 rounded-md transition text-sm font-medium border border-gray-200 bg-white"
-                                    title="Descargar archivo"
-                                >
-                                    <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path :d="mdiDownload"/></svg>
-                                    Descargar
-                                </a>
-                            </div>
+                <!-- Documentación -->
+                <div class="border-t border-gray-200 pt-8">
+                    <h3 class="text-lg font-bold text-gray-900 mb-6">Documentación</h3>
+                    
+                    <div class="grid grid-cols-1 gap-4">
+                        <div v-if="!application.documents || application.documents.length === 0" 
+                            class="text-gray-500 italic py-8 bg-gray-50 rounded-lg text-center font-medium">
+                            No hay documentos cargados.
                         </div>
 
-                        <!-- Inline Preview -->
-                        <div v-if="documentsState[doc.id]?.showPreview" class="mt-4 pt-4 border-t border-gray-200 w-full animate-fadeIn">
-                            <div class="w-full h-[600px] bg-gray-100 rounded-lg overflow-hidden border border-gray-300 relative">
-                                <div class="absolute inset-0 flex items-center justify-center text-gray-400">
-                                    Cargando vista previa...
+                        <div v-for="doc in application.documents" :key="doc.id" 
+                            class="border border-gray-200 rounded-xl p-5 hover:bg-gray-50 transition shadow-sm"
+                            :class="{ 'bg-blue-50/50 ring-1 ring-[#1B396A]/10': documentsState[doc.id]?.showPreview }">
+                            
+                            <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
+                                <div class="flex items-center gap-4 w-full sm:w-auto min-w-0">
+                                    <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-gray-100 rounded-xl text-[#1B396A]"
+                                         :class="{ 'bg-blue-100': documentsState[doc.id]?.showPreview }">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" :d="getFileIcon(doc.file_type)" />
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <span class="font-bold text-gray-900 block text-base md:text-lg truncate" :title="doc.name">{{ doc.name }}</span>
+                                        <p class="text-xs text-gray-500 font-medium uppercase tracking-wider mt-0.5">{{ doc.file_type === 'pdf' ? 'Documento PDF' : 'Archivo' }}</p>
+                                    </div>
                                 </div>
-                                <iframe :src="getPreviewUrl(doc)" class="w-full h-full relative z-10" frameborder="0"></iframe>
+                                
+                                <div class="flex items-center gap-2 w-full sm:w-auto justify-end flex-shrink-0">
+                                    <button 
+                                        v-if="doc.file_type === 'pdf'" 
+                                        @click="togglePreview(doc.id)" 
+                                        class="inline-flex items-center justify-center gap-2 px-4 py-2 border rounded-lg font-bold transition cursor-pointer text-xs uppercase whitespace-nowrap shadow-sm"
+                                        :class="documentsState[doc.id]?.showPreview 
+                                            ? 'bg-[#1B396A] text-white border-[#1B396A]' 
+                                            : 'text-[#1B396A] border-[#1B396A] hover:bg-[#1B396A] hover:text-white'"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
+                                            <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z"/>
+                                        </svg>
+                                        {{ documentsState[doc.id]?.showPreview ? 'Ocultar' : 'Visualizar' }}
+                                    </button>
+
+                                </div>
+                            </div>
+
+                            <!-- Inline Preview -->
+                            <div v-if="documentsState[doc.id]?.showPreview" class="mt-6 pt-6 border-t border-gray-200 w-full animate-fadeIn">
+                                <div class="flex flex-col gap-4">
+                                    <div class="flex justify-between items-center">
+                                        <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
+                                            <svg viewBox="0 0 24 24" class="w-5 h-5 flex-shrink-0" style="fill: #1B396A;">
+                                                <path :d="mdiFileDocumentMultiple"/>
+                                            </svg>
+                                            Vista Previa: {{ doc.name }}
+                                        </h3>
+                                        <button @click="togglePreview(doc.id)" class="text-gray-400 hover:text-gray-600 p-1.5 hover:bg-gray-100 rounded-lg transition cursor-pointer" title="Cerrar vista previa">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="w-full h-[600px] border border-gray-300 rounded-xl overflow-hidden bg-white shadow-inner relative">
+                                        <div class="absolute inset-0 flex items-center justify-center text-gray-400 z-0 text-center">
+                                            <div class="flex flex-col items-center gap-2">
+                                                <svg class="w-10 h-10 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                </svg>
+                                                <span>Cargando vista previa...</span>
+                                            </div>
+                                        </div>
+                                        <iframe :src="getPreviewUrl(doc)" class="w-full h-full relative z-10" frameborder="0"></iframe>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

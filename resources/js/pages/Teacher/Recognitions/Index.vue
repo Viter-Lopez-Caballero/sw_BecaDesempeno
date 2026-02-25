@@ -82,7 +82,7 @@ watch(search, (value) => {
 
         <div class="space-y-6">
             <!-- Header -->
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900">Mis Reconocimientos</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
@@ -147,7 +147,7 @@ watch(search, (value) => {
                     <table class="w-full text-sm text-left">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
-                                <th scope="col" class="px-6 py-4 tracking-wider w-16 text-center">ID</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">ID</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">
                                     <div @click="sortBy('announcement')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
                                         Convocatoria
@@ -169,16 +169,13 @@ watch(search, (value) => {
                         </thead>
                         <tbody class="divide-y divide-gray-200">
                             <tr v-if="recognitions.data.length === 0">
-                                <td colspan="4" class="px-6 py-12 text-center text-gray-500">
-                                    <div class="flex flex-col items-center justify-center">
-                                        <svg viewBox="0 0 24 24" class="h-12 w-12 text-gray-300 mb-3" style="fill: currentColor"><path :d="mdiStar"/></svg>
-                                        <p>Aún no tienes reconocimientos aprobados.</p>
-                                    </div>
+                                <td colspan="4" class="px-6 py-12 text-center text-gray-500 font-medium">
+                                    No se encontraron registros
                                 </td>
                             </tr>
                             <template v-for="(item, index) in recognitions.data" :key="item.id">
                                 <tr class="hover:bg-gray-50 transition-colors" :class="{'bg-blue-50': expandedRows[item.id]}">
-                                    <td class="px-6 py-4 text-center font-bold text-gray-700">
+                                    <td class="px-6 py-4 font-medium text-gray-900">
                                         {{ (recognitions.current_page - 1) * recognitions.per_page + index + 1 }}
                                     </td>
                                     <td class="px-6 py-4 font-medium text-gray-900">
@@ -241,35 +238,55 @@ watch(search, (value) => {
     background: linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%);
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
-    padding: 0.5rem;
-    min-height: 42px;
+    padding: 0 4px;
+    height: 45px;
+    display: flex;
+    align-items: center;
 }
+
+:deep(.vue-select-custom .vs__selected-options) {
+    flex-wrap: nowrap !important;
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+}
+
 :deep(.vue-select-custom .vs__selected) {
     color: #374151;
     font-weight: 500;
 }
+
 :deep(.vue-select-custom .vs__search::placeholder) {
     color: #9ca3af;
 }
+
 :deep(.vue-select-custom .vs__dropdown-menu) {
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
+
 :deep(.vue-select-custom .vs__dropdown-option) {
     padding: 0.75rem 1rem;
     color: #374151;
 }
+
 :deep(.vue-select-custom .vs__dropdown-option--highlight) {
     background: #1B396A;
     color: white;
 }
-:deep(.vue-select-custom .vs__open-indicator) {
-    fill: #1B396A;
-    transform: scale(0.85);
-}
+
 :deep(.vue-select-custom .vs__actions) {
     padding-right: 4px;
+    display: flex;
+    align-items: center;
+}
+
+:deep(.vue-select-custom .vs__open-indicator) {
+    fill: #1B396A;
+    transform: scale(0.8);
 }
 
 .animate-fadeIn {

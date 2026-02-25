@@ -99,7 +99,7 @@ const submit = () => {
     form.put(route('evaluator.evaluation.update', props.evaluationId), {
         onSuccess: () => {
             cerrarAlerta();
-            alertaExito('Rechazada', 'La solicitud fue rechazada correctamente.');
+            alertaExito('Evaluación', 'Solicitud evaluada exitosamente.');
             emit('success');
             close();
         },

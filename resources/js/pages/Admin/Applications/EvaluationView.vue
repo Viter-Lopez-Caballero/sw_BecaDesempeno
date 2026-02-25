@@ -105,6 +105,10 @@ const currentScore = computed(() => {
                             <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Instituto</h3>
                             <p class="text-md font-medium text-gray-900">{{ teacher?.institution?.name || application.campus || application.data?.campus || 'N/A' }}</p>
                         </div>
+                        <div>
+                            <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Tipo de Plaza</h3>
+                            <p class="text-md font-medium text-gray-900">{{ application.position_full_type || application.data?.position_full_type || 'No especificado' }}</p>
+                        </div>
                         <div v-if="evaluation.status === 'rejected' && evaluation.comment" class="md:col-span-3">
                             <h3 class="text-xs uppercase text-red-600 font-bold mb-1">Motivo / Comentario del Evaluador:</h3>
                             <p class="text-md text-red-800 bg-red-50 p-3 rounded border border-red-200 italic shadow-sm">"{{ evaluation.comment }}"</p>

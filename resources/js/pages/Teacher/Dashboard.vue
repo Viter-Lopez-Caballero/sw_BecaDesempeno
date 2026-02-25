@@ -202,8 +202,8 @@ onMounted(() => {
                                             Aceptada
                                         </span>
                                         <span v-else-if="application.status === 'rejected'"
-                                            class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-white text-[13px] font-bold text-red-700 shadow-sm whitespace-nowrap">
-                                            <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                                            class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-white text-[13px] font-bold text-gray-700 shadow-sm whitespace-nowrap">
+                                            <span class="w-2.5 h-2.5 rounded-full bg-gray-500"></span>
                                             No Aprobada
                                         </span>
                                         <span v-else-if="application.status === 'pending'"

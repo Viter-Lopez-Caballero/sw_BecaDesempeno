@@ -21,7 +21,7 @@ class StoreApplicationRequest extends FormRequest
     {
         return [
             'announcement_id' => 'required|exists:announcements,id',
-            'position_type' => 'required|string|max:255',
+            'position_type_id' => 'required|exists:position_types,id',
             'files' => 'nullable|array',
             'files.*' => 'file|mimes:pdf|max:10240', // 10MB max
             'file_types' => 'nullable|array',
@@ -37,7 +37,8 @@ class StoreApplicationRequest extends FormRequest
         return [
             'announcement_id.required' => 'La convocatoria es obligatoria.',
             'announcement_id.exists' => 'La convocatoria seleccionada no es válida.',
-            'position_type.required' => 'El tipo de plaza es obligatorio.',
+            'position_type_id.required' => 'El tipo de plaza es obligatorio.',
+            'position_type_id.exists' => 'El tipo de plaza seleccionado no es válido.',
             'files.*.mimes' => 'Los archivos deben ser en formato PDF.',
             'files.*.max' => 'Los archivos no deben superar los 10MB.',
         ];

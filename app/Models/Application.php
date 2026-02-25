@@ -19,10 +19,17 @@ class Application extends Model
         'announcement_id',
         'status',
         'admin_comment',
-        'position_type',
+        'position_type_id',
     ];
 
+    protected $appends = ['position_full_type'];
+
     // Relaciones
+
+    public function positionType(): BelongsTo
+    {
+        return $this->belongsTo(PositionType::class);
+    }
 
     public function user(): BelongsTo
     {
@@ -42,6 +49,14 @@ class Application extends Model
     public function evaluations(): HasMany
     {
         return $this->hasMany(Evaluation::class);
+    }
+
+    public function getPositionFullTypeAttribute(): ?string
+    {
+        if ($this->positionType) {
+            return "{$this->positionType->code} - {$this->positionType->name}";
+        }
+        return null;
     }
 
     /*

@@ -53,7 +53,7 @@ class ApplicationService
     public function createApplication(
         int $userId,
         int $announcementId,
-        string $positionType,
+        int $positionTypeId,
         ?array $uploadedFiles,
         ?array $fileTypes,
         ?array $reusedDocuments
@@ -92,7 +92,7 @@ class ApplicationService
         return DB::transaction(function () use (
             $userId,
             $announcementId,
-            $positionType,
+            $positionTypeId,
             $uploadedFiles,
             $fileTypes,
             $reusedDocuments
@@ -101,7 +101,7 @@ class ApplicationService
                 'user_id' => $userId,
                 'announcement_id' => $announcementId,
                 'status' => 'pending',
-                'position_type' => $positionType,
+                'position_type_id' => $positionTypeId,
             ]);
 
             // Guardar nuevos archivos subidos

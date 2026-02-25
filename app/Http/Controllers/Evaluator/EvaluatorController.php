@@ -78,7 +78,8 @@ class EvaluatorController extends Controller
                 'application.user.subArea',
                 'application.user.priorityArea',
                 'application.user.institution',
-                'application.documents'
+                'application.documents',
+                'application.positionType'
             ])
             ->firstOrFail();
 
@@ -89,7 +90,7 @@ class EvaluatorController extends Controller
 
         // Ensure all relationships are loaded
         $application = $evaluation->application;
-        $application->load(['announcement', 'documents', 'user.institution', 'user.priorityArea', 'user.subArea']);
+        $application->load(['announcement', 'documents', 'user.institution', 'user.priorityArea', 'user.subArea', 'positionType']);
 
         return Inertia::render('Evaluator/Evaluation/Show', [
             'evaluation' => $evaluation,
@@ -113,7 +114,7 @@ class EvaluatorController extends Controller
             'comment' => $request->comment,
         ]);
 
-        return redirect()->route('evaluator.dashboard')->with('success', 'Solicitud evaluada correctamente.');
+        return redirect()->route('evaluator.dashboard')->with('success', 'Solicitud evaluada exitosamente.');
     }
 
     public function streamDocument($id)
@@ -220,7 +221,8 @@ class EvaluatorController extends Controller
                 'application.user.subArea',
                 'application.user.priorityArea',
                 'application.user.institution',
-                'application.documents'
+                'application.documents',
+                'application.positionType'
             ])
             ->firstOrFail();
 
@@ -229,7 +231,7 @@ class EvaluatorController extends Controller
             ->first();
 
         $application = $evaluation->application;
-        $application->load(['announcement', 'documents', 'user.institution', 'user.priorityArea', 'user.subArea']);
+        $application->load(['announcement', 'documents', 'user.institution', 'user.priorityArea', 'user.subArea', 'positionType']);
 
         return Inertia::render('Evaluator/Evaluations/Show', [
             'evaluation' => $evaluation,

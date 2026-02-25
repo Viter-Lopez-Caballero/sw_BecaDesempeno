@@ -21,7 +21,7 @@ class TeacherController extends Controller
     public function inicio(Request $request)
     {
         $query = \App\Models\Application::forCurrentUser()
-            ->with(['announcement'])
+            ->with(['announcement', 'positionType'])
             ->leftJoin('announcements', 'applications.announcement_id', '=', 'announcements.id')
             ->select('applications.*', 'announcements.name as announcement_name');
 
@@ -66,7 +66,7 @@ class TeacherController extends Controller
     public function show($id)
     {
         $application = \App\Models\Application::forCurrentUser()
-            ->with(['announcement', 'documents', 'user.institution.state', 'user.priorityArea', 'user.subArea'])
+            ->with(['announcement', 'documents', 'user.institution.state', 'user.priorityArea', 'user.subArea', 'positionType'])
             ->findOrFail($id);
 
         return Inertia::render('Teacher/Applications/Show', [
@@ -150,6 +150,7 @@ class TeacherController extends Controller
             'announcement' => (new \App\Http\Resources\Catalog\AnnouncementResource($announcement))->resolve(),
             'catalog_documents' => \App\Http\Resources\Catalog\DocumentResource::collection($documents)->resolve(),
             'previous_documents' => $previousDocuments,
+            'position_types' => \App\Models\PositionType::all(['id', 'code', 'name']),
         ]);
     }
 
@@ -159,7 +160,7 @@ class TeacherController extends Controller
             $this->applicationService->createApplication(
                 auth()->id(),
                 $request->announcement_id,
-                $request->position_type,
+                $request->position_type_id,
                 $request->file('files'),
                 $request->file_types,
                 $request->reused_documents

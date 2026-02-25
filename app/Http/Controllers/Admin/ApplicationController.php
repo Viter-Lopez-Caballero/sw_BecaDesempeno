@@ -39,8 +39,9 @@ class ApplicationController extends Controller
 
         $query = \App\Models\Application::with([
             'user.institution',
-            'evaluations.evaluator', // Relationship rename? Check Application model
-            'announcement'
+            'evaluations.evaluator', 
+            'announcement',
+            'positionType'
         ])
             ->buscarGlobal($filters->search)
             ->porEstatus($status)
@@ -91,7 +92,8 @@ class ApplicationController extends Controller
             'user.priorityArea',
             'user.subArea',
             'announcement',
-            'evaluations.evaluator'
+            'evaluations.evaluator',
+            'positionType'
         ])
             ->findOrFail($id);
 
@@ -114,7 +116,8 @@ class ApplicationController extends Controller
             'user.subArea',
             'evaluations.evaluator',
             'documents',
-            'announcement'
+            'announcement',
+            'positionType'
         ])
             ->findOrFail($id);
 
@@ -168,7 +171,8 @@ class ApplicationController extends Controller
             'user.institution',
             'user.priorityArea',
             'user.subArea',
-            'announcement'
+            'announcement',
+            'positionType'
         ])->findOrFail($application_id);
 
         $evaluation = \App\Models\Evaluation::with('evaluator')

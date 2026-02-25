@@ -71,13 +71,13 @@ const getFileIcon = (type) => {
                     :style="{ 
                         borderLeft: `5px solid ${
                             application.status === 'approved' ? '#10A558' : 
-                            application.status === 'rejected' ? '#EF4444' : '#C9A800'
+                            application.status === 'rejected' ? '#6B7280' : '#C9A800'
                         }`
                     }"
                 >
                     <div class="flex-shrink-0" :style="{ 
                         color: application.status === 'approved' ? '#10A558' : 
-                               application.status === 'rejected' ? '#EF4444' : '#C9A800'
+                               application.status === 'rejected' ? '#6B7280' : '#C9A800'
                     }">
                         <svg v-if="application.status === 'approved'" viewBox="0 0 24 24" class="w-6 h-6" style="fill: currentColor"><path :d="mdiCheckCircle"/></svg>
                         <svg v-else-if="application.status === 'rejected'" viewBox="0 0 24 24" class="w-6 h-6" style="fill: currentColor"><path :d="mdiCloseCircle"/></svg>
@@ -87,7 +87,7 @@ const getFileIcon = (type) => {
                     <div class="flex flex-col">
                         <span class="text-[10px] uppercase font-bold tracking-widest opacity-60 mb-0.5" :style="{ 
                             color: application.status === 'approved' ? '#10A558' : 
-                                   application.status === 'rejected' ? '#EF4444' : '#C9A800'
+                                   application.status === 'rejected' ? '#6B7280' : '#C9A800'
                         }">
                             Estado de Solicitud
                         </span>
@@ -154,7 +154,7 @@ const getFileIcon = (type) => {
                     </div>
                     <div>
                         <p class="text-sm font-medium text-gray-600 mb-1">Tipo de Plaza</p>
-                        <p class="text-gray-900 text-base">{{ application.position_type || 'No especificado' }}</p>
+                        <p class="text-gray-900 text-base">{{ application.position_full_type || 'No especificado' }}</p>
                     </div>
                     <div>
                          <p class="text-sm font-medium text-gray-600 mb-1">Fecha de Solicitud</p>

@@ -20,7 +20,12 @@ class ApplicationResource extends JsonResource
             'user_id' => $this->user_id,
             'announcement_id' => $this->announcement_id,
             'status' => $this->status,
-            'position_type' => $this->position_type,
+            'position_type_id' => $this->position_type_id,
+            'position_type_name' => $this->positionType?->name,
+            'position_type_code' => $this->positionType?->code,
+            'position_full_type' => $this->positionType 
+                ? "{$this->positionType->code} - {$this->positionType->name}" 
+                : null,
             'admin_comment' => $this->admin_comment,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

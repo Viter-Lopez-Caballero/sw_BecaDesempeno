@@ -7,6 +7,8 @@ import InputError from '@/components/InputError.vue';
 import { mdiArrowLeft, mdiFileDocumentOutline, mdiCloudUpload, mdiCheckBold, mdiEye, mdiEyeOff, mdiRefresh, mdiBullhorn, mdiFilePlus } from '@mdi/js';
 import { ref, onMounted } from 'vue';
 import { alertaCargando, cerrarAlerta, alertaError } from '@/utils/alerts.js';
+import VueSelect from 'vue-select';
+import 'vue-select/dist/vue-select.css';
 
 const props = defineProps({
     announcement: Object,
@@ -18,11 +20,15 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    position_types: {
+        type: Array,
+        default: () => [],
+    },
 });
 
 const form = useForm({
     announcement_id: props.announcement.id,
-    position_type: '', 
+    position_type_id: '', 
     files: [], 
     file_types: [], 
     reused_documents: {}, 
@@ -166,8 +172,8 @@ const submit = () => {
         }
     });
 
-    if (!form.position_type) {
-        form.setError('position_type', 'El tipo de plaza es obligatorio.');
+    if (!form.position_type_id) {
+        form.setError('position_type_id', 'El tipo de plaza es obligatorio.');
         hasErrors = true;
     }
 
@@ -198,7 +204,6 @@ const submit = () => {
             });
             alertaError('Error', 'Revisa los campos marcados en rojo.');
         },
-        onFinish: () => cerrarAlerta(),
     });
 };
 </script>
@@ -246,22 +251,48 @@ const submit = () => {
                         <h2 class="text-xl font-bold text-gray-900 mb-4 border-b pb-2">Información General</h2>
                         
                         <div>
-                            <label for="position_type" class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Tipo de Plaza <span class="text-red-500">*</span></label>
-                            <input 
-                                id="position_type"
-                                v-model="form.position_type"
-                                type="text"
-                                class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
-                                :class="{ 'border-b-red-500': form.errors.position_type }"
-                                placeholder="Ej. Titular A, Asociado B..."
-                            />
-                            <div v-if="!form.errors.position_type" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <label for="position_type_id" class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Tipo de Plaza <span class="text-red-500">*</span></label>
+                            <VueSelect
+                                v-model="form.position_type_id"
+                                :options="position_types"
+                                :reduce="option => option.id"
+                                label="name"
+                                placeholder="Buscar o seleccionar un tipo de plaza..."
+                                :searchable="true"
+                                :clearable="true"
+                                :filter-by="(option, label, search) => {
+                                    return (option.name || '').toLowerCase().includes(search.toLowerCase()) ||
+                                           (option.code || '').toLowerCase().includes(search.toLowerCase())
+                                }"
+                                class="vue-select-custom"
+                                :class="{ 'has-error': form.errors.position_type_id }"
+                            >
+                                <template #option="option">
+                                    <div class="flex flex-col">
+                                        <span class="font-bold text-[#1B396A]">{{ option.code }}</span>
+                                        <span class="text-xs">{{ option.name }}</span>
+                                    </div>
+                                </template>
+                                <template #selected-option="option">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-bold text-[#1B396A]">{{ option.code }}</span>
+                                        <span class="truncate">- {{ option.name }}</span>
+                                    </div>
+                                </template>
+                                <template #no-options="{ search, searching }">
+                                    <template v-if="searching">
+                                        No se encontraron resultados para <em>{{ search }}</em>.
+                                    </template>
+                                    <em v-else>Comienza a escribir para buscar...</em>
+                                </template>
+                            </VueSelect>
+                            <div v-if="!form.errors.position_type_id" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                <span>Ingresa el tipo de plaza que ocupas actualmente</span>
+                                <span>Por favor, selecciona tu tipo de plaza actual</span>
                             </div>
-                            <p v-if="form.errors.position_type" class="mt-1 text-sm text-red-600">{{ form.errors.position_type }}</p>
+                            <p v-if="form.errors.position_type_id" class="mt-1 text-sm text-red-600">{{ form.errors.position_type_id }}</p>
                         </div>
                     </div>
 
@@ -435,3 +466,62 @@ const submit = () => {
         </div>
     </TeacherLayout>
 </template>
+<style scoped>
+.vue-select-custom :deep(.vs__dropdown-toggle) {
+    background: #F3F4F6;
+    border: none;
+    border-bottom: 2px solid #D1D5DB;
+    border-radius: 0.5rem;
+    padding: 2px 0;
+    transition: all 0.2s;
+}
+
+.vue-select-custom.has-error :deep(.vs__dropdown-toggle) {
+    border-bottom-color: #EF4444;
+}
+
+.vue-select-custom :deep(.vs__dropdown-toggle):hover {
+    border-bottom-color: #1B396A;
+}
+
+.vue-select-custom :deep(.vs--open .vs__dropdown-toggle) {
+    border-bottom-color: #1B396A;
+}
+
+.vue-select-custom :deep(.vs__search) {
+    margin: 0;
+    padding: 0.625rem 0.75rem;
+    font-size: 0.875rem;
+    color: #111827;
+}
+
+.vue-select-custom :deep(.vs__selected) {
+    position: relative;
+    z-index: 10;
+    margin: 0;
+    padding: 0 0.75rem;
+    color: #111827;
+    font-size: 0.875rem;
+}
+
+.vue-select-custom :deep(.vs__dropdown-menu) {
+    border: 1px solid #E5E7EB;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    margin-top: 4px;
+}
+
+.vue-select-custom :deep(.vs__dropdown-option) {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.vue-select-custom :deep(.vs__dropdown-option--highlight) {
+    background: #1B396A;
+    color: white !important;
+}
+
+.vue-select-custom :deep(.vs__dropdown-option--highlight span) {
+    color: white !important;
+}
+</style>

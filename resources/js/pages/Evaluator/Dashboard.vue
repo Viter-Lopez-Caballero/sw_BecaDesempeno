@@ -174,8 +174,8 @@ watch(search, (value) => {
                 
                 <div class="p-6">
                     <div class="space-y-4">
-                        <div v-if="applications.data.length === 0" class="text-center py-8 text-gray-500">
-                            No tienes solicitudes pendientes de evaluación.
+                        <div v-if="applications.data.length === 0" class="text-center py-8 text-gray-500 font-medium">
+                            No se encontraron registros
                         </div>
 
                         <div v-for="application in applications.data" :key="application.evaluation_id" class="border border-gray-300 rounded-lg p-5 hover:shadow-md transition-shadow bg-white flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -235,15 +235,21 @@ watch(search, (value) => {
     background: linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%);
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
-    padding: 0.5rem;
+    padding: 0 4px;
     height: 45px;
-    overflow: hidden;
+    display: flex;
+    align-items: center;
 }
+
 :deep(.vue-select-custom .vs__selected-options) {
     flex-wrap: nowrap !important;
     min-width: 0;
     flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
 }
+
 :deep(.vue-select-custom .vs__selected) {
     color: #374151;
     font-weight: 500;
@@ -254,39 +260,41 @@ watch(search, (value) => {
     display: block;
     margin: 0;
 }
+
 :deep(.vue-select-custom .vs__search) {
     max-width: 10px;
     margin: 0;
+    padding: 0;
 }
+
 :deep(.vue-select-custom .vs__search::placeholder) {
     color: #9ca3af;
 }
+
 :deep(.vue-select-custom .vs__dropdown-menu) {
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
+
 :deep(.vue-select-custom .vs__dropdown-option) {
     padding: 0.75rem 1rem;
     color: #374151;
 }
+
 :deep(.vue-select-custom .vs__dropdown-option--highlight) {
     background: #1B396A;
     color: white;
 }
-:deep(.vue-select-custom .vs__clear),
-:deep(.vue-select-custom .vs__open-indicator) {
-    fill: #1B396A;
-    transition: transform 0.2s;
-}
-:deep(.vue-select-custom .vs__open-indicator) {
-    transform: scale(0.85);
-}
+
 :deep(.vue-select-custom .vs__actions) {
-    padding-right: 8px;
-    flex-shrink: 0;
+    padding-right: 4px;
     display: flex;
     align-items: center;
-    gap: 4px;
+}
+
+:deep(.vue-select-custom .vs__open-indicator) {
+    fill: #1B396A;
+    transform: scale(0.8);
 }
 </style>

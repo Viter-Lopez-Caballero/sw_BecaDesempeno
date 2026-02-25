@@ -535,16 +535,21 @@ const viewDetails = (id) => {
                                         {{ application.announcement?.name || 'N/A' }}
                                     </td>
                                     <td class="px-6 py-4 text-center">
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                            {{ application.documents_count || 0 }}
-                                        </span>
+                                        <div class="flex items-center justify-center">
+                                            <span class="inline-flex items-center px-4 py-1.5 rounded-md bg-white text-[13px] font-bold text-[#1B396A] shadow-sm whitespace-nowrap border border-gray-100">
+                                                {{ application.documents_count || 0 }}
+                                            </span>
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4 text-center">
-                                        <div class="flex items-center justify-center gap-2">
-                                            <button @click="viewDetails(application.id)" class="p-2 text-[#1B396A] border border-[#1B396A] rounded-full hover:bg-[#1B396A] hover:text-white transition cursor-pointer" title="Ver Detalles">
-                                                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                        <div class="flex justify-center gap-2">
+                                            <button @click="viewDetails(application.id)" 
+                                                class="inline-flex items-center justify-center gap-2 px-4 py-2 border border-[#1B396A] text-[#1B396A] rounded-lg hover:bg-[#1B396A] hover:text-white transition text-xs font-bold uppercase cursor-pointer whitespace-nowrap shadow-sm font-bold"
+                                                title="Ver Detalles">
+                                                <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
                                                     <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z"/>
                                                 </svg>
+                                                Ver Detalles
                                             </button>
                                         </div>
                                     </td>

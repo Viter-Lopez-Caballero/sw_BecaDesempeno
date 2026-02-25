@@ -23,11 +23,33 @@ class TemplateController extends Controller
         $this->fileService = $fileService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $templates = Template::latest()->get();
+        $search = $request->input('search');
+        $rows = $request->input('rows', 10);
+        $type = $request->input('type', 'recognition');
+
+        $templates = Template::query()
+            ->when($type, function ($query, $type) {
+                $query->where('type', $type);
+            })
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('file_name', 'like', "%{$search}%");
+                });
+            })
+            ->latest()
+            ->paginate($rows)
+            ->withQueryString();
+
         return Inertia::render('SuperAdmin/Catalog/TemplateModule/Index', [
-            'templates' => $templates
+            'templates' => $templates,
+            'filters' => [
+                'search' => $search,
+                'rows' => (int) $rows,
+                'type' => $type
+            ]
         ]);
     }
 

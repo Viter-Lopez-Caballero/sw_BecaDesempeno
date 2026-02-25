@@ -9,13 +9,14 @@ import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
 
 const props = defineProps({
-    templates: Array,
+    templates: Object,
+    filters: Object,
 });
 
-const activeTab = ref('recognition'); // recognition | acceptance
+const activeTab = ref(props.filters?.type || 'recognition');
 const expandedRows = ref({});
-const search = ref('');
-const rows = ref(10);
+const search = ref(props.filters?.search || '');
+const rows = ref(props.filters?.rows || 10);
 
 const rowOptions = [
     { label: '5 Registros', value: 5 },
@@ -24,23 +25,39 @@ const rowOptions = [
     { label: '50 Registros', value: 50 },
 ];
 
+import Pagination from '@/Shared/Pagination.vue';
+import { debounce } from 'lodash';
+
 const resetFilters = () => {
-    search.value = '';
-    rows.value = 10;
+    router.get(route('catalog.templates.index'), {}, { preserveState: false });
 };
 
-const filteredTemplates = computed(() => {
-    let filtered = props.templates.filter(t => t.type === activeTab.value);
-    
-    if (search.value) {
-        const query = search.value.toLowerCase();
-        filtered = filtered.filter(t => 
-            t.name.toLowerCase().includes(query) || 
-            t.file_name.toLowerCase().includes(query)
-        );
-    }
-    
-    return filtered.slice(0, rows.value);
+const onSearch = debounce((value) => {
+    router.get(route('catalog.templates.index'), {
+        search: value,
+        rows: rows.value,
+        type: activeTab.value
+    }, { preserveState: true, replace: true, preserveScroll: true });
+}, 500);
+
+const onRowsChange = () => {
+    router.get(route('catalog.templates.index'), {
+        search: search.value,
+        rows: rows.value,
+        type: activeTab.value
+    }, { preserveState: true, replace: true, preserveScroll: true });
+};
+
+watch(search, (value) => {
+    onSearch(value);
+});
+
+watch(activeTab, (value) => {
+    router.get(route('catalog.templates.index'), {
+        search: search.value,
+        rows: rows.value,
+        type: value
+    }, { preserveState: true, replace: true, preserveScroll: true });
 });
 
 const toggleActive = (template) => {
@@ -187,7 +204,7 @@ const togglePreview = (id) => {
                             :clearable="false"
                             placeholder="Registros"
                             class="vue-select-custom"
-                            @option:selected="() => {}"
+                            @option:selected="onRowsChange"
                         />
                     </div>
                 </div>
@@ -207,22 +224,18 @@ const togglePreview = (id) => {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                             <tr v-if="filteredTemplates.length === 0">
-                                <td colspan="5" class="px-6 py-12 text-center text-gray-500 bg-gray-50">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                    <p class="text-lg font-medium">No hay plantillas registradas</p>
-                                    <p class="text-sm mt-1">Sube una nueva plantilla para comenzar.</p>
+                             <tr v-if="templates.data.length === 0">
+                                <td colspan="5" class="px-6 py-12 text-center text-gray-500 font-medium">
+                                    No se encontraron registros
                                 </td>
                             </tr>
-                            <template v-for="(template, index) in filteredTemplates" :key="template.id">
+                            <template v-for="(template, index) in templates.data" :key="template.id">
                                 <tr 
                                     class="hover:bg-gray-50 transition"
                                     :class="{'bg-blue-50': expandedRows[template.id]}"
                                 >
                                     <td class="px-6 py-4 text-center text-gray-500 font-bold">
-                                        {{ index + 1 }}
+                                        {{ (templates.current_page - 1) * templates.per_page + index + 1 }}
                                     </td>
                                     <td class="px-6 py-4 font-semibold text-gray-800">
                                         {{ template.name }}
@@ -253,14 +266,14 @@ const togglePreview = (id) => {
                                         <div class="flex justify-center gap-2">
                                             <button 
                                                 @click="togglePreview(template.id)"
-                                                class="p-2 border rounded-full transition group cursor-pointer flex items-center justify-center"
+                                                class="inline-flex items-center justify-center gap-2 px-4 py-2.5 border rounded-lg font-bold transition cursor-pointer text-sm whitespace-nowrap"
                                                 :class="expandedRows[template.id] ? 'bg-[#1B396A] text-white border-[#1B396A]' : 'text-[#1B396A] border-[#1B396A] hover:bg-[#1B396A] hover:text-white'"
-                                                title="Vista previa"
+                                                title="Visualizar plantilla"
                                             >
                                                 <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
-                                                    <path v-if="!expandedRows[template.id]" d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z"/>
-                                                    <path v-else d="m644-428-58-58q9-47-27-88t-93-32l-58-58q17-8 34.5-12t37.5-4q75 0 127.5 52.5T660-500q0 20-4 37.5T644-428Zm128 126-58-56q38-29 67.5-63.5T832-500q-50-101-143.5-160.5T480-720q-29 0-57 4t-55 12l-62-62q41-17 84-25.5t90-8.5q151 0 269 83.5T920-500q-23 59-60.5 109.5T772-302Zm20 246L66-81l57-57 3.5 3.5q8-4 16.5-7t17-3q51 0 91.5 28t62.5 70.5q4 8 7 16.5t3 16.5l209 209 57-57Zm-473-473 58 58q-18 38-11 77.5t37 72.5l58 58q-26-9-46.5-27t-32.5-42q-12-24-15-51.5t7-55.5Zm303 303-31 31q-27 12-58 13.5T480-280q-112 0-207.5-51T128-500q20-41 49.5-74t66.5-58l56 56q-25 15-46 32t-38 38q38 67 101.5 106.5T480-360q21 0 41.5-2t40.5-8Z"/>
+                                                    <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z"/>
                                                 </svg>
+                                                Visualizar
                                             </button>
                                             <button 
                                                 v-if="useCan('templates.destroy')"
@@ -279,13 +292,23 @@ const togglePreview = (id) => {
                                 <!-- Inline Preview Row -->
                                 <tr v-if="expandedRows[template.id]">
                                     <td colspan="5" class="px-6 py-6 bg-gray-50 border-b border-gray-200">
-                                        <div class="flex flex-col gap-4 animate-fadeIn">
+                                        <div class="flex flex-col gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
                                             <div class="flex justify-between items-center">
                                                 <h3 class="font-bold text-gray-800 text-lg">Vista Previa: {{ template.name }}</h3>
+                                                <button @click="togglePreview(template.id)" class="text-gray-400 hover:text-gray-600 p-1.5 hover:bg-gray-100 rounded-lg transition cursor-pointer" title="Cerrar vista previa">
+                                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
+                                                </button>
                                             </div>
-                                            <div class="w-full h-[600px] border border-gray-300 rounded-lg overflow-hidden bg-white relative">
-                                                <div class="absolute inset-0 flex items-center justify-center text-gray-400 z-0">
-                                                    Cargando vista previa...
+                                            <div class="w-full h-[600px] border border-gray-300 rounded-xl overflow-hidden bg-white shadow-inner relative">
+                                                <div class="absolute inset-0 flex items-center justify-center text-gray-400 z-0 text-center">
+                                                    <div class="text-center">
+                                                        <svg class="w-12 h-12 mx-auto animate-pulse mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                        </svg>
+                                                        <span>Cargando vista previa...</span>
+                                                    </div>
                                                 </div>
                                                 <iframe 
                                                     :src="route('catalog.templates.stream', template.id)" 
@@ -300,8 +323,16 @@ const togglePreview = (id) => {
                         </tbody>
                     </table>
                 </div>
+                <!-- Pagination -->
+                <div class="px-6 py-4 border-t border-gray-200 bg-gray-50" v-if="templates.links">
+                    <Pagination 
+                        :links="templates.links" 
+                        :total="templates.total" 
+                        :from="templates.from" 
+                        :to="templates.to" 
+                    />
+                </div>
             </div>
-            
         </div>
     </LayoutAuthenticated>
 </template>
@@ -311,8 +342,19 @@ const togglePreview = (id) => {
     background: linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%);
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
-    padding: 0.5rem;
-    min-height: 42px;
+    padding: 0 4px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+}
+
+:deep(.vue-select-custom .vs__selected-options) {
+    flex-wrap: nowrap !important;
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
 }
 
 :deep(.vue-select-custom .vs__selected) {
@@ -340,12 +382,14 @@ const togglePreview = (id) => {
     color: white;
 }
 
-:deep(.vue-select-custom .vs__open-indicator) {
-    fill: #1B396A;
-    transform: scale(0.85);
-}
-
 :deep(.vue-select-custom .vs__actions) {
     padding-right: 4px;
+    display: flex;
+    align-items: center;
+}
+
+:deep(.vue-select-custom .vs__open-indicator) {
+    fill: #1B396A;
+    transform: scale(0.8);
 }
 </style>

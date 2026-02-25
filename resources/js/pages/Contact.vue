@@ -63,7 +63,7 @@ const submitContact = async () => {
     alertaCargando('Enviando mensaje', 'Por favor espera...');
 
     try {
-        const response = await axios.post('/api/contacto', contactForm.value);
+        const response = await axios.post('/api/contact', contactForm.value);
         
         cerrarAlerta();
         alertaExito('¡Mensaje enviado!', response.data.message);

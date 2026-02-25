@@ -15,7 +15,24 @@ const props = defineProps({
 
 const search = ref(props.filters?.search || '');
 const rows = ref(props.filters?.rows || 10);
+const sortField = ref(props.filters?.sort_field || 'sent_at');
+const sortDirection = ref(props.filters?.sort_direction || 'desc');
 const expandedRows = ref({});
+
+const sortBy = (field) => {
+    if (sortField.value === field) {
+        sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortField.value = field;
+        sortDirection.value = 'asc';
+    }
+    router.get(route('teacher.recognitions.index'), {
+        search: search.value,
+        rows: rows.value,
+        sort_field: sortField.value,
+        sort_direction: sortDirection.value
+    }, { preserveState: true, replace: true });
+};
 
 const togglePreview = (id) => {
     expandedRows.value[id] = !expandedRows.value[id];
@@ -31,7 +48,9 @@ const rowOptions = [
 const onSearch = debounce((value) => {
     router.get(route('teacher.recognitions.index'), {
         search: value,
-        rows: rows.value
+        rows: rows.value,
+        sort_field: sortField.value,
+        sort_direction: sortDirection.value
     }, { preserveState: true, replace: true });
 }, 500);
 
@@ -39,12 +58,16 @@ const onRowsChange = () => {
     router.get(route('teacher.recognitions.index'), {
         search: search.value,
         rows: rows.value,
+        sort_field: sortField.value,
+        sort_direction: sortDirection.value
     }, { preserveState: true, replace: true });
 };
 
 const cleanFilters = () => {
     search.value = '';
     rows.value = 10;
+    sortField.value = 'sent_at';
+    sortDirection.value = 'desc';
     router.get(route('teacher.recognitions.index'), {}, { preserveState: true, replace: true });
 };
 
@@ -124,9 +147,23 @@ watch(search, (value) => {
                     <table class="w-full text-sm text-left">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
-                                <th scope="col" class="px-6 py-4 tracking-wider text-center w-16">ID</th>
-                                <th scope="col" class="px-6 py-4 tracking-wider">Convocatoria</th>
-                                <th scope="col" class="px-6 py-4 tracking-wider">Fecha de Emisión</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider w-16 text-center">ID</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">
+                                    <div @click="sortBy('announcement')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
+                                        Convocatoria
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'announcement', 'opacity-50': sortField !== 'announcement' }">
+                                            <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/>
+                                        </svg>
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">
+                                    <div @click="sortBy('sent_at')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
+                                        Fecha de Emisión
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'sent_at', 'opacity-50': sortField !== 'sent_at' }">
+                                            <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/>
+                                        </svg>
+                                    </div>
+                                </th>
                                 <th scope="col" class="px-6 py-4 text-center tracking-wider">Acciones</th>
                             </tr>
                         </thead>
@@ -154,11 +191,13 @@ watch(search, (value) => {
                                         <div class="flex items-center justify-center">
                                             <button 
                                                 @click="togglePreview(item.id)"
-                                                class="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-md transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B396A]"
-                                                :class="expandedRows[item.id] ? 'bg-gray-200 text-gray-800' : 'text-white bg-[#1B396A] hover:bg-[#234a85]'"
+                                                class="inline-flex items-center justify-center gap-2 px-4 py-2 border border-[#1B396A] text-[#1B396A] rounded-lg hover:bg-[#1B396A] hover:text-white transition text-xs font-bold uppercase cursor-pointer whitespace-nowrap shadow-sm font-bold"
+                                                :class="{'bg-[#1B396A] text-white': expandedRows[item.id]}"
                                             >
-                                                <svg viewBox="0 0 24 24" class="w-4 h-4" style="fill: currentColor"><path :d="expandedRows[item.id] ? mdiEyeOff : mdiEye"/></svg>
-                                                {{ expandedRows[item.id] ? 'Ocultar' : 'Ver' }}
+                                                <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
+                                                    <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z"/>
+                                                </svg>
+                                                {{ expandedRows[item.id] ? 'Ocultar Detalle' : 'Ver Detalle' }}
                                             </button>
                                         </div>
                                     </td>

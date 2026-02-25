@@ -3,7 +3,7 @@
         <!-- Notifications Button -->
         <button
             @click="toggleDropdown"
-            class="p-2 rounded-md text-gray-900 hover:bg-gray-200 transition-colors duration-200 relative"
+            class="p-2 rounded-md text-gray-900 hover:bg-gray-200 transition-colors duration-200 relative cursor-pointer"
             title="Notificaciones"
         >
             <svg viewBox="0 0 24 24" class="w-6 h-6" style="fill: currentColor;">
@@ -11,9 +11,9 @@
             </svg>
             <span
                 v-if="unreadCount > 0"
-                class="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center"
+                class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center border-2 border-white"
             >
-                {{ unreadCount > 99 ? '99+' : unreadCount }}
+                {{ unreadCount > 9 ? '9+' : unreadCount }}
             </span>
         </button>
 
@@ -28,11 +28,11 @@
         >
             <div
                 v-if="isOpen"
-                class="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-[500px] overflow-hidden flex flex-col"
+                class="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 max-h-[500px] overflow-hidden flex flex-col"
             >
-                <!-- Header -->
-                <div class="px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-[#1B396A] to-[#2d5a9e] flex items-center justify-between">
-                    <h3 class="text-white font-semibold text-lg flex items-center gap-2">
+                <!-- Header with Brand Gradient -->
+                <div class="px-5 py-4 bg-gradient-to-r from-[#1B396A] to-[#2d5a9e] flex items-center justify-between shadow-sm">
+                    <h3 class="text-white font-bold text-base flex items-center gap-2">
                         <svg viewBox="0 0 24 24" class="w-5 h-5" style="fill: currentColor;">
                             <path :d="mdiBellOutline"/>
                         </svg>
@@ -41,108 +41,73 @@
                     <button
                         v-if="notifications.length > 0 && hasUnread"
                         @click="markAllAsRead"
-                        class="text-white text-xs hover:text-gray-200 transition underline"
+                        class="text-blue-100 text-xs font-semibold hover:text-white transition underline underline-offset-2"
                     >
-                        Marcar todas como leídas
+                        Marcar todas
                     </button>
                 </div>
 
                 <!-- Notifications List -->
-                <div class="overflow-y-auto flex-1">
-                    <div v-if="loading" class="p-8 text-center text-gray-500">
-                        <svg class="animate-spin h-8 w-8 mx-auto mb-2 text-[#1B396A]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <div class="overflow-y-auto flex-1 bg-gray-50/50">
+                    <div v-if="loading" class="p-10 text-center text-gray-400">
+                        <svg class="animate-spin h-6 w-6 mx-auto mb-2 text-[#1B396A]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        Cargando...
                     </div>
 
-                    <div v-else-if="notifications.length === 0" class="p-8 text-center text-gray-500">
-                        <svg viewBox="0 0 24 24" class="w-16 h-16 mx-auto mb-3 text-gray-300" style="fill: currentColor;">
-                            <path :d="mdiBellOutline"/>
-                        </svg>
-                        <p class="font-medium">No hay notificaciones</p>
-                        <p class="text-sm mt-1">Cuando recibas notificaciones aparecerán aquí</p>
+                    <div v-else-if="notifications.length === 0" class="p-10 text-center text-gray-400">
+                        <p class="text-sm font-medium">Bandeja vacía</p>
                     </div>
 
-                    <div v-else class="divide-y divide-gray-200">
+                    <div v-else class="divide-y divide-gray-100">
                         <div
                             v-for="notification in notifications"
                             :key="notification.id"
-                            class="p-4 hover:bg-gray-50 transition cursor-pointer"
-                            :class="{ 'bg-blue-50': !notification.read_at }"
+                            class="p-4 transition group bg-white hover:bg-gray-50 relative"
+                            :class="{ 'bg-blue-50/30': !notification.read_at }"
                         >
-                            <div class="flex items-start justify-between gap-3">
+                            <!-- Unread Indicator Marker -->
+                            <div v-if="!notification.read_at" class="absolute left-0 top-0 bottom-0 w-1 bg-[#1B396A]"></div>
+
+                            <div class="flex items-start gap-4">
                                 <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-2 mb-2">
-                                        <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
-                                            <path :d="mdiFileDocumentMultiple"/>
-                                        </svg>
-                                        <h4 class="font-semibold text-gray-900 text-sm truncate">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <h4 class="font-bold text-gray-900 text-sm truncate leading-tight">
                                             {{ notification.title }}
                                         </h4>
-                                        <span v-if="!notification.read_at" class="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full"></span>
                                     </div>
                                     
-                                    <!-- Notification Content Based on Type -->
-                                    <div v-if="notification.type === 'weekly_summary' && notification.data" class="mb-2">
-                                        <div class="bg-gradient-to-r from-[#1B396A] to-[#2d5a9e] text-white rounded px-3 py-2 text-sm font-semibold">
-                                            Total de Solicitudes: {{ notification.data.total || 0 }}
-                                        </div>
-                                    </div>
+                                    <p class="text-[13px] text-gray-700 leading-snug line-clamp-2 mb-1.5">
+                                        {{ getShortMessage(notification) }}
+                                    </p>
 
-                                    <div v-else-if="notification.type === 'evaluator_assignment' && notification.data" class="mb-2">
-                                        <p class="text-sm text-gray-700 mb-1">{{ notification.data.message }}</p>
-                                        <div class="bg-gradient-to-r from-[#1B396A] to-[#2d5a9e] text-white rounded px-3 py-2 text-sm font-semibold">
-                                            Evaluaciones asignadas: {{ notification.data.count || 0 }}
-                                        </div>
-                                    </div>
-
-                                    <div v-else-if="notification.type === 'application_verdict' && notification.data" class="mb-2">
-                                        <p class="text-sm" :class="notification.data.status === 'approved' ? 'text-green-700' : 'text-red-700'">
-                                            {{ notification.data.message }}
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-[11px] text-gray-400 font-medium">
+                                            {{ formatDate(notification.created_at) }}
                                         </p>
                                     </div>
-
-                                    <div v-else-if="notification.type === 'announcement_stage_change' && notification.data" class="mb-2">
-                                        <p class="text-sm text-gray-700">{{ notification.data.message }}</p>
-                                        <div class="bg-blue-100 text-blue-800 rounded px-3 py-1 text-xs font-medium inline-block mt-1">
-                                            {{ notification.data.stage }}
-                                        </div>
-                                    </div>
-
-                                    <div v-else-if="notification.type === 'announcement_date_change' && notification.data" class="mb-2">
-                                        <p class="text-sm text-gray-700">{{ notification.data.message }}</p>
-                                    </div>
-
-                                    <div v-else-if="notification.data && typeof notification.data === 'object'" class="mb-2">
-                                        <p class="text-sm text-gray-700">{{ notification.data.message || JSON.stringify(notification.data) }}</p>
-                                    </div>
-
-                                    <p class="text-xs text-gray-500">
-                                        {{ formatDate(notification.created_at) }}
-                                    </p>
                                 </div>
 
                                 <!-- Actions -->
-                                <div class="flex flex-col gap-1 flex-shrink-0">
+                                <div class="flex items-center gap-1 self-center ml-2">
                                     <button
                                         v-if="!notification.read_at"
                                         @click.stop="markAsRead(notification.id)"
-                                        class="p-1.5 text-green-600 border border-green-600 rounded hover:bg-green-600 hover:text-white transition"
-                                        title="Marcar como leída"
+                                        class="p-1 text-gray-400 hover:text-green-600 transition cursor-pointer"
+                                        title="Leída"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 -960 960 960" fill="currentColor">
                                             <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/>
                                         </svg>
                                     </button>
                                     <button
                                         @click.stop="deleteNotification(notification.id)"
-                                        class="p-1.5 text-red-600 border border-red-600 rounded hover:bg-red-600 hover:text-white transition"
+                                        class="p-1 text-gray-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100 cursor-pointer"
                                         title="Eliminar"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
-                                            <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 -960 960 960" fill="currentColor">
+                                            <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm80-160h80v-360h-80v360Zm160 0h80v-360h-80v360Z"/>
                                         </svg>
                                     </button>
                                 </div>
@@ -158,8 +123,11 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
-import { mdiBellOutline, mdiFileDocumentMultiple } from '@mdi/js';
-import { alertaExito, alertaError } from '@/utils/alerts.js';
+import axios from 'axios';
+import { 
+    mdiBellOutline, 
+    mdiBellOffOutline
+} from '@mdi/js';
 
 const page = usePage();
 const isOpen = ref(false);
@@ -174,8 +142,7 @@ const unreadCount = computed(() => page.props.unreadNotifications || 0);
 const hasUnread = computed(() => notifications.value.some(n => !n.read_at));
 
 // Get notification route based on user role
-const getNotificationRoute = (action) => {
-    // Use primaryRole or check roles array
+const getNotificationRoute = () => {
     const primaryRole = page.props.auth?.primaryRole;
     const userRoles = page.props.auth?.roles;
     
@@ -189,7 +156,7 @@ const getNotificationRoute = (action) => {
         prefix = 'teacher';
     }
     
-    return `${prefix}.notifications.${action}`;
+    return prefix;
 };
 
 // Toggle dropdown
@@ -204,14 +171,9 @@ const toggleDropdown = async () => {
 const loadNotifications = async () => {
     loading.value = true;
     try {
-        const response = await fetch(route(getNotificationRoute('index')), {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json',
-            },
-        });
-        const data = await response.json();
-        notifications.value = data.notifications?.data || [];
+        const prefix = getNotificationRoute();
+        const response = await axios.get(route(`${prefix}.notifications.index`));
+        notifications.value = response.data.notifications?.data || [];
     } catch (error) {
         console.error('Error loading notifications:', error);
     } finally {
@@ -222,22 +184,15 @@ const loadNotifications = async () => {
 // Mark as read
 const markAsRead = async (id) => {
     try {
-        await router.post(route(getNotificationRoute('mark-as-read'), id), {}, {
-            preserveScroll: true,
-            preserveState: true,
-            onSuccess: () => {
-                const notification = notifications.value.find(n => n.id === id);
-                if (notification) {
-                    notification.read_at = new Date().toISOString();
-                }
-                alertaExito('Marcada como leída', 'Notificación marcada correctamente');
-                // Reload to update unread count
-                router.reload({ only: ['unreadNotifications'] });
-            },
-            onError: () => {
-                alertaError('Error', 'No se pudo marcar la notificación');
-            }
-        });
+        const prefix = getNotificationRoute();
+        await axios.post(route(`${prefix}.notifications.mark-as-read`, id));
+        
+        const notification = notifications.value.find(n => n.id === id);
+        if (notification) {
+            notification.read_at = new Date().toISOString();
+        }
+        
+        router.reload({ only: ['unreadNotifications'] });
     } catch (error) {
         console.error('Error marking as read:', error);
     }
@@ -246,21 +201,14 @@ const markAsRead = async (id) => {
 // Mark all as read
 const markAllAsRead = async () => {
     try {
-        await router.post(route(getNotificationRoute('mark-all-as-read')), {}, {
-            preserveScroll: true,
-            preserveState: true,
-            onSuccess: () => {
-                notifications.value.forEach(n => {
-                    n.read_at = new Date().toISOString();
-                });
-                alertaExito('Todas marcadas como leídas', 'Notificaciones actualizadas correctamente');
-                // Reload to update unread count
-                router.reload({ only: ['unreadNotifications'] });
-            },
-            onError: () => {
-                alertaError('Error', 'No se pudieron marcar las notificaciones');
-            }
+        const prefix = getNotificationRoute();
+        await axios.post(route(`${prefix}.notifications.mark-all-as-read`));
+        
+        notifications.value.forEach(n => {
+            n.read_at = new Date().toISOString();
         });
+        
+        router.reload({ only: ['unreadNotifications'] });
     } catch (error) {
         console.error('Error marking all as read:', error);
     }
@@ -269,28 +217,26 @@ const markAllAsRead = async () => {
 // Delete notification
 const deleteNotification = async (id) => {
     try {
-        await router.delete(route(getNotificationRoute('destroy'), id), {
-            preserveScroll: true,
-            preserveState: true,
-            onSuccess: () => {
-                notifications.value = notifications.value.filter(n => n.id !== id);
-                alertaExito('Eliminada', 'Notificación eliminada correctamente');
-                // Reload to update unread count
-                router.reload({ only: ['unreadNotifications'] });
-            },
-            onError: () => {
-                alertaError('Error', 'No se pudo eliminar la notificación');
-            }
-        });
+        const prefix = getNotificationRoute();
+        await axios.delete(route(`${prefix}.notifications.destroy`, id));
+        
+        notifications.value = notifications.value.filter(n => n.id !== id);
+        router.reload({ only: ['unreadNotifications'] });
     } catch (error) {
         console.error('Error deleting notification:', error);
+        alertaError('Error', 'No se pudo eliminar la notificación');
     }
 };
 
-// Calculate total
-const calculateTotal = (data) => {
-    if (!data) return 0;
-    return Object.values(data).reduce((sum, val) => sum + val, 0);
+// Get simplified message
+const getShortMessage = (notification) => {
+    if (!notification.data) return '';
+    
+    if (notification.type === 'weekly_summary') {
+        return `Se han registrado ${notification.data.total || 0} nuevas solicitudes esta semana.`;
+    }
+    
+    return notification.data.message || '';
 };
 
 // Format date
@@ -301,18 +247,20 @@ const formatDate = (dateString) => {
     
     if (diffInHours < 1) {
         const diffInMinutes = Math.floor((now - date) / (1000 * 60));
-        return diffInMinutes <= 1 ? 'Hace un momento' : `Hace ${diffInMinutes} minutos`;
+        return diffInMinutes <= 1 ? 'Ahora' : `Hace ${diffInMinutes} m`;
     }
     if (diffInHours < 24) {
-        return `Hace ${diffInHours} hora${diffInHours > 1 ? 's' : ''}`;
+        return `Hace ${diffInHours} h`;
     }
     
     const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 1) return 'Hoy';
+    if (diffInDays === 1) return 'Ayer';
     if (diffInDays < 7) {
-        return `Hace ${diffInDays} día${diffInDays > 1 ? 's' : ''}`;
+        return `Hace ${diffInDays} d`;
     }
     
-    return date.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+    return date.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' });
 };
 
 // Close dropdown when clicking outside

@@ -15,7 +15,7 @@ class RecognitionController extends Controller
     public function __construct(PdfGenerationService $pdfGenerationService)
     {
         $this->pdfGenerationService = $pdfGenerationService;
-        
+
         $this->middleware("permission:teacher.recognitions.index")->only(['index']);
     }
 
@@ -26,16 +26,28 @@ class RecognitionController extends Controller
     {
         $user = $request->user();
 
+        $sortField = $request->input('sort_field', 'sent_at');
+        $sortDirection = $request->input('sort_direction', 'desc');
+
+        $sortColumn = match ($sortField) {
+            'id' => 'recognitions.id',
+            'announcement' => 'announcements.name',
+            'sent_at' => 'sent_at',
+            default => 'sent_at',
+        };
+
         // Obtener los reconocimientos del docente actual, donde activos
         $recognitions = Recognition::with('announcement')
+            ->leftJoin('announcements', 'recognitions.announcement_id', '=', 'announcements.id')
+            ->select('recognitions.*')
             ->where('user_id', $user->id)
-            ->where('active', true)
-            ->orderBy('sent_at', 'desc')
+            ->where('recognitions.active', true)
+            ->orderBy($sortColumn, $sortDirection)
             ->paginate(10);
 
         return Inertia::render('Teacher/Recognitions/Index', [
             'recognitions' => $recognitions,
-            'filters' => $request->all(['page']),
+            'filters' => $request->all(['page', 'search', 'sort_field', 'sort_direction']),
         ]);
     }
 
@@ -50,7 +62,7 @@ class RecognitionController extends Controller
         if ($recognition->user_id !== $user->id || !$recognition->active) {
             abort(403, 'No tienes permiso para descargar este reconocimiento o no está activo.');
         }
-        
+
         // Ensure relations are loaded
         $recognition->loadMissing('announcement');
 

@@ -30,10 +30,10 @@ class SubArea extends Model
         }
 
         return $query->where(function ($q) use ($search) {
-            $q->where('name', 'LIKE', "%{$search}%")
-              ->orWhereHas('priorityArea', function ($qArea) use ($search) {
-                  $qArea->where('name', 'LIKE', "%{$search}%");
-              });
+            $q->where('sub_areas.name', 'LIKE', "%{$search}%")
+                ->orWhereHas('priorityArea', function ($qArea) use ($search) {
+                    $qArea->where('priority_areas.name', 'LIKE', "%{$search}%");
+                });
         });
     }
 

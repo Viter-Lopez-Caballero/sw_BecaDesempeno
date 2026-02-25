@@ -86,9 +86,9 @@ class Announcement extends Model
         }
 
         return $query->where(function ($q) use ($search) {
-            $q->where('name', 'LIKE', "%{$search}%")
-              ->orWhere('description', 'LIKE', "%{$search}%")
-              ->orWhere('status', 'LIKE', "%{$search}%");
+            $q->where('announcements.name', 'LIKE', "%{$search}%")
+                ->orWhere('announcements.description', 'LIKE', "%{$search}%")
+                ->orWhere('announcements.status', 'LIKE', "%{$search}%");
         });
     }
 

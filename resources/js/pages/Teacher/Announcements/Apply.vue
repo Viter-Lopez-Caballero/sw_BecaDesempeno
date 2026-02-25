@@ -4,7 +4,7 @@ import TeacherLayout from '@/layouts/TeacherLayout.vue';
 import TextInput from '@/components/TextInput.vue';
 import InputLabel from '@/components/InputLabel.vue';
 import InputError from '@/components/InputError.vue';
-import { mdiArrowLeft, mdiFileDocumentOutline, mdiCloudUpload, mdiCheckBold, mdiEye, mdiEyeOff, mdiRefresh } from '@mdi/js';
+import { mdiArrowLeft, mdiFileDocumentOutline, mdiCloudUpload, mdiCheckBold, mdiEye, mdiEyeOff, mdiRefresh, mdiBullhorn, mdiFilePlus } from '@mdi/js';
 import { ref, onMounted } from 'vue';
 import { alertaCargando, cerrarAlerta, alertaError } from '@/utils/alerts.js';
 
@@ -209,15 +209,32 @@ const submit = () => {
         
         <div class="space-y-6">
             <!-- Header -->
-             <div class="flex items-center justify-between">
+             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                     <Link :href="route('teacher.announcements.index')" class="flex items-center text-gray-500 hover:text-[#1B396A] transition mb-1 text-sm font-medium">
-                        <svg viewBox="0 0 24 24" class="w-4 h-4 mr-1" fill="currentColor"><path :d="mdiArrowLeft"/></svg>
-                        Volver a Convocatorias
-                    </Link>
                     <h1 class="text-3xl font-bold text-gray-900">Solicitud de Beca</h1>
-                    <p class="text-gray-600 mt-1">Convocatoria: <span class="font-semibold text-[#1B396A]">{{ announcement.name }}</span></p>
+                    <div class="flex items-center gap-2 mt-2 text-sm">
+                        <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
+                            <path :d="mdiBullhorn"/>
+                        </svg>
+                        <Link :href="route('teacher.announcements.index')" class="text-gray-700 font-medium hover:underline">
+                            Convocatorias
+                        </Link>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
+                            <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
+                        </svg>
+                        <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
+                            <path :d="mdiFilePlus"/>
+                        </svg>
+                        <span class="text-gray-900 font-semibold">Solicitar Beca</span>
+                    </div>
+                    <p class="text-gray-600 mt-3 text-sm">Convocatoria: <span class="font-semibold text-[#1B396A]">{{ announcement.name }}</span></p>
                 </div>
+                <Link :href="route('teacher.announcements.index')" class="w-full md:w-auto justify-center px-4 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                        <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
+                    </svg>
+                    Regresar
+                </Link>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -261,9 +278,7 @@ const submit = () => {
                                 <div class="flex items-center justify-between mb-4">
                                     <div>
                                         <div class="flex items-center gap-2">
-                                            <h3 class="text-lg font-bold text-gray-800">{{ doc.name }}</h3>
-                                            <span v-if="doc.is_required" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Obligatorio</span>
-                                            <span v-else class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Opcional</span>
+                                            <h3 class="text-lg font-bold text-gray-800">{{ doc.name }} <span v-if="doc.is_required" class="text-red-500">*</span></h3>
                                         </div>
                                         <p class="text-sm text-gray-500 mt-1">{{ doc.description || 'Sin descripción' }}</p>
                                          <!-- Download Template Link -->
@@ -393,10 +408,20 @@ const submit = () => {
                             </div>
                         </div>
 
-                        <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
-                            <p class="text-xs text-blue-800">
-                                <strong>Nota:</strong> Al enviar esta solicitud, confirmas que la información proporcionada es verídica y aceptas los términos y condiciones de la convocatoria.
-                            </p>
+                        <div class="relative px-5 py-4 rounded-lg bg-white shadow-sm border border-gray-100 border-l-4 mb-6" style="border-left-color: #1B396A;">
+                            <div class="flex items-start gap-3">
+                                <div class="flex-shrink-0 mt-1" style="color: #1B396A;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] uppercase font-bold tracking-widest mb-1 block opacity-60" style="color: #1B396A;">Nota importante</span>
+                                    <p class="text-xs text-gray-700 leading-relaxed font-medium">
+                                        Al enviar esta solicitud, confirmas que la información proporcionada es verídica y aceptas los términos y condiciones de la convocatoria.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
                         <button @click="submit" :disabled="form.processing"

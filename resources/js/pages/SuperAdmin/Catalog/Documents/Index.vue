@@ -10,23 +10,35 @@ import 'vue-select/dist/vue-select.css';
 import { mdiFileDocumentMultiple, mdiBookOpenPageVariant, mdiAccountSchool } from '@mdi/js';
 import { alertaPregunta, alertaExito, alertaError } from '@/utils/alerts';
 
-// Modal de visualización de archivo
-const showModal = ref(false);
-const currentFileUrl = ref('');
-const currentFileTitle = ref('');
+// Estado para la vista previa integrada
+const expandedRows = ref({});
+const currentFile = ref(null);
 
-const openFileModal = (document) => {
-    if (document.file_path) {
-        currentFileUrl.value = `/storage/${document.file_path}`;
-        currentFileTitle.value = document.name;
-        showModal.value = true;
+const viewFile = (document) => {
+    if (expandedRows.value[document.id]) {
+        expandedRows.value[document.id] = false;
+        currentFile.value = null;
+    } else {
+        if (document.file_path) {
+            const isPdf = document.file_path.toLowerCase().endsWith('.pdf');
+            const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(document.file_path);
+            
+            currentFile.value = {
+                url: `/storage/${document.file_path}`,
+                name: document.name,
+                type: isPdf ? 'application/pdf' : (isImage ? 'image/jpeg' : 'other'),
+                id: document.id
+            };
+            expandedRows.value[document.id] = true;
+        }
     }
 };
 
-const closeModal = () => {
-    showModal.value = false;
-    currentFileUrl.value = '';
-    currentFileTitle.value = '';
+const closeViewer = (id) => {
+    expandedRows.value[id] = false;
+    if (Object.values(expandedRows.value).every(v => v === false)) {
+        currentFile.value = null;
+    }
 };
  
 const props = defineProps({
@@ -173,11 +185,7 @@ const toggleActivo = (id, active) => {
     });
 };
 
-const viewFile = (document) => {
-    if (document.file_path) {
-        window.open(`/storage/${document.file_path}`, '_blank');
-    }
-};
+// viewFile is now defined above for the inline preview
 
 const downloadFile = (id) => {
     window.location.href = route('catalog.documents.download', id);
@@ -343,63 +351,120 @@ const viewDetails = (id) => {
                                 </tr>
                             </thead>
             <tbody class="divide-y divide-gray-200">
-                                <tr v-for="(document, index) in (documents?.data || [])" :key="document.id" class="hover:bg-gray-50 transition">
-                                    <td class="px-6 py-4 font-medium text-gray-900">{{ documents.from + index }}</td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center">
-                                            <div>
-                                                <div class="text-sm font-semibold text-gray-800">{{ document.name }}</div>
+                                <template v-for="(document, index) in (documents?.data || [])" :key="document.id">
+                                    <tr 
+                                        class="hover:bg-gray-50 transition"
+                                        :class="{'bg-blue-50': expandedRows[document.id]}"
+                                    >
+                                        <td class="px-6 py-4 font-medium text-gray-900">{{ documents.from + index }}</td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center">
+                                                <div>
+                                                    <div class="text-sm font-semibold text-gray-800">{{ document.name }}</div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-gray-600">
-                                        {{ document.description || 'Sin descripción' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        <button
-                                            v-if="document.file_path"
-                                            @click="openFileModal(document)"
-                                            class="inline-flex items-center gap-2 px-4 py-2 border border-[#1B396A] rounded-lg text-[#1B396A] font-semibold hover:bg-[#1B396A] hover:text-white transition cursor-pointer text-sm"
-                                            title="Visualizar archivo"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
-                                                <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z"/>
-                                            </svg>
-                                            Visualizar
-                                        </button>
-                                        <button
-                                            v-else
-                                            disabled
-                                            class="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-400 font-semibold cursor-not-allowed text-sm"
-                                            title="Sin archivo"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
-                                                <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z"/>
-                                            </svg>
-                                            Sin archivo
-                                        </button>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" :checked="document.active" @change="toggleActivo(document.id, document.active)" class="sr-only peer" />
-                                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#1B396A]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1B396A]"></div>
-                                        </label>
-                                    </td>
-                                    <td class="px-6 py-4 text-center">
-                                        <div class="flex items-center justify-center gap-2">
-                                            <Link v-if="useCan('documents.edit')" :href="route(`${routeName}edit`, { document: document.id })" class="p-2 text-[#1B396A] border border-[#1B396A] rounded-full hover:bg-[#1B396A] hover:text-white transition group cursor-pointer" title="Editar">
+                                        </td>
+                                        <td class="px-6 py-4 text-gray-600">
+                                            {{ document.description || 'Sin descripción' }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                                            <button
+                                                v-if="document.file_path"
+                                                @click="viewFile(document)"
+                                                class="inline-flex items-center justify-center gap-2 px-4 py-2.5 border rounded-lg font-bold transition cursor-pointer text-sm whitespace-nowrap"
+                                                :class="expandedRows[document.id] ? 'bg-[#1B396A] text-white border-[#1B396A]' : 'text-[#1B396A] border-[#1B396A] hover:bg-[#1B396A] hover:text-white'"
+                                                title="Visualizar archivo"
+                                            >
                                                 <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
-                                                    <path d="M200-200h57l391-391-57-57-391 391v57Zm-40 80q-17 0-28.5-11.5T120-160v-97q0-16 6-30.5t17-25.5l505-504q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L313-143q-11 11-25.5 17t-30.5 6h-97Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/>
+                                                    <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z"/>
                                                 </svg>
-                                            </Link>
-                                            <button v-if="useCan('documents.delete')" @click="deleteItem(document.id, document.name)" class="p-2 text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition group cursor-pointer" title="Eliminar">
-                                                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
-                                                    <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
-                                                </svg>
+                                                Visualizar
                                             </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                            <button
+                                                v-else
+                                                disabled
+                                                class="inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-200 rounded-lg text-gray-400 font-bold cursor-not-allowed text-sm whitespace-nowrap bg-gray-50/50"
+                                                title="Sin archivo"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                                    <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z"/>
+                                                </svg>
+                                                Sin archivo
+                                            </button>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                                            <label class="relative inline-flex items-center cursor-pointer">
+                                                <input type="checkbox" :checked="document.active" @change="toggleActivo(document.id, document.active)" class="sr-only peer" />
+                                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#1B396A]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1B396A]"></div>
+                                            </label>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <div class="flex items-center justify-center gap-2">
+                                                <Link v-if="useCan('documents.edit')" :href="route(`${routeName}edit`, { document: document.id })" class="p-2 text-[#1B396A] border border-[#1B396A] rounded-full hover:bg-[#1B396A] hover:text-white transition group cursor-pointer" title="Editar">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                                        <path d="M200-200h57l391-391-57-57-391 391v57Zm-40 80q-17 0-28.5-11.5T120-160v-97q0-16 6-30.5t17-25.5l505-504q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L313-143q-11 11-25.5 17t-30.5 6h-97Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/>
+                                                    </svg>
+                                                </Link>
+                                                <button v-if="useCan('documents.delete')" @click="deleteItem(document.id, document.name)" class="p-2 text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition group cursor-pointer" title="Eliminar">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                                        <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <!-- Inline Preview Row -->
+                                    <tr v-if="expandedRows[document.id]">
+                                        <td colspan="6" class="px-6 py-6 bg-gray-50 border-b border-gray-200">
+                                            <div class="flex flex-col gap-4">
+                                                <div class="flex justify-between items-center">
+                                                    <h3 class="font-bold text-gray-800 text-lg">Vista Previa: {{ document.name }}</h3>
+                                                    <button @click="closeViewer(document.id)" class="text-gray-400 hover:text-gray-600 p-1.5 hover:bg-gray-100 rounded-lg transition cursor-pointer" title="Cerrar vista previa">
+                                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                                <div class="w-full h-[600px] border border-gray-300 rounded-xl overflow-hidden bg-white shadow-inner relative">
+                                                    <div class="absolute inset-0 flex items-center justify-center text-gray-400 z-0">
+                                                        <div class="text-center">
+                                                            <svg class="w-12 h-12 mx-auto animate-pulse mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                            </svg>
+                                                            <span>Cargando vista previa...</span>
+                                                        </div>
+                                                    </div>
+                                                    <iframe v-if="document.file_path && currentFile?.type?.includes('pdf')" 
+                                                        :src="currentFile?.url" 
+                                                        class="w-full h-full relative z-10" 
+                                                        frameborder="0"
+                                                    ></iframe>
+                                                    <div v-else-if="document.file_path && currentFile?.type?.startsWith('image/')" class="w-full h-full flex items-center justify-center bg-gray-900 relative z-10">
+                                                        <img :src="currentFile?.url" :alt="currentFile?.name" class="max-h-full max-w-full object-contain shadow-lg" />
+                                                    </div>
+                                                    <div v-else class="h-full flex items-center justify-center relative z-10 bg-white">
+                                                        <div class="text-center p-12">
+                                                            <div class="bg-gray-100 p-6 rounded-full inline-block mb-4">
+                                                                <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                                </svg>
+                                                            </div>
+                                                            <h4 class="text-xl font-bold text-gray-900 mb-2">Vista previa no disponible</h4>
+                                                            <p class="text-gray-500 mb-6 max-w-sm mx-auto">Este tipo de archivo no se puede visualizar directamente en el navegador.</p>
+                                                            <button @click="downloadFile(document.id)" 
+                                                                class="inline-flex items-center gap-2 px-6 py-3 bg-[#1B396A] text-white rounded-xl hover:bg-[#0f2347] transition shadow-md hover:shadow-lg font-bold cursor-pointer">
+                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                                </svg>
+                                                                Descargar Archivo
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
                                 <tr v-if="!documents?.data || documents.data.length === 0">
                                     <td colspan="6" class="px-6 py-12 text-center text-gray-500">
                                         No se encontraron registros
@@ -506,35 +571,7 @@ const viewDetails = (id) => {
             </div>
         </div>
 
-        <!-- Modal Visualizar Archivo -->
-        <Teleport to="body">
-            <Transition name="modal">
-                <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <!-- Backdrop -->
-                    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="closeModal"></div>
-
-                    <!-- Modal Content -->
-                    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col">
-                        <!-- Modal Header -->
-                        <div class="flex items-center justify-between p-5 border-b border-gray-200">
-                            <div class="flex items-center gap-3">
-                                <h2 class="text-lg font-semibold text-gray-900">{{ currentFileTitle }}</h2>
-                            </div>
-                            <button @click="closeModal" class="text-gray-400 hover:text-gray-800 transition-colors cursor-pointer p-1 rounded-lg hover:bg-gray-100">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
-                        </div>
-
-                        <!-- File Viewer -->
-                        <div class="flex-1 overflow-hidden rounded-b-2xl">
-                            <iframe :src="currentFileUrl" class="w-full h-full" frameborder="0"></iframe>
-                        </div>
-                    </div>
-                </div>
-            </Transition>
-        </Teleport>
+        <!-- Modal Removed in favor of inline preview -->
     </LayoutAuthenticated>
 </template>
 

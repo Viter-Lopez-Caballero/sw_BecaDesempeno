@@ -72,7 +72,7 @@ const getFase = (announcement) => {
             </div>
 
             <!-- Diseño "Featured Card" para convocatoria única/principal -->
-            <div v-if="announcements.data && announcements.data.length > 0" class="max-w-5xl mx-auto">
+            <div v-if="announcements.data && announcements.data.length > 0" class="max-w-5xl mx-auto space-y-8">
                 <div 
                     v-for="announcement in announcements.data" 
                     :key="announcement.id"
@@ -103,12 +103,24 @@ const getFase = (announcement) => {
                             <span class="text-sm font-semibold text-gray-500 uppercase tracking-widest">
                                 Convocatoria {{ new Date(announcement.created_at).getFullYear() }}
                             </span>
-                            <span 
-                                :class="getFase(announcement).color"
-                                class="text-xs font-bold px-3 py-1.5 rounded-full shadow-sm border border-gray-100"
+                            <div 
+                                class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-white shadow-sm"
+                                :class="{
+                                    'text-green-700': getFase(announcement).nombre === 'Activa',
+                                    'text-red-700': getFase(announcement).nombre === 'Cerrada'
+                                }"
                             >
-                                {{ getFase(announcement).nombre }}
-                            </span>
+                                <span 
+                                    class="w-2.5 h-2.5 rounded-full"
+                                    :class="{
+                                        'bg-green-500 animate-pulse': getFase(announcement).nombre === 'Activa',
+                                        'bg-red-500': getFase(announcement).nombre === 'Cerrada'
+                                    }"
+                                ></span>
+                                <span class="text-[13px] font-bold uppercase tracking-wider">
+                                    {{ getFase(announcement).nombre }}
+                                </span>
+                            </div>
                         </div>
 
                         <h2 class="text-3xl font-bold text-gray-900 mt-0 mb-3 leading-tight">

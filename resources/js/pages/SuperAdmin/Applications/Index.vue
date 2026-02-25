@@ -6,7 +6,7 @@ import { ref, watch, computed } from 'vue';
 import { debounce } from 'lodash';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
-import { mdiFileDocumentMultiple } from '@mdi/js';
+import { mdiFileDocumentMultiple, mdiCog } from '@mdi/js';
 
 const props = defineProps({
     stats: Object,
@@ -20,6 +20,8 @@ const search = ref(props.filters?.search || '');
 const stateId = ref(props.filters?.state_id || null);
 const institutionId = ref(props.filters?.institution_id || null);
 const rows = ref(props.filters?.rows || 10);
+const sortField = ref(props.filters?.sort_field || 'name');
+const sortDirection = ref(props.filters?.sort_direction || 'asc');
 
 // Cascading: filter institutions by selected state
 const filteredInstitutions = computed(() => {
@@ -50,6 +52,8 @@ const getFilters = () => ({
     state_id: stateId.value,
     institution_id: institutionId.value,
     rows: rows.value,
+    sort_field: sortField.value,
+    sort_direction: sortDirection.value,
 });
 
 const onSearch = debounce((value) => {
@@ -61,7 +65,19 @@ const cleanFilters = () => {
     stateId.value = null;
     institutionId.value = null;
     rows.value = 10;
+    sortField.value = 'name';
+    sortDirection.value = 'asc';
     router.get(route('superadmin.control-applications'), {}, { preserveState: true, replace: true });
+};
+
+const sortBy = (field) => {
+    if (sortField.value === field) {
+        sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortField.value = field;
+        sortDirection.value = 'asc';
+    }
+    router.get(route('superadmin.control-applications'), getFilters(), { preserveState: true, replace: true, preserveScroll: true });
 };
 
 const onRowsChange = () => {
@@ -156,6 +172,13 @@ watch(search, (value) => {
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900">Control de Solicitudes</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
+                        <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
+                            <path :d="mdiCog"/>
+                        </svg>
+                        <span class="text-gray-700 font-medium">Gestión</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
+                            <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
+                        </svg>
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
                             <path :d="mdiFileDocumentMultiple"/>
                         </svg>
@@ -261,8 +284,22 @@ watch(search, (value) => {
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
                                 <th scope="col" class="px-6 py-4 tracking-wider">ID</th>
-                                <th scope="col" class="px-6 py-4 tracking-wider">Estado</th>
-                                <th scope="col" class="px-6 py-4 tracking-wider">Institución</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">
+                                    <div @click="sortBy('state')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
+                                        Estado
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'state', 'opacity-50': sortField !== 'state' }">
+                                            <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/>
+                                        </svg>
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">
+                                    <div @click="sortBy('name')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
+                                        Institución
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'name', 'opacity-50': sortField !== 'name' }">
+                                            <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/>
+                                        </svg>
+                                    </div>
+                                </th>
                                 <th scope="col" class="px-6 py-4 text-center tracking-wider">Aprobadas</th>
                                 <th scope="col" class="px-6 py-4 text-center tracking-wider">Rechazadas</th>
                             </tr>

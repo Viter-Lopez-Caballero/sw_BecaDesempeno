@@ -4,7 +4,10 @@ import TeacherLayout from '@/layouts/TeacherLayout.vue';
 import Pagination from '@/Shared/Pagination.vue';
 import { mdiHome } from '@mdi/js';
 import { ref, watch, onMounted } from 'vue';
+import { debounce } from 'lodash';
 import { alertaExito } from '@/utils/alerts';
+import VueSelect from 'vue-select';
+import 'vue-select/dist/vue-select.css';
 
 const props = defineProps({
     applications: Object,
@@ -12,13 +15,68 @@ const props = defineProps({
 });
 
 const search = ref(props.filters.search || '');
+const rows = ref(props.filters.rows || 10);
+const sortField = ref(props.applications.meta?.sort_field || 'created_at');
+const sortDirection = ref(props.applications.meta?.sort_direction || 'desc');
 
-watch(search, (value) => {
-    router.get(route('teacher.dashboard'), { search: value }, {
+const rowOptions = [
+    { label: '5 Registros', value: 5 },
+    { label: '10 Registros', value: 10 },
+    { label: '25 Registros', value: 25 },
+    { label: '50 Registros', value: 50 },
+];
+
+const onRowsChange = () => {
+    router.get(route('teacher.dashboard'), {
+        search: search.value,
+        rows: rows.value,
+        sort_field: sortField.value,
+        sort_direction: sortDirection.value
+    }, { preserveState: true, replace: true });
+};
+
+const sortBy = (field) => {
+    if (sortField.value === field) {
+        sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortField.value = field;
+        sortDirection.value = 'asc';
+    }
+    router.get(route('teacher.dashboard'), { 
+        search: search.value,
+        rows: rows.value,
+        sort_field: sortField.value,
+        sort_direction: sortDirection.value
+    }, {
         preserveState: true,
         preserveScroll: true,
         replace: true,
     });
+};
+
+const cleanFilters = () => {
+    search.value = '';
+    rows.value = 10;
+    sortField.value = 'created_at';
+    sortDirection.value = 'desc';
+    router.get(route('teacher.dashboard'), {}, { preserveState: true, replace: true });
+};
+
+const onSearch = debounce((value) => {
+    router.get(route('teacher.dashboard'), { 
+        search: value,
+        rows: rows.value,
+        sort_field: sortField.value,
+        sort_direction: sortDirection.value
+    }, {
+        preserveState: true,
+        preserveScroll: true,
+        replace: true,
+    });
+}, 500);
+
+watch(search, (value) => {
+    onSearch(value);
 });
 
 onMounted(() => {
@@ -56,11 +114,17 @@ onMounted(() => {
                         </svg>
                         <h2 class="text-xl font-semibold text-gray-800">Filtro de Búsqueda</h2>
                     </div>
+                    <button @click="cleanFilters" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-sm font-medium transition cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
+                            <path d="M400-240v-80h240v80H400Zm-158 0L15-467l57-57 170 170 366-366 57 57-423 423Zm318-160v-80h240v80H560Zm160-160v-80h240v80H720Z"/>
+                        </svg>
+                        Limpiar Filtros
+                    </button>
                 </div>
-                <div class="text-sm text-gray-500 mb-4">Buscar solicitudes</div>
+                <div class="text-sm text-gray-500 mb-4">Buscar solicitudes por ID o nombre de convocatoria</div>
                 <div class="flex flex-col md:flex-row gap-4 items-end">
                     <div class="relative w-full md:flex-1">
-                        <div class="absolute bottom-0 left-0 pl-3 flex items-center pointer-events-none" style="height:45px">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#1B396A">
                                 <path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/>
                             </svg>
@@ -68,8 +132,20 @@ onMounted(() => {
                         <input 
                             v-model="search" 
                             type="text" 
-                            placeholder="Buscar por ID o convocatoria..."
-                            class="pl-10 w-full h-[45px] rounded-lg border border-gray-300 text-gray-700 focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition text-sm" 
+                            placeholder="Buscar..."
+                            class="pl-10 w-full h-[45px] rounded-lg border border-gray-300 text-gray-700 focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition" 
+                        />
+                    </div>
+                    <div class="w-full md:w-52 flex-shrink-0">
+                        <VueSelect 
+                            v-model="rows" 
+                            :options="rowOptions" 
+                            :reduce="option => option.value" 
+                            :searchable="false" 
+                            :clearable="false" 
+                            placeholder="Registros"
+                            class="vue-select-custom"
+                            @option:selected="onRowsChange"
                         />
                     </div>
                 </div>
@@ -82,9 +158,30 @@ onMounted(() => {
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
                                 <th scope="col" class="px-6 py-4 tracking-wider">ID</th>
-                                <th scope="col" class="px-6 py-4 tracking-wider">Convocatoria</th>
-                                <th scope="col" class="px-6 py-4 tracking-wider">Fecha de Postulación</th>
-                                <th scope="col" class="px-6 py-4 text-center tracking-wider">Estado</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">
+                                    <div @click="sortBy('announcement')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
+                                        Convocatoria
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'announcement', 'opacity-50': sortField !== 'announcement' }">
+                                            <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/>
+                                        </svg>
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">
+                                    <div @click="sortBy('created_at')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
+                                        Fecha de Postulación
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'created_at', 'opacity-50': sortField !== 'created_at' }">
+                                            <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/>
+                                        </svg>
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 text-center tracking-wider">
+                                    <div @click="sortBy('status')" class="flex items-center justify-center gap-1 cursor-pointer hover:text-gray-200 transition">
+                                        Estado
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'status', 'opacity-50': sortField !== 'status' }">
+                                            <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/>
+                                        </svg>
+                                    </div>
+                                </th>
                                 <th scope="col" class="px-6 py-4 text-center tracking-wider">Acciones</th>
                             </tr>
                         </thead>
@@ -94,28 +191,33 @@ onMounted(() => {
                                     {{ (applications.meta?.from || 1) + index }}
                                 </td>
                                 <td class="px-6 py-4 font-medium text-gray-900">{{ application.announcement?.name }}</td>
-                                <td class="px-6 py-4 text-gray-600 capitalize">
-                                    {{ new Date(application.created_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) }}
+                                <td class="px-6 py-4 text-gray-600">
+                                    {{ new Date(application.created_at).toLocaleDateString('es-ES') }}
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    <span class="px-3 py-1 inline-flex text-xs font-bold rounded-full"
-                                           :class="{
-                                               'bg-green-100 text-green-800': application.status === 'approved',
-                                               'bg-gray-100 text-gray-600': application.status === 'rejected',
-                                               'bg-yellow-100 text-yellow-800': application.status === 'pending'
-                                           }">
-                                        {{ 
-                                            application.status === 'approved' ? 'Aceptada' : 
-                                            application.status === 'rejected' ? 'No Aprobada' : 'Pendiente' 
-                                        }}
-                                    </span>
+                                    <div class="flex items-center justify-center">
+                                        <span v-if="application.status === 'approved'"
+                                            class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-white text-[13px] font-bold text-green-700 shadow-sm whitespace-nowrap">
+                                            <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
+                                            Aceptada
+                                        </span>
+                                        <span v-else-if="application.status === 'rejected'"
+                                            class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-white text-[13px] font-bold text-red-700 shadow-sm whitespace-nowrap">
+                                            <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                                            No Aprobada
+                                        </span>
+                                        <span v-else-if="application.status === 'pending'"
+                                            class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-white text-[13px] font-bold text-yellow-700 shadow-sm whitespace-nowrap">
+                                            <span class="w-2.5 h-2.5 rounded-full bg-yellow-500"></span>
+                                            Pendiente
+                                        </span>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <Link :href="route('teacher.applications.show', application.id)" 
-                                       class="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50 text-gray-700 transition text-xs font-medium uppercase gap-1 cursor-pointer">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                       class="inline-flex items-center justify-center gap-2 px-4 py-2 border border-[#1B396A] text-[#1B396A] rounded-lg hover:bg-[#1B396A] hover:text-white transition text-xs font-bold uppercase cursor-pointer whitespace-nowrap shadow-sm font-bold">
+                                         <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
+                                            <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z"/>
                                         </svg>
                                         Ver Detalles
                                     </Link>

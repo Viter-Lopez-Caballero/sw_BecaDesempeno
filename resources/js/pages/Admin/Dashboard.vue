@@ -393,12 +393,12 @@ const getProgressWidth = (count) => {
                                 <td class="px-6 py-4 font-medium text-gray-900">{{ institution.state }}</td>
                                 <td class="px-6 py-4 text-gray-800 font-semibold">{{ institution.name }}</td>
                                 <td class="px-6 py-4 text-center">
-                                    <span class="px-3 py-1 inline-flex text-xs font-bold rounded-full bg-green-100 text-green-800">
+                                    <span class="px-3.5 py-1.5 inline-flex text-[13px] font-bold rounded-md bg-white text-green-700 shadow-sm">
                                         {{ institution.approved_count }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    <span class="px-3 py-1 inline-flex text-xs font-bold rounded-full bg-red-100 text-red-800">
+                                    <span class="px-3.5 py-1.5 inline-flex text-[13px] font-bold rounded-md bg-white text-red-700 shadow-sm">
                                         {{ institution.rejected_count }}
                                     </span>
                                 </td>

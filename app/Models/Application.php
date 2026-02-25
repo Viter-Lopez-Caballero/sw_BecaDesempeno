@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Application extends Model
 {
     use HasFactory, SoftDeletes;
-    
+
     protected $table = 'applications';
 
     protected $fillable = [
@@ -60,10 +60,10 @@ class Application extends Model
         }
 
         return $query->where(function ($q) use ($search) {
-             $q->whereHas('user', function ($subQ) use ($search) {
-            $subQ->where('name', 'like', "%{$search}%")
-                 ->orWhere('email', 'like', "%{$search}%");
-        })->orWhere('id', 'like', "%{$search}%");
+            $q->whereHas('user', function ($subQ) use ($search) {
+                $subQ->where('users.name', 'like', "%{$search}%")
+                    ->orWhere('users.email', 'like', "%{$search}%");
+            })->orWhere('applications.id', 'like', "%{$search}%");
         });
     }
 
@@ -122,9 +122,13 @@ class Application extends Model
             ->join('users', 'users.id', '=', 'applications.user_id')
             ->leftJoin('institutions', 'institutions.id', '=', 'users.institution_id')
             ->leftJoin('announcements', 'announcements.id', '=', 'applications.announcement_id')
-            ->with(['user.institution.state', 'user.priorityArea', 'announcement' => function ($q) {
-                $q->withTrashed();
-            }])
+            ->with([
+                'user.institution.state',
+                'user.priorityArea',
+                'announcement' => function ($q) {
+                    $q->withTrashed();
+                }
+            ])
             ->withCount('documents');
     }
 

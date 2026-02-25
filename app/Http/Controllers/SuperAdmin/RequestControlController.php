@@ -30,7 +30,9 @@ class RequestControlController extends Controller
         $institutionId = $request->input('institution_id');
         $statusFilter = $request->input('status'); // Added status filter
         $rows = $request->input('rows', 10);
-        
+        $sortField = $request->input('sort_field', 'name');
+        $sortDirection = $request->input('sort_direction', 'asc');
+
         $institutions = Institution::with('state')
             ->withCount([
                 'applications as approved_count' => function ($query) {
@@ -51,12 +53,19 @@ class RequestControlController extends Controller
             ])
             ->when($search, function ($query, $search) {
                 $query->where('name', 'like', "%{$search}%")
-                      ->orWhere('id', 'like', "%{$search}%");
+                    ->orWhere('id', 'like', "%{$search}%");
             })
             ->when($stateId, fn($q) => $q->where('state_id', $stateId))
             ->when($institutionId, fn($q) => $q->where('id', $institutionId))
-            ->whereHas('users.applications', function($q) {
+            ->whereHas('users.applications', function ($q) {
                 $q->whereIn('status', ['approved', 'rejected']);
+            })
+            ->when($sortField === 'state', function ($query) use ($sortDirection) {
+                $query->join('states', 'institutions.state_id', '=', 'states.id')
+                    ->orderBy('states.name', $sortDirection)
+                    ->select('institutions.*');
+            }, function ($query) use ($sortField, $sortDirection) {
+                $query->orderBy($sortField, $sortDirection);
             })
             ->paginate($rows)
             ->withQueryString();
@@ -66,7 +75,7 @@ class RequestControlController extends Controller
             'institutions' => RequestControlSummaryResource::collection($institutions),
             'states' => State::select('id', 'name')->orderBy('name')->get(),
             'allInstitutions' => Institution::select('id', 'name', 'state_id')->orderBy('name')->get(),
-            'filters' => $request->all(['search', 'state_id', 'institution_id', 'rows']),
+            'filters' => $request->all(['search', 'state_id', 'institution_id', 'rows', 'sort_field', 'sort_direction']),
         ]);
     }
 

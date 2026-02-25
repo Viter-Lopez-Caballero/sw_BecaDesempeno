@@ -224,8 +224,8 @@ watch([search, status], debounce(() => {
                                 </td>
                             </tr>
                             <tr v-if="applications.data.length === 0">
-                                <td colspan="6" class="px-6 py-8 text-center text-gray-500">
-                                    No se encontraron solicitudes.
+                                <td colspan="6" class="px-6 py-8 text-center text-gray-500 font-medium">
+                                    No se encontraron registros
                                 </td>
                             </tr>
                         </tbody>
@@ -245,34 +245,54 @@ watch([search, status], debounce(() => {
     background: linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%);
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
-    padding: 0.5rem;
-    min-height: 42px;
+    padding: 0 4px;
+    height: 45px;
+    display: flex;
+    align-items: center;
 }
+
+:deep(.vue-select-custom .vs__selected-options) {
+    flex-wrap: nowrap !important;
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+}
+
 :deep(.vue-select-custom .vs__selected) {
     color: #374151;
     font-weight: 500;
 }
+
 :deep(.vue-select-custom .vs__search::placeholder) {
     color: #9ca3af;
 }
+
 :deep(.vue-select-custom .vs__dropdown-menu) {
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
+
 :deep(.vue-select-custom .vs__dropdown-option) {
     padding: 0.75rem 1rem;
     color: #374151;
 }
+
 :deep(.vue-select-custom .vs__dropdown-option--highlight) {
     background: #1B396A;
     color: white;
 }
-:deep(.vue-select-custom .vs__open-indicator) {
-    fill: #1B396A;
-    transform: scale(0.85);
-}
+
 :deep(.vue-select-custom .vs__actions) {
     padding-right: 4px;
+    display: flex;
+    align-items: center;
+}
+
+:deep(.vue-select-custom .vs__open-indicator) {
+    fill: #1B396A;
+    transform: scale(0.8);
 }
 </style>

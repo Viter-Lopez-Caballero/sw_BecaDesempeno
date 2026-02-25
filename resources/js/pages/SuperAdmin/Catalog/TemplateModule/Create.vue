@@ -46,17 +46,36 @@ const clearError = (field) => {
 const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-        form.file = file;
-        archivoNombre.value = file.name;
-        archivoTipo.value = file.type;
-
-        if (archivoUrl.value && archivoUrl.value.startsWith('blob:')) {
-            URL.revokeObjectURL(archivoUrl.value);
-        }
-
-        archivoUrl.value = URL.createObjectURL(file);
-        archivoPreview.value = archivoUrl.value;
+        processFile(file);
     }
+};
+
+const handleDrop = (event) => {
+    const file = event.dataTransfer.files[0];
+    if (file) {
+        if (file.type !== 'application/pdf') {
+            alertaError('Error', 'Solo se permiten archivos PDF.');
+            return;
+        }
+        if (file.size > 10 * 1024 * 1024) {
+            alertaError('Error', 'El archivo pesa más de 10MB.');
+            return;
+        }
+        processFile(file);
+    }
+};
+
+const processFile = (file) => {
+    form.file = file;
+    archivoNombre.value = file.name;
+    archivoTipo.value = file.type;
+
+    if (archivoUrl.value && archivoUrl.value.startsWith('blob:')) {
+        URL.revokeObjectURL(archivoUrl.value);
+    }
+
+    archivoUrl.value = URL.createObjectURL(file);
+    archivoPreview.value = archivoUrl.value;
 };
 
 const removeFile = () => {
@@ -142,7 +161,7 @@ const submit = () => {
             </div>
 
             <!-- Form Card -->
-            <div class="bg-white rounded-lg shadow-md border border-gray-200 p-8">
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 p-8">
                 <form @submit.prevent="submit" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Nombre -->
@@ -173,40 +192,41 @@ const submit = () => {
                             <!-- Visor de archivo si existe uno seleccionado -->
                             <div v-if="archivoUrl" class="border-2 border-gray-300 rounded-lg overflow-hidden">
                                 <!-- Header del archivo -->
-                                <div class="bg-gray-100 border-b border-gray-300 p-3 flex items-center justify-between">
+                                <div class="bg-gray-100 border-b border-gray-300 p-4 flex items-center justify-between flex-wrap gap-2">
                                     <div>
-                                        <p class="text-sm font-semibold text-gray-900">Nombre del Archivo: {{ archivoNombre }}</p>
-                                        <p class="text-xs text-gray-600">Tamaño: {{ form.file ? (form.file.size / 1024 / 1024).toFixed(2) + ' MB' : '' }}</p>
+                                        <p class="text-sm font-semibold text-gray-900 truncate max-w-md">
+                                            {{ archivoNombre }}
+                                        </p>
+                                        <p class="text-xs text-gray-600">
+                                            Tamaño: {{ (form.file.size / 1024 / 1024).toFixed(2) }} MB
+                                        </p>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <label for="archivo-plantilla-change" class="px-4 py-2 bg-[#1B396A] text-white text-sm rounded hover:bg-[#0f2347] transition cursor-pointer">
+                                        <label for="archivo-plantilla-change" class="cursor-pointer px-4 py-2 bg-[#1B396A] text-white text-sm rounded hover:bg-[#0f2347] transition shadow-sm font-medium">
                                             Cambiar Archivo
+                                            <input id="archivo-plantilla-change" type="file" class="hidden" @change="handleFileChange" accept=".pdf" />
                                         </label>
-                                        <button v-if="form.file" type="button" @click="removeFile"
-                                            class="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition cursor-pointer">
-                                            Cancelar
+                                        <button type="button" @click="removeFile"
+                                            class="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition shadow-sm font-medium">
+                                            Eliminar
                                         </button>
                                     </div>
                                 </div>
 
                                 <!-- Visor integrado -->
-                                <div class="bg-gray-100" style="height: 500px;">
+                                <div class="bg-gray-100 h-[500px]">
                                     <iframe v-if="archivoTipo?.includes('pdf')"
                                         :src="archivoUrl"
                                         class="w-full h-full border-0"
                                         title="Visor de archivo">
                                     </iframe>
-                                    <div v-else-if="archivoTipo?.startsWith('image/')" class="h-full flex items-center justify-center bg-gray-900">
-                                        <img :src="archivoUrl" :alt="archivoNombre" class="max-h-full max-w-full object-contain" />
-                                    </div>
                                     <div v-else class="h-full flex items-center justify-center bg-gray-50 p-6">
                                         <div class="text-center">
                                             <svg class="w-16 h-16 mx-auto text-[#1B396A] mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                             </svg>
-                                            <p class="text-gray-900 font-bold mb-2 text-lg">Archivo Seleccionado</p>
-                                            <p class="text-gray-600 font-medium mb-2 break-all">{{ archivoNombre }}</p>
-                                            <p class="text-sm text-gray-500">Vista previa no disponible para este tipo de archivo.</p>
+                                            <p class="text-gray-900 font-bold mb-2 text-lg">Archivo Cargado</p>
+                                            <p class="text-gray-600 font-medium mb-2">Vista previa no disponible</p>
                                         </div>
                                     </div>
                                 </div>
@@ -214,17 +234,25 @@ const submit = () => {
 
                             <!-- Drop zone cuando NO hay archivo -->
                             <div v-else class="flex items-center justify-center w-full">
-                                <label for="archivo-plantilla" class="flex flex-col items-center justify-center w-full h-48 bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-all">
+                                <label 
+                                    for="archivo-plantilla" 
+                                    class="flex flex-col items-center justify-center w-full h-48 bg-gradient-to-br from-[#F3F4F6] to-[#E5E7EB] border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gradient-to-br hover:from-[#EFF6FF] hover:to-[#DBEAFE] hover:border-[#1B396A] transition-all relative"
+                                    @dragover.prevent
+                                    @drop.prevent="handleDrop"
+                                >
                                     <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                        <svg class="w-10 h-10 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <svg class="w-10 h-10 mb-3 text-[#1B396A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                         </svg>
-                                        <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Haz clic para subir</span> o arrastra y suelta</p>
-                                        <p class="text-xs text-gray-500">PDF (MAX. 10MB)</p>
+                                        <p class="mb-2 text-sm text-gray-700">
+                                            <span class="font-semibold text-[#1B396A]">Arrastra archivos aquí</span> o haz clic para seleccionar
+                                        </p>
+                                        <p class="text-xs text-gray-500">Formato PDF (Máx. 10MB)</p>
                                     </div>
                                     <input id="archivo-plantilla" type="file" class="hidden" @change="handleFileChange" accept=".pdf" />
                                 </label>
-                            </div> 
+                            </div>
+ 
 
                             <!-- Input oculto para cambiar archivo -->
                             <input id="archivo-plantilla-change" type="file" class="hidden" @change="handleFileChange" accept=".pdf" />

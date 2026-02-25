@@ -93,7 +93,7 @@ onMounted(() => {
 
         <div class="space-y-6">
             <!-- Header -->
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900">Mis Solicitudes</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
@@ -154,7 +154,7 @@ onMounted(() => {
             <!-- Table -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left uppercase">
+                    <table class="w-full text-sm text-left">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
                                 <th scope="col" class="px-6 py-4 tracking-wider">ID</th>
@@ -187,7 +187,7 @@ onMounted(() => {
                         </thead>
                         <tbody class="divide-y divide-gray-200">
                             <tr v-for="(application, index) in applications.data" :key="application.id" class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 font-medium text-gray-900 leading-none">
+                                <td class="px-6 py-4 font-medium text-gray-900">
                                     {{ (applications.meta?.from || 1) + index }}
                                 </td>
                                 <td class="px-6 py-4 font-medium text-gray-900">{{ application.announcement?.name }}</td>
@@ -245,15 +245,21 @@ onMounted(() => {
     background: linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%);
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
-    padding: 0.5rem;
+    padding: 0 4px;
     height: 45px;
-    overflow: hidden;
+    display: flex;
+    align-items: center;
 }
+
 :deep(.vue-select-custom .vs__selected-options) {
     flex-wrap: nowrap !important;
     min-width: 0;
     flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
 }
+
 :deep(.vue-select-custom .vs__selected) {
     color: #374151;
     font-weight: 500;
@@ -264,39 +270,41 @@ onMounted(() => {
     display: block;
     margin: 0;
 }
+
 :deep(.vue-select-custom .vs__search) {
     max-width: 10px;
     margin: 0;
+    padding: 0;
 }
+
 :deep(.vue-select-custom .vs__search::placeholder) {
     color: #9ca3af;
 }
+
 :deep(.vue-select-custom .vs__dropdown-menu) {
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
+
 :deep(.vue-select-custom .vs__dropdown-option) {
     padding: 0.75rem 1rem;
     color: #374151;
 }
+
 :deep(.vue-select-custom .vs__dropdown-option--highlight) {
     background: #1B396A;
     color: white;
 }
-:deep(.vue-select-custom .vs__clear),
-:deep(.vue-select-custom .vs__open-indicator) {
-    fill: #1B396A;
-    transition: transform 0.2s;
-}
-:deep(.vue-select-custom .vs__open-indicator) {
-    transform: scale(0.85);
-}
+
 :deep(.vue-select-custom .vs__actions) {
-    padding-right: 8px;
-    flex-shrink: 0;
+    padding-right: 4px;
     display: flex;
     align-items: center;
-    gap: 4px;
+}
+
+:deep(.vue-select-custom .vs__open-indicator) {
+    fill: #1B396A;
+    transform: scale(0.8);
 }
 </style>

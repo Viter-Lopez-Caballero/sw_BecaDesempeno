@@ -141,50 +141,50 @@ const getFileIcon = (type) => {
                 </Link>
             </div>
 
-            <!-- Status Banner -->
-            <div 
-                v-if="application.status === 'approved' || application.status === 'rejected'"
-                class="rounded-lg p-4 flex items-center gap-4 shadow-sm border mb-6"
-                :class="{
-                    'bg-green-50 border-green-200': application.status === 'approved',
-                    'bg-red-50 border-red-200': application.status === 'rejected'
-                }"
-            >
+            <!-- Status Banner (Minimalist Redesign) -->
+            <transition enter-active-class="transition duration-300 ease-out" enter-from-class="transform -translate-y-4 opacity-0" enter-to-class="transform translate-y-0 opacity-100" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
                 <div 
-                    class="p-2 rounded-full"
+                    v-if="application.status === 'approved' || application.status === 'rejected'"
+                    class="relative px-5 py-4 rounded-lg bg-white shadow-sm border border-gray-100 border-l-4 mb-6 flex items-center gap-4 group"
                     :class="{
-                        'bg-green-100 text-green-600': application.status === 'approved',
-                        'bg-red-100 text-red-600': application.status === 'rejected'
+                        'border-l-green-500': application.status === 'approved',
+                        'border-l-red-500': application.status === 'rejected'
                     }"
                 >
-                    <svg v-if="application.status === 'approved'" viewBox="0 0 24 24" class="w-8 h-8" style="fill: currentColor"><path :d="mdiCheckCircle"/></svg>
-                    <svg v-else viewBox="0 0 24 24" class="w-8 h-8" style="fill: currentColor"><path :d="mdiCloseCircle"/></svg>
-                </div>
-                <div>
-                    <h3 
-                        class="text-lg font-bold"
+                    <div 
+                        class="flex-shrink-0"
                         :class="{
-                            'text-green-800': application.status === 'approved',
-                            'text-red-800': application.status === 'rejected'
+                            'text-green-500': application.status === 'approved',
+                            'text-red-500': application.status === 'rejected'
                         }"
                     >
-                        Solicitud {{ application.status === 'approved' ? 'Aprobada' : 'Rechazada' }}
-                    </h3>
-                    <p class="text-sm text-gray-600">
-                        Actualizada el {{ formatDate(application.updated_at) }}
-                    </p>
-                </div>
-            </div>
-
-            <!-- Comentario de Rechazo (si existe) -->
-            <div v-if="application.status === 'rejected' && application.admin_comment" class="bg-red-50 rounded-lg shadow-md border border-red-200 p-6 mb-6">
-                <div class="flex items-start gap-3">
-                    <svg style="width:24px;height:24px" viewBox="0 0 24 24" class="text-red-600 mt-1">
-                        <path fill="currentColor" d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m0 14H6l-2 2V4h16v12z"/>
-                    </svg>
+                        <svg v-if="application.status === 'approved'" viewBox="0 0 24 24" class="w-8 h-8" fill="currentColor"><path :d="mdiCheckCircle"/></svg>
+                        <svg v-else viewBox="0 0 24 24" class="w-8 h-8" fill="currentColor"><path :d="mdiCloseCircle"/></svg>
+                    </div>
                     <div>
-                        <h3 class="font-bold text-red-800 mb-2">Motivo del Rechazo</h3>
-                        <p class="text-red-700">"{{ application.admin_comment }}"</p>
+                        <h3 
+                            class="text-lg font-bold text-gray-900"
+                        >
+                            Solicitud {{ application.status === 'approved' ? 'Aprobada' : 'Rechazada' }}
+                        </h3>
+                        <p class="text-sm text-gray-600 font-medium">
+                            Actualizada el {{ formatDate(application.updated_at) }}
+                        </p>
+                    </div>
+                </div>
+            </transition>
+
+            <!-- Comentario de Rechazo (Minimalist Redesign) -->
+            <div v-if="application.status === 'rejected' && application.admin_comment" class="relative px-6 py-5 rounded-lg bg-white shadow-sm border border-gray-100 border-l-4 border-l-red-500 mb-6">
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 text-red-500 mt-1">
+                        <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m0 14H6l-2 2V4h16v12z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold tracking-widest text-red-400 mb-1 block">Motivo del Rechazo</span>
+                        <p class="text-gray-800 font-bold leading-relaxed">"{{ application.admin_comment }}"</p>
                     </div>
                 </div>
             </div>

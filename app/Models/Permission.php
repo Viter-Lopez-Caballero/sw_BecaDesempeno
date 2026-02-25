@@ -26,9 +26,9 @@ class Permission extends SpatiePermission
         }
 
         return $query->where(function ($q) use ($search) {
-            $q->where('name', 'LIKE', "%{$search}%")
-              ->orWhere('description', 'LIKE', "%{$search}%")
-              ->orWhere('module_key', 'LIKE', "%{$search}%");
+            $q->where('permissions.name', 'LIKE', "%{$search}%")
+                ->orWhere('permissions.description', 'LIKE', "%{$search}%")
+                ->orWhere('permissions.module_key', 'LIKE', "%{$search}%");
         });
     }
 

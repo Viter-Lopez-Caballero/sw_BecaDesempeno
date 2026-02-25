@@ -187,16 +187,26 @@ watch([search, status], debounce(() => {
                                     </Link>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span 
-                                        class="px-3 py-1 inline-flex text-xs font-bold rounded-full"
-                                        :class="{
-                                            'bg-green-100 text-green-800': application.status === 'approved',
-                                            'bg-red-100 text-red-800': application.status === 'rejected',
-                                            'bg-yellow-100 text-yellow-800': application.status === 'pending'
-                                        }"
-                                    >
-                                        {{ getStatusLabel(application.status) }}
-                                    </span>
+                                    <div class="flex items-center">
+                                        <span 
+                                            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md bg-white text-[13px] font-bold shadow-sm"
+                                            :class="{
+                                                'text-green-700': application.status === 'approved',
+                                                'text-red-700': application.status === 'rejected',
+                                                'text-yellow-700': application.status === 'pending'
+                                            }"
+                                        >
+                                            <span 
+                                                class="w-2.5 h-2.5 rounded-full"
+                                                :class="{
+                                                    'bg-green-500': application.status === 'approved',
+                                                    'bg-red-500': application.status === 'rejected',
+                                                    'bg-yellow-500': application.status === 'pending'
+                                                }"
+                                            ></span>
+                                            {{ getStatusLabel(application.status) }}
+                                        </span>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 text-center whitespace-nowrap">
                                     <div class="flex items-center justify-center gap-2">

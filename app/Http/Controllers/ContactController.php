@@ -36,16 +36,16 @@ class ContactController extends Controller
         try {
             // Get Institution
             $institution = \App\Models\Institution::with('state')->find($request->institution_id);
-            
+
             $data = [
                 'name' => $request->name,
                 'email' => $request->email,
-                'institution' => $institution->name . ' (' . ($institution->state->name ?? '') . ')',
+                'institucion' => $institution->name . ' (' . ($institution->state->name ?? '') . ')',
                 'message' => $request->message,
             ];
 
-            // 1. Correo a la institución (tecnmpedpd@gmail.com por ahora)
-            Mail::to('tecnmpedpd@gmail.com')->queue(new ContactFormMail($data));
+            // 1. Correo a la institución (configurado en .env MAIL_FROM_ADDRESS)
+            Mail::to(config('mail.from.address'))->queue(new ContactFormMail($data));
 
             // 2. Correo de confirmación al usuario
             Mail::to($request->email)->queue(new ContactConfirmationMail($data));

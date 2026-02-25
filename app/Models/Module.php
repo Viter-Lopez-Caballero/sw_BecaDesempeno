@@ -31,9 +31,9 @@ class Module extends Model
         }
 
         return $query->where(function ($q) use ($search) {
-            $q->where('name', 'LIKE', "%{$search}%")
-              ->orWhere('description', 'LIKE', "%{$search}%")
-              ->orWhere('key', 'LIKE', "%{$search}%");
+            $q->where('modules.name', 'LIKE', "%{$search}%")
+                ->orWhere('modules.description', 'LIKE', "%{$search}%")
+                ->orWhere('modules.key', 'LIKE', "%{$search}%");
         });
     }
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -101,16 +102,12 @@
         }
 
         .change-item {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
             background: #fff;
-            border-radius: 10px;
-            padding: 18px 20px;
-            margin-bottom: 16px;
-            border: 1px solid #e0e7ef;
-            box-shadow: 0 2px 8px rgba(27,57,106,0.04);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
         .change-item:last-child {
@@ -118,50 +115,88 @@
         }
 
         .change-label {
-            color: #1B396A;
-            font-size: 15px;
-            font-weight: 600;
+            color: #1e293b;
+            font-size: 13px;
+            font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0;
-            flex: 1 1 180px;
-            text-align: left;
-        }
-
-        .change-dates {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex: 1 1 220px;
-            justify-content: flex-end;
-        }
-
-        .old-value {
-            color: #64748b;
-            background: #e0e7ef;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            display: block;
+            text-align: center;
+            background: #f8fafc;
+            padding: 8px;
             border-radius: 6px;
-            padding: 6px 14px;
-            font-size: 15px;
-            font-weight: 500;
-            text-decoration: line-through;
-            margin-right: 0;
         }
 
-        .arrow {
+        .comparison-grid {
+            display: table;
+            margin: 0 auto;
+            border-spacing: 15px 0;
+            width: auto;
+        }
+
+        .date-card {
+            display: table-cell;
+            vertical-align: top;
+            width: 200px;
+            text-align: center;
+        }
+
+        .date-tag {
+            font-size: 11px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            display: block;
+            letter-spacing: 1.5px;
+            text-align: center;
+        }
+
+        .tag-old {
+            color: #94a3b8;
+        }
+
+        .tag-new {
+            color: #1B396A;
+        }
+
+        .date-box {
+            padding: 12px 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            min-height: 45px;
+            display: block;
+            text-align: center;
+            line-height: 45px;
+        }
+
+        .box-old {
+            background: #f8fafc;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            font-weight: 500;
+        }
+
+        .box-new {
+            background: #1B396A;
+            color: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 4px 6px -1px rgba(27, 57, 106, 0.2);
+            border: 1px solid #1B396A;
+        }
+
+        .arrow-container {
+            display: table-cell;
+            vertical-align: middle;
+            padding-top: 22px;
+            text-align: center;
+            width: 60px;
+        }
+
+        .arrow-icon {
             color: #1B396A;
             font-size: 18px;
-            font-weight: 700;
-            margin: 0 4px;
-        }
-
-        .new-value {
-            color: #fff;
-            background: #1B396A;
-            border-radius: 6px;
-            padding: 6px 14px;
-            font-size: 15px;
-            font-weight: 700;
-            letter-spacing: 1px;
+            font-weight: 900;
+            letter-spacing: -2px;
         }
 
         .footer {
@@ -194,69 +229,36 @@
             }
 
             .header-title {
-                font-size: 15px;
-                line-height: 1.3;
+                font-size: 18px;
             }
 
             .content {
                 padding: 25px 15px;
             }
 
-            .greeting {
-                font-size: 16px;
-            }
-
-            .message {
-                font-size: 13px;
-                line-height: 1.6;
-            }
-
-            .announcement-box {
-                padding: 15px;
-                margin: 15px 0;
-            }
-
-            .changes-box {
-                padding: 15px 8px;
-            }
-
-            .change-item {
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 15px;
-                gap: 10px;
-            }
-
-            .change-label,
-            .change-dates {
-                flex: unset;
+            .date-card {
+                min-width: auto;
                 width: 100%;
-                text-align: left;
-                box-sizing: border-box;
             }
 
-            .change-dates {
-                justify-content: flex-start;
-                flex-wrap: wrap;
+            .arrow-container {
+                padding: 0;
+                transform: rotate(90deg);
+                margin: 10px 0;
+                display: flex;
+                justify-content: center;
+                width: 100%;
             }
 
-            .old-value,
-            .new-value {
+            .date-box {
                 font-size: 13px;
-                padding: 6px 10px;
-            }
-
-            .footer {
-                padding: 18px 12px;
-            }
-
-            .footer-text {
-                font-size: 10px;
-                line-height: 1.6;
+                padding: 10px;
+                width: 100%;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="email-container">
         <div class="header">
@@ -276,15 +278,30 @@
             </div>
 
             <div class="changes-box">
-                <p class="changes-title">Cambios realizados:</p>
+                <p class="changes-title">Detalle de los cambios:</p>
                 @foreach($changes as $change)
                     <div class="change-item">
                         <span class="change-label">{{ $change['label'] }}</span>
-                        <span class="change-dates">
-                            <span class="old-value">{{ \Carbon\Carbon::parse($change['old'])->translatedFormat('d \d\e F \d\e\l Y') }}</span>
-                            <span class="arrow">→</span>
-                            <span class="new-value">{{ \Carbon\Carbon::parse($change['new'])->translatedFormat('d \d\e F \d\e\l Y') }}</span>
-                        </span>
+
+                        <div class="comparison-grid">
+                            <div class="date-card">
+                                <span class="date-tag tag-old">ANTERIOR</span>
+                                <div class="date-box box-old">
+                                    {{ \Carbon\Carbon::parse($change['old'])->translatedFormat('d \d\e F, Y') }}
+                                </div>
+                            </div>
+
+                            <div class="arrow-container">
+                                <span class="arrow-icon">&gt;&gt;&gt;&gt;</span>
+                            </div>
+
+                            <div class="date-card">
+                                <span class="date-tag tag-new">NUEVA</span>
+                                <div class="date-box box-new">
+                                    {{ \Carbon\Carbon::parse($change['new'])->translatedFormat('d \d\e F, Y') }}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 @endforeach
             </div>
@@ -305,4 +322,5 @@
         </div>
     </div>
 </body>
+
 </html>

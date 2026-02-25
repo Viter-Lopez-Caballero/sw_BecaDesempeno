@@ -6,9 +6,10 @@ const props = defineProps({
     modelValue: {
         type: Object,
         required: true,
-        // Expected shape:
-        // { publication_start, registration_start, registration_end,
-        //   evaluation_start, evaluation_end, results_start, results_end }
+    },
+    isEdit: {
+        type: Boolean,
+        default: false
     }
 });
 
@@ -80,6 +81,70 @@ const dates = ref({ ...props.modelValue });
 
 watch(() => props.modelValue, (v) => { dates.value = { ...v }; }, { deep: true });
 
+// ─── Progressive & Context Logic ─────────────────────────────────────────────
+const unlockedPhases = computed(() => {
+    const list = [];
+    list.push('publicacion'); // First is always enabled
+    
+    if (dates.value.publication_start) list.push('registro');
+    if (dates.value.registration_start && dates.value.registration_end) list.push('evaluacion');
+    if (dates.value.evaluation_start && dates.value.evaluation_end) list.push('resultados');
+    
+    return list;
+});
+
+const editablePhases = computed(() => {
+    // If it's a new announcement, all unlocked phases are editable
+    if (!props.isEdit) return unlockedPhases.value;
+    
+    // In edit mode, we restrict phases that have already finished
+    const now = new Date();
+    now.setHours(0,0,0,0);
+    
+    return phases.filter(ph => {
+        const endStr = ph.endKey ? dates.value[ph.endKey] : dates.value[ph.startKey];
+        if (!endStr) return unlockedPhases.value.includes(ph.key);
+        
+        const end = parseDate(endStr);
+        return end >= now;
+    }).map(ph => ph.key);
+});
+
+const isDayDisabled = (day) => {
+    if (!day) return true;
+    const now = new Date();
+    now.setHours(0,0,0,0);
+    
+    // 1. Disable past days only if not editing
+    if (!props.isEdit && day < now) return true;
+    
+    if (!activePhase.value) return false;
+    
+    const phIdx = phases.findIndex(p => p.key === activePhase.value);
+    
+    // 2. Can't select dates before or on the previous phase's end date
+    if (phIdx > 0) {
+        const prevPh = phases[phIdx - 1];
+        const prevEndStr = prevPh.endKey ? dates.value[prevPh.endKey] : dates.value[prevPh.startKey];
+        if (prevEndStr) {
+            const prevEnd = parseDate(prevEndStr);
+            if (day <= prevEnd) return true;
+        }
+    }
+    
+    // 3. Can't select dates after next phase's start date
+    if (phIdx < phases.length - 1) {
+        const nextPh = phases[phIdx + 1];
+        const nextStartStr = dates.value[nextPh.startKey];
+        if (nextStartStr) {
+            const nextStart = parseDate(nextStartStr);
+            if (day >= nextStart) return true;
+        }
+    }
+
+    return false;
+};
+
 // ─── Calendar navigation ─────────────────────────────────────────────────────
 const today = new Date();
 const viewYear  = ref(today.getFullYear());
@@ -99,6 +164,17 @@ const nextMonth = () => {
     if (viewMonth.value === 11) { viewMonth.value = 0; viewYear.value++; }
     else viewMonth.value++;
 };
+
+// ─── Drag Selection Life Cycle ───────────────────────────────────────────────
+import { onMounted, onUnmounted } from 'vue';
+
+onMounted(() => {
+    window.addEventListener('mouseup', onMouseUp);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('mouseup', onMouseUp);
+});
 
 // Returns year/month for the Nth offset month from viewYear/viewMonth
 const getOffsetMonth = (offset) => {
@@ -222,6 +298,14 @@ const validateDates = (newDates) => {
 
 // ─── Interaction ─────────────────────────────────────────────────────────────
 const selectPhase = (phaseKey) => {
+    if (!unlockedPhases.value.includes(phaseKey)) {
+        errMessage.value = 'Debes configurar las etapas anteriores primero.';
+        return;
+    }
+    if (!editablePhases.value.includes(phaseKey)) {
+        errMessage.value = 'Esta etapa ya ha concluido y no se puede editar.';
+        return;
+    }
     activePhase.value = activePhase.value === phaseKey ? null : phaseKey;
     dragStart.value = null;
     dragEnd.value = null;
@@ -229,38 +313,64 @@ const selectPhase = (phaseKey) => {
     errMessage.value = '';
 };
 
-const onMouseEnter = (day) => {
-    if (!day) return;
-    hoverDay.value = day;
+const onMouseDown = (day) => {
+    if (!day || !activePhase.value || isDayDisabled(day)) return;
+
+    const phase = phases.find(p => p.key === activePhase.value);
+    if (!phase) return;
+
+    isDragging.value = true;
+    dragStart.value = day;
+    dragEnd.value = day;
 };
 
+const onMouseEnter = (day) => {
+    hoverDay.value = day;
+    if (isDragging.value && day && !isDayDisabled(day)) {
+        dragEnd.value = day;
+    }
+};
+
+const onMouseUp = () => {
+    if (!isDragging.value || !dragStart.value || !dragEnd.value) {
+        isDragging.value = false;
+        // Don't reset dragStart here if we want to allow single clicks (optional)
+        return;
+    }
+
+    const phase = phases.find(p => p.key === activePhase.value);
+    if (!phase) {
+        isDragging.value = false;
+        return;
+    }
+
+    const lo = dragStart.value <= dragEnd.value ? dragStart.value : dragEnd.value;
+    const hi = dragStart.value <= dragEnd.value ? dragEnd.value : dragStart.value;
+
+    if (!phase.endKey) {
+        // Single day phase (Publication)
+        applyPhaseDates(phase, lo, lo);
+    } else {
+        // Range phase
+        applyPhaseDates(phase, lo, hi);
+    }
+
+    isDragging.value = false;
+    dragStart.value = null;
+    dragEnd.value = null;
+};
+
+// We keep onDayClick as a fallback or for single-click configuration
 const onDayClick = (day) => {
-    if (!day || !activePhase.value) return;
+    // With drag-and-drop, onDayClick might be redundant, 
+    // but useful for accessibility or quick single-day range selection
+    if (!day || !activePhase.value || isDayDisabled(day)) return;
     
     const phase = phases.find(p => p.key === activePhase.value);
     if (!phase) return;
 
-    // If it's a single day phase (Publicación), finalize immediately
     if (!phase.endKey) {
         applyPhaseDates(phase, day, day);
-        dragStart.value = null;
-        return;
-    }
-
-    if (!dragStart.value) {
-        // First click: set start
-        dragStart.value = day;
-    } else {
-        // Second click: finalize range
-        const lo = dragStart.value <= day ? dragStart.value : day;
-        const hi = dragStart.value <= day ? day : dragStart.value;
-
-        if (applyPhaseDates(phase, lo, hi)) {
-            dragStart.value = null;
-        } else {
-            // If validation fails, stay on "waiting for second date" but maybe they clicked a bad date
-            // Let's keep the start date they chose so they can try another end date
-        }
     }
 };
 
@@ -279,27 +389,58 @@ const applyPhaseDates = (phase, start, end) => {
 };
 
 const clearPhase = (phase) => {
+    if (!editablePhases.value.includes(phase.key)) return;
+    
     const updated = { ...dates.value };
-    updated[phase.startKey] = '';
-    if (phase.endKey) updated[phase.endKey] = '';
+    const idx = phases.findIndex(p => p.key === phase.key);
+    
+    // Clear current and all subsequent phases (progressive requirement)
+    for (let i = idx; i < phases.length; i++) {
+        const p = phases[i];
+        updated[p.startKey] = '';
+        if (p.endKey) updated[p.endKey] = '';
+    }
+    
     dates.value = updated;
     emit('update:modelValue', updated);
+    
+    // Bug fix: Reset active selection to null to avoid staying on a now-locked phase
+    activePhase.value = null;
     errMessage.value = '';
     dragStart.value = null;
+    dragEnd.value = null;
 };
 
 // ─── Day style ───────────────────────────────────────────────────────────────
 const dayStyle = (day) => {
     if (!day) return {};
-    // Drag/Multi-click preview takes priority
-    if (activePhase.value && (isDragging.value || dragStart.value) && isInDragPreview(day)) {
-        const ph = phases.find(p => p.key === activePhase.value);
-        return { background: ph.colorLight, color: ph.color, borderRadius: '6px', fontWeight: '700' };
-    }
+
     const ph = phaseForDay(day);
-    if (ph) {
-        return { background: ph.color, color: '#fff', borderRadius: '6px', fontWeight: '700' };
+    const disabled = isDayDisabled(day);
+
+    // 1. Drag/Multi-click preview takes priority
+    if (activePhase.value && (isDragging.value || dragStart.value) && isInDragPreview(day)) {
+        const phActive = phases.find(p => p.key === activePhase.value);
+        return { background: phActive.colorLight, color: phActive.color, borderRadius: '6px', fontWeight: '700' };
     }
+
+    // 2. If it belongs to a configured phase, show its color
+    if (ph) {
+        return { 
+            background: ph.color, 
+            color: '#fff', 
+            borderRadius: '6px', 
+            fontWeight: '700',
+            cursor: disabled ? 'not-allowed' : (activePhase.value ? 'crosshair' : 'pointer'),
+            opacity: disabled && activePhase.value ? '0.6' : '1'
+        };
+    }
+
+    // 3. Otherwise, if it's disabled (past or locked), show gray
+    if (disabled) {
+        return { background: '#F9FAFB', color: '#D1D5DB', cursor: 'not-allowed', opacity: '0.6' };
+    }
+
     return {};
 };
 
@@ -333,7 +474,8 @@ const dayLabel = (day) => {
                 :class="[
                     activePhase === phase.key
                         ? 'shadow-lg scale-105'
-                        : 'hover:shadow-md hover:scale-[1.02] bg-white border-gray-200'
+                        : 'hover:shadow-md hover:scale-[1.02] bg-white border-gray-200',
+                    !unlockedPhases.includes(phase.key) || !editablePhases.includes(phase.key) ? 'opacity-50 grayscale-[0.5]' : ''
                 ]"
                 :style="activePhase === phase.key
                     ? { borderColor: phase.color, background: phase.colorLight }
@@ -356,7 +498,12 @@ const dayLabel = (day) => {
 
                 <!-- Info -->
                 <div class="flex-1 min-w-0">
-                    <p class="font-bold text-sm text-gray-900">{{ phase.label }}</p>
+                    <p class="font-bold text-sm text-gray-900 flex items-center gap-1">
+                        {{ phase.label }}
+                        <svg v-if="!unlockedPhases.includes(phase.key)" class="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                        </svg>
+                    </p>
                     <p class="text-xs text-gray-500 leading-tight">{{ phase.desc }}</p>
                 </div>
 
@@ -372,11 +519,11 @@ const dayLabel = (day) => {
                         <button
                             type="button"
                             @click.stop="clearPhase(phase)"
-                            class="flex-shrink-0 text-gray-400 hover:text-red-500 transition cursor-pointer"
+                            class="p-1.5 text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition flex items-center justify-center cursor-pointer shadow-sm ml-2"
                             title="Limpiar"
                         >
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
                         </button>
                     </div>
@@ -411,42 +558,65 @@ const dayLabel = (day) => {
             </button>
         </div>
 
-        <!-- Error / Warning message (Permanent) -->
-        <div v-if="errMessage" 
-            class="px-4 py-3 rounded-lg text-sm flex items-center gap-2 font-medium shadow-sm border border-red-200 bg-red-100 text-red-700">
-            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            <span>{{ errMessage }}</span>
-            <button @click="errMessage = ''" class="ml-auto text-red-400 hover:text-red-700">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
-        </div>
+        <!-- Error / Warning message (Simplified Minimalist) -->
+        <transition enter-active-class="transition duration-300 ease-out" enter-from-class="transform -translate-y-4 opacity-0" enter-to-class="transform translate-y-0 opacity-100" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+            <div v-if="errMessage" 
+                class="relative px-5 py-4 rounded-lg border-l-4 border-red-500 bg-white shadow-sm flex items-center gap-4"
+            >
+                <div class="flex-shrink-0 text-red-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                
+                <div class="flex flex-col">
+                    <span class="text-[10px] uppercase font-bold tracking-widest text-red-400 mb-0.5">Atención</span>
+                    <span class="text-sm font-bold text-gray-800 leading-tight">{{ errMessage }}</span>
+                </div>
 
-        <!-- Instruction banner (Permanent while active) -->
-        <div
-            v-if="activePhase && !dragStart"
-            class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium"
-            :style="{ background: phases.find(p => p.key === activePhase)?.colorLight, color: phases.find(p => p.key === activePhase)?.color }"
-        >
-            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <span>
-                Configurando: <strong>{{ phases.find(p => p.key === activePhase)?.label }}</strong> —
-                {{ phases.find(p => p.key === activePhase)?.endKey
-                    ? 'Selecciona la fecha inicial y luego la final.'
-                    : 'Selecciona el día de publicación.' }}
-            </span>
-            <button type="button" @click="activePhase = null" class="ml-auto text-current hover:opacity-60 transition cursor-pointer">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
-        </div>
+                <button @click="errMessage = ''" class="ml-auto p-2 text-gray-300 hover:text-red-500 transition-all cursor-pointer">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </transition>
+
+        <!-- Instruction banner (Simplified Minimalist) -->
+        <transition enter-active-class="transition duration-500 ease-out" enter-from-class="transform -translate-y-4 opacity-0 scale-95" enter-to-class="transform translate-y-0 opacity-100 scale-100" leave-active-class="transition duration-200" leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
+            <div
+                v-if="activePhase && !dragStart"
+                class="relative flex items-center gap-4 px-5 py-4 rounded-lg bg-white shadow-sm border border-gray-100"
+                :style="{ 
+                    borderLeft: `5px solid ${phases.find(p => p.key === activePhase)?.color}`
+                }"
+            >
+                <div class="flex-shrink-0" :style="{ color: phases.find(p => p.key === activePhase)?.color || '#1B396A' }">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+
+                <div class="flex flex-col">
+                    <span class="text-[10px] uppercase font-bold tracking-widest opacity-60 mb-0.5" :style="{ color: phases.find(p => p.key === activePhase)?.color || '#1B396A' }">
+                        Instrucciones
+                    </span>
+                    <span class="text-sm font-bold leading-tight text-gray-800">
+                        Configurando: <strong :style="{ color: phases.find(p => p.key === activePhase)?.color || '#1B396A' }">{{ phases.find(p => p.key === activePhase)?.label }}</strong> —
+                        {{ phases.find(p => p.key === activePhase)?.endKey
+                            ? 'Selecciona la fecha inicial y luego la final haciendo clic y arrastrando.'
+                            : 'Selecciona el día de publicación con un solo clic.' }}
+                    </span>
+                </div>
+
+                <button type="button" @click="activePhase = null" class="ml-auto p-2 text-gray-300 hover:opacity-60 transition-all cursor-pointer" :style="{ hoverColor: phases.find(p => p.key === activePhase)?.color }">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </transition>
 
         <!-- Multi-Month Calendar Grid -->
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -480,8 +650,12 @@ const dayLabel = (day) => {
                             activePhase && day ? { '--tw-ring-color': phases.find(p => p.key === activePhase)?.color } : {}
                         ]"
                         @mouseenter="onMouseEnter(day)"
+                        @mousedown="onMouseDown(day)"
                         @click="onDayClick(day)"
                     >
+                        <!-- Past day indicator (if isEdit) -->
+                        <div v-if="props.isEdit && day && day < new Date().setHours(0,0,0,0) && !phaseForDay(day)" 
+                             class="absolute inset-0 bg-gray-50/50 rounded-lg pointer-events-none"></div>
                         <!-- Day number -->
                         <span v-if="day" class="text-sm font-bold leading-none"
                             :class="phaseForDay(day) || isInDragPreview(day) ? '' : 'text-gray-700'">
@@ -493,12 +667,7 @@ const dayLabel = (day) => {
                             {{ dayLabel(day) }}
                         </span>
 
-                        <!-- Selection helper (dot on hover) -->
-                        <div v-if="activePhase && day && !phaseForDay(day) && !isInDragPreview(day)" 
-                             class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <div class="w-2.5 h-2.5 rounded-full shadow-sm animate-bounce" 
-                                 :style="{ background: phases.find(p => p.key === activePhase)?.color }"></div>
-                        </div>
+
 
                         <!-- Active Start Date indicator -->
                         <div v-if="dragStart && sameDay(day, dragStart)" 

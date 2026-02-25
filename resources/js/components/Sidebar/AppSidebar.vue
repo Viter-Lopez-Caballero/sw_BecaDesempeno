@@ -64,7 +64,7 @@
         <div class="relative p-4 border-t border-[#2d4a6f]">
             <button
                 @click="profileMenuOpen = !profileMenuOpen"
-                class="w-full flex items-center space-x-3 hover:bg-white/5 p-2 rounded transition-colors duration-200"
+                class="w-full flex items-center space-x-3 hover:bg-white/5 p-2 rounded transition-colors duration-200 cursor-pointer"
             >
                 <div class="w-10 h-10 rounded-full bg-[#152d47] flex items-center justify-center text-white font-semibold flex-shrink-0">
                     {{ userInitials }}

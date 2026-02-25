@@ -440,17 +440,17 @@ const submit = () => {
                             <h2 class="text-xl font-bold text-gray-900">Calendario de la Convocatoria</h2>
                         </div>
 
-                        <AnnouncementCalendar v-model="calendarDates" />
+                        <AnnouncementCalendar v-model="calendarDates" :is-edit="true" />
 
                         <!-- Validation errors -->
                         <div class="mt-4 space-y-1">
-                            <p v-if="form.errors.publication_start" class="text-xs text-red-600">Publicación: {{ form.errors.publication_start }}</p>
-                            <p v-if="form.errors.registration_start" class="text-xs text-red-600">Registro inicio: {{ form.errors.registration_start }}</p>
-                            <p v-if="form.errors.registration_end" class="text-xs text-red-600">Registro fin: {{ form.errors.registration_end }}</p>
-                            <p v-if="form.errors.evaluation_start" class="text-xs text-red-600">Evaluación inicio: {{ form.errors.evaluation_start }}</p>
-                            <p v-if="form.errors.evaluation_end" class="text-xs text-red-600">Evaluación fin: {{ form.errors.evaluation_end }}</p>
-                            <p v-if="form.errors.results_start" class="text-xs text-red-600">Resultados inicio: {{ form.errors.results_start }}</p>
-                            <p v-if="form.errors.results_end" class="text-xs text-red-600">Resultados fin: {{ form.errors.results_end }}</p>
+                            <p v-if="form.errors.publication_start" class="text-sm text-red-600">Publicación: {{ form.errors.publication_start }}</p>
+                            <p v-if="form.errors.registration_start" class="text-sm text-red-600">Registro inicio: {{ form.errors.registration_start }}</p>
+                            <p v-if="form.errors.registration_end" class="text-sm text-red-600">Registro fin: {{ form.errors.registration_end }}</p>
+                            <p v-if="form.errors.evaluation_start" class="text-sm text-red-600">Evaluación inicio: {{ form.errors.evaluation_start }}</p>
+                            <p v-if="form.errors.evaluation_end" class="text-sm text-red-600">Evaluación fin: {{ form.errors.evaluation_end }}</p>
+                            <p v-if="form.errors.results_start" class="text-sm text-red-600">Resultados inicio: {{ form.errors.results_start }}</p>
+                            <p v-if="form.errors.results_end" class="text-sm text-red-600">Resultados fin: {{ form.errors.results_end }}</p>
                         </div>
                     </div>
 

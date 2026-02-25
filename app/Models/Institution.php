@@ -68,10 +68,10 @@ class Institution extends Model
         }
 
         return $query->where(function ($q) use ($search) {
-            $q->where('name', 'LIKE', "%{$search}%")
-              ->orWhereHas('state', function ($qState) use ($search) {
-                  $qState->where('name', 'LIKE', "%{$search}%");
-              });
+            $q->where('institutions.name', 'LIKE', "%{$search}%")
+                ->orWhereHas('state', function ($qState) use ($search) {
+                    $qState->where('states.name', 'LIKE', "%{$search}%");
+                });
         });
     }
 

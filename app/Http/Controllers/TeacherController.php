@@ -21,25 +21,45 @@ class TeacherController extends Controller
     public function inicio(Request $request)
     {
         $query = \App\Models\Application::forCurrentUser()
-            ->with(['announcement']);
-        
+            ->with(['announcement'])
+            ->leftJoin('announcements', 'applications.announcement_id', '=', 'announcements.id')
+            ->select('applications.*', 'announcements.name as announcement_name');
+
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('id', 'like', "%{$search}%")
-                  ->orWhereHas('announcement', function($qConv) use ($search) {
-                      $qConv->where('name', 'like', "%{$search}%");
-                  });
+            $query->where(function ($q) use ($search) {
+                $q->where('applications.id', 'like', "%{$search}%")
+                    ->orWhereHas('announcement', function ($qConv) use ($search) {
+                        $qConv->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
-        $applications = $query->orderByDesc('created_at')
-            ->paginate(10)
+        $rows = $request->input('rows', 10);
+        $sortField = $request->input('sort_field', 'created_at');
+        $sortDirection = $request->input('sort_direction', 'desc');
+
+        // Map frontend fields to database columns
+        $sortColumn = match ($sortField) {
+            'id' => 'applications.id',
+            'announcement' => 'announcement_name',
+            'created_at' => 'applications.created_at',
+            'status' => 'applications.status',
+            default => 'applications.created_at',
+        };
+
+        $applications = $query->orderBy($sortColumn, $sortDirection)
+            ->paginate($rows)
             ->withQueryString();
 
         return Inertia::render('Teacher/Dashboard', [
-            'applications' => \App\Http\Resources\ApplicationResource::collection($applications),
-            'filters' => $request->only('search'),
+            'applications' => \App\Http\Resources\ApplicationResource::collection($applications)->additional([
+                'meta' => [
+                    'sort_field' => $sortField,
+                    'sort_direction' => $sortDirection,
+                ]
+            ]),
+            'filters' => $request->only(['search', 'rows', 'sort_field', 'sort_direction']),
         ]);
     }
 
@@ -57,7 +77,7 @@ class TeacherController extends Controller
     public function download($id)
     {
         $document = \App\Models\Document::findOrFail($id);
-        
+
         // Check ownership via Application
         $application = \App\Models\Application::where('id', $document->application_id)
             ->forCurrentUser()
@@ -69,7 +89,7 @@ class TeacherController extends Controller
     public function stream($id)
     {
         $document = \App\Models\Document::findOrFail($id);
-        
+
         $application = \App\Models\Application::where('id', $document->application_id)
             ->forCurrentUser()
             ->firstOrFail();
@@ -79,12 +99,15 @@ class TeacherController extends Controller
 
     public function convocatorias()
     {
-        // Fetch active announcements (including those already applied to)
+        // Fetch active announcements
         $userId = auth()->id();
         $announcements = \App\Models\Announcement::activa()
-            ->with(['calendar', 'applications' => function ($query) use ($userId) {
-                $query->where('user_id', $userId);
-            }])
+            ->with([
+                'calendar',
+                'applications' => function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                }
+            ])
             ->orderByDesc('created_at')
             ->get();
 
@@ -141,7 +164,7 @@ class TeacherController extends Controller
                 $request->file_types,
                 $request->reused_documents
             );
-            
+
             return redirect()->route('teacher.dashboard')->with('success', 'Solicitud enviada correctamente.');
         } catch (\Exception $e) {
             return back()->withErrors(['files' => $e->getMessage()]);

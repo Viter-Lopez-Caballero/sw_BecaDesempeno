@@ -134,8 +134,8 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getLayoutName(): string
     {
         $role = $this->getPrimaryRole();
-        
-        return match($role) {
+
+        return match ($role) {
             'Super Admin' => 'LayoutAuthenticated',
             'Admin' => 'AdminLayout',
             'Evaluador' => 'EvaluatorLayout',
@@ -168,11 +168,11 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         return $query->where(function ($q) use ($search) {
-            $q->where('name', 'LIKE', "%{$search}%")
-              ->orWhere('email', 'LIKE', "%{$search}%")
-              ->orWhereHas('roles', function ($qRole) use ($search) {
-                  $qRole->where('name', 'LIKE', "%{$search}%");
-              });
+            $q->where('users.name', 'LIKE', "%{$search}%")
+                ->orWhere('users.email', 'LIKE', "%{$search}%")
+                ->orWhereHas('roles', function ($qRole) use ($search) {
+                    $qRole->where('roles.name', 'LIKE', "%{$search}%");
+                });
         });
     }
 

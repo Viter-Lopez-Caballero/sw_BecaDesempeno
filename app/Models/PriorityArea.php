@@ -29,7 +29,7 @@ class PriorityArea extends Model
             return $query;
         }
 
-        return $query->where('name', 'LIKE', "%{$search}%");
+        return $query->where('priority_areas.name', 'LIKE', "%{$search}%");
     }
 
     public function scopeOrdenado($query, $sortField = 'id', $sortDirection = 'asc')

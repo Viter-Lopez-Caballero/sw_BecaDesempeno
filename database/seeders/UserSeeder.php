@@ -29,7 +29,8 @@ class UserSeeder extends Seeder
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
         ]);
-        if($superAdmin) $userSuperAdmin->assignRole($superAdmin);
+        if ($superAdmin)
+            $userSuperAdmin->assignRole($superAdmin);
 
         $userAdmin = User::create([
             'name' => 'Dr. Abraham Avelino Pichardo',
@@ -37,7 +38,8 @@ class UserSeeder extends Seeder
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
         ]);
-        if($admin) $userAdmin->assignRole($admin);
+        if ($admin)
+            $userAdmin->assignRole($admin);
 
         $userDocente = User::create([
             'name' => 'Mta. Dulce María Gonzales Arellano',
@@ -45,7 +47,8 @@ class UserSeeder extends Seeder
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
         ]);
-        if($docente) $userDocente->assignRole($docente);
+        if ($docente)
+            $userDocente->assignRole($docente);
 
         $userEvaluador = User::create([
             'name' => 'Dr. Maximiliano Carrera Oropeza',
@@ -53,6 +56,7 @@ class UserSeeder extends Seeder
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
         ]);
-        if($evaluador) $userEvaluador->assignRole($evaluador);
+        if ($evaluador)
+            $userEvaluador->assignRole($evaluador);
     }
 }

@@ -96,35 +96,41 @@ const getStatusLabel = (status) => {
             <!-- Stats Cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Aprobadas -->
-                <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-600 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Aprobadas</p>
-                        <p class="text-3xl font-bold text-gray-900 mt-1">{{ stats?.aprobadas ?? 0 }}</p>
-                    </div>
-                    <div class="p-3 bg-green-50 rounded-full">
-                        <svg viewBox="0 0 24 24" class="w-8 h-8 text-green-600" style="fill: currentColor"><path :d="mdiCheckCircle"/></svg>
+                <div class="bg-white rounded-lg shadow-md border-l-4 border-[#10B981] p-4 hover:shadow-lg transition-shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Aprobadas</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ stats?.aprobadas ?? 0 }}</p>
+                        </div>
+                        <div class="p-2">
+                             <svg viewBox="0 0 24 24" class="w-8 h-8 text-[#10B981]" style="fill: currentColor"><path :d="mdiCheckCircle"/></svg>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Rechazadas -->
-                <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Rechazadas</p>
-                        <p class="text-3xl font-bold text-gray-900 mt-1">{{ stats?.rechazadas ?? 0 }}</p>
-                    </div>
-                    <div class="p-3 bg-red-50 rounded-full">
-                         <svg viewBox="0 0 24 24" class="w-8 h-8 text-red-600" style="fill: currentColor"><path :d="mdiCloseCircle"/></svg>
+                <div class="bg-white rounded-lg shadow-md border-l-4 border-[#EF4444] p-4 hover:shadow-lg transition-shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Rechazadas</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ stats?.rechazadas ?? 0 }}</p>
+                        </div>
+                        <div class="p-2">
+                             <svg viewBox="0 0 24 24" class="w-8 h-8 text-[#EF4444]" style="fill: currentColor"><path :d="mdiCloseCircle"/></svg>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Total Evaluadas -->
-                <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-600 flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Completadas</p>
-                        <p class="text-3xl font-bold text-gray-900 mt-1">{{ stats?.evaluadas ?? 0 }}</p>
-                    </div>
-                    <div class="p-3 bg-blue-50 rounded-full">
-                         <svg viewBox="0 0 24 24" class="w-8 h-8 text-blue-600" style="fill: currentColor"><path :d="mdiFileDocumentMultiple"/></svg>
+                <div class="bg-white rounded-lg shadow-md border-l-4 border-[#1B396A] p-4 hover:shadow-lg transition-shadow">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide">Total Completadas</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ stats?.evaluadas ?? 0 }}</p>
+                        </div>
+                        <div class="p-2">
+                             <svg viewBox="0 0 24 24" class="w-8 h-8 text-[#1B396A]" style="fill: currentColor"><path :d="mdiFileDocumentMultiple"/></svg>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -6,7 +6,7 @@ import InputLabel from '@/components/InputLabel.vue';
 import InputError from '@/components/InputError.vue';
 import { mdiArrowLeft, mdiFileDocumentOutline, mdiCloudUpload, mdiCheckBold, mdiEye, mdiEyeOff, mdiRefresh, mdiBullhorn, mdiFilePlus } from '@mdi/js';
 import { ref, onMounted } from 'vue';
-import { alertaCargando, cerrarAlerta, alertaError } from '@/utils/alerts.js';
+import { alertaCargando, cerrarAlerta, alertaError, alertaPregunta } from '@/utils/alerts.js';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
 
@@ -130,7 +130,7 @@ const getPreviewUrl = (state) => {
     return null;
 };
 
-const submit = () => {
+const submit = async () => {
     form.announcement_id = props.announcement.id; 
     form.files = [];
     form.file_types = [];
@@ -180,6 +180,13 @@ const submit = () => {
     if (hasErrors) {
         return;
     }
+
+    const confirmed = await alertaPregunta(
+        '¿Deseas enviar tu solicitud?',
+        'Una vez enviada, no podrás modificar los documentos adjuntados.'
+    );
+
+    if (!confirmed) return;
 
     alertaCargando('Enviando', 'Por favor espera...');
     form.post(route('teacher.applications.store'), {
@@ -270,13 +277,13 @@ const submit = () => {
                                 <template #option="option">
                                     <div class="flex flex-col">
                                         <span class="font-bold text-[#1B396A]">{{ option.code }}</span>
-                                        <span class="text-xs">{{ option.name }}</span>
+                                        <span class="text-xs text-gray-500">{{ option.name }}</span>
                                     </div>
                                 </template>
                                 <template #selected-option="option">
                                     <div class="flex items-center gap-2">
                                         <span class="font-bold text-[#1B396A]">{{ option.code }}</span>
-                                        <span class="truncate">- {{ option.name }}</span>
+                                        <span class="truncate text-gray-700">- {{ option.name }}</span>
                                     </div>
                                 </template>
                                 <template #no-options="{ search, searching }">
@@ -306,17 +313,12 @@ const submit = () => {
                         <!-- Dynamic Documents List -->
                         <div v-if="catalog_documents && catalog_documents.length > 0" class="space-y-8">
                             <div v-for="doc in catalog_documents" :key="doc.id" class="border-b border-gray-100 pb-8 last:border-0 last:pb-0">
-                                <div class="flex items-center justify-between mb-4">
+                                 <div class="flex items-center justify-between mb-2">
                                     <div>
                                         <div class="flex items-center gap-2">
                                             <h3 class="text-lg font-bold text-gray-800">{{ doc.name }} <span v-if="doc.is_required" class="text-red-500">*</span></h3>
                                         </div>
                                         <p class="text-sm text-gray-500 mt-1">{{ doc.description || 'Sin descripción' }}</p>
-                                         <!-- Download Template Link -->
-                                        <a v-if="doc.template_url" :href="doc.template_url" target="_blank" class="text-xs font-bold text-[#1B396A] hover:underline flex items-center gap-1 mt-1">
-                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4-4m0 0L8 8m4-4v12"/></svg>
-                                            Descargar Formato
-                                        </a>
                                     </div>
                                     <!-- Status Badge -->
                                     <div v-if="documentState[doc.id]?.type !== 'empty'" class="flex items-center gap-1 text-green-600 font-medium text-sm">
@@ -324,6 +326,18 @@ const submit = () => {
                                         Listo
                                     </div>
                                 </div>
+
+                                <!-- Ver Ejemplo bar — ancho completo -->
+                                <div v-if="doc.template_url" class="flex items-center gap-2 w-full mb-4 px-4 py-2.5 rounded-lg bg-white shadow-sm border border-gray-100 border-l-4" style="border-left-color: #1B396A;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: #1B396A;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span class="text-xs text-gray-600">¿No sabes cómo debe verse este documento?</span>
+                                    <a :href="doc.template_url" target="_blank" class="text-xs font-bold hover:underline transition ml-1" style="color: #1B396A;">
+                                        Ver Ejemplo
+                                    </a>
+                                </div>
+
 
                                 <!-- FILLED STATE: File Preview / Info -->
                                 <div v-if="documentState[doc.id] && documentState[doc.id].type !== 'empty'" class="border-2 border-gray-300 rounded-lg overflow-hidden">
@@ -344,13 +358,18 @@ const submit = () => {
                                         <!-- Actions -->
                                         <div class="flex items-center gap-2">
                                              <!-- Toggle Preview Button -->
-                                             <button 
-                                                type="button" 
+                                             <button
+                                                type="button"
                                                 @click="togglePreview(doc.id)"
-                                                class="p-2 text-gray-500 hover:text-[#1B396A] hover:bg-white rounded-full transition"
+                                                class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 border rounded-lg font-bold transition cursor-pointer text-sm whitespace-nowrap"
+                                                :class="documentState[doc.id].showPreview ? 'bg-[#1B396A] text-white border-[#1B396A]' : 'text-[#1B396A] border-[#1B396A] hover:bg-[#1B396A] hover:text-white'"
                                                 :title="documentState[doc.id].showPreview ? 'Ocultar Vista Previa' : 'Ver Vista Previa'"
                                              >
-                                                <svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path :d="documentState[doc.id].showPreview ? mdiEyeOff : mdiEye"/></svg>
+                                                <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
+                                                    <path v-if="!documentState[doc.id].showPreview" d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z"/>
+                                                    <path v-else d="m644-428-58-58q9-47-27-88t-93-32l-58-58q17-8 34.5-12t37.5-4q75 0 127.5 52.5T660-500q0 20-4 37.5T644-428Zm128 126-58-56q38-29 67.5-63.5T832-500q-50-101-143.5-160.5T480-720q-29 0-57 4t-55 12l-62-62q41-17 84-25.5t90-8.5q151 0 269 83.5T920-500q-23 59-60.5 109.5T772-302Zm20 246L624-222q-35 11-70.5 16.5T480-200q-151 0-269-83.5T40-500q21-53 53-98.5t73-81.5L56-792l56-56 736 736-56 56ZM222-624q-29 26-53 57t-41 67q50 101 143.5 160.5T480-280q20 0 39-2.5t39-5.5l-36-38q-11 3-21 4.5t-21 1.5q-75 0-127.5-52.5T300-500q0-11 1.5-21t4.5-21l-84-82Zm319 93Zm-151 75Z"/>
+                                                </svg>
+                                                {{ documentState[doc.id].showPreview ? 'Ocultar' : 'Visualizar' }}
                                              </button>
 
                                              <label :for="'doc-upload-' + doc.id" class="cursor-pointer px-4 py-2 bg-[#1B396A] text-white text-sm rounded hover:bg-[#0f2347] transition shadow-sm font-medium">

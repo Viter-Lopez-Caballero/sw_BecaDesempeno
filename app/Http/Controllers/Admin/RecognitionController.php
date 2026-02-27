@@ -24,17 +24,15 @@ class RecognitionController extends Controller
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('users.name', 'like', "%{$search}%")
-                      ->orWhere('announcements.name', 'like', "%{$search}%");
+                        ->orWhere('announcements.name', 'like', "%{$search}%");
                 });
             })
-            ->orderBy('announcements.created_at', 'desc') // Recent first
-            ->orderBy('users.name', 'asc')
             ->paginate($rows)
             ->withQueryString();
 
         return Inertia::render('Admin/Recognitions/Index', [
             'recognitions' => $recognitions,
-            'filters' => $request->all(['search', 'rows']),
+            'filters' => $request->all(['search', 'rows', 'sort_field', 'sort_direction']),
         ]);
     }
 
@@ -66,15 +64,15 @@ class RecognitionController extends Controller
         ]);
 
         $recognition->active = !$recognition->active;
-        
+
         if ($recognition->active) {
             $recognition->sent_at = now();
         }
 
         $recognition->save();
 
-        return back()->with('success', $recognition->active 
-            ? 'Reconocimiento activado correctamente.' 
+        return back()->with('success', $recognition->active
+            ? 'Reconocimiento activado correctamente.'
             : 'Reconocimiento desactivado correctamente.');
     }
 }

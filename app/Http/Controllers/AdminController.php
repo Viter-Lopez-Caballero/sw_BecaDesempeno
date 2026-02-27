@@ -35,8 +35,12 @@ class AdminController extends Controller
         $rows = $request->input('rows', 10);
         $stateId = $request->input('state_id');
         $institutionId = $request->input('institution_id');
+        $sortField = $request->input('sort_field');
+        $sortDirection = $request->input('sort_direction', 'asc');
 
         $institutions = \App\Models\Institution::with('state')
+            ->leftJoin('states', 'states.id', '=', 'institutions.state_id')
+            ->select('institutions.*')
             ->withCount([
                 'applications as approved_count' => function ($query) {
                     $query->where('status', 'approved');
@@ -46,13 +50,24 @@ class AdminController extends Controller
                 }
             ])
             ->when($search, function ($query, $search) {
-                 $query->where('name', 'like', "%{$search}%")
-                       ->orWhere('id', 'like', "%{$search}%");
+                $query->where(function ($q) use ($search) {
+                    $q->where('institutions.name', 'like', "%{$search}%")
+                        ->orWhere('institutions.id', 'like', "%{$search}%");
+                });
             })
-            ->when($stateId, fn($q) => $q->where('state_id', $stateId))
-            ->when($institutionId, fn($q) => $q->where('id', $institutionId))
-            ->whereHas('users.applications', function($q) {
+            ->when($stateId, fn($q) => $q->where('institutions.state_id', $stateId))
+            ->when($institutionId, fn($q) => $q->where('institutions.id', $institutionId))
+            ->whereHas('users.applications', function ($q) {
                 $q->whereIn('status', ['approved', 'rejected']);
+            })
+            ->when($sortField, function ($query, $field) use ($sortDirection) {
+                return match ($field) {
+                    'name' => $query->orderBy('institutions.name', $sortDirection),
+                    'state' => $query->orderBy('states.name', $sortDirection),
+                    default => $query->orderBy('institutions.name', 'asc'),
+                };
+            }, function ($query) {
+                $query->orderBy('institutions.name', 'asc');
             })
             ->paginate($rows, ['*'], 'table_page')
             ->withQueryString();
@@ -63,7 +78,7 @@ class AdminController extends Controller
             'institutions' => RequestControlSummaryResource::collection($institutions),
             'states' => State::select('id', 'name')->orderBy('name')->get(),
             'allInstitutions' => Institution::select('id', 'name', 'state_id')->orderBy('name')->get(),
-            'filters' => $request->all(['search', 'rows', 'state_id', 'institution_id']),
+            'filters' => $request->all(['search', 'rows', 'state_id', 'institution_id', 'sort_field', 'sort_direction']),
         ]);
     }
 

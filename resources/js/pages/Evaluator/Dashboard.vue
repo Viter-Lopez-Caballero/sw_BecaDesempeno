@@ -206,13 +206,28 @@ watch(search, (value) => {
 
                             <!-- Columna Derecha: Acciones -->
                             <div class="flex flex-col items-end gap-3 min-w-[140px]">
-                                <span class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full border border-yellow-200">
+                                <span 
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white text-xs font-bold shadow-sm border border-gray-100"
+                                    :class="{
+                                        'text-yellow-700': application.status === 'Pendiente',
+                                        'text-green-700': application.status === 'Evaluada' || application.status === 'Aprobada',
+                                        'text-red-700': application.status === 'Rechazada',
+                                    }"
+                                >
+                                    <span 
+                                        class="w-2 h-2 rounded-full"
+                                        :class="{
+                                            'bg-yellow-500 animate-pulse': application.status === 'Pendiente',
+                                            'bg-green-500': application.status === 'Evaluada' || application.status === 'Aprobada',
+                                            'bg-red-500': application.status === 'Rechazada',
+                                        }"
+                                    ></span>
                                     {{ application.status }}
                                 </span>
                                 
                                 <Link 
                                     :href="route('evaluator.evaluation.show', application.evaluation_id)" 
-                                    class="w-full text-center bg-[#1B396A] hover:bg-[#2c4c85] text-white font-medium py-2 px-4 rounded-lg transition-colors shadow-sm"
+                                    class="w-full text-center bg-[#1B396A] hover:bg-[#152d47] text-white py-2 px-4 rounded-lg transition shadow-md text-[11px] font-bold uppercase tracking-wider transform hover:-translate-y-0.5 active:translate-y-0"
                                 >
                                     Evaluar
                                 </Link>

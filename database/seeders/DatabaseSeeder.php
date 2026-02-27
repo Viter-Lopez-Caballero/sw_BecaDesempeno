@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
             RenapoSeeder::class,
             CatalogDocumentSeeder::class,
             AnnouncementSeeder::class,
+            PositionTypeSeeder::class,
         ]);
     }
 }

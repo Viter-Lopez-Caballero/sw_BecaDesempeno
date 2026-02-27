@@ -6,7 +6,7 @@ import { ref, watch } from 'vue';
 import { debounce } from 'lodash';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
-import { mdiStar, mdiDownload, mdiEye, mdiEyeOff } from '@mdi/js';
+import { mdiDownload, mdiEye, mdiEyeOff } from '@mdi/js';
 
 const props = defineProps({
     recognitions: Object,
@@ -63,9 +63,6 @@ watch(search, (value) => {
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900">Mis Reconocimientos</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
-                        <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
-                            <path :d="mdiStar"/>
-                        </svg>
                         <span class="text-gray-900 font-semibold">Reconocimientos</span>
                     </div>
                 </div>
@@ -133,11 +130,8 @@ watch(search, (value) => {
                         </thead>
                         <tbody class="divide-y divide-gray-200">
                             <tr v-if="recognitions.data.length === 0">
-                                <td colspan="5" class="px-6 py-12 text-center text-gray-500">
-                                    <div class="flex flex-col items-center justify-center">
-                                        <svg viewBox="0 0 24 24" class="h-12 w-12 text-gray-300 mb-3" style="fill: currentColor"><path :d="mdiStar"/></svg>
-                                        <p>Aún no tienes reconocimientos disponibles.</p>
-                                    </div>
+                                <td colspan="5" class="px-6 py-12 text-center text-gray-500 font-medium">
+                                    <p>Aún no tienes reconocimientos disponibles.</p>
                                 </td>
                             </tr>
                             <template v-for="(item, index) in recognitions.data" :key="item.id">

@@ -84,11 +84,6 @@ const submit = () => {
                             <h2 class="text-3xl text-[#1B396A] font-semibold">Iniciar sesión</h2>
                         </div>
 
-                        <!-- Status Message -->
-                        <div v-if="status" class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded text-sm">
-                            {{ status }}
-                        </div>
-
                         <!-- Form -->
                         <form @submit.prevent="submit" class="space-y-5">
                             <!-- Email -->

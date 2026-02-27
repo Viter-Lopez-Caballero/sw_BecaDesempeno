@@ -60,7 +60,7 @@ const currentScore = computed(() => {
                          <svg viewBox="0 0 24 24" class="w-4 h-4 text-gray-400" style="fill: currentColor">
                             <path :d="mdiChevronRight"/>
                         </svg>
-                        <Link :href="route('admin.applications.show', application.id || application.data?.id)" class="text-gray-700 font-medium hover:text-[#1B396A]">Detalles</Link>
+                        <Link :href="route('admin.applications.show', application.id || application.data?.id)" class="text-gray-700 font-medium hover:text-[#1B396A]">Detalles de solicitud</Link>
                          <svg viewBox="0 0 24 24" class="w-4 h-4 text-gray-400" style="fill: currentColor">
                             <path :d="mdiChevronRight"/>
                         </svg>
@@ -77,41 +77,52 @@ const currentScore = computed(() => {
 
             <div class="space-y-6 max-w-5xl mx-auto">
                 <!-- Info Header -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div class="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-200">
                     <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-100 pb-4 mb-6 gap-2">
                         <h2 class="text-lg font-bold text-gray-900">Datos de la Evaluación</h2>
                          <!-- Badge Status -->
-                        <span class="px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm self-start md:self-auto"
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white text-xs font-bold border border-gray-100 self-start md:self-auto"
                             :class="{
-                                'bg-gray-400': evaluation.status === 'pending',
-                                'bg-green-500': evaluation.status === 'approved',
-                                'bg-red-500': evaluation.status === 'rejected',
-                                'bg-gray-700': evaluation.status === 'expired',
+                                'text-green-700 shadow-[0_2px_10px_rgba(21,128,61,0.15)]': evaluation.status === 'approved',
+                                'text-red-700 shadow-[0_2px_10px_rgba(185,28,28,0.15)]': evaluation.status === 'rejected',
+                                'text-yellow-700 shadow-[0_2px_10px_rgba(234,179,8,0.15)]': evaluation.status === 'pending',
+                                'text-gray-700 shadow-[0_2px_10px_rgba(55,65,81,0.15)]': evaluation.status === 'expired',
                             }">
+                            <span 
+                                class="w-2 h-2 rounded-full"
+                                :class="{
+                                    'bg-green-500': evaluation.status === 'approved',
+                                    'bg-red-500': evaluation.status === 'rejected',
+                                    'bg-yellow-500': evaluation.status === 'pending',
+                                    'bg-gray-500': evaluation.status === 'expired'
+                                }"
+                            ></span>
                             {{ getStatusLabel(evaluation.status) }}
                         </span>
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
-                            <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Evaluador Asignado</h3>
+                            <h3 class="text-xs font-bold text-[#1B396A] uppercase tracking-wider mb-1">Evaluador Asignado</h3>
                             <p class="text-md font-medium text-gray-900">{{ evaluation.evaluator?.name || 'Sistema' }}</p>
                         </div>
                         <div>
-                            <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Docente</h3>
+                            <h3 class="text-xs font-bold text-[#1B396A] uppercase tracking-wider mb-1">Docente</h3>
                             <p class="text-md font-medium text-gray-900">{{ teacher?.name || 'Sin docente' }}</p>
                         </div>
                         <div>
-                            <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Instituto</h3>
+                            <h3 class="text-xs font-bold text-[#1B396A] uppercase tracking-wider mb-1">Instituto</h3>
                             <p class="text-md font-medium text-gray-900">{{ teacher?.institution?.name || application.campus || application.data?.campus || 'N/A' }}</p>
                         </div>
                         <div>
-                            <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Tipo de Plaza</h3>
+                            <h3 class="text-xs font-bold text-[#1B396A] uppercase tracking-wider mb-1">Tipo de Plaza</h3>
                             <p class="text-md font-medium text-gray-900">{{ application.position_full_type || application.data?.position_full_type || 'No especificado' }}</p>
                         </div>
                         <div v-if="evaluation.status === 'rejected' && evaluation.comment" class="md:col-span-3">
-                            <h3 class="text-xs uppercase text-red-600 font-bold mb-1">Motivo / Comentario del Evaluador:</h3>
-                            <p class="text-md text-red-800 bg-red-50 p-3 rounded border border-red-200 italic shadow-sm">"{{ evaluation.comment }}"</p>
+                            <h3 class="text-xs font-bold text-red-600 uppercase tracking-widest mb-2">Motivo / Comentario del Evaluador:</h3>
+                            <div class="bg-red-50 p-4 rounded-lg border border-red-100">
+                                <p class="text-red-800 italic font-medium">"{{ evaluation.comment }}"</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -129,7 +140,7 @@ const currentScore = computed(() => {
                         </div>
                     </div>
                     
-                    <div class="p-6 space-y-8">
+                    <div class="p-4 md:p-6 space-y-8">
                         <div v-if="!rubric" class="text-center py-8 text-gray-500">
                             No hay rubric disponible.
                         </div>

@@ -332,6 +332,10 @@ watch([search, status], debounce(() => {
     font-weight: 500;
 }
 
+:deep(.vue-select-custom .vs__search) {
+    color: #111827;
+}
+
 :deep(.vue-select-custom .vs__search::placeholder) {
     color: #9ca3af;
 }

@@ -537,7 +537,7 @@ const viewDetails = (id) => {
                                     </td>
                                     <td class="px-6 py-4 text-center">
                                         <div class="flex items-center justify-center">
-                                            <span class="inline-flex items-center px-4 py-1.5 rounded-md bg-white text-[13px] font-bold text-[#1B396A] shadow-sm whitespace-nowrap border border-gray-100">
+                                            <span class="inline-flex items-center px-4 py-1.5 rounded-full h-10 w-10 bg-white text-[13px] font-bold text-[#1B396A] shadow-sm whitespace-nowrap border border-gray-100">
                                                 {{ application.documents_count || 0 }}
                                             </span>
                                         </div>

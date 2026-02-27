@@ -26,7 +26,7 @@ class RegisterUserRequest extends FormRequest
         return [
             'curp' => 'required|string|size:18',
             'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:users,email',
+            'email' => 'required|string|lowercase|email|max:255',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'institution_id' => 'required|exists:institutions,id',
             'priority_area_id' => 'required|exists:priority_areas,id',

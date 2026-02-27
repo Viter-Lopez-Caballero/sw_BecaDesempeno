@@ -1,5 +1,5 @@
 <script setup>
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import LandingLayout from '@/layouts/LandingLayout.vue';
 import EyeOffIcon from '@/components/icons/EyeIcon.vue';

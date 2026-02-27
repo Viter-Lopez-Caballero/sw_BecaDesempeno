@@ -126,8 +126,8 @@ watch(search, (value) => {
     margin: 0;
 }
 :deep(.vue-select-custom .vs__search) {
-    max-width: 10px;
     margin: 0;
+    color: #111827;
 }
 :deep(.vue-select-custom .vs__search::placeholder) {
     color: #9ca3af;
@@ -311,13 +311,13 @@ watch(search, (value) => {
                                 </td>
                                 <td class="px-6 py-4 font-medium text-gray-900">{{ institution.state }}</td>
                                 <td class="px-6 py-4 font-semibold text-gray-800">{{ institution.name }}</td>
-                                <td class="px-6 py-4 text-center">
-                                    <span class="px-3 py-1 inline-flex text-xs font-bold rounded-full bg-green-100 text-green-800">
+                                <td class="px-6 py-4 text-center text-sm">
+                                    <span class="inline-flex items-center px-4 py-1.5 rounded-full h-10 w-10 bg-white text-[13px] font-bold text-green-700 shadow-sm whitespace-nowrap border border-gray-100">
                                         {{ institution.approved_count }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-center">
-                                    <span class="px-3 py-1 inline-flex text-xs font-bold rounded-full bg-red-100 text-red-800">
+                                <td class="px-6 py-4 text-center text-sm">
+                                    <span class="inline-flex items-center px-4 py-1.5 rounded-full h-10 w-10 bg-white text-[13px] font-bold text-red-700 shadow-sm whitespace-nowrap border border-gray-100">
                                         {{ institution.rejected_count }}
                                     </span>
                                 </td>

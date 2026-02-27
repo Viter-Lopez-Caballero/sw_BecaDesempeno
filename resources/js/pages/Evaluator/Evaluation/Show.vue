@@ -108,7 +108,13 @@ const handleOptionSelect = (questionId, option) => {
     updateFormScore();
 };
 
-const isReadOnly = computed(() => props.evaluation.status !== 'pending');
+const isStageEvaluacion = computed(() => {
+    return props.application?.announcement?.current_stage === 'evaluacion';
+});
+
+const isReadOnly = computed(() => {
+    return props.evaluation.status !== 'pending' || !isStageEvaluacion.value;
+});
 
 // LocalStorage Draft Management
 import { watch, onMounted } from 'vue';
@@ -230,7 +236,7 @@ const formatDate = (dateString) => {
                 :class="{
                     'bg-green-50 border border-green-200 text-green-800': evaluation.status === 'approved',
                     'bg-red-50 border border-red-200 text-red-800': evaluation.status === 'rejected',
-                    'bg-gray-100 border border-gray-300 text-gray-800': evaluation.status === 'expired'
+                    'bg-gray-100 border border-gray-300 text-gray-800': evaluation.status === 'expired' || (evaluation.status === 'pending' && !isStageEvaluacion)
                 }"
             >
                 <div class="p-2 rounded-full bg-white bg-opacity-50">
@@ -241,6 +247,7 @@ const formatDate = (dateString) => {
                 <div class="font-medium">
                     <span v-if="evaluation.status === 'approved'">Esta solicitud ya fue aprobada.</span>
                     <span v-else-if="evaluation.status === 'rejected'">Esta solicitud ya fue rechazada.</span>
+                    <span v-else-if="evaluation.status === 'pending' && !isStageEvaluacion">Esta solicitud no puede ser contestada porque la etapa regular de <strong>Evaluación</strong> no está activa.</span>
                     <span v-else>El tiempo de evaluación ha expirado.</span>
                 </div>
             </div>
@@ -500,8 +507,13 @@ const formatDate = (dateString) => {
                                 </button>
                             </div>
                             <!-- Si ya terminó -->
-                            <div v-else class="text-center py-4 text-green-700 bg-green-50 rounded-lg text-sm font-medium border border-green-200">
-                                Evaluación Finalizada.
+                            <div v-else class="text-center py-4 rounded-lg text-sm font-medium border"
+                                 :class="[
+                                    evaluation.status === 'pending' ? 'text-gray-700 bg-gray-50 border-gray-200' : 'text-green-700 bg-green-50 border-green-200'
+                                 ]"
+                            >
+                                <span v-if="evaluation.status === 'pending'">Evaluación suspendida (fuera de etapa).</span>
+                                <span v-else>Evaluación Finalizada.</span>
                             </div>
                         </div>
                     </div>

@@ -154,13 +154,20 @@ class ApplicationController extends Controller
             ]);
         }
 
-        // Enviar notificación al docente
-        $this->notificationService->notifyApplicationVerdict(
-            $application->id,
-            $application->user_id,
-            $validated['status'],
-            $application->announcement->name // Use 'name' instead of 'title' as seen in model
-        );
+        $application->loadMissing('announcement.calendar');
+        $stage = $application->announcement->current_stage;
+
+        if (in_array($stage, ['resultados', 'terminada'])) {
+            // Enviar notificación al docente si ya estamos en resultados
+            $this->notificationService->notifyApplicationVerdict(
+                $application->id,
+                $application->user_id,
+                $validated['status'],
+                $application->announcement->name // Use 'name' instead of 'title' as seen in model
+            );
+        } else {
+            \Illuminate\Support\Facades\Log::info("Veredicto silenciado para solicitud {$application->id}. Se enviará en étapa de resultados.");
+        }
 
         return to_route('admin.applications.index')->with('success', 'Veredicto registrado correctamente.');
     }

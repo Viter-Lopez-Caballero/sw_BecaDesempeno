@@ -98,6 +98,10 @@ const filterEvaluators = (options, search) => {
         return label.includes(query) || institution.includes(query);
     });
 };
+
+const isStageEvaluacion = computed(() => {
+    return props.application?.announcement?.current_stage === 'evaluacion';
+});
 </script>
 
 <template>
@@ -198,7 +202,15 @@ const filterEvaluators = (options, search) => {
                     <p class="text-sm text-gray-500">Busque y seleccione los evaluadores que revisarán esta solicitud.</p>
                 </div>
                 
-                <form @submit.prevent="submit">
+                <div v-if="!isStageEvaluacion" class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-lg flex items-center gap-3">
+                    <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0 fill-current"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                    <div>
+                        <h3 class="font-bold">Acción No Permitida</h3>
+                        <p class="text-sm">Solo se pueden asignar evaluadores cuando la convocatoria se encuentra activamente en la etapa de <strong>Evaluación</strong>. Etapa actual: <strong>{{ application.announcement.current_stage || 'Desconocida' }}</strong>.</p>
+                    </div>
+                </div>
+
+                <form v-else @submit.prevent="submit">
                     <div class="space-y-8">
                         <!-- Dropdown -->
                         <div>

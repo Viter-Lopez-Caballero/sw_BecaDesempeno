@@ -74,6 +74,41 @@ class UpdateAnnouncementStatus extends Command
             });
         }
 
+        // 1.5 Enviar notificaciones de veredicto diferidas (ocultas a los docentes hasta etapa de resultados)
+        $enResultados = \App\Models\Announcement::where('status', 'activa')
+            ->whereHas('calendar', function ($query) use ($today) {
+                // Etapa de resultados activa: hoy es mayor o igual a results_start
+                $query->whereDate('results_start', '<=', $today)
+                      ->whereDate('results_end', '>=', $today);
+            })
+            ->get();
+
+        $notificationService = app(NotificationService::class);
+        foreach ($enResultados as $announcement) {
+            $solicitudesEvaluadas = \App\Models\Application::where('announcement_id', $announcement->id)
+                ->whereIn('status', ['approved', 'rejected'])
+                ->get();
+            
+            foreach ($solicitudesEvaluadas as $app) {
+                // Revisar si ya tiene una push notification enviada por esa application_id
+                $hasNotification = \App\Models\Notification::where('type', 'application_verdict')
+                    ->where('user_id', $app->user_id)
+                    ->where('data->application_id', $app->id)
+                    ->exists();
+                
+                if (!$hasNotification) {
+                    $notificationService->notifyApplicationVerdict(
+                        $app->id,
+                        $app->user_id,
+                        $app->status,
+                        $announcement->name
+                    );
+                    $this->info("Cron: Notificación diferida enviada para Solicitud {$app->id} ({$app->status}).");
+                    Log::info("Cron Convocatorias: Notificación diferida enviada al Docente {$app->user_id} para Solicitud {$app->id}");
+                }
+            }
+        }
+
         // 2. Cerrar convocatorias activas cuya fecha de resultados ya pasó
         // Buscamos activas que tengan calendario con results_end < hoy
         // (Es decir, ayer fue el último día)

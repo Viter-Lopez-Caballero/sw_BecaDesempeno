@@ -33,8 +33,11 @@ class ExpireEvaluations extends Command
         $this->info("Buscando evaluaciones pendientes vencidas antes de: {$now->toDateTimeString()}");
         Log::info("Cron Evaluaciones: Iniciando expiración de evaluaciones vencidas.");
 
-        // Find pending evaluations where deadline_at has passed
+        // Find pending evaluations where deadline_at has passed and the application is still pending
         $expiredEvaluations = Evaluation::where('status', 'pending')
+            ->whereHas('application', function ($query) {
+                $query->where('status', 'pending');
+            })
             ->where('deadline_at', '<', $now)
             ->get();
 

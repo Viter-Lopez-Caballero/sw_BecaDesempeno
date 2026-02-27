@@ -36,4 +36,24 @@ class SubmitAdminVerdictRequest extends FormRequest
             'comentario.max' => 'El comentario no puede exceder los 1000 caracteres.',
         ];
     }
+
+    /**
+     * Configure the validator instance.
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $applicationId = $this->route('id'); // Assuming the parameter is named 'id'
+            if ($applicationId) {
+                $application = \App\Models\Application::with('announcement.calendar')->find($applicationId);
+                
+                if ($application && $application->announcement) {
+                    $stage = $application->announcement->current_stage;
+                    if (!in_array($stage, ['evaluacion', 'resultados'])) {
+                        $validator->errors()->add('status', 'Solo se puede emitir un veredicto definitivo durante las etapas de Evaluación o Resultados.');
+                    }
+                }
+            }
+        });
+    }
 }

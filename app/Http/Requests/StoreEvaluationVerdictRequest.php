@@ -40,4 +40,23 @@ class StoreEvaluationVerdictRequest extends FormRequest
             'comment.max' => 'La retroalimentación no puede exceder los 1000 caracteres.',
         ];
     }
+
+    /**
+     * Configure the validator instance.
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $evaluationId = $this->route('id'); // Assuming the parameter is named 'id'
+            if ($evaluationId) {
+                $evaluation = \App\Models\Evaluation::with('application.announcement.calendar')->find($evaluationId);
+                
+                if ($evaluation && $evaluation->application && $evaluation->application->announcement) {
+                    if ($evaluation->application->announcement->current_stage !== 'evaluacion') {
+                        $validator->errors()->add('status', 'Solo se pueden emitir evaluaciones durante la etapa estricta de Evaluación de la convocatoria.');
+                    }
+                }
+            }
+        });
+    }
 }

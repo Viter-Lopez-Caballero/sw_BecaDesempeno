@@ -69,6 +69,10 @@ const formatDate = (dateString) => {
         day: 'numeric' 
     });
 };
+
+const isEvaluatedByAdmin = computed(() => {
+    return props.evaluation.status === 'pending' && props.application.status !== 'pending';
+});
 </script>
 
 <template>
@@ -103,38 +107,47 @@ const formatDate = (dateString) => {
             <div 
                 class="rounded-lg p-4 flex items-center gap-4 shadow-sm border"
                 :class="{
-                    'bg-green-50 border-green-200': evaluation.status === 'approved',
-                    'bg-red-50 border-red-200': evaluation.status === 'rejected'
+                    'bg-green-50 border-green-200': !isEvaluatedByAdmin && evaluation.status === 'approved',
+                    'bg-red-50 border-red-200': !isEvaluatedByAdmin && evaluation.status === 'rejected',
+                    'bg-purple-50 border-purple-200': isEvaluatedByAdmin
                 }"
             >
                 <div 
                     class="p-2 rounded-full"
                     :class="{
-                        'bg-green-100 text-green-600': evaluation.status === 'approved',
-                        'bg-red-100 text-red-600': evaluation.status === 'rejected'
+                        'bg-green-100 text-green-600': !isEvaluatedByAdmin && evaluation.status === 'approved',
+                        'bg-red-100 text-red-600': !isEvaluatedByAdmin && evaluation.status === 'rejected',
+                        'bg-purple-100 text-purple-600': isEvaluatedByAdmin
                     }"
                 >
-                    <svg v-if="evaluation.status === 'approved'" viewBox="0 0 24 24" class="w-8 h-8" style="fill: currentColor"><path :d="mdiCheckCircle"/></svg>
-                    <svg v-else viewBox="0 0 24 24" class="w-8 h-8" style="fill: currentColor"><path :d="mdiCloseCircle"/></svg>
+                    <svg v-if="!isEvaluatedByAdmin && evaluation.status === 'approved'" viewBox="0 0 24 24" class="w-8 h-8" style="fill: currentColor"><path :d="mdiCheckCircle"/></svg>
+                    <svg v-else-if="!isEvaluatedByAdmin && evaluation.status === 'rejected'" viewBox="0 0 24 24" class="w-8 h-8" style="fill: currentColor"><path :d="mdiCloseCircle"/></svg>
+                    <!-- Icono neutral para cerrado por admin -->
+                    <svg v-else viewBox="0 0 24 24" class="w-8 h-8" style="fill: currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                    </svg>
                 </div>
                 <div>
                     <h3 
                         class="text-lg font-bold"
                         :class="{
-                            'text-green-800': evaluation.status === 'approved',
-                            'text-red-800': evaluation.status === 'rejected'
+                            'text-green-800': !isEvaluatedByAdmin && evaluation.status === 'approved',
+                            'text-red-800': !isEvaluatedByAdmin && evaluation.status === 'rejected',
+                            'text-purple-800': isEvaluatedByAdmin
                         }"
                     >
-                        Solicitud {{ evaluation.status === 'approved' ? 'Aprobada' : 'Rechazada' }}
+                        <span v-if="isEvaluatedByAdmin">Resuelta por Administración</span>
+                        <span v-else>Solicitud {{ evaluation.status === 'approved' ? 'Aprobada' : 'Rechazada' }}</span>
                     </h3>
-                    <p class="text-sm text-gray-600">
-                        Evaluada el {{ evaluation.updated_at ? formatDate(evaluation.updated_at) : 'Fecha no disponible' }}
+                    <p class="text-sm text-gray-600" :class="{ 'text-purple-600': isEvaluatedByAdmin }">
+                        <span v-if="isEvaluatedByAdmin">Esta solicitud fue tomada y resuelta directamente por un administrador. No requieres realizar ninguna acción en este expediente.</span>
+                        <span v-else>Evaluada el {{ evaluation.updated_at ? formatDate(evaluation.updated_at) : 'Fecha no disponible' }}</span>
                     </p>
                 </div>
             </div>
 
-            <!-- Comentario de Rechazo (si existe) -->
-            <div v-if="evaluation.status === 'rejected' && evaluation.comment" class="bg-red-50 rounded-lg shadow-md border border-red-200 p-6">
+            <!-- Comentario de Rechazo (si existe y NO fue por admin) -->
+            <div v-if="!isEvaluatedByAdmin && evaluation.status === 'rejected' && evaluation.comment" class="bg-red-50 rounded-lg shadow-md border border-red-200 p-6">
                 <div class="flex items-start gap-3">
                     <svg viewBox="0 0 24 24" class="w-6 h-6 text-red-600 mt-1" style="fill: currentColor"><path :d="mdiMessageText"/></svg>
                     <div>
@@ -253,7 +266,7 @@ const formatDate = (dateString) => {
                 </div>
 
                 <!-- Rubric Evaluation (READ ONLY) -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div v-if="!isEvaluatedByAdmin" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     <div class="bg-[#1B396A] px-6 py-4 border-b border-gray-200 flex justify-between items-center text-white">
                         <div>
                             <h2 class="font-bold text-lg">Resultados de Evaluación</h2>

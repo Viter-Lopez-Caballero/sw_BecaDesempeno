@@ -54,6 +54,7 @@ class NotificationService
                 'message' => "Tu solicitud ha sido {$statusText}.",
                 'status' => $status,
                 'announcement' => $announcementTitle,
+                'application_id' => $applicationId,
             ],
             'type' => 'application_verdict',
             'user_id' => $teacherId,

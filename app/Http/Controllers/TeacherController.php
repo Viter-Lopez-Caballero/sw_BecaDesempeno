@@ -176,8 +176,16 @@ class TeacherController extends Controller
         $application = \App\Models\Application::forCurrentUser()
             ->where('id', $id)
             ->approved()
-            ->with(['announcement', 'user'])
+            ->with(['announcement.calendar', 'user'])
             ->firstOrFail();
+
+        // Bloquear descarga si todavía no estamos en resultados
+        if ($application->announcement) {
+            $stage = $application->announcement->current_stage;
+            if (!in_array($stage, ['resultados', 'terminada'])) {
+                abort(403, 'Aún no es la etapa de resultados. No puedes descargar la carta de aceptación.');
+            }
+        }
 
         try {
             return $this->pdfGenerationService->generateAcceptanceLetter($application);

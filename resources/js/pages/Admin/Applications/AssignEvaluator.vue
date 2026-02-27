@@ -104,7 +104,7 @@ const filterEvaluators = (options, search) => {
     <Head title="Asignar Evaluador" />
 
     <AdminLayout>
-        <div class="p-6 space-y-6 max-w-7xl mx-auto">
+        <div class="space-y-6 max-w-7xl mx-auto">
             <!-- Header with Breadcrumbs -->
             <div class="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div class="w-full md:w-auto">
@@ -120,8 +120,8 @@ const filterEvaluators = (options, search) => {
                         <span class="text-gray-900 font-semibold">Asignar Evaluador</span>
                     </div>
                 </div>
-                 <Link :href="route('admin.applications.index')" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium bg-white cursor-pointer">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                 <Link :href="route('admin.applications.index')" class="w-full md:w-auto justify-center px-4 py-2 border border-[#1B396A] rounded-lg text-[#1B396A] hover:bg-[#1B396A] hover:text-white transition flex items-center gap-2 text-[11px] font-bold uppercase bg-white cursor-pointer shadow-sm group">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor" class="transition-colors">
                         <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
                     </svg>
                     Regresar
@@ -133,13 +133,21 @@ const filterEvaluators = (options, search) => {
                  <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-100 pb-4 mb-6 gap-2 md:gap-4">
                      <!-- Badge Estado -->
                      <span 
-                        class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide w-fit self-start md:self-auto md:order-last"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white text-xs font-bold shadow-sm border border-gray-100 self-start md:self-auto md:order-last"
                         :class="{
-                            'bg-yellow-100 text-yellow-800': application.status === 'pending',
-                            'bg-green-100 text-green-800': application.status === 'approved',
-                            'bg-red-100 text-red-800': application.status === 'rejected',
+                            'text-green-700': application.status === 'approved',
+                            'text-red-700': application.status === 'rejected',
+                            'text-yellow-700': application.status === 'pending'
                         }"
                     >
+                        <span 
+                            class="w-2.5 h-2.5 rounded-full"
+                            :class="{
+                                'bg-green-500': application.status === 'approved',
+                                'bg-red-500': application.status === 'rejected',
+                                'bg-yellow-500': application.status === 'pending'
+                            }"
+                        ></span>
                         {{ getStatusLabel(application.status) }}
                     </span>
                     <h2 class="text-lg font-bold text-gray-900 md:order-first">Información General</h2>
@@ -220,7 +228,7 @@ const filterEvaluators = (options, search) => {
                                 <thead class="bg-[#1B396A]">
                                     <tr>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider w-16">
-                                            #
+                                            ID
                                         </th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider">
                                             Nombre
@@ -244,15 +252,15 @@ const filterEvaluators = (options, search) => {
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                             {{ evaluator.institution?.name || 'N/A' }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <button 
                                                 type="button" 
                                                 @click="removeEvaluator(evaluator.id)"
-                                                class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition"
+                                                class="p-2 text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition group cursor-pointer"
                                                 title="Eliminar"
                                             >
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                                                    <path :d="mdiDelete"/>
+                                                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                                    <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
                                                 </svg>
                                             </button>
                                         </td>
@@ -270,12 +278,12 @@ const filterEvaluators = (options, search) => {
                         </div>
 
                         <div class="flex items-center justify-end gap-3 pt-2">
-                             <Link :href="route('admin.applications.index')" class="px-6 py-2.5 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg text-center transition font-semibold text-sm uppercase tracking-wider shadow-sm cursor-pointer">
+                             <Link :href="route('admin.applications.index')" class="px-6 py-2.5 border border-[#1B396A] text-[#1B396A] hover:bg-gray-50 rounded-lg text-center transition font-bold text-[11px] uppercase tracking-wider shadow-sm cursor-pointer">
                                 Cancelar
                             </Link>
                             <button 
                                 type="submit" 
-                                class="px-6 py-2.5 bg-[#1B396A] text-white rounded-lg font-semibold uppercase text-sm tracking-wider hover:bg-[#152d47] transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
+                                class="px-6 py-2.5 bg-[#1B396A] text-white rounded-lg font-bold uppercase text-[11px] tracking-wider hover:bg-[#152d47] transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
                                 :disabled="form.processing || selectedEvaluatorIds.length === 0"
                             >
                                 <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path :d="mdiAccountPlus"/></svg>

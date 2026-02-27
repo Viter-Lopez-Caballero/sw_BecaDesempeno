@@ -27,6 +27,8 @@ const search = ref(props.filters?.search || '');
 const rows = ref(props.filters?.rows || 10);
 const stateId = ref(props.filters?.state_id || null);
 const institutionId = ref(props.filters?.institution_id || null);
+const sortField = ref(props.filters?.sort_field || '');
+const sortDirection = ref(props.filters?.sort_direction || 'asc');
 
 // Cascading: filter institutions by selected state
 const filteredInstitutions = computed(() => {
@@ -56,6 +58,8 @@ const getFilters = () => ({
     rows: rows.value,
     state_id: stateId.value,
     institution_id: institutionId.value,
+    sort_field: sortField.value,
+    sort_direction: sortDirection.value,
 });
 
 const onSearch = debounce((value) => {
@@ -67,7 +71,19 @@ const cleanFilters = () => {
     rows.value = 10;
     stateId.value = null;
     institutionId.value = null;
+    sortField.value = '';
+    sortDirection.value = 'asc';
     router.get(route('admin.dashboard'), {}, { preserveState: true, replace: true });
+};
+
+const sortBy = (field) => {
+    if (sortField.value === field) {
+        sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortField.value = field;
+        sortDirection.value = 'asc';
+    }
+    router.get(route('admin.dashboard'), getFilters(), { preserveState: true, replace: true });
 };
 
 const onRowsChange = () => {
@@ -259,7 +275,6 @@ const getProgressWidth = (count) => {
                             </div>
                             <div class="flex justify-between text-xs text-gray-500 mt-1">
                                 <span>{{ institution.state?.name || 'N/A' }}</span> <!-- estado -> state, nombre -> name -->
-                                <span>{{ Math.round(getProgressWidth(institution.applications_count)) }}% del total</span>
                             </div>
                         </div>
                         <div class="flex items-center justify-center bg-blue-50 rounded-full h-10 w-10">
@@ -379,8 +394,22 @@ const getProgressWidth = (count) => {
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
                                 <th scope="col" class="px-6 py-4 tracking-wider">ID</th>
-                                <th scope="col" class="px-6 py-4 tracking-wider">Estado</th>
-                                <th scope="col" class="px-6 py-4 tracking-wider">Institución</th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">
+                                    <div @click="sortBy('state')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
+                                        Estado
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'state', 'opacity-50': sortField !== 'state' }">
+                                            <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/>
+                                        </svg>
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-6 py-4 tracking-wider">
+                                    <div @click="sortBy('name')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
+                                        Institución
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'name', 'opacity-50': sortField !== 'name' }">
+                                            <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/>
+                                        </svg>
+                                    </div>
+                                </th>
                                 <th scope="col" class="px-6 py-4 text-center tracking-wider">Aprobadas</th>
                                 <th scope="col" class="px-6 py-4 text-center tracking-wider">Rechazadas</th>
                             </tr>
@@ -393,12 +422,12 @@ const getProgressWidth = (count) => {
                                 <td class="px-6 py-4 font-medium text-gray-900">{{ institution.state }}</td>
                                 <td class="px-6 py-4 text-gray-800 font-semibold">{{ institution.name }}</td>
                                 <td class="px-6 py-4 text-center">
-                                    <span class="px-3.5 py-1.5 inline-flex text-[13px] font-bold rounded-md bg-white text-green-700 shadow-sm">
+                                    <span class="px-3.5 py-1.5 inline-flex text-[13px] font-bold text-green-700">
                                         {{ institution.approved_count }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    <span class="px-3.5 py-1.5 inline-flex text-[13px] font-bold rounded-md bg-white text-red-700 shadow-sm">
+                                    <span class="px-3.5 py-1.5 inline-flex text-[13px] font-bold text-red-700">
                                         {{ institution.rejected_count }}
                                     </span>
                                 </td>

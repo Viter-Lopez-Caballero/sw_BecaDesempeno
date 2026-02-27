@@ -39,23 +39,26 @@ class ApplicationController extends Controller
 
         $query = \App\Models\Application::with([
             'user.institution',
-            'evaluations.evaluator', 
+            'evaluations.evaluator',
             'announcement',
             'positionType'
         ])
             ->buscarGlobal($filters->search)
             ->porEstatus($status)
-            ->ordenado($filters->order, $filters->direction);
+            ->ordenado($filters->sort_field, $filters->sort_direction);
 
         $applications = $query->paginate($filters->rows)->withQueryString();
 
         // Get Evaluators for the Assignment Modal
         $evaluators = User::role('Evaluador')->with('institution')->get();
 
+        // Add rows to filters for the view
+        $filters->rows = (int) $filters->rows;
+
         return Inertia::render('Admin/Applications/Index', [
             'applications' => ApplicationResource::collection($applications),
             'evaluators' => $evaluators,
-            'filters' => $filters,
+            'filters' => (array) $filters,
         ]);
     }
 

@@ -17,6 +17,8 @@ const props = defineProps({
 const search = ref(props.filters.search || '');
 const status = ref(props.filters.status || '');
 const rows = ref(props.filters?.rows || 10);
+const sortField = ref(props.filters?.sort_field || '');
+const sortDirection = ref(props.filters?.sort_direction || 'asc');
 
 const rowOptions = [
     { label: '5 Registros', value: 5 },
@@ -25,11 +27,46 @@ const rowOptions = [
     { label: '50 Registros', value: 50 },
 ];
 
+const statusOptions = [
+    { label: 'Todos los estados', value: '' },
+    { label: 'Pendiente', value: 'pending' },
+    { label: 'Aprobada', value: 'approved' },
+    { label: 'Rechazada', value: 'rejected' },
+];
+
+const onStatusChange = () => {
+    router.get(route('admin.applications.index'), {
+        search: search.value,
+        status: status.value,
+        rows: rows.value,
+        sort_field: sortField.value,
+        sort_direction: sortDirection.value,
+    }, { preserveState: true, replace: true, preserveScroll: true });
+};
+
+const sortBy = (field) => {
+    if (sortField.value === field) {
+        sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortField.value = field;
+        sortDirection.value = 'asc';
+    }
+    router.get(route('admin.applications.index'), {
+        search: search.value,
+        status: status.value,
+        rows: rows.value,
+        sort_field: sortField.value,
+        sort_direction: sortDirection.value,
+    }, { preserveState: true, replace: true });
+};
+
 const onRowsChange = () => {
     router.get(route('admin.applications.index'), {
         search: search.value,
         status: status.value,
         rows: rows.value,
+        sort_field: sortField.value,
+        sort_direction: sortDirection.value,
     }, { preserveState: true, replace: true, preserveScroll: true });
 };
 
@@ -46,6 +83,8 @@ const cleanFilters = () => {
     search.value = '';
     status.value = '';
     rows.value = 10;
+    sortField.value = '';
+    sortDirection.value = 'asc';
     router.get(route('admin.applications.index'), {}, { preserveState: true, replace: true });
 };
 
@@ -54,6 +93,8 @@ watch([search, status], debounce(() => {
         search: search.value,
         status: status.value,
         rows: rows.value,
+        sort_field: sortField.value,
+        sort_direction: sortDirection.value,
     }, { preserveState: true, replace: true });
 }, 300));
 </script>
@@ -94,15 +135,15 @@ watch([search, status], debounce(() => {
                 </div>
                 <div class="text-sm text-gray-500 mb-4">Buscar y filtrar solicitudes</div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <div class="flex flex-col md:flex-row gap-4 items-end">
                     <!-- Search Input -->
-                    <div class="relative w-full">
-                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div class="relative w-full md:flex-1">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#1B396A">
                                 <path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/>
                             </svg>
                         </div>
-                         <input 
+                        <input 
                             v-model="search" 
                             type="text" 
                             placeholder="Buscar por Docente, Institución..." 
@@ -111,17 +152,19 @@ watch([search, status], debounce(() => {
                     </div>
                     
                     <!-- Status Filter -->
-                    <div class="w-full">
-                         <select 
-                            v-model="status" 
-                            class="w-full h-[45px] rounded-lg border border-gray-300 text-gray-700 focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition"
-                        >
-                            <option value="">Todos los estados</option>
-                            <option value="pending">Pendiente</option>
-                            <option value="approved">Aprobada</option>
-                            <option value="rejected">Rechazada</option>
-                        </select>
+                    <div class="w-full md:w-52 flex-shrink-0">
+                        <VueSelect
+                            v-model="status"
+                            :options="statusOptions"
+                            :reduce="option => option.value"
+                            :searchable="false"
+                            :clearable="false"
+                            placeholder="Todos los estados"
+                            class="vue-select-custom"
+                            @option:selected="onStatusChange"
+                        />
                     </div>
+
                     <!-- Rows -->
                     <div class="w-full md:w-52 flex-shrink-0">
                         <VueSelect
@@ -145,26 +188,53 @@ watch([search, status], debounce(() => {
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
                                 <th class="px-6 py-4 whitespace-nowrap">ID</th>
-                                <th class="px-6 py-4 whitespace-nowrap">Docente</th>
-                                <th class="px-6 py-4 whitespace-nowrap">Institución</th>
-                                <th class="px-6 py-4 whitespace-nowrap">Evaluador(es)</th>
-                                <th class="px-6 py-4 whitespace-nowrap">Estado</th>
+                                <th class="px-6 py-4 whitespace-nowrap">
+                                    <div @click="sortBy('user_name')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
+                                        Docente
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'user_name', 'opacity-50': sortField !== 'user_name' }">
+                                            <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/>
+                                        </svg>
+                                    </div>
+                                </th>
+                                <th class="px-6 py-4 whitespace-nowrap">
+                                    <div @click="sortBy('campus')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
+                                        Institución
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'campus', 'opacity-50': sortField !== 'campus' }">
+                                            <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/>
+                                        </svg>
+                                    </div>
+                                </th>
+                                <th class="px-6 py-4 whitespace-nowrap">
+                                    Evaluador(es)
+                                </th>
+                                <th class="px-6 py-4 whitespace-nowrap">
+                                    <div @click="sortBy('status')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
+                                        Estado
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'status', 'opacity-50': sortField !== 'status' }">
+                                            <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/>
+                                        </svg>
+                                    </div>
+                                </th>
                                 <th class="px-6 py-4 text-center whitespace-nowrap">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
                             <tr v-for="(application, index) in applications.data" :key="application.id" class="hover:bg-gray-50 transition-colors">
                                 <td class="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">{{ applications.meta.from + index }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
-                                    <div class="font-semibold text-gray-800">{{ application.user?.name }}</div>
+                                <td class="px-6 py-4 text-sm text-gray-900 whitespace-nowrap overflow-hidden">
+                                    <div class="font-semibold text-gray-800 truncate max-w-[200px]" :title="application.user?.name">
+                                        {{ application.user?.name }}
+                                    </div>
                                 </td>
-                                 <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">
-                                    {{ application.campus }}
+                                 <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap overflow-hidden">
+                                    <div class="truncate max-w-[250px]" :title="application.campus">
+                                        {{ application.campus }}
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <template v-if="application.evaluations && application.evaluations.length > 0">
                                         <span class="inline-flex items-center gap-1 text-sm text-gray-600">
-                                            <svg style="width:16px;height:16px" viewBox="0 0 24 24" class="text-gray-400">
+                                            <svg style="width:16px;height:16px; color: #1B396A;" viewBox="0 0 24 24">
                                                 <path fill="currentColor" :d="mdiAccountMultiple" />
                                             </svg>
                                             {{ application.evaluations.length }} Evaluadores
@@ -178,9 +248,9 @@ watch([search, status], debounce(() => {
                                     <Link 
                                         v-else 
                                         :href="route('admin.applications.assign_view', application.id)"
-                                        class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-full transition-colors cursor-pointer"
+                                        class="inline-flex items-center justify-center gap-2 px-4 py-2 border border-[#1B396A] text-[#1B396A] rounded-lg hover:bg-[#1B396A] hover:text-white transition text-[11px] font-bold uppercase cursor-pointer whitespace-nowrap shadow-sm group"
                                     >
-                                        <svg style="width:14px;height:14px" viewBox="0 0 24 24">
+                                        <svg style="width:16px;height:16px" viewBox="0 0 24 24" class="group-hover:text-white transition-colors duration-200">
                                             <path fill="currentColor" :d="mdiAccountPlus" />
                                         </svg>
                                         Asignar
@@ -189,7 +259,7 @@ watch([search, status], debounce(() => {
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <span 
-                                            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md bg-white text-[13px] font-bold shadow-sm"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white text-xs font-bold shadow-sm border border-gray-100"
                                             :class="{
                                                 'text-green-700': application.status === 'approved',
                                                 'text-red-700': application.status === 'rejected',
@@ -197,7 +267,7 @@ watch([search, status], debounce(() => {
                                             }"
                                         >
                                             <span 
-                                                class="w-2.5 h-2.5 rounded-full"
+                                                class="w-2 h-2 rounded-full"
                                                 :class="{
                                                     'bg-green-500': application.status === 'approved',
                                                     'bg-red-500': application.status === 'rejected',
@@ -208,15 +278,14 @@ watch([search, status], debounce(() => {
                                         </span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-center whitespace-nowrap">
-                                    <div class="flex items-center justify-center gap-2">
+                                <td class="px-6 py-4 text-center whitespace-nowrap text-xs">
+                                    <div class="flex items-center justify-center">
                                         <Link 
                                             :href="route('admin.applications.show', application.id)"
-                                            class="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50 text-gray-700 transition text-xs font-medium uppercase gap-1 cursor-pointer"
+                                            class="inline-flex items-center justify-center gap-2 px-4 py-2 border border-[#1B396A] text-[#1B396A] rounded-lg hover:bg-[#1B396A] hover:text-white transition text-[11px] font-bold uppercase cursor-pointer whitespace-nowrap shadow-sm"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
+                                                <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z"/>
                                             </svg>
                                             Ver Detalles
                                         </Link>
@@ -224,7 +293,7 @@ watch([search, status], debounce(() => {
                                 </td>
                             </tr>
                             <tr v-if="applications.data.length === 0">
-                                <td colspan="6" class="px-6 py-8 text-center text-gray-500 font-medium">
+                                <td colspan="6" class="px-6 py-12 text-center text-gray-500">
                                     No se encontraron registros
                                 </td>
                             </tr>
@@ -245,10 +314,8 @@ watch([search, status], debounce(() => {
     background: linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%);
     border: 1px solid #d1d5db;
     border-radius: 0.5rem;
-    padding: 0 4px;
-    height: 45px;
-    display: flex;
-    align-items: center;
+    padding: 0.5rem;
+    min-height: 45px;
 }
 
 :deep(.vue-select-custom .vs__selected-options) {

@@ -6,6 +6,7 @@ import EyeIcon from '@/components/icons/EyeIcon.vue';
 import EyeOffIcon from '@/components/icons/EyeOffIcon.vue';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
+import { alertaExito, alertaError, alertaCargando, cerrarAlerta } from '@/utils/alerts.js';
 
 const props = defineProps({
     mustVerifyEmail: {
@@ -72,15 +73,33 @@ const showPassword = ref(false);
 const showPasswordConfirmation = ref(false);
 
 const updateProfile = () => {
+    alertaCargando('Actualizando perfil', 'Por favor espera...');
     profileForm.patch(route('profile.update'), {
         preserveScroll: true,
+        onSuccess: () => {
+            cerrarAlerta();
+            alertaExito('¡Éxito!', 'Perfil actualizado correctamente');
+        },
+        onError: () => {
+            cerrarAlerta();
+            alertaError('Error', 'Por favor verifica los datos ingresados');
+        }
     });
 };
 
 const updatePassword = () => {
+    alertaCargando('Actualizando contraseña', 'Por favor espera...');
     passwordForm.put(route('user-password.update'), {
         preserveScroll: true,
-        onSuccess: () => passwordForm.reset(),
+        onSuccess: () => {
+            cerrarAlerta();
+            alertaExito('¡Éxito!', 'Contraseña actualizada correctamente');
+            passwordForm.reset();
+        },
+        onError: () => {
+            cerrarAlerta();
+            alertaError('Error', 'Por favor verifica los datos ingresados');
+        }
     });
 };
 </script>
@@ -181,9 +200,17 @@ const updatePassword = () => {
                             :reduce="subArea => subArea.id"
                             label="name"
                             placeholder="Selecciona una sub área"
-                            :disabled="!profileForm.priority_area_id"
+                            :searchable="true"
+                            :clearable="true"
                             class="vue-select-custom"
-                        />
+                        >
+                            <template #no-options="{ search, searching }">
+                                <template v-if="searching">
+                                    No se encontraron resultados para <em>{{ search }}</em>.
+                                </template>
+                                <em v-else>Selecciona un Área Prioritaria primero...</em>
+                            </template>
+                        </VueSelect>
                         <div v-if="profileForm.errors.sub_area_id" class="mt-1 text-sm text-red-600">
                             {{ profileForm.errors.sub_area_id }}
                         </div>
@@ -196,26 +223,16 @@ const updatePassword = () => {
                         </p>
                     </div>
 
-                    <!-- Success Message -->
-                    <div v-if="profileForm.recentlySuccessful" class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded text-sm">
-                        Perfil actualizado correctamente.
-                    </div>
 
                     <!-- Submit Button -->
                     <div class="flex justify-end">
                         <button
                             type="submit"
                             :disabled="profileForm.processing"
-                            class="bg-[#002B5C] text-white py-2.5 px-6 rounded font-medium hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-800 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                            class="px-6 py-2 cursor-pointer bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl disabled:opacity-75 flex items-center gap-2 font-medium"
                         >
                             <span v-if="!profileForm.processing">Guardar Cambios</span>
-                            <span v-else class="flex items-center justify-center">
-                                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                Guardando...
-                            </span>
+                            <span v-else>Guardando...</span>
                         </button>
                     </div>
                 </form>
@@ -310,26 +327,16 @@ const updatePassword = () => {
                         </div>
                     </div>
 
-                    <!-- Success Message -->
-                    <div v-if="passwordForm.recentlySuccessful" class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded text-sm">
-                        Contraseña actualizada correctamente.
-                    </div>
 
                     <!-- Submit Button -->
                     <div class="flex justify-end">
                         <button
                             type="submit"
                             :disabled="passwordForm.processing"
-                            class="bg-[#002B5C] text-white py-2.5 px-6 rounded font-medium hover:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-800 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                            class="px-6 py-2 cursor-pointer bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl disabled:opacity-75 flex items-center gap-2 font-medium"
                         >
                             <span v-if="!passwordForm.processing">Actualizar Contraseña</span>
-                            <span v-else class="flex items-center justify-center">
-                                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                Actualizando...
-                            </span>
+                            <span v-else>Actualizando...</span>
                         </button>
                     </div>
                 </form>
@@ -339,52 +346,93 @@ const updatePassword = () => {
 </template>
 
 <style scoped>
-:deep(.vue-select-custom .vs__dropdown-toggle) {
-    background: #F3F4F6;
-    border-top: 0;
-    border-left: 0;
-    border-right: 0;
-    border-bottom: 2px solid #d1d5db;
+.vue-select-custom :deep(.vs__dropdown-toggle) {
+    background: linear-gradient(to bottom right, #F3F4F6, #E5E7EB);
+    border: none !important;
+    border-bottom: 2px solid #D1D5DB !important;
     border-radius: 0.5rem;
     padding: 0.625rem 0.75rem;
-    min-height: 42px;
+    box-shadow: none;
+    transition: all 0.2s;
+    min-height: 45px;
 }
 
-:deep(.vue-select-custom .vs__dropdown-toggle:focus-within) {
+.vue-select-custom :deep(.vs__dropdown-toggle):hover {
+    border-bottom-color: rgba(27, 57, 106, 0.5);
+}
+
+.vue-select-custom :deep(.vs--open .vs__dropdown-toggle) {
+    background: linear-gradient(to bottom right, #EFF6FF, #DBEAFE);
     border-bottom-color: #1B396A;
 }
 
-:deep(.vue-select-custom .vs__selected) {
+.vue-select-custom :deep(.vs__search) {
+    margin: 0;
+    padding: 0;
+    border: none;
+    font-size: 0.875rem;
+    color: #111827;
+}
+
+.vue-select-custom :deep(.vs__search::placeholder) {
+    color: #9CA3AF;
+}
+
+.vue-select-custom :deep(.vs__selected) {
+    margin: 0;
+    padding: 0;
+    border: none;
     color: #111827;
     font-size: 0.875rem;
+    font-weight: 500;
 }
 
-:deep(.vue-select-custom .vs__search::placeholder) {
-    color: #9ca3af;
+.vue-select-custom :deep(.vs__actions) {
+    padding: 0 4px 0 6px;
 }
 
-:deep(.vue-select-custom .vs__dropdown-menu) {
-    border: 1px solid #d1d5db;
+.vue-select-custom :deep(.vs__clear),
+.vue-select-custom :deep(.vs__open-indicator) {
+    fill: #1B396A;
+    transition: transform 0.2s;
+}
+
+.vue-select-custom :deep(.vs__open-indicator) {
+    transform: scale(0.70);
+}
+
+.vue-select-custom :deep(.vs--open .vs__open-indicator) {
+    transform: rotate(180deg) scale(0.70);
+}
+
+.vue-select-custom :deep(.vs__dropdown-menu) {
+    border: 1px solid #E5E7EB;
     border-radius: 0.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    margin-top: 4px;
 }
 
-:deep(.vue-select-custom .vs__dropdown-option) {
-    padding: 0.75rem 1rem;
+.vue-select-custom :deep(.vs__dropdown-option) {
+    padding: 0.625rem 0.75rem;
     color: #374151;
+    font-size: 0.875rem;
+    transition: all 0.15s;
 }
 
-:deep(.vue-select-custom .vs__dropdown-option--highlight) {
+.vue-select-custom :deep(.vs__dropdown-option--highlight) {
     background: #1B396A;
     color: white;
 }
 
-:deep(.vue-select-custom .vs__open-indicator) {
-    fill: #1B396A;
+.vue-select-custom :deep(.vs__no-options) {
+    padding: 0.75rem;
+    color: #6B7280;
+    font-size: 0.875rem;
+    text-align: center;
 }
 
-:deep(.vue-select-custom.vs--disabled .vs__dropdown-toggle) {
-    background-color: #e5e7eb;
+.vue-select-custom :deep(.vs--disabled .vs__dropdown-toggle) {
+    background: linear-gradient(to bottom right, #E5E7EB, #D1D5DB);
     cursor: not-allowed;
     opacity: 0.6;
 }

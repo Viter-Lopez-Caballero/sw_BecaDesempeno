@@ -161,7 +161,7 @@ const deleteUser = async (id, name) => {
                     </div>
                     <button @click="cleanFilters" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-sm font-medium transition cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
-                            <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
+                            <path d="M400-240v-80h240v80H400Zm-158 0L15-467l57-57 170 170 366-366 57 57-423 423Zm318-160v-80h240v80H560Zm160-160v-80h240v80H720Z"/>
                         </svg>
                         Limpiar Filtros
                     </button>
@@ -197,31 +197,23 @@ const deleteUser = async (id, name) => {
                     <table class="w-full text-sm text-left">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
+                                <th scope="col" class="px-6 py-4 tracking-wider">ID</th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">
-                                    <button @click="sortBy('id')" class="flex items-center gap-1 hover:text-gray-200">
-                                        ID
-                                        <svg v-if="sortField === 'id'" xmlns="http://www.w3.org/2000/svg" :class="sortDirection === 'asc' ? '' : 'rotate-180'" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
-                                            <path d="M480-528 296-344l-56-56 240-240 240 240-56 56-184-184Z"/>
-                                        </svg>
-                                    </button>
-                                </th>
-                                <th scope="col" class="px-6 py-4 tracking-wider">
-                                    <button @click="sortBy('name')" class="flex items-center gap-1 hover:text-gray-200">
+                                    <div @click="sortBy('name')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
                                         Nombre
-                                        <svg v-if="sortField === 'name'" xmlns="http://www.w3.org/2000/svg" :class="sortDirection === 'asc' ? '' : 'rotate-180'" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
-                                            <path d="M480-528 296-344l-56-56 240-240 240 240-56 56-184-184Z"/>
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'name', 'opacity-50': sortField !== 'name' }">
+                                            <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/>
                                         </svg>
-                                    </button>
+                                    </div>
                                 </th>
                                 <th scope="col" class="px-6 py-4 tracking-wider">
-                                    <button @click="sortBy('email')" class="flex items-center gap-1 hover:text-gray-200">
+                                    <div @click="sortBy('email')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
                                         Email
-                                        <svg v-if="sortField === 'email'" xmlns="http://www.w3.org/2000/svg" :class="sortDirection === 'asc' ? '' : 'rotate-180'" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
-                                            <path d="M480-528 296-344l-56-56 240-240 240 240-56 56-184-184Z"/>
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'email', 'opacity-50': sortField !== 'email' }">
+                                            <path d="M320-440v-287L217-624l-57-56 200-200 200 200-57 56-103-103v287h-80ZM600-80 400-280l57-56 103 103v-287h80v287l103-103 57 56L600-80Z"/>
                                         </svg>
-                                    </button>
+                                    </div>
                                 </th>
-                                <th scope="col" class="px-6 py-4 tracking-wider">Rol</th>
                                 <th scope="col" class="px-6 py-4 text-center tracking-wider">Acciones</th>
                             </tr>
                         </thead>
@@ -230,11 +222,7 @@ const deleteUser = async (id, name) => {
                                 <td class="px-6 py-4 font-medium text-gray-900">{{ (users.meta.current_page - 1) * users.meta.per_page + index + 1 }}</td>
                                 <td class="px-6 py-4 font-semibold text-gray-800">{{ user.name }}</td>
                                 <td class="px-6 py-4 text-gray-600">{{ user.email }}</td>
-                                <td class="px-6 py-4 text-gray-600">
-                                    <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
-                                        {{ user.role || 'Evaluador' }}
-                                    </span>
-                                </td>
+
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
                                         <button v-if="useCan('users.delete')" @click="deleteUser(user.id, user.name)" class="p-2 text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition group cursor-pointer" title="Eliminar">
@@ -246,7 +234,7 @@ const deleteUser = async (id, name) => {
                                 </td>
                             </tr>
                             <tr v-if="!users.data || users.data.length === 0">
-                                <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                                <td colspan="4" class="px-6 py-12 text-center text-gray-500">
                                     No se encontraron evaluadores
                                 </td>
                             </tr>

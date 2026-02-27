@@ -41,14 +41,12 @@ const chartData = computed(() => ({
             backgroundColor: '#10B981', // Green-500
             data: props.chart.approved,
             borderRadius: 4,
-            barThickness: 20,
         },
         {
             label: 'Rechazados',
             backgroundColor: '#EF4444', // Red-500
             data: props.chart.rejected,
             borderRadius: 4,
-            barThickness: 20,
         }
     ]
 }));
@@ -92,8 +90,8 @@ const chartOptions = {
         }
     },
     // Customize bar separation if needed, or stick to defaults
-    barPercentage: 0.7,
-    categoryPercentage: 0.8
+    barPercentage: 0.6,
+    categoryPercentage: 0.7
 };
 
 // Filter Logic

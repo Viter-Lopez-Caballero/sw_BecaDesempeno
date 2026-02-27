@@ -77,7 +77,10 @@ class Application extends Model
         return $query->where(function ($q) use ($search) {
             $q->whereHas('user', function ($subQ) use ($search) {
                 $subQ->where('users.name', 'like', "%{$search}%")
-                    ->orWhere('users.email', 'like', "%{$search}%");
+                    ->orWhere('users.email', 'like', "%{$search}%")
+                    ->orWhereHas('institution', function ($instQ) use ($search) {
+                        $instQ->where('institutions.name', 'like', "%{$search}%");
+                    });
             })->orWhere('applications.id', 'like', "%{$search}%");
         });
     }
@@ -92,8 +95,23 @@ class Application extends Model
 
     public function scopeOrdenado($query, $sortField = 'id', $sortDirection = 'desc')
     {
-        // Allow sorting by related user name if needed, assuming basic sort for now
-        return $query->orderBy($sortField, $sortDirection);
+        if (empty($sortField)) {
+            $sortField = 'id';
+        }
+        if (empty($sortDirection)) {
+            $sortDirection = 'desc';
+        }
+
+        return match ($sortField) {
+            'user_name' => $query->join('users', 'users.id', '=', 'applications.user_id')
+                ->orderBy('users.name', $sortDirection)
+                ->select('applications.*'),
+            'campus' => $query->join('users', 'users.id', '=', 'applications.user_id')
+                ->join('institutions', 'institutions.id', '=', 'users.institution_id')
+                ->orderBy('institutions.name', $sortDirection)
+                ->select('applications.*'),
+            default => $query->orderBy($sortField, $sortDirection),
+        };
     }
 
     /**

@@ -50,7 +50,7 @@ class Evaluation extends Model
             ->join('announcements', 'applications.announcement_id', '=', 'announcements.id')
             ->leftJoin('recognitions', function ($join) {
                 $join->on('recognitions.user_id', '=', 'users.id')
-                     ->on('recognitions.announcement_id', '=', 'announcements.id');
+                    ->on('recognitions.announcement_id', '=', 'announcements.id');
             })
             ->select(
                 'users.id as evaluator_id',
@@ -72,7 +72,17 @@ class Evaluation extends Model
                 'recognitions.id',
                 'recognitions.active',
                 'recognitions.sent_at'
-            );
+            )
+            ->when(request('sort_field'), function ($q, $field) {
+                $dir = request('sort_direction', 'asc');
+                match ($field) {
+                    'evaluator_name' => $q->orderBy('users.name', $dir),
+                    'announcement_name' => $q->orderBy('announcements.name', $dir),
+                    default => $q->orderBy('announcements.created_at', 'desc')
+                };
+            }, function ($q) {
+                $q->orderBy('announcements.created_at', 'desc')->orderBy('users.name', 'asc');
+            });
     }
 
     /**
@@ -84,9 +94,9 @@ class Evaluation extends Model
             $q->whereHas('announcement', function ($q2) use ($search) {
                 $q2->where('name', 'like', "%{$search}%");
             })
-            ->orWhereHas('user', function ($q2) use ($search) {
-                $q2->where('name', 'like', "%{$search}%");
-            });
+                ->orWhereHas('user', function ($q2) use ($search) {
+                    $q2->where('name', 'like', "%{$search}%");
+                });
         });
     }
 

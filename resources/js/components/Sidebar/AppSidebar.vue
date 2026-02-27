@@ -120,7 +120,7 @@
                             :href="route('logout')"
                             method="post"
                             as="button"
-                            class="w-full flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-red-50 transition-colors duration-150 border-t border-gray-100"
+                            class="w-full flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-red-50 transition-colors duration-150 border-t border-gray-100 cursor-pointer"
                             @click="profileMenuOpen = false"
                         >
                             <svg viewBox="0 0 24 24" class="w-4 h-4 mr-3 text-red-600">

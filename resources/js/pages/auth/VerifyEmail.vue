@@ -145,11 +145,20 @@ const resendCode = () => {
                     </div>
 
                     <!-- Email destacado -->
-                    <div v-if="email" class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 text-center border border-blue-200">
-                        <p class="text-sm text-gray-700">
-                            Código enviado a:
-                            <span class="font-semibold text-[#1B396A]">{{ email }}</span>
-                        </p>
+                    <!-- Email destacado (Banner Style) -->
+                    <div v-if="email" 
+                        class="relative flex items-center gap-3 px-4 py-2 rounded-lg bg-white shadow-sm border border-gray-100 border-l-4 border-l-[#1B396A]"
+                    >
+                        <div class="flex-shrink-0 text-[#1B396A]">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div class="flex items-center text-left">
+                            <span class="text-[13px] font-medium text-gray-800">
+                                Código enviado a: <span class="text-[#1B396A] font-semibold">{{ email }}</span>
+                            </span>
+                        </div>
                     </div>
 
                     <!-- Inputs del código -->
@@ -218,23 +227,46 @@ const resendCode = () => {
                         </button>
                     </div>
 
-                    <!-- Mensajes de estado -->
-                    <div v-if="status" class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                        <p class="text-sm text-blue-800 text-center">
-                            {{ status }}
-                        </p>
+                    <!-- Mensajes de estado (Banner Style) -->
+                    <div v-if="status" 
+                        class="relative flex items-center gap-3 px-4 py-2 rounded-lg bg-white shadow-sm border border-gray-100 border-l-4 border-l-[#1B396A]"
+                    >
+                        <div class="flex-shrink-0 text-[#1B396A]">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div class="flex items-center text-left">
+                            <span class="text-[13px] font-medium text-gray-800">{{ status }}</span>
+                        </div>
                     </div>
                     
-                    <div v-if="$page.props.flash?.success" class="bg-green-50 border border-green-200 rounded-lg p-3">
-                        <p class="text-sm text-green-800 text-center">
-                            {{ $page.props.flash.success }}
-                        </p>
+                    <div v-if="$page.props.flash?.success" 
+                        class="relative flex items-center gap-4 px-5 py-4 rounded-lg bg-white shadow-sm border border-gray-100 border-l-4 border-l-green-500"
+                    >
+                        <div class="flex-shrink-0 text-green-500">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div class="flex flex-col text-left">
+                            <span class="text-[10px] uppercase font-bold tracking-widest text-green-400 mb-0.5">Éxito</span>
+                            <span class="text-sm font-bold leading-tight text-gray-800">{{ $page.props.flash.success }}</span>
+                        </div>
                     </div>
                     
-                    <div v-if="$page.props.flash?.warning" class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                        <p class="text-sm text-yellow-800 text-center">
-                            {{ $page.props.flash.warning }}
-                        </p>
+                    <div v-if="$page.props.flash?.warning" 
+                        class="relative flex items-center gap-4 px-5 py-4 rounded-lg bg-white shadow-sm border border-gray-100 border-l-4 border-l-yellow-500"
+                    >
+                        <div class="flex-shrink-0 text-yellow-500">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                        </div>
+                        <div class="flex flex-col text-left">
+                            <span class="text-[10px] uppercase font-bold tracking-widest text-yellow-400 mb-0.5">Atención</span>
+                            <span class="text-sm font-bold leading-tight text-gray-800">{{ $page.props.flash.warning }}</span>
+                        </div>
                     </div>
 
                     <!-- Volver al login (Cerrar Sesión Interno) -->

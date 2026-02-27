@@ -19,7 +19,7 @@ class EvaluatorController extends Controller
         // Statistics using advanced Eloquent relationship scopes (1 Query)
         $user->loadCount([
             'evaluations as total',
-            'evaluations as pendientes' => fn($q) => $q->pending()
+            'evaluations as pendientes' => fn($q) => $q->pending()->whereHas('application', fn($q2) => $q2->where('status', 'pending'))
         ]);
         
         $totalAsignadas = $user->total;
@@ -29,6 +29,9 @@ class EvaluatorController extends Controller
         // Pending Applications
         $applications = \App\Models\Evaluation::where('evaluator_id', $user->id)
             ->pending()
+            ->whereHas('application', function ($q) {
+                $q->where('status', 'pending');
+            })
             ->with([
                 'application.announcement',
                 'application.user.subArea', 
@@ -73,6 +76,9 @@ class EvaluatorController extends Controller
         $evaluation = \App\Models\Evaluation::where('id', $id)
             ->where('evaluator_id', Auth::id())
             ->where('status', 'pending')
+            ->whereHas('application', function ($q) {
+                $q->where('status', 'pending');
+            })
             ->with([
                 'application.announcement',
                 'application.user.subArea',
@@ -105,6 +111,10 @@ class EvaluatorController extends Controller
 
         $evaluation = \App\Models\Evaluation::where('id', $id)
             ->where('evaluator_id', Auth::id())
+            ->where('status', 'pending')
+            ->whereHas('application', function ($q) {
+                $q->where('status', 'pending');
+            })
             ->firstOrFail();
 
         $evaluation->update([
@@ -143,7 +153,7 @@ class EvaluatorController extends Controller
         // Statistics using loadCount (1 Query instead of 4)
         $user->loadCount([
             'evaluations as total',
-            'evaluations as pendientes' => fn($q) => $q->pending(),
+            'evaluations as pendientes' => fn($q) => $q->pending()->whereHas('application', fn($q2) => $q2->where('status', 'pending')),
             'evaluations as aprobadas' => fn($q) => $q->approved(),
             'evaluations as rechazadas' => fn($q) => $q->rejected(),
         ]);
@@ -156,7 +166,12 @@ class EvaluatorController extends Controller
 
         // Completed Applications (History)
         $query = \App\Models\Evaluation::where('evaluator_id', $user->id)
-            ->where('status', '!=', 'pending')
+            ->where(function ($q) {
+                $q->where('status', '!=', 'pending')
+                  ->orWhereHas('application', function ($q2) {
+                      $q2->where('status', '!=', 'pending');
+                  });
+            })
             ->with([
                 'application.announcement',
                 'application.user.subArea', 
@@ -185,6 +200,11 @@ class EvaluatorController extends Controller
 
         // Transform data
         $applications->getCollection()->transform(function ($evaluation) {
+            $finalStatus = $evaluation->status;
+            if ($finalStatus === 'pending' && $evaluation->application->status !== 'pending') {
+                $finalStatus = 'evaluated_by_admin';
+            }
+
             return [
                 'id' => $evaluation->application->id,
                 'evaluation_id' => $evaluation->id,
@@ -194,7 +214,7 @@ class EvaluatorController extends Controller
                 'application_date' => $evaluation->application->created_at->isoFormat('D [de] MMMM [de] YYYY'),
                 'evaluation_date' => $evaluation->updated_at->isoFormat('D [de] MMMM [de] YYYY'),
                 'documents_count' => $evaluation->application->documents_count ?? 0,
-                'status' => $evaluation->status,
+                'status' => $finalStatus,
                 'score' => $evaluation->score,
             ];
         });

@@ -37,16 +37,34 @@ class RecognitionController extends Controller
         };
 
         // Obtener los reconocimientos del docente actual, donde activos
-        $recognitions = Recognition::with('announcement')
+        $recognitionsQuery = Recognition::with('announcement.calendar')
             ->leftJoin('announcements', 'recognitions.announcement_id', '=', 'announcements.id')
             ->select('recognitions.*')
             ->where('user_id', $user->id)
             ->where('recognitions.active', true)
             ->orderBy($sortColumn, $sortDirection)
-            ->paginate(10);
+            ->get();
+
+        // Filtrar en memoria para asegurar que la etapa sea resultados o terminada
+        $filteredRecognitions = $recognitionsQuery->filter(function ($recognition) {
+            if (!$recognition->announcement) return false;
+            $stage = $recognition->announcement->current_stage;
+            return in_array($stage, ['resultados', 'terminada']);
+        });
+
+        // Paginación manual del collection ya que Inertia espera paginado
+        $page = $request->input('page', 1);
+        $perPage = 10;
+        $paginatedItems = new \Illuminate\Pagination\LengthAwarePaginator(
+            $filteredRecognitions->forPage($page, $perPage)->values(),
+            $filteredRecognitions->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         return Inertia::render('Teacher/Recognitions/Index', [
-            'recognitions' => $recognitions,
+            'recognitions' => $paginatedItems,
             'filters' => $request->all(['page', 'search', 'sort_field', 'sort_direction']),
         ]);
     }
@@ -64,7 +82,14 @@ class RecognitionController extends Controller
         }
 
         // Ensure relations are loaded
-        $recognition->loadMissing('announcement');
+        $recognition->loadMissing('announcement.calendar');
+
+        if ($recognition->announcement) {
+            $stage = $recognition->announcement->current_stage;
+            if (!in_array($stage, ['resultados', 'terminada'])) {
+                abort(403, 'Aún no es la etapa de resultados. No puedes descargar el reconocimiento.');
+            }
+        }
 
         return $this->pdfGenerationService->generateTeacherRecognitionPdf($recognition, $user);
     }

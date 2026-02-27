@@ -96,9 +96,7 @@ class Application extends Model
     public function scopeOrdenado($query, $sortField = 'id', $sortDirection = 'desc')
     {
         if (empty($sortField)) {
-            $sortField = 'id';
-        }
-        if (empty($sortDirection)) {
+            $sortField = 'created_at';
             $sortDirection = 'desc';
         }
 
@@ -110,7 +108,7 @@ class Application extends Model
                 ->join('institutions', 'institutions.id', '=', 'users.institution_id')
                 ->orderBy('institutions.name', $sortDirection)
                 ->select('applications.*'),
-            default => $query->orderBy($sortField, $sortDirection),
+            default => $query->orderBy('applications.' . $sortField, $sortDirection),
         };
     }
 

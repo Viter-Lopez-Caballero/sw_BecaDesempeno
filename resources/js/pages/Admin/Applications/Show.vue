@@ -1,7 +1,7 @@
 <script setup>
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { usePage, router, Head, Link } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { alertaPregunta, alertaExito } from '@/utils/alerts.js';
 import RejectModal from './RejectModal.vue';
 import { 
@@ -54,9 +54,22 @@ const getStatusLabel = (status) => {
         approved: 'Aprobado',
         rejected: 'Rechazado',
         expired: 'Expirada',
+        evaluated_by_admin: 'Evaluada por Admin',
     };
     return labels[status] || status;
 };
+
+const getEvaluatorStatus = (evStatus, appStatus) => {
+    if (evStatus === 'pending' && appStatus !== 'pending') {
+        return 'evaluated_by_admin';
+    }
+    return evStatus;
+};
+
+const isValidVerdictStage = computed(() => {
+    const stage = props.application?.announcement?.current_stage;
+    return stage === 'evaluacion' || stage === 'resultados';
+});
 
 const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -312,22 +325,24 @@ const getFileIcon = (type) => {
                                         <span 
                                             class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white text-xs font-bold shadow-sm border border-gray-100"
                                             :class="{
-                                                'text-green-700': ev.status === 'approved',
-                                                'text-red-700': ev.status === 'rejected',
-                                                'text-yellow-700': ev.status === 'pending',
-                                                'text-gray-700': ev.status === 'expired',
+                                                'text-green-700': getEvaluatorStatus(ev.status, application.status) === 'approved',
+                                                'text-red-700': getEvaluatorStatus(ev.status, application.status) === 'rejected',
+                                                'text-yellow-700': getEvaluatorStatus(ev.status, application.status) === 'pending',
+                                                'text-gray-700': getEvaluatorStatus(ev.status, application.status) === 'expired',
+                                                'text-purple-700': getEvaluatorStatus(ev.status, application.status) === 'evaluated_by_admin',
                                             }"
                                         >
                                             <span 
                                                 class="w-2 h-2 rounded-full"
                                                 :class="{
-                                                    'bg-green-500': ev.status === 'approved',
-                                                    'bg-red-500': ev.status === 'rejected',
-                                                    'bg-yellow-500 animate-pulse': ev.status === 'pending',
-                                                    'bg-gray-500': ev.status === 'expired',
+                                                    'bg-green-500': getEvaluatorStatus(ev.status, application.status) === 'approved',
+                                                    'bg-red-500': getEvaluatorStatus(ev.status, application.status) === 'rejected',
+                                                    'bg-yellow-500 animate-pulse': getEvaluatorStatus(ev.status, application.status) === 'pending',
+                                                    'bg-gray-500': getEvaluatorStatus(ev.status, application.status) === 'expired',
+                                                    'bg-purple-500': getEvaluatorStatus(ev.status, application.status) === 'evaluated_by_admin',
                                                 }"
                                             ></span>
-                                            {{ getStatusLabel(ev.status) }}
+                                            {{ getStatusLabel(getEvaluatorStatus(ev.status, application.status)) }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-center whitespace-nowrap">
@@ -350,8 +365,16 @@ const getFileIcon = (type) => {
                     </div>
                 </div>
 
-                 <div class="flex justify-between items-center pt-4" v-if="application.status === 'pending'">
-                    <div class="w-full flex gap-4">
+                 <div class="flex flex-col gap-4 pt-4" v-if="application.status === 'pending'">
+                    <div v-if="!isValidVerdictStage" class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-lg flex items-center gap-3 w-full">
+                        <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0 fill-current"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                        <div>
+                            <h3 class="font-bold text-sm">Veredicto No Disponible</h3>
+                            <p class="text-xs">Solo se puede emitir un veredicto definitivo durante las etapas de <strong>Evaluación</strong> o <strong>Resultados</strong>. Etapa actual: <strong>{{ application.announcement?.current_stage || 'Desconocida' }}</strong>.</p>
+                        </div>
+                    </div>
+                    
+                    <div v-else class="w-full flex gap-4">
                         <button 
                             @click="approveRequest"
                             class="flex-1 bg-[#1B396A] text-white py-2.5 rounded-lg text-[11px] font-bold uppercase tracking-wider hover:bg-[#152d47] transition shadow-md cursor-pointer transform hover:-translate-y-0.5"

@@ -272,9 +272,9 @@ onMounted(() => {
 }
 
 :deep(.vue-select-custom .vs__search) {
-    max-width: 10px;
     margin: 0;
     padding: 0;
+    color: #111827;
 }
 
 :deep(.vue-select-custom .vs__search::placeholder) {

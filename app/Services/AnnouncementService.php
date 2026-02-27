@@ -104,13 +104,20 @@ class AnnouncementService
                 $data['image_path'] = $imagePath;
             }
 
-            if (isset($data['status']) && $data['status'] === 'activa') {
+            $statusChangedToActiva = false;
+            if (isset($data['status']) && $data['status'] === 'activa' && $announcement->status !== 'activa') {
+                $statusChangedToActiva = true;
                 Announcement::where('status', 'activa')
                     ->where('id', '!=', $announcement->id)
                     ->update(['status' => 'cerrada']);
             }
 
             $announcement->update($data);
+
+            // Si se activó la convocatoria, notificar a todos
+            if ($statusChangedToActiva) {
+                $this->notificationService->notifyNewAnnouncement($announcement->id);
+            }
 
             // Detectar cambios en las fechas para notificar
             $calendar = $announcement->calendar;
@@ -150,7 +157,7 @@ class AnnouncementService
 
             // Update or Create Calendar
             $announcement->calendar()->updateOrCreate(
-            ['announcement_id' => $announcement->id],
+                ['announcement_id' => $announcement->id],
                 $newDates
             );
 
@@ -196,8 +203,7 @@ class AnnouncementService
                 $syncData[$docId] = ['is_mandatory' => true];
             }
             $announcement->catalogDocuments()->sync($syncData);
-        }
-        else {
+        } else {
             // Default active documents
             $activeDocuments = CatalogDocument::where('active', true)->pluck('id');
             if ($activeDocuments->isNotEmpty()) {

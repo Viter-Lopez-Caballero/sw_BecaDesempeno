@@ -224,10 +224,7 @@ const getFileIcon = (type) => {
                                     <button 
                                         v-if="doc.file_type === 'pdf'" 
                                         @click="togglePreview(doc.id)" 
-                                        class="inline-flex items-center justify-center gap-2 px-4 py-2 border rounded-lg font-bold transition cursor-pointer text-xs uppercase whitespace-nowrap shadow-sm"
-                                        :class="documentsState[doc.id]?.showPreview 
-                                            ? 'bg-[#1B396A] text-white border-[#1B396A]' 
-                                            : 'text-[#1B396A] border-[#1B396A] hover:bg-[#1B396A] hover:text-white'"
+                                        class="inline-flex items-center justify-center gap-2 px-4 py-2 border border-[#1B396A] text-[#1B396A] rounded-lg font-bold transition cursor-pointer text-xs whitespace-nowrap shadow-sm hover:bg-[#1B396A] hover:text-white"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
                                             <path v-if="!documentsState[doc.id]?.showPreview" d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z"/>
@@ -335,7 +332,7 @@ const getFileIcon = (type) => {
                                     </td>
                                     <td class="px-6 py-4 text-center whitespace-nowrap">
                                         <Link v-if="ev.status !== 'pending' && ev.status !== 'expired'" :href="route('admin.applications.evaluation.show', { application: application.id, evaluation: ev.id })" 
-                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-semibold transition"
+                                            class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 border border-[#1B396A] text-[#1B396A] hover:bg-[#1B396A] hover:text-white rounded-lg text-xs font-bold transition shadow-sm"
                                             title="Ver Respuestas de la Rúbrica"
                                         >
                                             <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path :d="mdiEye"/></svg>

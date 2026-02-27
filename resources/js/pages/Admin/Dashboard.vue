@@ -142,8 +142,8 @@ const getProgressWidth = (count) => {
     margin: 0;
 }
 :deep(.vue-select-custom .vs__search) {
-    max-width: 10px;
     margin: 0;
+    color: #111827;
 }
 :deep(.vue-select-custom .vs__search::placeholder) {
     color: #9ca3af;
@@ -277,7 +277,7 @@ const getProgressWidth = (count) => {
                                 <span>{{ institution.state?.name || 'N/A' }}</span> <!-- estado -> state, nombre -> name -->
                             </div>
                         </div>
-                        <div class="flex items-center justify-center bg-blue-50 rounded-full h-10 w-10">
+                        <div class="flex items-center justify-center bg-white rounded-full h-10 w-10 shadow-sm border border-gray-100 flex-shrink-0">
                             <p class="text-lg font-bold text-[#1B396A]">{{ institution.applications_count }}</p>
                         </div>
                     </div>
@@ -422,12 +422,12 @@ const getProgressWidth = (count) => {
                                 <td class="px-6 py-4 font-medium text-gray-900">{{ institution.state }}</td>
                                 <td class="px-6 py-4 text-gray-800 font-semibold">{{ institution.name }}</td>
                                 <td class="px-6 py-4 text-center">
-                                    <span class="px-3.5 py-1.5 inline-flex text-[13px] font-bold text-green-700">
+                                    <span class="w-8 h-8 inline-flex items-center justify-center text-[13px] font-bold text-green-700 bg-white rounded-full shadow-sm border border-gray-100">
                                         {{ institution.approved_count }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    <span class="px-3.5 py-1.5 inline-flex text-[13px] font-bold text-red-700">
+                                    <span class="w-8 h-8 inline-flex items-center justify-center text-[13px] font-bold text-red-700 bg-white rounded-full shadow-sm border border-gray-100">
                                         {{ institution.rejected_count }}
                                     </span>
                                 </td>

@@ -42,8 +42,8 @@ class UpdateAnnouncementStatus extends Command
         // Buscamos convocatorias pendientes que tengan calendario con publication_start <= hoy
         $pendientes = \App\Models\Announcement::where('status', 'pendiente')
             ->whereHas('calendar', function ($query) use ($today) {
-            $query->where('publication_start', '<=', $today);
-        })
+                $query->where('publication_start', '<=', $today);
+            })
             ->with('calendar')
             ->get();
 
@@ -58,6 +58,10 @@ class UpdateAnnouncementStatus extends Command
 
                 // Notificar el cambio de etapa
                 $notificationService = app(NotificationService::class);
+
+                // Nueva Convocatoria
+                $notificationService->notifyNewAnnouncement($announcement->id);
+
                 $notificationService->notifyAnnouncementStageChange(
                     $announcement->id,
                     $announcement->name,
@@ -75,8 +79,8 @@ class UpdateAnnouncementStatus extends Command
         // (Es decir, ayer fue el último día)
         $activas = \App\Models\Announcement::where('status', 'activa')
             ->whereHas('calendar', function ($query) use ($today) {
-            $query->where('results_end', '<', $today);
-        })
+                $query->where('results_end', '<', $today);
+            })
             ->get();
 
         foreach ($activas as $announcement) {

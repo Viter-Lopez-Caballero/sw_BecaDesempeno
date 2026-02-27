@@ -1,47 +1,86 @@
 <template>
     <DialogModal :show="show" @close="close" maxWidth="lg">
         <template #title>
-            <div class="flex items-center gap-2 text-red-600 font-bold">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                Rechazar Solicitud
+            <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <div class="flex items-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span class="font-bold text-lg text-gray-800 uppercase tracking-tight">Rechazar Solicitud</span>
+                </div>
+                <button @click="close" class="text-gray-400 hover:text-gray-600 transition-colors duration-200 cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
         </template>
 
         <template #content>
-            <p class="text-sm text-gray-700 mb-4 font-bold">
-                Escribe una descripción del por qué rechazaste esta solicitud:
-            </p>
-
-            <div class="mb-4">
-                <textarea 
-                    v-model="form.comment" 
-                    class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" 
-                    rows="6" 
-                    placeholder="Escribe una descripción..."
-                    maxlength="855"
-                    required
-                ></textarea>
-                <div class="text-right text-xs text-gray-400 mt-1">
-                    {{ form.comment.length }}/855
+            <div class="space-y-4 pt-4">
+                <!-- Banner de Instrucciones Estilo Premium -->
+                <div class="relative flex items-center gap-4 px-5 py-4 rounded-lg bg-white shadow-sm border border-gray-100 border-l-[5px] border-l-red-500">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] uppercase font-bold tracking-widest text-red-500 opacity-80 mb-0.5">
+                            Instrucciones
+                        </span>
+                        <span class="text-sm font-bold leading-tight text-gray-800">
+                            Por favor, proporciona una justificación detallada para el rechazo. Esta observación será visible para la administración.
+                        </span>
+                    </div>
                 </div>
-                <InputError :message="form.errors.comment" class="mt-2" />
+
+                <div class="relative group">
+                    <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900 uppercase tracking-tight">
+                        Motivo del Rechazo: <span class="text-red-500">*</span>
+                    </label>
+                    <textarea 
+                        v-model="form.comment" 
+                        class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A] transition-all duration-300 min-h-[160px] leading-relaxed" 
+                        :class="{ 'border-b-red-500': form.errors.comment }"
+                        placeholder="Escribe aquí los motivos detallados..."
+                        maxlength="855"
+                        required
+                    ></textarea>
+                    
+                    <div class="flex justify-between items-center mt-1">
+                        <div class="flex items-center gap-1 text-xs text-gray-500">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Escribe una descripción</span>
+                        </div>
+                        <span class="text-gray-400 text-sm">{{ form.comment.length }}/855</span>
+                    </div>
+                    <InputError :message="form.errors.comment" class="mt-1" />
+                </div>
             </div>
         </template>
 
         <template #footer>
-            <SecondaryButton @click="close">
-                Cancelar
-            </SecondaryButton>
-            
-            <PrimaryButton 
-                class="ml-3 bg-red-600 hover:bg-red-700 focus:ring-red-500"
-                :disabled="form.processing"
-                @click="submit"
-            >
-                Enviar
-            </PrimaryButton>
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+                <SecondaryButton 
+                    @click="close"
+                    class="flex-1 sm:flex-none justify-center px-6 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-gray-200 transition-all duration-200 cursor-pointer"
+                >
+                    Cancelar
+                </SecondaryButton>
+                
+                <button 
+                    class="flex-1 sm:flex-none justify-center px-8 py-2.5 bg-red-600 text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-red-700 focus:ring-4 focus:ring-red-100 transition-all duration-200 shadow-lg shadow-red-200/50 disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+                    :disabled="form.processing"
+                    @click="confirmSubmit"
+                >
+                    <span v-if="!form.processing">Confirmar Rechazo</span>
+                    <span v-else class="flex items-center gap-2">
+                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Procesando...
+                    </span>
+                </button>
+            </div>
         </template>
     </DialogModal>
 </template>
@@ -53,7 +92,7 @@ import SecondaryButton from '@/Components/SecondaryButton.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { useForm } from '@inertiajs/vue3';
 import { watch } from 'vue';
-import { alertaCargando, cerrarAlerta, alertaExito, alertaError } from '@/utils/alerts.js';
+import { alertaCargando, cerrarAlerta, alertaExito, alertaError, alertaPregunta } from '@/utils/alerts.js';
 
 const props = defineProps({
     show: Boolean,
@@ -85,7 +124,7 @@ const close = () => {
     emit('close');
 };
 
-const submit = () => {
+const confirmSubmit = async () => {
     if (!props.evaluationId) return;
 
     // Validación client-side
@@ -95,17 +134,29 @@ const submit = () => {
         return;
     }
 
-    alertaCargando('Rechazando', 'Por favor espera...');
+    const confirmed = await alertaPregunta(
+        '¿Confirmar rechazo?',
+        'Esta acción marcará la evaluación como rechazada con los motivos proporcionados.'
+    );
+
+    if (confirmed) {
+        submit();
+    }
+};
+
+const submit = () => {
+    alertaCargando('Procesando', 'Guardando evaluación de rechazo...');
+    
     form.put(route('evaluator.evaluation.update', props.evaluationId), {
         onSuccess: () => {
             cerrarAlerta();
-            alertaExito('Evaluación', 'Solicitud evaluada exitosamente.');
+            alertaExito('¡Realizado!', 'La evaluación ha sido rechazada correctamente.');
             emit('success');
             close();
         },
         onError: () => {
             cerrarAlerta();
-            alertaError('Error', 'No se pudo rechazar la solicitud.');
+            alertaError('Error', 'Hubo un problema al procesar el rechazo.');
         },
     });
 };

@@ -6,6 +6,7 @@ use App\Mail\EvaluatorAssigned;
 use App\Mail\ApplicationVerdict;
 use App\Mail\AnnouncementStageChange;
 use App\Mail\AnnouncementDateChange;
+use App\Mail\NewAnnouncement;
 use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
@@ -35,7 +36,7 @@ class NotificationService
             $evaluator->name,
             $evaluationsCount,
             5 // days limit
-            ));
+        ));
     }
 
     /**
@@ -63,7 +64,7 @@ class NotificationService
             $teacher->name,
             $status,
             $announcementTitle
-            ));
+        ));
     }
 
     /**
@@ -93,7 +94,7 @@ class NotificationService
                 $announcementTitle,
                 $newStage,
                 $stageDate
-                ));
+            ));
         }
     }
 
@@ -124,7 +125,39 @@ class NotificationService
                 $user->name,
                 $announcementTitle,
                 $changes
-                ));
+            ));
+        }
+    }
+
+    /**
+     * Send notification when a new announcement is activated
+     */
+    public function notifyNewAnnouncement($announcementId)
+    {
+        $announcement = \App\Models\Announcement::with('calendar')->findOrFail($announcementId);
+
+        // Get all users with roles: Admin, Evaluador, Docente
+        $users = User::role(['Admin', 'Evaluador', 'Docente'])->get();
+
+        foreach ($users as $user) {
+            // Create database notification
+            Notification::create([
+                'title' => '¡Nueva Convocatoria Disponible!',
+                'data' => [
+                    'message' => "Se ha publicado la convocatoria: '{$announcement->name}'",
+                    'announcement_id' => $announcement->id,
+                    'registration_start' => $announcement->calendar->registration_start ?? null,
+                ],
+                'type' => 'new_announcement',
+                'user_id' => $user->id,
+            ]);
+
+            // Send email
+            try {
+                Mail::to($user->email)->queue(new NewAnnouncement($user->name, $announcement));
+            } catch (\Exception $e) {
+                \Log::error("❌ Error enviando correo de nueva convocatoria a {$user->email}: " . $e->getMessage());
+            }
         }
     }
 }

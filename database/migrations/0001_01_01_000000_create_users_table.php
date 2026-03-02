@@ -15,8 +15,17 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('curp', 18)->unique()->nullable();
             $table->timestamp('email_verified_at')->nullable();
+            $table->string('email_verification_code', 6)->nullable();
+            $table->timestamp('email_verification_code_expires_at')->nullable();
             $table->string('password');
+            $table->foreignId('institution_id')->nullable()->constrained('institutions')->onDelete('set null');
+            $table->foreignId('priority_area_id')->nullable()->constrained('priority_areas')->onDelete('set null');
+            $table->foreignId('sub_area_id')->nullable()->constrained('sub_areas')->onDelete('set null');
+            $table->text('two_factor_secret')->nullable();
+            $table->text('two_factor_recovery_codes')->nullable();
+            $table->timestamp('two_factor_confirmed_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

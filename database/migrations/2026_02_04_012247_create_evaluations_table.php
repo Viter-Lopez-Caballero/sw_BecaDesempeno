@@ -16,9 +16,8 @@ return new class extends Migration
             $table->foreignId('application_id')->constrained('applications')->onDelete('cascade');
             $table->foreignId('evaluator_id')->constrained('users')->onDelete('cascade');
             
-            // Status: pending, approved, rejected (by the evaluator)
-            // Note: The final status of the Application is controlled by Admin. THIS status is just the evaluator's opinion.
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->enum('status', ['pending', 'approved', 'rejected', 'expired'])->default('pending');
+            $table->timestamp('deadline_at')->nullable();
             $table->decimal('score', 5, 2)->default(0);
             $table->json('answers')->nullable();
             $table->text('comment')->nullable();

@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->string('title');
             $table->json('data'); // Store applications count per weekday
             $table->string('type')->default('weekly_summary'); // Type of notification

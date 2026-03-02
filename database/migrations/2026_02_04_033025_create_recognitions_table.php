@@ -15,8 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Evaluator
             $table->foreignId('announcement_id')->constrained('announcements')->onDelete('cascade');
+            $table->foreignId('template_id')->nullable()->constrained('templates')->onDelete('set null');
             $table->boolean('active')->default(false); // Switch estado
             $table->timestamp('sent_at')->nullable(); // When it was sent/activated
+            $table->string('identifier')->nullable()->unique();
+            $table->text('digital_seal')->nullable();
             $table->timestamps();
             
             // An evaluator can only have one recognition per announcement

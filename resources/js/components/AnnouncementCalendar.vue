@@ -240,9 +240,8 @@ const phaseForDay = (day) => {
 
 // During active drag, highlight preview range
 const isInDragPreview = (day) => {
-    if (!day || !activePhase.value || !dragStart.value) return false;
-    const end = isDragging.value ? dragEnd.value : hoverDay.value;
-    if (!end) return sameDay(day, dragStart.value);
+    if (!day || !activePhase.value || !isDragging.value || !dragStart.value) return false;
+    const end = dragEnd.value || dragStart.value;
     const lo = dragStart.value <= end ? dragStart.value : end;
     const hi = dragStart.value <= end ? end : dragStart.value;
     return day >= lo && day <= hi;
@@ -585,7 +584,7 @@ const dayLabel = (day) => {
         <!-- Instruction banner (Simplified Minimalist) -->
         <transition enter-active-class="transition duration-500 ease-out" enter-from-class="transform -translate-y-4 opacity-0 scale-95" enter-to-class="transform translate-y-0 opacity-100 scale-100" leave-active-class="transition duration-200" leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
             <div
-                v-if="activePhase && !dragStart"
+                v-if="activePhase"
                 class="relative flex items-center gap-4 px-5 py-4 rounded-lg bg-white shadow-sm border border-gray-100"
                 :style="{ 
                     borderLeft: `5px solid ${phases.find(p => p.key === activePhase)?.color}`

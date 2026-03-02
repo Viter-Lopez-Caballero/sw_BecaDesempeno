@@ -60,6 +60,9 @@ class RegisterController extends Controller
         if ($user) {
             Log::info('🔄 Usuario existente encontrado: ' . $user->email . '. Intentando fusionar roles.');
 
+            // Actualizar created_at para que actúe como cuenta nueva (sin notificaciones previas)
+            $user->created_at = now();
+
             // Actualizar datos básicos si es necesario (el nombre viene de RENAPO, así que debería ser igual)
             $user->update([
                 'institution_id' => $request->institution_id,

@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { ref, watch, nextTick } from 'vue';
 import LandingLayout from '@/layouts/LandingLayout.vue';
 import EyeIcon from '@/components/icons/EyeIcon.vue';
 import EyeOffIcon from '@/components/icons/EyeOffIcon.vue';
@@ -41,6 +41,7 @@ const showPassword = ref(false);
 const showPasswordConfirmation = ref(false);
 const buscandoCurp = ref(false);
 const curpEncontrado = ref(false);
+const usuarioExistente = ref(false);
 const errorCurp = ref('');
 
 // Watch for Priority Area change to fetch Sub Areas
@@ -159,11 +160,40 @@ const buscarCurp = async () => {
 
         if (response.data.success) {
             cerrarAlerta();
-            // Auto-completar el campo de nombre completo
             const { nombres, apellidoPaterno, apellidoMaterno } = response.data.data;
             form.name = `${nombres} ${apellidoPaterno} ${apellidoMaterno}`.trim();
             curpEncontrado.value = true;
-            alertaExito('¡CURP encontrado!', 'Datos cargados correctamente');
+
+            // Si el usuario ya existe en el sistema, pre-llenar sus datos
+            if (response.data.existing_user && response.data.existing_data) {
+                usuarioExistente.value = true;
+                const d = response.data.existing_data;
+                form.email = d.email ?? form.email;
+                form.institution_id = d.institution_id ?? form.institution_id;
+
+                // Cargar sub-áreas antes de asignar priority_area_id,
+                // luego esperar nextTick para que el watcher se ejecute y resetee
+                // sub_area_id, y DESPUÉS sobreescribilo con el valor correcto
+                if (d.priority_area_id) {
+                    try {
+                        const subRes = await axios.get(`/api/sub-areas/${d.priority_area_id}`);
+                        subareasPrioritariasOptions.value = subRes.data;
+                        form.priority_area_id = d.priority_area_id;
+                        // Esperar a que el watcher dispare y resetee sub_area_id
+                        await nextTick();
+                        // Ahora asignar DESPUÉS del reset del watcher
+                        form.sub_area_id = d.sub_area_id ?? '';
+                    } catch {}
+                } else {
+                    form.priority_area_id = d.priority_area_id ?? form.priority_area_id;
+                    form.sub_area_id      = d.sub_area_id      ?? form.sub_area_id;
+                }
+
+                alertaExito('¡Cuenta existente detectada!', 'Se han cargado tus datos previos. Confirma tu contraseña para continuar.');
+            } else {
+                usuarioExistente.value = false;
+                alertaExito('¡CURP encontrado!', 'Datos cargados correctamente');
+            }
         }
     } catch (error) {
         cerrarAlerta();
@@ -179,8 +209,7 @@ const buscarCurp = async () => {
         }
         
         form.name = '';
-        curpEncontrado.value = false;
-    } finally {
+        curpEncontrado.value = false;            usuarioExistente.value = false;    } finally {
         buscandoCurp.value = false;
     }
 };
@@ -239,8 +268,14 @@ const buscarCurp = async () => {
                             <div v-else-if="errorCurp" class="mt-1 text-sm text-red-600">
                                 {{ errorCurp }}
                             </div>
-                            <div v-else-if="curpEncontrado" class="mt-1 text-sm text-green-600">
-                                ✓ CURP válido encontrado
+                            <div v-else-if="curpEncontrado" class="mt-1 text-sm" :class="usuarioExistente ? 'font-medium' : 'text-green-600'" :style="usuarioExistente ? 'color: #1B396A' : ''">
+                                <span v-if="usuarioExistente" class="flex items-center gap-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Cuenta existente detectada &mdash; datos precargados. Ingresa tu contrase&ntilde;a para continuar.
+                                </span>
+                                <span v-else>&#10003; CURP v&aacute;lido encontrado</span>
                             </div>
                             <div v-else class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -326,17 +361,18 @@ const buscarCurp = async () => {
                                     <button
                                         type="button"
                                         @click="showPassword = !showPassword"
-                                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 transition"
+                                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 transition cursor-pointer"
                                     >
                                         <EyeIcon v-if="!showPassword" size="20" class="text-gray-600" />
                                         <EyeOffIcon v-else size="20" class="text-gray-600" />
                                     </button>
                                 </div>
-                            <div v-if="!form.errors.password" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span>Por favor, introduce tu contraseña</span>
+                                <div v-if="!form.errors.password" class="flex items-center gap-1 mt-1 text-xs" :class="usuarioExistente ? '' : 'text-gray-500'" :style="usuarioExistente ? 'color: #1B396A' : ''">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span v-if="usuarioExistente">Ya tienes cuenta. Puedes usar tu contrase&ntilde;a actual o establecer una nueva.</span>
+                                    <span v-else>Por favor, introduce tu contrase&ntilde;a</span>
                             </div>
                             <div v-if="form.errors.password" class="mt-1 text-sm text-red-600">
                                 {{ form.errors.password }}
@@ -362,17 +398,18 @@ const buscarCurp = async () => {
                                     <button
                                         type="button"
                                         @click="showPasswordConfirmation = !showPasswordConfirmation"
-                                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 transition"
+                                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 transition cursor-pointer"
                                     >
                                         <EyeIcon v-if="!showPasswordConfirmation" size="20" class="text-gray-600" />
                                         <EyeOffIcon v-else size="20" class="text-gray-600" />
                                     </button>
                                 </div>
-                            <div v-if="!form.errors.password_confirmation" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span>Por favor, confirma tu contraseña</span>
+                                <div v-if="!form.errors.password_confirmation" class="flex items-center gap-1 mt-1 text-xs" :class="usuarioExistente ? '' : 'text-gray-500'" :style="usuarioExistente ? 'color: #1B396A' : ''">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span v-if="usuarioExistente">Repite la misma contrase&ntilde;a que ingresaste arriba</span>
+                                    <span v-else>Por favor, confirma tu contrase&ntilde;a</span>
                             </div>
                             <div v-if="form.errors.password_confirmation" class="mt-1 text-sm text-red-600">
                                 {{ form.errors.password_confirmation }}

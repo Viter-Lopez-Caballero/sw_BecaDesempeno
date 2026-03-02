@@ -5,6 +5,7 @@ import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue'
 import AdminLayout from '@/layouts/AdminLayout.vue'
 import TeacherLayout from '@/layouts/TeacherLayout.vue'
 import EvaluatorLayout from '@/layouts/EvaluatorLayout.vue'
+import MultiRoleLayout from '@/layouts/MultiRoleLayout.vue'
 
 const page = usePage()
 
@@ -13,16 +14,17 @@ const layouts = {
   AdminLayout,
   EvaluatorLayout,
   TeacherLayout,
+  MultiRoleLayout,
 }
 
 const currentLayout = computed(() => {
   const layoutName = page.props.auth.layoutName
-  // Map old role names to new layout components
   const layoutMap = {
     'Docente': TeacherLayout,
     'Evaluador': EvaluatorLayout,
     'LayoutAuthenticated': LayoutAuthenticated,
     'AdminLayout': AdminLayout,
+    'MultiRoleLayout': MultiRoleLayout,
   }
   return layoutMap[layoutName] || layouts[layoutName] || LayoutAuthenticated
 })

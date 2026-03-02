@@ -31,8 +31,8 @@ class NotificationService
             'user_id' => $evaluatorId,
         ]);
 
-        // Send email
-        Mail::to($evaluator->email)->send(new EvaluatorAssigned(
+        // Send email (queued so users don't wait)
+        Mail::to($evaluator->email)->queue(new EvaluatorAssigned(
             $evaluator->name,
             $evaluationsCount,
             5 // days limit
@@ -60,8 +60,8 @@ class NotificationService
             'user_id' => $teacherId,
         ]);
 
-        // Send email
-        Mail::to($teacher->email)->send(new ApplicationVerdict(
+        // Send email (queued so users don't wait)
+        Mail::to($teacher->email)->queue(new ApplicationVerdict(
             $teacher->name,
             $status,
             $announcementTitle
@@ -89,8 +89,8 @@ class NotificationService
                 'user_id' => $user->id,
             ]);
 
-            // Send email
-            Mail::to($user->email)->send(new AnnouncementStageChange(
+            // Send email (queued so users don't wait)
+            Mail::to($user->email)->queue(new AnnouncementStageChange(
                 $user->name,
                 $announcementTitle,
                 $newStage,
@@ -121,8 +121,8 @@ class NotificationService
                 'user_id' => $user->id,
             ]);
 
-            // Send email
-            Mail::to($user->email)->send(new AnnouncementDateChange(
+            // Send email (queued so users don't wait)
+            Mail::to($user->email)->queue(new AnnouncementDateChange(
                 $user->name,
                 $announcementTitle,
                 $changes

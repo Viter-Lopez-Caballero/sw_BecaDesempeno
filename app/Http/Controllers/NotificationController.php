@@ -13,17 +13,20 @@ class NotificationController extends Controller
     public function index(Request $request)
     {
         $query = Notification::query();
-        
+
         // Check if user_id column exists before filtering
         if (\Schema::hasColumn('notifications', 'user_id')) {
             // Only show notifications assigned to this specific user
             $query->where('user_id', auth()->id());
         }
-        
+
+        // Only show notifications created since the user registered (clean slate on new registration)
+        $query->where('created_at', '>=', auth()->user()->created_at);
+
         $notifications = $query
             ->orderBy('created_at', 'desc')
             ->paginate(10)
-            ->through(fn ($notification) => [
+            ->through(fn($notification) => [
                 'id' => $notification->id,
                 'title' => $notification->title,
                 'data' => $notification->data,
@@ -55,13 +58,13 @@ class NotificationController extends Controller
     public function markAllAsRead()
     {
         $query = Notification::whereNull('read_at');
-        
+
         // Filter by user if user_id column exists
         if (\Schema::hasColumn('notifications', 'user_id')) {
             // Only mark as read notifications assigned to this specific user
             $query->where('user_id', auth()->id());
         }
-        
+
         $query->update(['read_at' => now()]);
 
         return response()->json(['success' => true]);

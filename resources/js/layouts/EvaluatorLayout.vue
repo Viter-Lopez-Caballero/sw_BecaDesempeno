@@ -1,6 +1,6 @@
 <template>
     <div class="flex h-screen bg-gray-50 overflow-hidden">
-        <AppSidebar :menu="menuConfigs.evaluator" />
+        <AppSidebar :menu="activeMenu" />
 
         <!-- Main Content -->
         <div class="flex-1 flex flex-col overflow-hidden">
@@ -45,12 +45,31 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, provide, watch } from 'vue';
-import { menuConfigs } from '@/config/menu/menuConfig';
+import { ref, computed, onMounted, onUnmounted, provide, watch } from 'vue';
+import { menuConfigs, roleMenuItems, roleSectionLabels } from '@/config/menu/menuConfig';
 import AppSidebar from '@/components/Sidebar/AppSidebar.vue';
 import NotificationsDropdown from '@/components/NotificationsDropdown.vue';
 import { usePage } from '@inertiajs/vue3';
 import Swal from 'sweetalert2';
+
+const page = usePage();
+
+const activeMenu = computed(() => {
+    if (page.props.auth?.layoutName === 'MultiRoleLayout') {
+        const rolesList = page.props.auth?.roles_list ?? [];
+        const roleOrder = ['Admin', 'Evaluador', 'Docente'];
+        const menu = [];
+        for (const role of roleOrder.filter(r => rolesList.includes(r))) {
+            const items = roleMenuItems[role];
+            const label = roleSectionLabels[role];
+            if (!items || !label) continue;
+            menu.push({ type: 'section', label });
+            menu.push(...items);
+        }
+        return menu;
+    }
+    return menuConfigs.evaluator;
+});
 
 const sidebarOpen = ref(false);
 const sidebarCollapsed = ref(false);
@@ -66,7 +85,6 @@ const checkMobile = () => {
 };
 
 // Watch for flash messages
-const page = usePage();
 
 watch(() => page.props.flash?.success, (newValue) => {
     if (newValue) {

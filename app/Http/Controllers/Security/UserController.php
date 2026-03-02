@@ -33,9 +33,9 @@ class UserController extends SecurityController
     {
         $this->routeName = "security.users.";
         $this->permissionPrefix = "users.";
-        $this->source    = "SuperAdmin/Security/Users/";
-        $this->model     = new User();
-        
+        $this->source = "SuperAdmin/Security/Users/";
+        $this->model = new User();
+
         $this->middleware("permission:{$this->permissionPrefix}index")->only(['index', 'show']);
         $this->middleware("permission:{$this->permissionPrefix}create")->only(['store', 'create']);
         $this->middleware("permission:{$this->permissionPrefix}edit")->only(['edit', 'update']);
@@ -46,12 +46,12 @@ class UserController extends SecurityController
     {
         $filters = $this->getFiltersBase($request->query());
         $roleFilter = $request->query('role_id');
-        
+
         $query = $this->model->query()
             ->with('roles')
             ->buscarGlobal($filters->search)
-            ->when($roleFilter, function($q) use ($roleFilter) {
-                $q->whereHas('roles', function($query) use ($roleFilter) {
+            ->when($roleFilter, function ($q) use ($roleFilter) {
+                $q->whereHas('roles', function ($query) use ($roleFilter) {
                     $query->where('roles.id', $roleFilter);
                 });
             })
@@ -60,7 +60,7 @@ class UserController extends SecurityController
         // Ordenamiento dinámico
         $sortField = $filters->sort_field ?: 'id';
         $sortDirection = $filters->sort_direction ?: 'desc';
-        
+
         $users = $query->orderBy($sortField, $sortDirection)
             ->paginate($filters->rows)
             ->withQueryString()
@@ -70,11 +70,11 @@ class UserController extends SecurityController
         $rolesForImport = Role::where('name', 'Evaluador')->orderBy('name')->get();
 
         return Inertia::render("{$this->source}Index", [
-            'users'  => UserResource::collection($users),
-            'title'     => 'Gestión de Usuarios',
+            'users' => UserResource::collection($users),
+            'title' => 'Gestión de Usuarios',
             'routeName' => $this->routeName,
-            'filters'   => $filters,
-            'roles'     => $roles,
+            'filters' => $filters,
+            'roles' => $roles,
             'rolesForImport' => $rolesForImport,
             'roleFilter' => $roleFilter,
         ]);
@@ -82,15 +82,15 @@ class UserController extends SecurityController
 
     public function create()
     {
-        $roles = Role::whereIn('name', ['Admin', 'Evaluador'])->orderBy('name')->get();
+        $roles = Role::whereIn('name', ['Admin', 'Evaluador', 'Docente'])->orderBy('name')->get();
         return Inertia::render("{$this->source}Create", [
-            'title'         => 'Agregar Usuarios',
-            'routeName'     => $this->routeName,
-            'roles'         => $roles,
+            'title' => 'Agregar Usuarios',
+            'routeName' => $this->routeName,
+            'roles' => $roles,
         ]);
     }
 
-    
+
     public function store(StoreUserRequest $request)
     {
         $user = $this->model::create($request->validated());
@@ -112,12 +112,12 @@ class UserController extends SecurityController
      */
     public function edit(User $user)
     {
-        $roles = Role::whereIn('name', ['Admin', 'Evaluador'])->orderBy('name')->get();
+        $roles = Role::whereIn('name', ['Admin', 'Evaluador', 'Docente'])->orderBy('name')->get();
         return Inertia::render("{$this->source}Edit", [
-            'title'         => 'Editar Usuarios',
-            'routeName'     => $this->routeName,
-            'user'          => new UserResource($user->load('roles')),
-            'roles'         => $roles,
+            'title' => 'Editar Usuarios',
+            'routeName' => $this->routeName,
+            'user' => new UserResource($user->load('roles')),
+            'roles' => $roles,
         ]);
     }
 
@@ -152,28 +152,28 @@ class UserController extends SecurityController
             'roles' => ['roles', 'id', 'name'],
         ];
     }
-    
-    public function export() 
+
+    public function export()
     {
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\UsersExport, 'usuarios.xlsx');
     }
-    
+
     public function template()
     {
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\UsersTemplateExport, 'plantilla_usuarios.xlsx');
     }
-    
-    public function import(\App\Http\Requests\Security\ImportUsersRequest $request) 
+
+    public function import(\App\Http\Requests\Security\ImportUsersRequest $request)
     {
         // Obtener automáticamente el rol de Evaluador
         $evaluadorRole = Role::where('name', 'Evaluador')->first();
-        
+
         if (!$evaluadorRole) {
             return redirect()->back()->with('error', 'No se encontró el rol de Evaluador.');
         }
-        
+
         \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\UsersImport($evaluadorRole->id), $request->file('file'));
-        
+
         return redirect()->back()->with('success', 'Usuarios importados correctamente.');
     }
 }

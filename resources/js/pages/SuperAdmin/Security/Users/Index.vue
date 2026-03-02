@@ -368,7 +368,25 @@ const downloadTemplate = () => {
                                 <td class="px-6 py-4 font-medium text-gray-900">{{ (users.meta.current_page - 1) * users.meta.per_page + index + 1 }}</td>
                                 <td class="px-6 py-4 font-semibold text-gray-800">{{ user.name }}</td>
                                 <td class="px-6 py-4 text-gray-600">{{ user.email }}</td>
-                                <td class="px-6 py-4 text-gray-600 capitalize">{{ user.role }}</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-wrap gap-1">
+                                        <span
+                                            v-for="rol in user.roles"
+                                            :key="rol.id"
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                            :class="{
+                                                'bg-purple-100 text-purple-800': rol.name === 'Super Admin',
+                                                'bg-blue-100 text-blue-800': rol.name === 'Admin',
+                                                'bg-green-100 text-green-800': rol.name === 'Docente',
+                                                'bg-orange-100 text-orange-800': rol.name === 'Evaluador',
+                                                'bg-gray-100 text-gray-700': !['Super Admin','Admin','Docente','Evaluador'].includes(rol.name),
+                                            }"
+                                        >
+                                            {{ rol.name }}
+                                        </span>
+                                        <span v-if="!user.roles || user.roles.length === 0" class="text-gray-400 text-xs">Sin rol</span>
+                                    </div>
+                                </td>
                                 <td v-if="useCan('users.edit') || useCan('users.delete')" class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
                                         <Link v-if="useCan('users.edit')" :href="route(`${routeName}edit`, user.id)" class="p-2 text-[#1B396A] border border-[#1B396A] rounded-full hover:bg-[#1B396A] hover:text-white transition group cursor-pointer" title="Editar">

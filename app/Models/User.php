@@ -129,10 +129,28 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Get the layout name based on user role
+     * Get list of applicable role names (Admin, Evaluador, Docente)
+     */
+    public function getRolesList(): array
+    {
+        return $this->roles()
+            ->whereIn('name', ['Admin', 'Evaluador', 'Docente'])
+            ->pluck('name')
+            ->toArray();
+    }
+
+    /**
+     * Get the layout name based on user role(s)
      */
     public function getLayoutName(): string
     {
+        $applicableRoles = $this->getRolesList();
+
+        // Multi-role: show unified sidebar with sections
+        if (count($applicableRoles) > 1) {
+            return 'MultiRoleLayout';
+        }
+
         $role = $this->getPrimaryRole();
 
         return match ($role) {

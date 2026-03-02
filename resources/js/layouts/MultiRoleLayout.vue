@@ -1,6 +1,6 @@
 <template>
     <div class="flex h-screen bg-gray-50 overflow-hidden">
-        <AppSidebar :menu="activeMenu" />
+        <AppSidebar :menu="multiRoleMenu" />
 
         <!-- Main Content -->
         <div class="flex-1 flex flex-col overflow-hidden">
@@ -37,7 +37,7 @@
                     <!-- Notifications Icon -->
                     <NotificationsDropdown />
                 </div>
-                
+
                 <slot />
             </main>
         </div>
@@ -47,34 +47,16 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, provide } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import { menuConfigs, roleMenuItems, roleSectionLabels } from '@/config/menu/menuConfig';
+import { roleMenuItems, roleSectionLabels } from '@/config/menu/menuConfig';
 import AppSidebar from '@/components/Sidebar/AppSidebar.vue';
 import NotificationsDropdown from '@/components/NotificationsDropdown.vue';
 
 const page = usePage();
 
-const activeMenu = computed(() => {
-    if (page.props.auth?.layoutName === 'MultiRoleLayout') {
-        const rolesList = page.props.auth?.roles_list ?? [];
-        const roleOrder = ['Admin', 'Evaluador', 'Docente'];
-        const menu = [];
-        for (const role of roleOrder.filter(r => rolesList.includes(r))) {
-            const items = roleMenuItems[role];
-            const label = roleSectionLabels[role];
-            if (!items || !label) continue;
-            menu.push({ type: 'section', label });
-            menu.push(...items);
-        }
-        return menu;
-    }
-    return menuConfigs.teacher;
-});
-
 const sidebarOpen = ref(false);
 const sidebarCollapsed = ref(false);
 const isMobile = ref(false);
 
-// Provide state to sidebar and other components
 provide('sidebarOpen', sidebarOpen);
 provide('sidebarCollapsed', sidebarCollapsed);
 provide('isMobile', isMobile);
@@ -90,5 +72,35 @@ onMounted(() => {
 
 onUnmounted(() => {
     window.removeEventListener('resize', checkMobile);
+});
+
+/**
+ * Construye el menú dinámico a partir de los roles del usuario.
+ * Cada rol aporta:
+ *   - Un item de tipo 'section' con el label "Gestión de [Rol]"
+ *   - Sus items de menú (incluyendo Inicio/Dashboard como primer item)
+ */
+const multiRoleMenu = computed(() => {
+    const rolesList = page.props.auth?.roles_list ?? [];
+    const menu = [];
+
+    // Orden de visualización preferido
+    const roleOrder = ['Admin', 'Evaluador', 'Docente'];
+    const sortedRoles = roleOrder.filter(r => rolesList.includes(r));
+
+    for (const role of sortedRoles) {
+        const items = roleMenuItems[role];
+        const label = roleSectionLabels[role];
+
+        if (!items || !label) continue;
+
+        // Encabezado de sección
+        menu.push({ type: 'section', label });
+
+        // Items del rol
+        menu.push(...items);
+    }
+
+    return menu;
 });
 </script>

@@ -1,8 +1,6 @@
 <script setup>
-import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
-import VueSelect from 'vue-select';
-import 'vue-select/dist/vue-select.css';
 import { mdiSecurity } from '@mdi/js';
 import { alertaExito, alertaError, alertaCargando, cerrarAlerta } from '@/utils/alerts.js';
 
@@ -151,25 +149,44 @@ const submit = () => {
                             <p v-if="form.errors.password" class="mt-1 text-sm text-red-600">{{ form.errors.password }}</p>
                         </div>
 
-                        <!-- Rol -->
+                        <!-- Roles (selección múltiple card-style) -->
                         <div>
-                            <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Asignar Rol: <span class="text-red-500">*</span></label>
-                            <VueSelect
-                                v-model="form.roles[0]"
-                                :options="roles"
-                                :reduce="rol => rol.id"
-                                label="name"
-                                placeholder="Selecciona un rol"
-                                :class="['vue-select-custom', { 'vue-select-error': form.errors.roles }]"
-                                @input="clearError('roles')"
-                            />
-                            <div v-if="!form.errors.roles" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <label class="block mb-3 text-base text-[#1B396A] font-medium text-gray-900">Asignar Roles: <span class="text-red-500">*</span></label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <label
+                                    v-for="rol in roles"
+                                    :key="rol.id"
+                                    :for="`rol-${rol.id}`"
+                                    class="flex items-center ps-4 bg-white rounded-lg shadow-sm border cursor-pointer transition"
+                                    :class="form.roles.includes(rol.id) ? 'border-[#1B396A]' : 'border-gray-50 hover:border-gray-300'"
+                                >
+                                    <div class="relative flex items-center justify-center">
+                                        <input
+                                            :id="`rol-${rol.id}`"
+                                            type="checkbox"
+                                            :value="rol.id"
+                                            v-model="form.roles"
+                                            class="custom-checkbox"
+                                            @change="clearError('roles')"
+                                        />
+                                        <div class="checkbox-custom">
+                                            <svg v-if="form.roles.includes(rol.id)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5">
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="w-full py-4 ps-3 select-none">
+                                        <div class="font-medium text-gray-900 text-sm">{{ rol.name }}</div>
+                                    </div>
+                                </label>
+                            </div>
+                            <div v-if="!form.errors.roles" class="flex items-center gap-1 mt-2 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                <span>El usuario tendrá los permisos asociados a este rol</span>
+                                <span>Puedes asignar uno o varios roles al usuario</span>
                             </div>
-                             <p v-if="form.errors.roles" class="mt-1 text-sm text-red-600">{{ form.errors.roles }}</p>
+                            <p v-if="form.errors.roles" class="mt-1 text-sm text-red-600">{{ form.errors.roles }}</p>
                         </div>
                     </div>
 
@@ -189,62 +206,42 @@ const submit = () => {
 </template>
 
 <style scoped>
-:deep(.vue-select-custom .vs__dropdown-toggle) {
-    background: #F3F4F6;
-    border: none;
-    border-bottom: 2px solid #d1d5db;
-    border-radius: 0.5rem;
-    padding: 0.625rem 0.75rem;
-    min-height: 42px;
+/* Ocultar el checkbox nativo */
+.custom-checkbox {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
 }
 
-:deep(.vue-select-custom .vs__selected) {
-    color: #111827;
-    font-weight: 400;
-    margin: 0;
-    padding: 0;
+/* Checkbox personalizado */
+.checkbox-custom {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #D1D5DB;
+    border-radius: 4px;
+    background-color: white;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
-:deep(.vue-select-custom .vs__search) {
-    margin: 0;
-    padding: 0;
-    color: #111827;
+/* Cuando está checked */
+.custom-checkbox:checked + .checkbox-custom {
+    background-color: #1B396A;
+    border-color: #1B396A;
 }
 
-:deep(.vue-select-custom .vs__search::placeholder) {
-    color: #9ca3af;
+/* Hover */
+label:hover .checkbox-custom {
+    border-color: #1B396A;
 }
 
-:deep(.vue-select-custom .vs__dropdown-toggle:focus-within) {
-    border-bottom-color: #1B396A;
-}
-
-:deep(.vue-select-custom .vs__dropdown-menu) {
-    border: 1px solid #d1d5db;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-:deep(.vue-select-custom .vs__dropdown-option) {
-    padding: 0.75rem 1rem;
-    color: #374151;
-}
-
-:deep(.vue-select-custom .vs__dropdown-option--highlight) {
-    background: #1B396A;
-    color: white;
-}
-
-:deep(.vue-select-custom .vs__open-indicator) {
-    fill: #1B396A;
-    transform: scale(0.85);
-}
-
-:deep(.vue-select-custom .vs__actions) {
-    padding-right: 4px;
-}
-
-:deep(.vue-select-custom .vs__clear) {
-    display: none;
+/* Focus visible */
+.custom-checkbox:focus-visible + .checkbox-custom {
+    outline: 2px solid #1B396A;
+    outline-offset: 2px;
 }
 </style>

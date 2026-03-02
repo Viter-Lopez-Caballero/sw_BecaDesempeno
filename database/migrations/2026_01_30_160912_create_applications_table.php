@@ -16,7 +16,8 @@ return new class extends Migration
             $table->foreignId('announcement_id')->constrained('announcements')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->enum('status', ['pending', 'in_review', 'approved', 'rejected'])->default('pending');
-            $table->string('position_type')->nullable();
+            $table->foreignId('position_type_id')->nullable()->constrained('position_types')->onDelete('set null');
+            $table->foreignId('template_id')->nullable()->constrained('templates')->onDelete('set null');
             $table->text('admin_comment')->nullable();
             $table->softDeletes();
             $table->timestamps();

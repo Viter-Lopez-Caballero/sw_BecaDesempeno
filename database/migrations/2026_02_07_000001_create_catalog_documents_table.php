@@ -20,7 +20,6 @@ return new class extends Migration
             $table->string('file_type')->nullable();
             $table->integer('file_size')->nullable();
             $table->boolean('active')->default(false);
-            $table->boolean('is_fundamental')->default(false);
             $table->timestamps();
             $table->softDeletes();
         });

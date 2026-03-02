@@ -62,10 +62,10 @@ class RecognitionController extends Controller
             ->where('user_id', $user->id)
             ->where('active', true)
             ->firstOrFail();
-
-        // El generador de PDF (Legacy) utiliza $recognition->convocatoria_nombre como alias
-        $recognition->convocatoria_nombre = $recognition->announcement->name;
-
-        return $this->pdfGenerationService->generateRecognitionPdf($recognition, $user);
+        try {
+            return $this->pdfGenerationService->generateRecognitionPdf($recognition, $user);
+        } catch (\Exception $e) {
+            abort(404, $e->getMessage());
+        }
     }
 }

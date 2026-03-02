@@ -91,6 +91,10 @@ class RecognitionController extends Controller
             }
         }
 
-        return $this->pdfGenerationService->generateTeacherRecognitionPdf($recognition, $user);
+        try {
+            return $this->pdfGenerationService->generateTeacherRecognitionPdf($recognition, $user);
+        } catch (\Exception $e) {
+            abort(404, $e->getMessage());
+        }
     }
 }

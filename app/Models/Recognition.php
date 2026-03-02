@@ -17,6 +17,9 @@ class Recognition extends Model
         'announcement_id',
         'active',
         'sent_at',
+        'identifier',
+        'digital_seal',
+        'template_id',
     ];
 
     protected $casts = [
@@ -31,8 +34,25 @@ class Recognition extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function announcement(): BelongsTo
+    public function announcement()
     {
-        return $this->belongsTo(Announcement::class);
+        return $this->belongsTo(Announcement::class, 'announcement_id');
+    }
+
+    public function template(): BelongsTo
+    {
+        return $this->belongsTo(Template::class);
+    }
+
+    /**
+     * Scope a query to find a recognition by its unique identifier.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string  $identifier
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeValidByIdentifier($query, $identifier)
+    {
+        return $query->where('identifier', $identifier)->with('user');
     }
 }

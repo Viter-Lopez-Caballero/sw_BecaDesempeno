@@ -28,6 +28,8 @@ use App\Http\Controllers\Catalog\TemplateController;
 /** @var \Illuminate\Contracts\Auth\Guard|\Illuminate\Contracts\Auth\StatefulGuard $auth */
 Route::get('/', [HomeController::class, 'index'])->name('inicio');
 
+Route::get('/verify-recognition/{identifier}', [\App\Http\Controllers\Public\VerificationController::class, 'verify'])->name('recognition.verify');
+
 Route::get('/announcement', [HomeController::class, 'showAnnouncement'])->name('announcement.show');
 
 Route::get('/documents', function () { // /documentos -> /documents

@@ -9,6 +9,10 @@ use setasign\Fpdi\Fpdi;
 use Carbon\Carbon;
 use Exception;
 use App\Models\Recognition;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\Writer\PngWriter;
 
 class PdfGenerationService
 {
@@ -29,8 +33,19 @@ class PdfGenerationService
     {
         $user = $application->user;
 
-        // Path to the template
-        $template = Template::active()->type('acceptance')->first();
+        // 1. Fetch Template (Priority: Frozen Template > Active Template)
+        $template = $application->template;
+
+        if (!$template) {
+            $template = Template::active()->type('acceptance')->first();
+            
+            // If we found an active template but this application didn't have one frozen, freeze it now
+            if ($template && isset($application->id)) {
+                $application->template_id = $template->id;
+                $application->save();
+            }
+        }
+
         $templatePath = $template ? Storage::disk('public')->path($template->file_path) : null;
 
         if (!$templatePath || !file_exists($templatePath)) {
@@ -73,8 +88,8 @@ class PdfGenerationService
         $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1', 'Participante en: ' . $application->announcement->name), 0, 1, 'L');
 
         // Signature Block (Bottom)
-        $cadenaOriginal = "||{$application->id}|{$user->id}|" . Carbon::now()->toIso8601String() . "||";
-        $this->addSignatureBlock($pdf, $cadenaOriginal, 25, 240);
+        $originalString = "||{$application->id}|{$user->id}|" . Carbon::now()->toIso8601String() . "||";
+        $this->addSignatureBlock($pdf, $originalString, 25, 240);
 
         // Output PDF
         return response($pdf->Output('S'), 200)
@@ -91,14 +106,23 @@ class PdfGenerationService
      */
     public function generateRecognitionPdf($recognition, $user)
     {
-        // Path to the template
-        $template = Template::active()->type('recognition')->first();
+        // Path to the template (Priority: Frozen Template > Active Template)
+        $template = $recognition->template;
+
+        if (!$template) {
+            $template = Template::active()->type('recognition')->first();
+            
+            // If we found an active template but this recognition didn't have one frozen, freeze it now
+            if ($template && isset($recognition->id)) {
+                $recognition->template_id = $template->id;
+                $recognition->save();
+            }
+        }
         
         $templatePath = $template ? Storage::disk('public')->path($template->file_path) : null;
 
         if (!$templatePath || !file_exists($templatePath)) {
-            // If template doesn't exist, generate a simple PDF without template
-            return $this->generateSimplePdf($recognition, $user);
+            throw new Exception("El reconocimiento aún no se encuentra disponible.");
         }
 
         // Initialize FPDI
@@ -109,37 +133,56 @@ class PdfGenerationService
         $pdf->AddPage('P'); // Portrait
         $pdf->setSourceFile($templatePath);
         
+        // Format date and location strings
+        $stateName = $user->institution?->state?->name ?? 'Guerrero';
+        $currentMonth = Carbon::parse($recognition->sent_at)->isoFormat('MMMM');
+        $currentYear = Carbon::parse($recognition->sent_at)->isoFormat('YYYY');
+        $dateText = "Chilpancingo de los Bravo, {$stateName}, {$currentMonth} de {$currentYear}";
+
         // Import page 1
         $tplId = $pdf->importPage(1);
-        
-        // Use the imported page and place it at point 0,0 with a width of 210mm (A4 Portrait)
-        $pdf->useTemplate($tplId, 0, 0, 210);
 
-        // Coordinates based on "Reconocimiento TecNM IT Fed 2026" (Portrait)
-        // 1. Evaluator Name (Centered)
-        $pdf->SetFont('Arial', 'B', 18); // Reducir tamaño de letra
-        $pdf->SetTextColor(50, 50, 50); // Color gris obscuro, no completamente negro
-        $pdf->SetXY(0, 114); // Bajar a la posición de 'Nombre Apellido'
+        // A4 Dimensions: 210 width x 297 height. Use both to force no white bottom margins.
+        $pdf->useTemplate($tplId, 0, 0, 210, 297);
+
+        // Coordinates based on the updated template
+        // 1. Participant Name (Centered)
+        $pdf->SetFont('Arial', 'B', 24); 
+        $pdf->SetTextColor(80, 80, 80); 
+        $pdf->SetXY(0, 134); // Added extra margin underneath the 'A'
         $pdf->Cell(210, 10, iconv('UTF-8', 'ISO-8859-1', mb_strtoupper($user->name)), 0, 1, 'C');
 
-        // 2. Announcement (Centered)
-        $pdf->SetFont('Arial', '', 11);
+        // 2. Participating Activity (Centered)
+        $pdf->SetFont('Arial', '', 12);
         $pdf->SetTextColor(80, 80, 80);
-        $pdf->SetXY(20, 125); // Debajo del nombre, arriba del lorem ipsum
-        $text = "Por su destacada participación como evaluador en la convocatoria:\n" . $recognition->convocatoria_nombre;
-        $pdf->MultiCell(170, 6, iconv('UTF-8', 'ISO-8859-1', $text), 0, 'C');
+        $pdf->SetXY(20, 153); // Adjusted accordingly
+        $announcementName = $recognition->announcement ? $recognition->announcement->name : 'CONVOCATORIA GENERAL';
+        $text = "Por su destacada participación como evaluador en la convocatoria:\n" . mb_strtoupper($announcementName);
+        $pdf->MultiCell(170, 7, iconv('UTF-8', 'ISO-8859-1', $text), 0, 'C');
 
-        // 3. Date
+        // 3. Signer Information
+        $pdf->SetFont('Arial', 'B', 12);
+        $pdf->SetTextColor(80, 80, 80);
+        $pdf->SetXY(0, 225); // Below the golden line
+        $pdf->Cell(210, 6, iconv('UTF-8', 'ISO-8859-1', 'Vitervo López Caballero'), 0, 1, 'C');
+
         $pdf->SetFont('Arial', '', 10);
-        $pdf->SetTextColor(50, 50, 50);
-        $dateText = "Chilpancingo de los Bravo, Guerrero, a " . Carbon::parse($recognition->sent_at)->isoFormat('D [de] MMMM [de] YYYY');
-        $pdf->SetXY(0, 203); // Justo sobre "Ciudad, Estado, mes de 2026"
-        $pdf->Cell(210, 10, iconv('UTF-8', 'ISO-8859-1', $dateText), 0, 1, 'C');
+        $pdf->SetTextColor(100, 100, 100);
+        $pdf->SetXY(0, 231); // Below the signer name
+        $pdf->Cell(210, 6, iconv('UTF-8', 'ISO-8859-1', 'Profesor Investigador'), 0, 1, 'C');
 
-        // Signature Block (Bottom Left) -> Mover a la equina inferior izquierda para no chocar con logos
-        $cadenaOriginal = "||REC-{$recognition->id}|{$user->id}|" . Carbon::parse($recognition->sent_at)->toIso8601String() . "||";
-        $pdf->SetTextColor(0, 0, 0); // Restaurar negro para la firma
-        $this->addSignatureBlock($pdf, $cadenaOriginal, 15, 255, false);
+        // 4. City, State, Month, Year
+        $pdf->SetFont('Arial', 'B', 10);
+        // Yellow-gold color matching the template
+        $pdf->SetTextColor(194, 155, 34);
+        $pdf->SetXY(0, 242); 
+        $pdf->Cell(210, 6, iconv('UTF-8', 'ISO-8859-1', $dateText), 0, 1, 'C');
+
+        // Capture Original String for Signature
+        $originalString = "||REC-{$recognition->id}|{$user->id}|" . Carbon::parse($recognition->sent_at)->toIso8601String() . "||";
+
+        // Second Page setup for legal QR and Seal
+        $this->addLegalSignaturePage($pdf, $originalString, "Reconocimiento Evaluador", $user->id, $recognition->id);
 
         // Output PDF
         return response($pdf->Output('S'), 200)
@@ -157,12 +200,22 @@ class PdfGenerationService
      */
     public function generateTeacherRecognitionPdf(Recognition $recognition, $user)
     {
-        // 1. Fetch Template
-        $template = Template::active()->type('recognition')->first();
+        // 1. Fetch Template (Priority: Frozen Template > Active Template)
+        $template = $recognition->template;
+        
+        if (!$template) {
+            $template = Template::active()->type('recognition')->first();
+            
+            // If we found an active template but this recognition didn't have one frozen, freeze it now
+            if ($template && isset($recognition->id)) {
+                $recognition->template_id = $template->id;
+                $recognition->save();
+            }
+        }
 
-        // Si no hay plantilla, fallar o usar generador simple
+        // Si no hay plantilla (ni histórica ni activa), fallar
         if (!$template || !Storage::disk('public')->exists($template->file_path)) {
-            return $this->generateSimplePdf($recognition, $user, 'docente');
+            throw new Exception("El reconocimiento aún no se encuentra disponible.");
         }
 
         $templatePath = Storage::disk('public')->path($template->file_path);
@@ -182,36 +235,52 @@ class PdfGenerationService
         // Import page 1
         $tplId = $pdf->importPage(1);
 
-        // Use the imported page and place it at point 0,0 with a width of 210mm (A4 Portrait)
-        $pdf->useTemplate($tplId, 0, 0, 210);
+        // A4 Dimensions: 210 width x 297 height.
+        $pdf->useTemplate($tplId, 0, 0, 210, 297);
 
-        // Coordinates based on "Reconocimiento TecNM IT Fed 2026"
+        // Format date and location strings
+        $stateName = $user->institution?->state?->name ?? 'Guerrero';
+        $currentMonth = Carbon::parse($recognition->sent_at)->isoFormat('MMMM');
+        $currentYear = Carbon::parse($recognition->sent_at)->isoFormat('YYYY');
+        $dateText = "Chilpancingo de los Bravo, {$stateName}, {$currentMonth} de {$currentYear}";
+
+        // Coordinates based on updated template
         // 1. Teacher Name (Centered)
-        $pdf->SetFont('Arial', 'B', 18);
-        $pdf->SetTextColor(50, 50, 50);
-        $pdf->SetXY(0, 114); 
+        $pdf->SetFont('Arial', 'B', 24);
+        $pdf->SetTextColor(80, 80, 80);
+        $pdf->SetXY(0, 134); // Added extra margin underneath the 'A'
         $pdf->Cell(210, 10, iconv('UTF-8', 'ISO-8859-1', mb_strtoupper($user->name)), 0, 1, 'C');
 
         // 2. Announcement (Centered)
-        $pdf->SetFont('Arial', '', 11);
+        $pdf->SetFont('Arial', '', 12);
         $pdf->SetTextColor(80, 80, 80);
-        $pdf->SetXY(20, 125);
-        // Use announcement name
+        $pdf->SetXY(20, 153); // Adjusted accordingly
         $announcementName = $recognition->announcement ? $recognition->announcement->name : 'Convocatoria General';
-        $text = "Por su destacada participación en la convocatoria:\n" . $announcementName;
-        $pdf->MultiCell(170, 6, iconv('UTF-8', 'ISO-8859-1', $text), 0, 'C');
+        $text = "Por su destacada e invaluable participación como postulante en la convocatoria:\n" . mb_strtoupper($announcementName);
+        $pdf->MultiCell(170, 7, iconv('UTF-8', 'ISO-8859-1', $text), 0, 'C');
 
-        // 3. Date (Bottom Left)
+        // 3. Signer Information
+        $pdf->SetFont('Arial', 'B', 12);
+        $pdf->SetTextColor(80, 80, 80);
+        $pdf->SetXY(0, 225); // Below the golden line
+        $pdf->Cell(210, 6, iconv('UTF-8', 'ISO-8859-1', 'Vitervo López Caballero'), 0, 1, 'C');
+
         $pdf->SetFont('Arial', '', 10);
-        $pdf->SetTextColor(50, 50, 50);
-        $dateText = "Chilpancingo de los Bravo, Guerrero, a " . Carbon::parse($recognition->sent_at)->isoFormat('D [de] MMMM [de] YYYY');
-        $pdf->SetXY(0, 203);
-        $pdf->Cell(210, 10, iconv('UTF-8', 'ISO-8859-1', $dateText), 0, 1, 'C');
+        $pdf->SetTextColor(100, 100, 100);
+        $pdf->SetXY(0, 231); // Below the signer name
+        $pdf->Cell(210, 6, iconv('UTF-8', 'ISO-8859-1', 'Profesor Investigador'), 0, 1, 'C');
 
-        // Signature Block (Bottom Left) -> Mover a la equina inferior izquierda para no chocar con logos
-        $cadenaOriginal = "||DOC-{$recognition->id}|{$user->id}|" . Carbon::parse($recognition->sent_at)->toIso8601String() . "||";
-        $pdf->SetTextColor(0, 0, 0); // Restaurar negro para la firma
-        $this->addSignatureBlock($pdf, $cadenaOriginal, 15, 255, false);
+        // 4. Date (Bottom Center)
+        $pdf->SetFont('Arial', 'B', 10);
+        $pdf->SetTextColor(194, 155, 34);
+        $pdf->SetXY(0, 242);
+        $pdf->Cell(210, 6, iconv('UTF-8', 'ISO-8859-1', $dateText), 0, 1, 'C');
+
+        // Capture Original String for Signature
+        $originalString = "||DOC-{$recognition->id}|{$user->id}|" . Carbon::parse($recognition->sent_at)->toIso8601String() . "||";
+
+        // Append Legal Page
+        $this->addLegalSignaturePage($pdf, $originalString, "Reconocimiento Postulante", $user->id, $recognition->id);
 
         // Output PDF
         return response($pdf->Output('S'), 200)
@@ -220,123 +289,108 @@ class PdfGenerationService
     }
 
     /**
-     * Generate a simple PDF without template
+     * Creates a secondary page containing the legal QR code and the digital signature seal.
      */
-    private function generateSimplePdf($recognition, $user, $type = 'evaluator')
+    private function addLegalSignaturePage($pdf, $originalString, $documentType, $userId, $recognitionId)
     {
-        // Require FPDF
-        require_once(base_path('vendor/setasign/fpdf/fpdf.php'));
+        $pdf->AddPage('P'); // Add a standard blank A4 portrait page
         
-        $pdf = new \FPDF('L', 'mm', 'A4');
-        $pdf->SetAutoPageBreak(false);
-        
-        // Add a page
-        $pdf->AddPage();
-        
-        // Background with border
-        $pdf->SetDrawColor(27, 57, 106);
-        $pdf->SetLineWidth(1.5);
-        $pdf->Rect(10, 10, 277, 190);
-        
-        $pdf->SetLineWidth(0.3);
-        $pdf->Rect(15, 15, 267, 180);
-        
-        // Title
-        $pdf->SetFont('Arial', 'B', 28);
-        $pdf->SetTextColor(27, 57, 106);
-        $pdf->SetXY(20, 40);
-        $pdf->Cell(257, 15, iconv('UTF-8', 'ISO-8859-1', 'RECONOCIMIENTO'), 0, 1, 'C');
-        
-        // Subtitle
-        $pdf->SetFont('Arial', '', 12);
-        $pdf->SetTextColor(100, 100, 100);
-        $pdf->SetXY(20, 58);
-        $pdf->Cell(257, 8, iconv('UTF-8', 'ISO-8859-1', 'Se otorga el presente reconocimiento a:'), 0, 1, 'C');
-        
-        // Evaluator name
-        $pdf->SetFont('Arial', 'B', 22);
-        $pdf->SetTextColor(0, 0, 0);
-        $pdf->SetXY(20, 75);
-        $pdf->Cell(257, 12, iconv('UTF-8', 'ISO-8859-1', $user->name), 0, 1, 'C');
-        
-        // Line under name
-        $pdf->SetLineWidth(0.5);
-        $pdf->SetDrawColor(0, 0, 0);
-        $pdf->Line(80, 93, 217, 93);
-        
-        // Recognition text
-        $pdf->SetFont('Arial', '', 12);
-        $pdf->SetTextColor(60, 60, 60);
-        $pdf->SetXY(20, 100);
-        $pdf->Cell(257, 8, iconv('UTF-8', 'ISO-8859-1', 'Por su valiosa participaci\363n como evaluador en la convocatoria:'), 0, 1, 'C');
-        
-        // Announcement name
-        $pdf->SetFont('Arial', 'B', 15);
-        $pdf->SetTextColor(27, 57, 106);
-        $pdf->SetXY(20, 112);
-        $pdf->MultiCell(257, 8, iconv('UTF-8', 'ISO-8859-1', $recognition->convocatoria_nombre), 0, 'C');
-        
-        // Additional text
-        $pdf->SetFont('Arial', '', 11);
-        $pdf->SetTextColor(80, 80, 80);
-        $pdf->SetXY(20, 135);
-        $pdf->MultiCell(257, 6, iconv('UTF-8', 'ISO-8859-1', 'Agradecemos su compromiso y dedicaci\363n en el proceso de evaluaci\363n, contribuyendo al desarrollo acad\351mico y profesional de nuestros docentes.'), 0, 'C');
-        
-        // Date
-        $pdf->SetFont('Arial', 'I', 10);
-        $pdf->SetTextColor(100, 100, 100);
-        $dateText = "Emitido el " . Carbon::parse($recognition->sent_at)->isoFormat('D [de] MMMM [de] YYYY');
-        $pdf->SetXY(20, 160);
-        $pdf->Cell(257, 8, iconv('UTF-8', 'ISO-8859-1', $dateText), 0, 1, 'C');
-        
-        // Footer
-        $pdf->SetFont('Arial', '', 8);
-        $pdf->SetTextColor(120, 120, 120);
-        $pdf->SetXY(20, 180);
-        $pdf->Cell(257, 5, iconv('UTF-8', 'ISO-8859-1', 'Tecnol\363gico Nacional de M\351xico'), 0, 1, 'C');
-        
-        // Output PDF
-        $filename = 'Reconocimiento_' . str_replace(' ', '_', $user->name) . '.pdf';
-        return response($pdf->Output('I', $filename), 200)
-            ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'inline; filename="' . $filename . '"');
-    }
-
-    /**
-     * Agrega el bloque de firma electrónica al PDF.
-     */
-    private function addSignatureBlock($pdf, $cadenaOriginal, $x, $y, $landscape = false)
-    {
         try {
-            $sello = $this->signatureService->sign($cadenaOriginal);
-            $numSerie = $this->signatureService->getCertificateNumber();
+            $recognition = \App\Models\Recognition::find($recognitionId);
             
-            $containerWidth = $landscape ? 220 : 160;
+            // Check if it already has an identifier, so we don't regenerate on re-download
+            if ($recognition && $recognition->identifier) {
+                $uniqueIdentifier = $recognition->identifier;
+                $digitalSeal = $recognition->digital_seal;
+            } else {
+                // Generate Unique Identifier
+                $year = date('Y');
+                $uniqueSuffix = substr(str_shuffle(str_repeat("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 5)), 0, 6);
+                $typeAcronym = $documentType === 'Reconocimiento Evaluador' ? 'EVAL' : 'DOC';
+                $uniqueIdentifier = "REC-{$year}-{$typeAcronym}-{$recognitionId}-{$uniqueSuffix}";
+                
+                // Generate Seal using SignatureService
+                $digitalSeal = $this->signatureService->sign($originalString);
+
+                // Save to Database
+                if ($recognition) {
+                    $recognition->identifier = $uniqueIdentifier;
+                    $recognition->digital_seal = $digitalSeal;
+                    $recognition->save();
+                }
+            }
+
+            $user = \App\Models\User::find($userId);
+
+            // Generate QR Code image (Holding just the Lookup URL)
+            $appUrl = config('app.url') ?? 'http://becaslaravel_ad.test:8080';
+            $validationUrl = rtrim($appUrl, '/') . "/verify-recognition/" . urlencode($uniqueIdentifier);
             
-            $pdf->SetFont('Arial', 'B', 7);
-            $pdf->SetXY($x, $y);
-            $pdf->Cell(0, 4, iconv('UTF-8', 'ISO-8859-1', 'SELLO DIGITAL VIICYT'), 0, 1, 'L');
+            $qrData = $validationUrl;
             
-            $pdf->SetFont('Courier', '', 6);
-            $pdf->SetXY($x, $y + 4);
-            $pdf->MultiCell($containerWidth, 3, $sello, 0, 'L');
-            
-            $pdf->SetFont('Arial', 'B', 7);
-            $pdf->SetXY($x, $y + 12);
-            $pdf->Cell(50, 4, iconv('UTF-8', 'ISO-8859-1', 'NO. SERIE: ') . $numSerie, 0, 0, 'L');
-            
-            $pdf->SetXY($x + 60, $y + 12);
-            $pdf->Cell(50, 4, iconv('UTF-8', 'ISO-8859-1', 'CADENA ORIGINAL: '), 0, 0, 'L');
-            
+            $qrCode = new QrCode(
+                data: $qrData,
+                encoding: new Encoding('UTF-8'),
+                errorCorrectionLevel: ErrorCorrectionLevel::Low,
+                size: 250,
+                margin: 2
+            );
+
+            $writer = new PngWriter();
+            $qrResult = $writer->write($qrCode);
+
+            // Save temporarily to disk to inject into FPDF
+            $tempQR = tempnam(sys_get_temp_dir(), 'qr_') . '.png';
+            $qrResult->saveToFile($tempQR);
+
+            // Draw a black outline box behind the QR to resemble the prototype
+            $pdf->SetDrawColor(0, 0, 0); // Black
+            $pdf->SetLineWidth(0.5);
+            $pdf->Rect(14.5, 14.5, 46, 46); // Slightly larger than the 45x45 image
+
+            // Left side block: QR Code
+            $pdf->Image($tempQR, 15, 15, 45, 45, 'PNG');
+            unlink($tempQR); // Cleanup
+
+            // Print the URL below the QR for visual inspection
+            $pdf->SetFont('Arial', '', 6);
+            $pdf->SetTextColor(50, 50, 50);
+            $pdf->SetXY(15, 62);
+            $pdf->Cell(45, 3, iconv('UTF-8', 'ISO-8859-1', $validationUrl), 0, 1, 'C');
+
+            // Right side block: Texts
+            $startX = 65;
+            $startY = 15;
+
+            // Sello Digital Header
+            $pdf->SetFont('Arial', 'B', 8);
+            $pdf->SetTextColor(50, 50, 50);
+            $pdf->SetXY($startX, $startY);
+            $pdf->Cell(0, 4, iconv('UTF-8', 'ISO-8859-1', 'Sello Digital de Verificación:'), 0, 1, 'L');
+
+            // Sello Digital Base64 string - Lighter smaller text
             $pdf->SetFont('Courier', '', 5);
-            $pdf->SetXY($x + 85, $y + 12.5);
-            $pdf->Cell(0, 3, $cadenaOriginal, 0, 1, 'L');
+            $pdf->SetTextColor(160, 160, 160);
+            $pdf->SetXY($startX, $startY + 5);
+            $pdf->MultiCell(130, 2.5, $digitalSeal, 0, 'J');
+            
+            // Identificador Value (REMOVED FROM PDF, ONLY IN QR)
+            // Identificador Header (REMOVED)
+
+            // Leyenda Legal - Adjusted positioning relative to seal
+            $currentY = $pdf->GetY() + 8;
+            $legalNotice = "La firma electrónica que sustituye a la firma autógrafa del firmante, garantiza la integridad de la constancia y producirá los mismos efectos que las leyes otorgan a los documentos con firma autógrafa.";
+            
+            $pdf->SetFont('Arial', '', 5);
+            $pdf->SetTextColor(160, 160, 160); // Softer color for legal notice
+            $pdf->SetXY($startX, $currentY);
+            $pdf->MultiCell(130, 2.5, iconv('UTF-8', 'ISO-8859-1', $legalNotice), 0, 'J');
 
         } catch (Exception $e) {
-            Log::error("Error al firmar documento: " . $e->getMessage());
-            $pdf->SetFont('Arial', 'I', 8);
-            $pdf->SetXY($x, $y);
-            $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1', '[Error en Sello Digital]'), 0, 1, 'L');
+            \Illuminate\Support\Facades\Log::error("Error generating QR or Signature: " . $e->getMessage());
+            $pdf->SetFont('Arial', 'I', 10);
+            $pdf->SetXY(20, 30);
+            $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1', '[Error general al procesar la firma electrónica y QR]'), 0, 1, 'L');
         }
     }
 }

@@ -20,6 +20,7 @@ class Application extends Model
         'status',
         'admin_comment',
         'position_type_id',
+        'template_id',
     ];
 
     protected $appends = ['position_full_type'];
@@ -49,6 +50,11 @@ class Application extends Model
     public function evaluations(): HasMany
     {
         return $this->hasMany(Evaluation::class);
+    }
+
+    public function template(): BelongsTo
+    {
+        return $this->belongsTo(Template::class);
     }
 
     public function getPositionFullTypeAttribute(): ?string

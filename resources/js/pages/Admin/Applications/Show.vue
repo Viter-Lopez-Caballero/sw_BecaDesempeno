@@ -98,9 +98,10 @@ const approveRequest = async () => {
                 cerrarAlerta();
                 alertaExito('¡Aprobada!', 'La solicitud fue aprobada correctamente.');
             },
-            onError: () => {
+            onError: (errors) => {
                 cerrarAlerta();
-                alertaError('Error', 'No se pudo aprobar la solicitud. Inténtalo de nuevo.');
+                const firstError = Object.values(errors)[0];
+                alertaError('No se pudo aprobar', firstError || 'Inténtalo de nuevo.');
             },
             onFinish: () => processing.value = false
         });
@@ -375,11 +376,16 @@ const getFileIcon = (type) => {
                 </div>
 
                  <div class="flex flex-col gap-4 pt-4" v-if="application.status === 'pending'">
-                    <div v-if="!isValidVerdictStage" class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-lg flex items-center gap-3 w-full">
-                        <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0 fill-current"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-                        <div>
-                            <h3 class="font-bold text-sm">Veredicto No Disponible</h3>
-                            <p class="text-xs">Solo se puede emitir un veredicto definitivo durante las etapas de <strong>Evaluación</strong> o <strong>Resultados</strong>. Etapa actual: <strong>{{ application.announcement?.current_stage || 'Desconocida' }}</strong>.</p>
+                    <div v-if="!isValidVerdictStage" class="relative flex items-center gap-4 px-5 py-4 rounded-lg bg-white shadow-sm border border-gray-100" style="border-left: 5px solid #C9A800">
+                        <div class="flex-shrink-0" style="color: #C9A800">
+                            <svg viewBox="0 0 24 24" class="w-6 h-6" style="fill: currentColor"><path :d="mdiClockOutline"/></svg>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-[10px] uppercase font-bold tracking-widest opacity-60 mb-0.5" style="color: #C9A800">Veredicto No Disponible</span>
+                            <div class="flex flex-col gap-1">
+                                <span class="text-sm font-bold leading-tight text-gray-800">Etapa actual: <strong>{{ application.announcement?.current_stage || 'Desconocida' }}</strong></span>
+                                <p class="text-[13px] text-gray-600 leading-snug">Solo se puede emitir un veredicto definitivo durante las etapas de <strong>Evaluación</strong> o <strong>Resultados</strong>.</p>
+                            </div>
                         </div>
                     </div>
                     

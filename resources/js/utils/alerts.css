@@ -103,6 +103,39 @@
   border-top: 10px solid #1B396A;
 }
 
+.swal-custom-input {
+  background-color: #F3F4F6 !important;
+  border-top: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-bottom: 2px solid #D1D5DB !important;
+  border-radius: 0.5rem !important;
+  color: #111827 !important;
+  font-size: 0.875rem !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 0.625rem 0.75rem !important;
+  box-shadow: none !important;
+  outline: none !important;
+  margin: 0.5rem 0 0 0 !important;
+}
+
+.swal-custom-input:focus {
+  border-bottom-color: #1B396A !important;
+  box-shadow: none !important;
+}
+
+.swal-custom-validation {
+  background: transparent !important;
+  color: #DC2626 !important;
+  font-size: 0.875rem !important;
+  margin-top: 0.25rem !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  justify-content: flex-start !important;
+}
+
 .custom-blue-bottom {
   background-color: #1B396A;
 }

@@ -1,7 +1,7 @@
 <script setup>
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import EvaluatorLayout from '@/layouts/EvaluatorLayout.vue';
-import { alertaPregunta, alertaAdvertencia } from '@/utils/alerts.js';
+import { alertaPregunta, alertaAdvertencia, alertaConfirmacionEscrita, alertaCargando, cerrarAlerta, alertaExito, alertaError } from '@/utils/alerts.js';
 import { ref, computed } from 'vue';
 import RejectModal from './RejectModal.vue';
 import { 
@@ -172,15 +172,23 @@ const submitEvaluation = async (status) => {
     form.score = currentScore.value; // Ensure score is up to date
 
     if (status === 'approved') {
-        const confirmed = await alertaPregunta(
+        const confirmed = await alertaConfirmacionEscrita(
             '¿Aceptar Solicitud?',
-            `La solicitud será aprobada con una puntuación de ${currentScore.value} puntos.`
+            `La solicitud será aprobada con una puntuación de ${currentScore.value} puntos. Esta operación no se puede deshacer.`,
+            'CONFIRMAR'
         );
         if (confirmed) {
+            alertaCargando('Procesando...', 'Guardando evaluación, por favor espere.');
             form.put(route('evaluator.evaluation.update', props.evaluation.id), {
                 onSuccess: () => {
+                    cerrarAlerta();
+                    alertaExito('¡Aprobada!', 'La evaluación fue aprobada correctamente.');
                     localStorage.removeItem(draftKey.value);
-                }
+                },
+                onError: () => {
+                    cerrarAlerta();
+                    alertaError('Error', 'No se pudo guardar la evaluación. Inténtalo de nuevo.');
+                },
             });
         }
     } else if (status === 'rejected') {
@@ -232,25 +240,41 @@ const formatDate = (dateString) => {
             </div>
 
             <!-- Read-Only Banner -->
-            <div v-if="isReadOnly" class="p-4 rounded-lg flex items-center gap-3 mb-6" 
-                :class="{
-                    'bg-green-50 border border-green-200 text-green-800': evaluation.status === 'approved',
-                    'bg-red-50 border border-red-200 text-red-800': evaluation.status === 'rejected',
-                    'bg-gray-100 border border-gray-300 text-gray-800': evaluation.status === 'expired' || (evaluation.status === 'pending' && !isStageEvaluacion)
-                }"
-            >
-                <div class="p-2 rounded-full bg-white bg-opacity-50">
-                    <svg v-if="evaluation.status === 'approved'" viewBox="0 0 24 24" class="w-6 h-6 fill-current"><path :d="mdiCheckCircle"/></svg>
-                    <svg v-else-if="evaluation.status === 'rejected'" viewBox="0 0 24 24" class="w-6 h-6 fill-current"><path :d="mdiCloseCircle"/></svg>
-                    <svg v-else viewBox="0 0 24 24" class="w-6 h-6 fill-current"><path :d="mdiClockOutline"/></svg>
+            <transition enter-active-class="transition duration-500 ease-out" enter-from-class="transform -translate-y-4 opacity-0" enter-to-class="transform translate-y-0 opacity-100">
+                <div
+                    v-if="isReadOnly"
+                    class="relative flex items-center gap-4 px-5 py-4 rounded-lg bg-white shadow-sm border border-gray-100"
+                    :style="{ borderLeft: `5px solid ${ evaluation.status === 'approved' ? '#10A558' : evaluation.status === 'rejected' ? '#6B7280' : '#C9A800' }` }"
+                >
+                    <div class="flex-shrink-0" :style="{ color: evaluation.status === 'approved' ? '#10A558' : evaluation.status === 'rejected' ? '#6B7280' : '#C9A800' }">
+                        <svg v-if="evaluation.status === 'approved'" viewBox="0 0 24 24" class="w-6 h-6" style="fill: currentColor"><path :d="mdiCheckCircle"/></svg>
+                        <svg v-else-if="evaluation.status === 'rejected'" viewBox="0 0 24 24" class="w-6 h-6" style="fill: currentColor"><path :d="mdiCloseCircle"/></svg>
+                        <svg v-else viewBox="0 0 24 24" class="w-6 h-6" style="fill: currentColor"><path :d="mdiClockOutline"/></svg>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] uppercase font-bold tracking-widest opacity-60 mb-0.5" :style="{ color: evaluation.status === 'approved' ? '#10A558' : evaluation.status === 'rejected' ? '#6B7280' : '#C9A800' }">
+                            Estado de Evaluación
+                        </span>
+                        <div class="flex flex-col gap-1">
+                            <span class="text-sm font-bold leading-tight text-gray-800">
+                                {{ evaluation.status === 'approved' ? 'Evaluación Aprobada' : evaluation.status === 'rejected' ? 'Evaluación Rechazada' : evaluation.status === 'expired' ? 'Evaluación Expirada' : 'Modo Solo Lectura' }}
+                            </span>
+                            <p class="text-[13px] text-gray-600 leading-snug" v-if="evaluation.status === 'approved'">
+                                Esta solicitud ya fue evaluada y aprobada correctamente.
+                            </p>
+                            <p class="text-[13px] text-gray-600 leading-snug" v-else-if="evaluation.status === 'rejected'">
+                                Esta solicitud ya fue evaluada y rechazada.
+                            </p>
+                            <p class="text-[13px] text-gray-600 leading-snug" v-else-if="evaluation.status === 'pending' && !isStageEvaluacion">
+                                Esta solicitud no puede ser contestada porque la etapa regular de <strong>Evaluación</strong> no está activa.
+                            </p>
+                            <p class="text-[13px] text-gray-600 leading-snug" v-else>
+                                El tiempo de evaluación ha expirado.
+                            </p>
+                        </div>
+                    </div>
                 </div>
-                <div class="font-medium">
-                    <span v-if="evaluation.status === 'approved'">Esta solicitud ya fue aprobada.</span>
-                    <span v-else-if="evaluation.status === 'rejected'">Esta solicitud ya fue rechazada.</span>
-                    <span v-else-if="evaluation.status === 'pending' && !isStageEvaluacion">Esta solicitud no puede ser contestada porque la etapa regular de <strong>Evaluación</strong> no está activa.</span>
-                    <span v-else>El tiempo de evaluación ha expirado.</span>
-                </div>
-            </div>
+            </transition>
 
             <!-- Content Container -->
             <div class="space-y-6">

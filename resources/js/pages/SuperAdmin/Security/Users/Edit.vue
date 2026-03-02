@@ -158,7 +158,7 @@ const submit = () => {
                                     v-for="rol in roles"
                                     :key="rol.id"
                                     :for="`rol-${rol.id}`"
-                                    class="flex items-center ps-4 bg-white rounded-lg shadow-sm border cursor-pointer transition"
+                                    class="flex items-center ps-4 bg-white rounded-lg shadow-sm cursor-pointer transition"
                                     :class="form.roles.includes(rol.id) ? 'border-[#1B396A]' : 'border-gray-50 hover:border-gray-300'"
                                 >
                                     <div class="relative flex items-center justify-center">

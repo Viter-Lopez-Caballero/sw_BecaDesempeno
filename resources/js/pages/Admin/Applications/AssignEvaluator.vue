@@ -202,11 +202,16 @@ const isStageEvaluacion = computed(() => {
                     <p class="text-sm text-gray-500">Busque y seleccione los evaluadores que revisarán esta solicitud.</p>
                 </div>
                 
-                <div v-if="!isStageEvaluacion" class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-lg flex items-center gap-3">
-                    <svg viewBox="0 0 24 24" class="w-6 h-6 flex-shrink-0 fill-current"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-                    <div>
-                        <h3 class="font-bold">Acción No Permitida</h3>
-                        <p class="text-sm">Solo se pueden asignar evaluadores cuando la convocatoria se encuentra activamente en la etapa de <strong>Evaluación</strong>. Etapa actual: <strong>{{ application.announcement.current_stage || 'Desconocida' }}</strong>.</p>
+                <div v-if="!isStageEvaluacion" class="relative flex items-center gap-4 px-5 py-4 rounded-lg bg-white shadow-sm border border-gray-100" style="border-left: 5px solid #C9A800">
+                    <div class="flex-shrink-0" style="color: #C9A800">
+                        <svg viewBox="0 0 24 24" class="w-6 h-6" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] uppercase font-bold tracking-widest opacity-60 mb-0.5" style="color: #C9A800">Acción No Permitida</span>
+                        <div class="flex flex-col gap-1">
+                            <span class="text-sm font-bold leading-tight text-gray-800">Etapa actual: <strong>{{ application.announcement.current_stage || 'Desconocida' }}</strong></span>
+                            <p class="text-[13px] text-gray-600 leading-snug">Solo se pueden asignar evaluadores cuando la convocatoria se encuentra activamente en la etapa de <strong>Evaluación</strong>.</p>
+                        </div>
                     </div>
                 </div>
 

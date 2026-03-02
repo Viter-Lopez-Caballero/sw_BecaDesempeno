@@ -92,7 +92,7 @@ import SecondaryButton from '@/Components/SecondaryButton.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { useForm } from '@inertiajs/vue3';
 import { watch } from 'vue';
-import { alertaCargando, cerrarAlerta, alertaExito, alertaError, alertaPregunta } from '@/utils/alerts.js';
+import { alertaCargando, cerrarAlerta, alertaExito, alertaError, alertaConfirmacionEscrita } from '@/utils/alerts.js';
 
 const props = defineProps({
     show: Boolean,
@@ -134,9 +134,10 @@ const confirmSubmit = async () => {
         return;
     }
 
-    const confirmed = await alertaPregunta(
+    const confirmed = await alertaConfirmacionEscrita(
         '¿Confirmar rechazo?',
-        'Esta acción marcará la evaluación como rechazada con los motivos proporcionados.'
+        'Esta acción marcará la evaluación como rechazada con los motivos proporcionados. Esta operación no se puede deshacer.',
+        'RECHAZAR'
     );
 
     if (confirmed) {

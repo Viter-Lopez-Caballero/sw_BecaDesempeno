@@ -144,6 +144,7 @@ export const alertaConfirmacionEscrita = (titulo, mensaje, palabraClave = 'CONFI
         `,
         input: 'text',
         inputPlaceholder: `Escribe ${palabraClave}`,
+        inputAttributes: { style: 'text-align: center;' },
         icon: 'warning',
         iconColor: '#1B396A',
         width: '480px',
@@ -156,10 +157,12 @@ export const alertaConfirmacionEscrita = (titulo, mensaje, palabraClave = 'CONFI
             popup: 'custom-alert-confirmacion',
             confirmButton: 'custom-blue-bottom hover:bg-blue-900 text-white px-4 py-2 rounded ml-2 cursor-pointer',
             cancelButton: 'bg-gray-100 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded mr-2 cursor-pointer',
+            input: 'swal-custom-input',
+            validationMessage: 'swal-custom-validation',
         },
         inputValidator: (value) => {
-            if (!value || value.trim().toUpperCase() !== palabraClave.toUpperCase()) {
-                return `Debes escribir exactamente "${palabraClave}" para continuar.`;
+            if (!value || value.trim() !== palabraClave) {
+                return `Debes escribir exactamente "${palabraClave}" en mayúsculas para continuar.`;
             }
         }
     }).then((result) => {

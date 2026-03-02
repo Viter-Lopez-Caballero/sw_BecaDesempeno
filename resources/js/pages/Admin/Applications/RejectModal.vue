@@ -148,9 +148,10 @@ const submit = () => {
             alertaExito('¡Realizado!', 'La solicitud ha sido rechazada.');
             close();
         },
-        onError: () => {
+        onError: (errors) => {
             cerrarAlerta();
-            alertaError('Error', 'Hubo un problema al procesar el rechazo.');
+            const firstError = Object.values(errors)[0];
+            alertaError('No se pudo rechazar', firstError || 'Hubo un problema al procesar el rechazo.');
         },
     });
 };

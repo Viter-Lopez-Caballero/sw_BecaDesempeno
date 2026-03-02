@@ -16,7 +16,10 @@ class ApplicationResource extends JsonResource
     public function toArray(Request $request): array
     {
         $user = auth()->user();
-        $isTeacher = $user && $user->hasRole('Docente');
+        // El enmascaramiento aplica SOLO cuando la petición llega desde rutas de Docente (teacher.*).
+        // Si viene de rutas Admin o Evaluador, siempre se muestra el estado real,
+        // independientemente de si el usuario también tiene el rol Docente.
+        $isTeacher = $user && $user->hasRole('Docente') && $request->routeIs('teacher.*');
         
         // Determine whether to mask the status and comment for the Teacher
         $status = $this->status;

@@ -238,15 +238,25 @@ const getStatusLabel = (status) => {
                             <!-- Columna Derecha: Acciones -->
                             <div class="flex flex-col items-end gap-3 min-w-[140px]">
                                 <span 
-                                    class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white text-xs font-bold shadow-sm border border-gray-100"
                                     :class="{
-                                        'bg-green-100 text-green-800 border-green-200': application.status === 'approved',
-                                        'bg-red-100 text-red-800 border-red-200': application.status === 'rejected',
-                                        'bg-yellow-100 text-yellow-800 border-yellow-200': application.status === 'pending',
-                                        'bg-gray-100 text-gray-800 border-gray-200': application.status === 'expired',
-                                        'bg-purple-100 text-purple-800 border-purple-200': application.status === 'evaluated_by_admin',
+                                        'text-green-700': application.status === 'approved',
+                                        'text-red-700': application.status === 'rejected',
+                                        'text-yellow-700': application.status === 'pending',
+                                        'text-gray-600': application.status === 'expired',
+                                        'text-purple-700': application.status === 'evaluated_by_admin',
                                     }"
                                 >
+                                    <span 
+                                        class="w-2 h-2 rounded-full"
+                                        :class="{
+                                            'bg-green-500': application.status === 'approved',
+                                            'bg-red-500': application.status === 'rejected',
+                                            'bg-yellow-500 animate-pulse': application.status === 'pending',
+                                            'bg-gray-400': application.status === 'expired',
+                                            'bg-purple-500': application.status === 'evaluated_by_admin',
+                                        }"
+                                    ></span>
                                     {{ getStatusLabel(application.status) }}
                                 </span>
                                 

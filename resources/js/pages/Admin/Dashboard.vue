@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, router } from '@inertiajs/vue3';
-import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
+import AdminLayout from '@/layouts/AdminLayout.vue';
 import Pagination from '@/Shared/Pagination.vue';
 import { ref, watch, computed } from 'vue';
 import { debounce } from 'lodash';
@@ -179,7 +179,7 @@ const getProgressWidth = (count) => {
 </style>
 
 <template>
-    <LayoutAuthenticated>
+    <AdminLayout>
         <Head title="Dashboard Admin" />
 
         <div class="space-y-6">
@@ -452,5 +452,5 @@ const getProgressWidth = (count) => {
                 </div>
             </div>
         </div>
-    </LayoutAuthenticated>
+    </AdminLayout>
 </template>

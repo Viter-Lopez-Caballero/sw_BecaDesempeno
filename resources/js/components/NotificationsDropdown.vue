@@ -41,7 +41,7 @@
                     <button
                         v-if="notifications.length > 0 && hasUnread"
                         @click="markAllAsRead"
-                        class="text-blue-100 text-xs font-semibold hover:text-white transition underline underline-offset-2"
+                        class="text-blue-100 text-xs font-semibold hover:text-white transition underline underline-offset-2 cursor-pointer"
                     >
                         Marcar todas
                     </button>

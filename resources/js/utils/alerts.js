@@ -129,3 +129,40 @@ export const alertaPregunta = (titulo, mensaje) => {
         return result.isConfirmed;
     });
 };
+
+/**
+ * Alerta de confirmación con input escrito
+ * El usuario debe escribir exactamente `palabraClave` para continuar.
+ * Retorna true si confirmó, false si canceló o escribió mal.
+ */
+export const alertaConfirmacionEscrita = (titulo, mensaje, palabraClave = 'CONFIRMAR') => {
+    return Swal.fire({
+        title: titulo,
+        html: `
+            <p class="text-sm text-gray-600 mb-4">${mensaje}</p>
+            <p class="text-sm text-gray-500">Escribe <strong style="color:#1B396A">${palabraClave}</strong> para continuar:</p>
+        `,
+        input: 'text',
+        inputPlaceholder: `Escribe ${palabraClave}`,
+        icon: 'warning',
+        iconColor: '#1B396A',
+        width: '480px',
+        showCancelButton: true,
+        confirmButtonText: 'Continuar',
+        cancelButtonText: 'Cancelar',
+        buttonsStyling: false,
+        reverseButtons: true,
+        customClass: {
+            popup: 'custom-alert-confirmacion',
+            confirmButton: 'custom-blue-bottom hover:bg-blue-900 text-white px-4 py-2 rounded ml-2 cursor-pointer',
+            cancelButton: 'bg-gray-100 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded mr-2 cursor-pointer',
+        },
+        inputValidator: (value) => {
+            if (!value || value.trim().toUpperCase() !== palabraClave.toUpperCase()) {
+                return `Debes escribir exactamente "${palabraClave}" para continuar.`;
+            }
+        }
+    }).then((result) => {
+        return result.isConfirmed;
+    });
+};

@@ -2,7 +2,7 @@
 import AdminLayout from '@/layouts/AdminLayout.vue';
 import { usePage, router, Head, Link } from '@inertiajs/vue3';
 import { ref, watch, computed } from 'vue';
-import { alertaPregunta, alertaExito } from '@/utils/alerts.js';
+import { alertaPregunta, alertaExito, alertaError, alertaCargando, cerrarAlerta, alertaConfirmacionEscrita } from '@/utils/alerts.js';
 import RejectModal from './RejectModal.vue';
 import { 
     mdiEye, 
@@ -82,17 +82,26 @@ const formatDate = (dateString) => {
 };
 
 const approveRequest = async () => {
-    const confirmed = await alertaPregunta(
+    const confirmed = await alertaConfirmacionEscrita(
         '¿Aprobar solicitud?',
-        'Esta acción finalizará el proceso y notificará al docente.'
+        'Esta acción aprobará la solicitud y notificará al docente. Esta operación no se puede deshacer.',
+        'CONFIRMAR'
     );
     if (confirmed) {
         processing.value = true;
+        alertaCargando('Procesando...', 'Aprobando la solicitud, por favor espere.');
         router.post(route('admin.applications.verdict', props.application.id), {
             status: 'approved'
         }, {
             preserveScroll: true,
-            onSuccess: () => alertaExito('¡Aprobada!', 'La solicitud fue aprobada correctamente.'),
+            onSuccess: () => {
+                cerrarAlerta();
+                alertaExito('¡Aprobada!', 'La solicitud fue aprobada correctamente.');
+            },
+            onError: () => {
+                cerrarAlerta();
+                alertaError('Error', 'No se pudo aprobar la solicitud. Inténtalo de nuevo.');
+            },
             onFinish: () => processing.value = false
         });
     }

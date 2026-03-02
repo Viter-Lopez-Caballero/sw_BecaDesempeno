@@ -59,17 +59,18 @@ class HandleInertiaRequests extends Middleware
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $request->user(),
-                'root'  => $request->user()  ? $request->user()->isSuperAdmin()  : null,
-                'roles' => $request->user()  ? $request->user()->getRolesArray() : [],
-                'can'   => $request->user()  ? $request->user()->getPermissionArray() : [],
+                'root' => $request->user() ? $request->user()->isSuperAdmin() : null,
+                'roles' => $request->user() ? $request->user()->getRolesArray() : [],
+                'can' => $request->user() ? $request->user()->getPermissionArray() : [],
                 'primaryRole' => $request->user() ? $request->user()->getPrimaryRole() : null,
                 'layoutName' => $request->user() ? $request->user()->getLayoutName() : null,
+                'roles_list' => $request->user() ? $request->user()->getRolesList() : [],
             ],
             'unreadNotifications' => $unreadNotifications,
-            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'sidebarOpen' => !$request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'flash' => [
-                'success' => fn () => $request->session()->get('success'),
-                'error' => fn () => $request->session()->get('error'),
+                'success' => fn() => $request->session()->get('success'),
+                'error' => fn() => $request->session()->get('error'),
             ],
         ];
     }

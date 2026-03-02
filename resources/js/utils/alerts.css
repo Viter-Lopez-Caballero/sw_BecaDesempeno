@@ -94,6 +94,15 @@
   border-top: 10px solid #1B396A;
 }
 
+.custom-alert-confirmacion {
+  border-radius: 10px;
+  padding: 20px;
+  background-color: #ffffff;
+  max-width: 480px;
+  width: 100%;
+  border-top: 10px solid #1B396A;
+}
+
 .custom-blue-bottom {
   background-color: #1B396A;
 }

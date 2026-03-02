@@ -38,12 +38,27 @@ class CurpController extends Controller
             ], 404);
         }
 
-        // No validamos si el CURP existe en el sistema
-        // La validación de duplicados se hará por correo electrónico durante el registro
+        // Verificar si ya existe un usuario con este CURP en el sistema
+        $usuarioExistente = User::where('curp', strtoupper($request->curp))
+            ->with(['institution', 'priorityArea', 'subArea'])
+            ->first();
+
+        $datosUsuario = null;
+        if ($usuarioExistente) {
+            $datosUsuario = [
+                'name'             => $usuarioExistente->name,
+                'email'            => $usuarioExistente->email,
+                'institution_id'   => $usuarioExistente->institution_id,
+                'priority_area_id' => $usuarioExistente->priority_area_id,
+                'sub_area_id'      => $usuarioExistente->sub_area_id,
+            ];
+        }
 
         return response()->json([
-            'success' => true,
-            'data' => $datos
+            'success'          => true,
+            'data'             => $datos,
+            'existing_user'    => $usuarioExistente !== null,
+            'existing_data'    => $datosUsuario,
         ]);
     }
 

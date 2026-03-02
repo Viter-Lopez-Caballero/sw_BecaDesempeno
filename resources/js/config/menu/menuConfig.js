@@ -81,41 +81,17 @@ const getCatalogItems = (routePrefix) => [
     {
         label: "Plantillas",
         route: `${routePrefix}templates.index`,
-        icon: mdiFileDocumentMultiple, // or mdiFileCertificate if imported
+        icon: mdiFileDocumentMultiple,
         permission: "templates.index",
     },
 ];
 
-export const menuConfigs = {
-    superAdmin: [
-        {
-            label: "Inicio",
-            route: "superadmin.dashboard",
-            icon: mdiHome,
-        },
-        {
-            label: "Control de Solicitudes",
-            route: "superadmin.control-applications", // control-solicitudes -> control-applications (checked web.php line 181)
-            icon: mdiFileDocumentMultiple,
-        },
-        {
-            label: "Convocatorias",
-            route: "announcements.index",
-            icon: mdiBullhorn,
-            permission: "announcements.index",
-        },
-        {
-            label: "Seguridad",
-            icon: mdiSecurity,
-            items: getSecurityItems("security."), // seguridad. -> security. (checked web.php line 227)
-        },
-        {
-            label: "Catálogo",
-            icon: mdiBookOpenPageVariant,
-            items: getCatalogItems("catalog."), // catalogo. -> catalog. (checked web.php line 287)
-        },
-    ],
-    admin: [
+// ─────────────────────────────────────────────────────────────────────────────
+// Items por rol para el modo multi-rol (idénticos a menuConfigs, sin secciones)
+// Incluye Dashboard como primer item de cada sección.
+// ─────────────────────────────────────────────────────────────────────────────
+export const roleMenuItems = {
+    Admin: [
         {
             label: "Inicio",
             route: "admin.dashboard",
@@ -134,25 +110,142 @@ export const menuConfigs = {
             items: [
                 {
                     label: "Usuarios",
-                    route: "admin.evaluators.index", // evaluadores.index -> evaluators.index (checked web.php line 188)
+                    route: "admin.evaluators.index",
                     icon: mdiAccount,
                     permission: "users.index",
-                }
-            ]
+                },
+            ],
         },
         {
             label: "Reconocimiento",
             route: "admin.recognitions.index",
             icon: mdiStar,
             permission: "recognitions.index",
-        }
+        },
     ],
-    teacher: [
+    Evaluador: [
+        {
+            label: "Inicio",
+            route: "evaluator.dashboard",
+            icon: mdiHome,
+        },
+        {
+            label: "Evaluaciones",
+            route: "evaluator.evaluations.index",
+            icon: mdiSchool,
+            permission: "evaluator.evaluations.index",
+        },
+        {
+            label: "Reconocimientos",
+            route: "evaluator.recognitions.index",
+            icon: mdiStar,
+            permission: "evaluator.recognitions.index",
+        },
+    ],
+    Docente: [
         {
             label: "Inicio",
             route: "teacher.dashboard",
             icon: mdiHome,
         },
+        {
+            label: "Convocatorias",
+            route: "teacher.announcements.index",
+            icon: mdiBullhorn,
+            permission: "announcements.index",
+        },
+        {
+            label: "Reconocimientos",
+            route: "teacher.recognitions.index",
+            icon: mdiStar,
+            permission: "teacher.recognitions.index",
+        },
+    ],
+};
+
+// Etiquetas de sección para el sidebar multi-rol
+export const roleSectionLabels = {
+    Admin: "Gestión de Administrador",
+    Evaluador: "Gestión de Evaluador",
+    Docente: "Gestión de Docente",
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Configuraciones completas para layouts de un solo rol (sin cambios)
+// ─────────────────────────────────────────────────────────────────────────────
+export const menuConfigs = {
+    superAdmin: [
+        { type: "section", label: "Inicio" },
+        {
+            label: "Inicio",
+            route: "superadmin.dashboard",
+            icon: mdiHome,
+        },
+        { type: "section", label: "Administración" },
+        {
+            label: "Control de Solicitudes",
+            route: "superadmin.control-applications",
+            icon: mdiFileDocumentMultiple,
+        },
+        {
+            label: "Convocatorias",
+            route: "announcements.index",
+            icon: mdiBullhorn,
+            permission: "announcements.index",
+        },
+        {
+            label: "Seguridad",
+            icon: mdiSecurity,
+            items: getSecurityItems("security."),
+        },
+        {
+            label: "Catálogo",
+            icon: mdiBookOpenPageVariant,
+            items: getCatalogItems("catalog."),
+        },
+    ],
+    admin: [
+        { type: "section", label: "Inicio" },
+        {
+            label: "Inicio",
+            route: "admin.dashboard",
+            icon: mdiHome,
+            permission: "admin.dashboard",
+        },
+        { type: "section", label: "Gestión" },
+        {
+            label: "Solicitudes",
+            route: "admin.applications.index",
+            icon: mdiFileDocumentMultiple,
+            permission: "applications.index",
+        },
+        {
+            label: "Seguridad",
+            icon: mdiSecurity,
+            items: [
+                {
+                    label: "Usuarios",
+                    route: "admin.evaluators.index",
+                    icon: mdiAccount,
+                    permission: "users.index",
+                },
+            ],
+        },
+        {
+            label: "Reconocimiento",
+            route: "admin.recognitions.index",
+            icon: mdiStar,
+            permission: "recognitions.index",
+        },
+    ],
+    teacher: [
+        { type: "section", label: "Inicio" },
+        {
+            label: "Inicio",
+            route: "teacher.dashboard",
+            icon: mdiHome,
+        },
+        { type: "section", label: "Gestión" },
         {
             label: "Convocatorias",
             route: "teacher.announcements.index",
@@ -177,11 +270,13 @@ export const menuConfigs = {
         },
     ],
     evaluator: [
+        { type: "section", label: "Inicio" },
         {
             label: "Inicio",
             route: "evaluator.dashboard",
             icon: mdiHome,
         },
+        { type: "section", label: "Gestión" },
         {
             label: "Evaluaciones",
             route: "evaluator.evaluations.index",
@@ -204,5 +299,6 @@ export const menuConfigs = {
             icon: mdiBookOpenPageVariant,
             items: getCatalogItems("catalog."),
         },
-    ]
+    ],
 };
+

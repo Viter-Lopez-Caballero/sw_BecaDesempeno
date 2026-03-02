@@ -1,6 +1,6 @@
 <template>
     <div class="flex h-screen bg-gray-50 overflow-hidden">
-        <AppSidebar :menu="menuConfigs.admin" />
+        <AppSidebar :menu="activeMenu" />
 
         <!-- Main Content -->
         <div class="flex-1 flex flex-col overflow-hidden">
@@ -45,10 +45,31 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, provide } from 'vue';
-import { menuConfigs } from '@/config/menu/menuConfig';
+import { ref, computed, onMounted, onUnmounted, provide } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import { menuConfigs, roleMenuItems, roleSectionLabels } from '@/config/menu/menuConfig';
 import AppSidebar from '@/components/Sidebar/AppSidebar.vue';
 import NotificationsDropdown from '@/components/NotificationsDropdown.vue';
+
+const page = usePage();
+
+// Si el usuario tiene múltiples roles, usar el menú combinado con secciones
+const activeMenu = computed(() => {
+    if (page.props.auth?.layoutName === 'MultiRoleLayout') {
+        const rolesList = page.props.auth?.roles_list ?? [];
+        const roleOrder = ['Admin', 'Evaluador', 'Docente'];
+        const menu = [];
+        for (const role of roleOrder.filter(r => rolesList.includes(r))) {
+            const items = roleMenuItems[role];
+            const label = roleSectionLabels[role];
+            if (!items || !label) continue;
+            menu.push({ type: 'section', label });
+            menu.push(...items);
+        }
+        return menu;
+    }
+    return menuConfigs.admin;
+});
 
 const sidebarOpen = ref(false);
 const sidebarCollapsed = ref(false);

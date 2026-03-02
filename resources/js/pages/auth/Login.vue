@@ -132,7 +132,7 @@ const submit = () => {
                                     <button
                                         type="button"
                                         @click="showPassword = !showPassword"
-                                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 transition"
+                                        class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 transition cursor-pointer"
                                     >
                                         <EyeIcon v-if="!showPassword" size="20" class="text-gray-600" />
                                         <EyeOffIcon v-else size="20" class="text-gray-600" />

@@ -75,9 +75,9 @@ const currentScore = computed(() => {
                 </Link>
             </div>
 
-            <div class="space-y-6 max-w-5xl mx-auto">
+            <div class="space-y-6">
                 <!-- Info Header -->
-                <div class="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-200">
+                <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
                     <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-100 pb-4 mb-6 gap-2">
                         <h2 class="text-lg font-bold text-gray-900">Datos de la Evaluación</h2>
                          <!-- Badge Status -->
@@ -140,7 +140,7 @@ const currentScore = computed(() => {
                         </div>
                     </div>
                     
-                    <div class="p-4 md:p-6 space-y-8">
+                    <div class="p-6 space-y-8">
                         <div v-if="!rubric" class="text-center py-8 text-gray-500">
                             No hay rubric disponible.
                         </div>

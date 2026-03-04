@@ -20,6 +20,7 @@ return new class extends Migration
             $table->timestamp('sent_at')->nullable(); // When it was sent/activated
             $table->string('identifier')->nullable()->unique();
             $table->text('digital_seal')->nullable();
+            $table->json('snapshot_data')->nullable();
             $table->timestamps();
             
             // An evaluator can only have one recognition per announcement

@@ -20,11 +20,17 @@ class VerificationController extends Controller
         $announcementName = $recognition->convocatoria_nombre 
             ?? ($recognition->announcement ? $recognition->announcement->name : 'CONVOCATORIA GENERAL');
 
+        $snapshot = is_string($recognition->snapshot_data) ? json_decode($recognition->snapshot_data, true) : $recognition->snapshot_data;
+        $directorName = $snapshot['director_name'] ?? 'Víctor Vázquez López';
+        $directorTitle = $snapshot['director_title'] ?? 'Director General';
+
         return Inertia::render('Public/VerifyRecognition', [
             'identifier' => $recognition->identifier,
             'participant' => $recognition->user ? mb_strtoupper($recognition->user->name) : 'PARTICIPANTE DESCONOCIDO',
             'announcementName' => mb_strtoupper($announcementName),
             'digitalSeal' => $recognition->digital_seal,
+            'directorName' => mb_strtoupper($directorName),
+            'directorTitle' => $directorTitle,
         ]);
     }
 }

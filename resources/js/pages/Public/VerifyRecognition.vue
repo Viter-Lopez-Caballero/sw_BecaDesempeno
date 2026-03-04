@@ -32,13 +32,12 @@
                 <div class="space-y-5 text-left pl-1">
                     <div>
                         <h3 class="text-[15px] font-bold text-black mb-1">Institución que avala y expide:</h3>
-                        <p class="text-[15px] text-gray-700">TecNM/Cenidet</p>
+                        <p class="text-[15px] text-gray-700">TecNM</p>
                     </div>
                     <div>
-                        <h3 class="text-[15px] font-bold text-black mb-1">Director:</h3>
+                        <h3 class="text-[15px] font-bold text-black mb-1">{{ directorTitle ? (directorTitle.charAt(0).toUpperCase() + directorTitle.slice(1).toLowerCase()) : 'Director general' }}:</h3>
                         <p class="text-[15px] text-gray-700 leading-tight">
-                            Lic. Lorenzo Octavio Hernández<br>
-                            Robles Arenas
+                            {{ directorName || 'VÍCTOR VÁZQUEZ LÓPEZ' }}
                         </p>
                     </div>
                 </div>
@@ -116,5 +115,7 @@ defineProps({
     participant: String,
     announcementName: String,
     digitalSeal: String,
+    directorName: String,
+    directorTitle: String,
 });
 </script>

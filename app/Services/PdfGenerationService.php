@@ -140,10 +140,9 @@ class PdfGenerationService
         $pdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
         
         // Format date and location strings
-        $stateName = $user->institution?->state?->name ?? 'Guerrero';
-        $currentMonth = Carbon::parse($recognition->sent_at)->isoFormat('MMMM');
-        $currentYear = Carbon::parse($recognition->sent_at)->isoFormat('YYYY');
-        $dateText = "Chilpancingo de los Bravo, {$stateName}, {$currentMonth} de {$currentYear}";
+        // Format date: CIUDAD DE MÉXICO, A 07 DE MARZO DE 2026
+        $currentDate = Carbon::now()->timezone('America/Mexico_City')->isoFormat('DD [DE] MMMM [DE] YYYY');
+        $dateText = "CIUDAD DE MÉXICO, A " . mb_strtoupper($currentDate, 'UTF-8');
 
         $pdf->useTemplate($tplId, 0, 0, $size['width'], $size['height']);
 
@@ -240,11 +239,9 @@ class PdfGenerationService
             throw new Exception("Error al procesar la plantilla PDF: " . $e->getMessage());
         }
 
-        // Format date and location strings
-        $stateName = $user->institution?->state?->name ?? 'Guerrero';
-        $currentMonth = Carbon::parse($recognition->sent_at)->isoFormat('MMMM');
-        $currentYear = Carbon::parse($recognition->sent_at)->isoFormat('YYYY');
-        $dateText = "Chilpancingo de los Bravo, {$stateName}, {$currentMonth} de {$currentYear}";
+        // Format date: CIUDAD DE MÉXICO, A 07 DE MARZO DE 2026
+        $currentDate = Carbon::now()->timezone('America/Mexico_City')->isoFormat('DD [DE] MMMM [DE] YYYY');
+        $dateText = "CIUDAD DE MÉXICO, A " . mb_strtoupper($currentDate, 'UTF-8');
 
         // Coordinates based on updated template
         // Adjusting Y coordinates

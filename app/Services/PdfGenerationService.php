@@ -130,8 +130,14 @@ class PdfGenerationService
         $pdf->SetAutoPageBreak(false);
 
         // Add a page
-        $pdf->AddPage('P'); // Portrait
         $pdf->setSourceFile($templatePath);
+        
+        // Import page 1
+        $tplId = $pdf->importPage(1);
+        $size = $pdf->getTemplateSize($tplId);
+
+        // Add a page matching the exact template format
+        $pdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
         
         // Format date and location strings
         $stateName = $user->institution?->state?->name ?? 'Guerrero';
@@ -139,50 +145,47 @@ class PdfGenerationService
         $currentYear = Carbon::parse($recognition->sent_at)->isoFormat('YYYY');
         $dateText = "Chilpancingo de los Bravo, {$stateName}, {$currentMonth} de {$currentYear}";
 
-        // Import page 1
-        $tplId = $pdf->importPage(1);
-
-        // A4 Dimensions: 210 width x 297 height. Use both to force no white bottom margins.
-        $pdf->useTemplate($tplId, 0, 0, 210, 297);
+        $pdf->useTemplate($tplId, 0, 0, $size['width'], $size['height']);
 
         // Coordinates based on the updated template
+        // Adjusting Y coordinates upwards to match the actual template
         // 1. Participant Name (Centered)
         $pdf->SetFont('Arial', 'B', 24); 
         $pdf->SetTextColor(80, 80, 80); 
-        $pdf->SetXY(0, 134); // Added extra margin underneath the 'A'
-        $pdf->Cell(210, 10, iconv('UTF-8', 'ISO-8859-1', mb_strtoupper($user->name)), 0, 1, 'C');
+        $pdf->SetXY(0, 121); // Moved up to 118 independently
+        $pdf->Cell($size['width'], 10, iconv('UTF-8', 'ISO-8859-1', mb_strtoupper($user->name)), 0, 1, 'C');
 
         // 2. Participating Activity (Centered)
         $pdf->SetFont('Arial', '', 12);
         $pdf->SetTextColor(80, 80, 80);
-        $pdf->SetXY(20, 153); // Adjusted accordingly
+        $pdf->SetXY(20, 140); // Moved up proportionally
         $announcementName = $recognition->announcement ? $recognition->announcement->name : 'CONVOCATORIA GENERAL';
         $text = "Por su destacada participación como evaluador en la convocatoria:\n" . mb_strtoupper($announcementName);
-        $pdf->MultiCell(170, 7, iconv('UTF-8', 'ISO-8859-1', $text), 0, 'C');
+        $pdf->MultiCell($size['width'] - 40, 7, iconv('UTF-8', 'ISO-8859-1', $text), 0, 'C');
 
         // 3. Signer Information
         $pdf->SetFont('Arial', 'B', 12);
         $pdf->SetTextColor(80, 80, 80);
-        $pdf->SetXY(0, 225); // Below the golden line
-        $pdf->Cell(210, 6, iconv('UTF-8', 'ISO-8859-1', 'Vitervo López Caballero'), 0, 1, 'C');
+        $pdf->SetXY(0, 211); // Restored to 212
+        $pdf->Cell($size['width'], 6, iconv('UTF-8', 'ISO-8859-1', 'Vitervo López Caballero'), 0, 1, 'C');
 
         $pdf->SetFont('Arial', '', 10);
         $pdf->SetTextColor(100, 100, 100);
-        $pdf->SetXY(0, 231); // Below the signer name
-        $pdf->Cell(210, 6, iconv('UTF-8', 'ISO-8859-1', 'Profesor Investigador'), 0, 1, 'C');
+        $pdf->SetXY(0, 217); // Restored to 218
+        $pdf->Cell($size['width'], 6, iconv('UTF-8', 'ISO-8859-1', 'Profesor Investigador'), 0, 1, 'C');
 
         // 4. City, State, Month, Year
         $pdf->SetFont('Arial', 'B', 10);
         // Yellow-gold color matching the template
         $pdf->SetTextColor(194, 155, 34);
-        $pdf->SetXY(0, 242); 
-        $pdf->Cell(210, 6, iconv('UTF-8', 'ISO-8859-1', $dateText), 0, 1, 'C');
+        $pdf->SetXY(0, 225); // Restored to 226
+        $pdf->Cell($size['width'], 6, iconv('UTF-8', 'ISO-8859-1', $dateText), 0, 1, 'C');
 
         // Capture Original String for Signature
         $originalString = "||REC-{$recognition->id}|{$user->id}|" . Carbon::parse($recognition->sent_at)->toIso8601String() . "||";
 
         // Second Page setup for legal QR and Seal
-        $this->addLegalSignaturePage($pdf, $originalString, "Reconocimiento Evaluador", $user->id, $recognition->id);
+        $this->addLegalSignaturePage($pdf, $originalString, "Reconocimiento Evaluador", $user->id, $recognition->id, $size);
 
         // Output PDF
         return response($pdf->Output('S'), 200)
@@ -221,22 +224,21 @@ class PdfGenerationService
         $templatePath = Storage::disk('public')->path($template->file_path);
 
         // 2. Init FPDI
-        $pdf = new Fpdi('P', 'mm', 'A4'); // Portrait A4 is typical for certificates
+        $pdf = new Fpdi();
         $pdf->SetAutoPageBreak(false);
-        $pdf->AddPage();
 
         // 3. Set source file
         try {
             $pdf->setSourceFile($templatePath);
+            // Import page 1
+            $tplId = $pdf->importPage(1);
+            $size = $pdf->getTemplateSize($tplId);
+
+            $pdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
+            $pdf->useTemplate($tplId, 0, 0, $size['width'], $size['height']);
         } catch (\Exception $e) {
             throw new Exception("Error al procesar la plantilla PDF: " . $e->getMessage());
         }
-
-        // Import page 1
-        $tplId = $pdf->importPage(1);
-
-        // A4 Dimensions: 210 width x 297 height.
-        $pdf->useTemplate($tplId, 0, 0, 210, 297);
 
         // Format date and location strings
         $stateName = $user->institution?->state?->name ?? 'Guerrero';
@@ -245,42 +247,43 @@ class PdfGenerationService
         $dateText = "Chilpancingo de los Bravo, {$stateName}, {$currentMonth} de {$currentYear}";
 
         // Coordinates based on updated template
+        // Adjusting Y coordinates
         // 1. Teacher Name (Centered)
         $pdf->SetFont('Arial', 'B', 24);
         $pdf->SetTextColor(80, 80, 80);
-        $pdf->SetXY(0, 134); // Added extra margin underneath the 'A'
-        $pdf->Cell(210, 10, iconv('UTF-8', 'ISO-8859-1', mb_strtoupper($user->name)), 0, 1, 'C');
+        $pdf->SetXY(0, 118); // Moved up to 118 independently
+        $pdf->Cell($size['width'], 10, iconv('UTF-8', 'ISO-8859-1', mb_strtoupper($user->name)), 0, 1, 'C');
 
         // 2. Announcement (Centered)
         $pdf->SetFont('Arial', '', 12);
         $pdf->SetTextColor(80, 80, 80);
-        $pdf->SetXY(20, 153); // Adjusted accordingly
+        $pdf->SetXY(20, 133); // Moved up proportionally
         $announcementName = $recognition->announcement ? $recognition->announcement->name : 'Convocatoria General';
         $text = "Por su destacada e invaluable participación como postulante en la convocatoria:\n" . mb_strtoupper($announcementName);
-        $pdf->MultiCell(170, 7, iconv('UTF-8', 'ISO-8859-1', $text), 0, 'C');
+        $pdf->MultiCell($size['width'] - 40, 7, iconv('UTF-8', 'ISO-8859-1', $text), 0, 'C');
 
         // 3. Signer Information
         $pdf->SetFont('Arial', 'B', 12);
         $pdf->SetTextColor(80, 80, 80);
-        $pdf->SetXY(0, 225); // Below the golden line
-        $pdf->Cell(210, 6, iconv('UTF-8', 'ISO-8859-1', 'Vitervo López Caballero'), 0, 1, 'C');
+        $pdf->SetXY(0, 212); // Restored to 212
+        $pdf->Cell($size['width'], 6, iconv('UTF-8', 'ISO-8859-1', 'Vitervo López Caballero'), 0, 1, 'C');
 
         $pdf->SetFont('Arial', '', 10);
         $pdf->SetTextColor(100, 100, 100);
-        $pdf->SetXY(0, 231); // Below the signer name
-        $pdf->Cell(210, 6, iconv('UTF-8', 'ISO-8859-1', 'Profesor Investigador'), 0, 1, 'C');
+        $pdf->SetXY(0, 218); // Restored to 218
+        $pdf->Cell($size['width'], 6, iconv('UTF-8', 'ISO-8859-1', 'Profesor Investigador'), 0, 1, 'C');
 
         // 4. Date (Bottom Center)
         $pdf->SetFont('Arial', 'B', 10);
         $pdf->SetTextColor(194, 155, 34);
-        $pdf->SetXY(0, 242);
-        $pdf->Cell(210, 6, iconv('UTF-8', 'ISO-8859-1', $dateText), 0, 1, 'C');
+        $pdf->SetXY(0, 226); // Restored to 226
+        $pdf->Cell($size['width'], 6, iconv('UTF-8', 'ISO-8859-1', $dateText), 0, 1, 'C');
 
         // Capture Original String for Signature
         $originalString = "||DOC-{$recognition->id}|{$user->id}|" . Carbon::parse($recognition->sent_at)->toIso8601String() . "||";
 
         // Append Legal Page
-        $this->addLegalSignaturePage($pdf, $originalString, "Reconocimiento Postulante", $user->id, $recognition->id);
+        $this->addLegalSignaturePage($pdf, $originalString, "Reconocimiento Postulante", $user->id, $recognition->id, $size);
 
         // Output PDF
         return response($pdf->Output('S'), 200)
@@ -291,9 +294,14 @@ class PdfGenerationService
     /**
      * Creates a secondary page containing the legal QR code and the digital signature seal.
      */
-    private function addLegalSignaturePage($pdf, $originalString, $documentType, $userId, $recognitionId)
+    private function addLegalSignaturePage($pdf, $originalString, $documentType, $userId, $recognitionId, $size = null)
     {
-        $pdf->AddPage('P'); // Add a standard blank A4 portrait page
+        // Add a blank page with the exact same dimensions as the template, or fallback to standard A4 Portrait
+        if ($size && isset($size['orientation'])) {
+            $pdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
+        } else {
+            $pdf->AddPage('P'); // Fallback Portrait A4
+        }
         
         try {
             $recognition = \App\Models\Recognition::find($recognitionId);
@@ -346,20 +354,20 @@ class PdfGenerationService
             // Draw a black outline box behind the QR to resemble the prototype
             $pdf->SetDrawColor(0, 0, 0); // Black
             $pdf->SetLineWidth(0.5);
-            $pdf->Rect(14.5, 14.5, 46, 46); // Slightly larger than the 45x45 image
+            $pdf->Rect(14.5, 14.5, 31, 31); // Slightly larger than the 30x30 image
 
             // Left side block: QR Code
-            $pdf->Image($tempQR, 15, 15, 45, 45, 'PNG');
+            $pdf->Image($tempQR, 15, 15, 30, 30, 'PNG');
             unlink($tempQR); // Cleanup
 
             // Print the URL below the QR for visual inspection
-            $pdf->SetFont('Arial', '', 6);
+            $pdf->SetFont('Arial', '', 5); // Smaller text to fit
             $pdf->SetTextColor(50, 50, 50);
-            $pdf->SetXY(15, 62);
-            $pdf->Cell(45, 3, iconv('UTF-8', 'ISO-8859-1', $validationUrl), 0, 1, 'C');
+            $pdf->SetXY(15, 47);
+            $pdf->Cell(30, 3, iconv('UTF-8', 'ISO-8859-1', $validationUrl), 0, 1, 'C');
 
             // Right side block: Texts
-            $startX = 65;
+            $startX = 50;
             $startY = 15;
 
             // Sello Digital Header

@@ -190,7 +190,7 @@ class TeacherController extends Controller
         try {
             return $this->pdfGenerationService->generateAcceptanceLetter($application);
         } catch (\Exception $e) {
-            abort(404, $e->getMessage());
+            return response()->view('errors.pdf_missing', ['message' => $e->getMessage()], 404);
         }
     }
 }

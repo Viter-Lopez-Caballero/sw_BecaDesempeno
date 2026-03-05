@@ -6,6 +6,7 @@ use App\Mail\EvaluatorAssigned;
 use App\Mail\ApplicationVerdict;
 use App\Mail\AnnouncementStageChange;
 use App\Mail\AnnouncementDateChange;
+use App\Mail\AnnouncementClosed;
 use App\Mail\NewAnnouncement;
 use App\Models\Notification;
 use App\Models\User;
@@ -84,6 +85,7 @@ class NotificationService
                     'message' => "La convocatoria '{$announcementTitle}' ha cambiado a la etapa: {$newStage}",
                     'stage' => $newStage,
                     'date' => $stageDate,
+                    'announcement_id' => $announcementId,
                 ],
                 'type' => 'announcement_stage_change',
                 'user_id' => $user->id,
@@ -127,6 +129,36 @@ class NotificationService
                 $announcementTitle,
                 $changes
             ));
+        }
+    }
+
+    /**
+     * Send notification when an announcement is closed (results period ended)
+     */
+    public function notifyAnnouncementClosed($announcementId, $announcementTitle, $resultsEnd = null)
+    {
+        $users = User::role(['Admin', 'Evaluador', 'Docente'])->get();
+
+        foreach ($users as $user) {
+            Notification::create([
+                'title' => 'Convocatoria Finalizada',
+                'data' => [
+                    'message' => "La convocatoria '{$announcementTitle}' ha concluido y fue cerrada automáticamente.",
+                    'announcement_id' => $announcementId,
+                ],
+                'type' => 'announcement_closed',
+                'user_id' => $user->id,
+            ]);
+
+            try {
+                Mail::to($user->email)->queue(new AnnouncementClosed(
+                    $user->name,
+                    $announcementTitle,
+                    $resultsEnd
+                ));
+            } catch (\Exception $e) {
+                \Log::error("❌ Error enviando correo de cierre de convocatoria a {$user->email}: " . $e->getMessage());
+            }
         }
     }
 

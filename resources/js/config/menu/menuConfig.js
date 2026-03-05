@@ -16,6 +16,7 @@ import {
     mdiStar,
     mdiFileTree,
     mdiBell,
+    mdiDatabase,
 } from "@mdi/js";
 
 // Helper to create consistent security items with dynamic route prefix
@@ -203,6 +204,11 @@ export const menuConfigs = {
             icon: mdiBookOpenPageVariant,
             items: getCatalogItems("catalog."),
         },
+        {
+            label: "Respaldos",
+            route: "superadmin.backup.index",
+            icon: mdiDatabase,
+        },
     ],
     admin: [
         { type: "section", label: "Inicio" },
@@ -236,6 +242,12 @@ export const menuConfigs = {
             route: "admin.recognitions.index",
             icon: mdiStar,
             permission: "recognitions.index",
+        },
+        {
+            label: "Respaldos",
+            route: "superadmin.backup.index",
+            icon: mdiDatabase,
+            permission: "backup.index",
         },
     ],
     teacher: [

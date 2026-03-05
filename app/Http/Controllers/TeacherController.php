@@ -136,6 +136,12 @@ class TeacherController extends Controller
             ->ordered()
             ->get();
 
+        // Fallback: si la convocatoria no tiene documentos asignados específicamente,
+        // usar todos los documentos activos del catálogo como requeridos.
+        if ($documents->isEmpty()) {
+            $documents = \App\Models\CatalogDocument::active()->ordered()->get();
+        }
+
         // Get previous application documents for auto-fill
         // We look for the latest *submitted* application (pending/approved/rejected doesn't matter, as long as it has files)
         $previousApp = \App\Models\Application::forCurrentUser()

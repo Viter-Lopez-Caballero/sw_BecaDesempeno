@@ -142,7 +142,7 @@ const currentScore = computed(() => {
                     
                     <div class="p-6 space-y-8">
                         <div v-if="!rubric" class="text-center py-8 text-gray-500">
-                            No hay rubric disponible.
+                            No hay rúbrica configurada.
                         </div>
 
                         <div v-else v-for="(question, qIndex) in rubric.questions" :key="question.id" class="border-b border-gray-100 pb-6 last:border-0 last:pb-0">

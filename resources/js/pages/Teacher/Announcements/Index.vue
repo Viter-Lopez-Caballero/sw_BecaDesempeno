@@ -2,11 +2,19 @@
 import { Head, Link } from '@inertiajs/vue3';
 import TeacherLayout from '@/layouts/TeacherLayout.vue';
 import { mdiBullhorn } from '@mdi/js';
+import { ref } from 'vue';
 
 const props = defineProps({
     announcements: Object,
     has_active_application: Boolean,
 });
+
+const expandedDescriptions = ref({});
+const DESCRIPTION_LIMIT = 220;
+
+const toggleDescription = (id) => {
+    expandedDescriptions.value[id] = !expandedDescriptions.value[id];
+};
 
 // Helper para parsear fecha "YYYY-MM-DD", "YYYY-MM-DD HH:MM:SS" o ISO "YYYY-MM-DDTHH:mm:ss"
 const parseDateLocal = (dateString) => {
@@ -33,6 +41,7 @@ const getFase = (announcement) => {
 
     // 2. Estado Activa
     let canRegister = false;
+    let registrationStatus = 'upcoming'; // 'upcoming' | 'open' | 'ended'
     
     if (announcement.calendar) {
         const today = new Date();
@@ -41,8 +50,15 @@ const getFase = (announcement) => {
         const regInicio = parseDateLocal(announcement.calendar.registration_start);
         const regFin = parseDateLocal(announcement.calendar.registration_end);
         
-        if (regInicio && regFin && today >= regInicio && today <= regFin) {
-            canRegister = true;
+        if (regInicio && regFin) {
+            if (today >= regInicio && today <= regFin) {
+                canRegister = true;
+                registrationStatus = 'open';
+            } else if (today > regFin) {
+                registrationStatus = 'ended';
+            } else {
+                registrationStatus = 'upcoming';
+            }
         }
     }
 
@@ -50,7 +66,8 @@ const getFase = (announcement) => {
     return { 
         nombre: 'Activa', 
         color: 'bg-green-100 text-green-800', 
-        canRegister: canRegister 
+        canRegister: canRegister,
+        registrationStatus: registrationStatus,
     };
 };
 </script>
@@ -61,7 +78,7 @@ const getFase = (announcement) => {
         <div class="space-y-6">
              <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Convocatorias Disponibles</h1>
+                    <h1 class="text-3xl font-bold text-gray-900">Convocatoria Disponible</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
                             <path :d="mdiBullhorn"/>
@@ -128,9 +145,21 @@ const getFase = (announcement) => {
                         </h2>
                         <div class="w-20 h-1.5 bg-[#1B396A] rounded-full mb-4"></div>
                         
-                        <p class="text-gray-600 outline outline-0 text-lg mb-6 leading-relaxed">
-                            {{ announcement.description || 'Sin descripción disponible para esta convocatoria.' }}
-                        </p>
+                        <div class="text-gray-600 text-lg mb-6 leading-relaxed">
+                            <span>{{ (() => {
+                                const desc = announcement.description || 'Sin descripción disponible para esta convocatoria.';
+                                return expandedDescriptions[announcement.id] || desc.length <= DESCRIPTION_LIMIT
+                                    ? desc
+                                    : desc.substring(0, DESCRIPTION_LIMIT) + '...';
+                            })() }}</span>
+                            <button
+                                v-if="(announcement.description || '').length > DESCRIPTION_LIMIT"
+                                @click="toggleDescription(announcement.id)"
+                                class="ml-1.5 text-[#1B396A] font-semibold text-base hover:underline cursor-pointer focus:outline-none"
+                            >
+                                {{ expandedDescriptions[announcement.id] ? 'Ver menos' : 'Ver más' }}
+                            </button>
+                        </div>
 
                         <!-- Fechas Importantes (Si está activa) -->
                         <div v-if="announcement.calendar && announcement.status === 'activa'" class="mb-6 bg-gray-50 rounded-lg p-4 border border-gray-100 grid grid-cols-2 gap-4">
@@ -202,7 +231,10 @@ const getFase = (announcement) => {
                                     disabled
                                     class="w-full py-3.5 bg-gray-100 text-gray-400 border border-gray-300 rounded-lg font-medium cursor-not-allowed flex items-center justify-center gap-2"
                                 >
-                                    {{ announcement.status === 'activa' ? 'Fuera de Periodo' : 'Convocatoria Inactiva' }}
+                                    <template v-if="announcement.status === 'activa'">
+                                        {{ getFase(announcement).registrationStatus === 'upcoming' ? 'Registro Próximamente' : 'Fuera de Periodo' }}
+                                    </template>
+                                    <template v-else>Convocatoria Inactiva</template>
                                 </button>
                              </div>
                         </div>

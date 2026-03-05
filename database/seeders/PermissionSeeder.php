@@ -123,6 +123,14 @@ class PermissionSeeder extends Seeder
 
             // Admin Dashboard
             ['name' => 'admin.dashboard', 'description' => 'View admin dashboard', 'module_key' => 'dashboard'],
+
+            // Backup
+            ['name' => 'backup.index',    'description' => 'Ver listado de respaldos',          'module_key' => 'backup'],
+            ['name' => 'backup.create',   'description' => 'Crear respaldo manual',              'module_key' => 'backup'],
+            ['name' => 'backup.schedule', 'description' => 'Configurar programación automática', 'module_key' => 'backup'],
+            ['name' => 'backup.restore',  'description' => 'Restaurar base de datos',            'module_key' => 'backup'],
+            ['name' => 'backup.download', 'description' => 'Descargar archivo de respaldo',      'module_key' => 'backup'],
+            ['name' => 'backup.delete',   'description' => 'Eliminar respaldos',                 'module_key' => 'backup'],
         ];
 
         // Create each permission

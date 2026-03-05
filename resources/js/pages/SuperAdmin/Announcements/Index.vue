@@ -7,7 +7,7 @@ import { debounce } from 'lodash';
 import { useCan } from '@/composables/usePermissions';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
-import { mdiBullhorn, mdiCog } from '@mdi/js';
+import { mdiBullhorn } from '@mdi/js';
 import { alertaPregunta, alertaExito, alertaError } from '@/utils/alerts.js';
 
 const props = defineProps({
@@ -43,6 +43,16 @@ const rows = ref(props.filters.rows || 10);
 const sortField = ref(props.filters.order || 'id');
 const sortDirection = ref(props.filters.direction || 'asc');
 const expandedRows = ref({});
+const showRestrictionAlert = ref(false);
+let restrictionTimer = null;
+
+const triggerRestrictionAlert = () => {
+    showRestrictionAlert.value = true;
+    if (restrictionTimer) clearTimeout(restrictionTimer);
+    restrictionTimer = setTimeout(() => {
+        showRestrictionAlert.value = false;
+    }, 5000);
+};
 
 const rowOptions = [
     { label: '5 Registros', value: 5 },
@@ -164,13 +174,6 @@ const closeViewer = (id) => {
                     <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
-                            <path :d="mdiCog"/>
-                        </svg>
-                        <span class="text-gray-700 font-medium">Gestión</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
-                            <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
-                        </svg>
-                        <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
                             <path :d="mdiBullhorn" />
                         </svg>
                         <span class="text-gray-900 font-semibold">Convocatorias</span>
@@ -185,7 +188,8 @@ const closeViewer = (id) => {
                         </svg>
                         Agregar
                     </Link>
-                    <button v-else-if="useCan('announcements.create')" disabled
+                    <button v-else-if="useCan('announcements.create')"
+                        @click="triggerRestrictionAlert"
                         class="w-full md:w-auto justify-center px-4 py-2.5 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed flex items-center gap-2 font-medium">
                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
                             fill="currentColor">
@@ -193,13 +197,6 @@ const closeViewer = (id) => {
                         </svg>
                         Agregar
                     </button>
-                    
-                    <!-- Tooltip non-invasive -->
-                    <div v-if="!canCreate && useCan('announcements.create')" 
-                        class="absolute right-0 top-full mt-2 w-64 p-2 bg-gray-800 text-white text-xs rounded shadow-lg z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                        {{ restrictionMessage }}
-                        <div class="absolute -top-1 right-4 w-2 h-2 bg-gray-800 rotate-45"></div>
-                    </div>
                 </div>
             </div>
 
@@ -245,6 +242,39 @@ const closeViewer = (id) => {
                     </div>
                 </div>
             </div>
+
+            <!-- Aviso temporal: Solo una convocatoria activa/pendiente a la vez -->
+            <transition
+                enter-active-class="transition duration-300 ease-out"
+                enter-from-class="transform -translate-y-4 opacity-0 scale-95"
+                enter-to-class="transform translate-y-0 opacity-100 scale-100"
+                leave-active-class="transition duration-200 ease-in"
+                leave-from-class="opacity-100 scale-100"
+                leave-to-class="opacity-0 scale-95"
+            >
+                <div v-if="showRestrictionAlert"
+                    class="relative flex items-center gap-4 px-5 py-4 rounded-lg bg-white shadow-sm border border-gray-100"
+                    style="border-left: 5px solid #D97706;"
+                >
+                    <div class="flex-shrink-0" style="color: #D97706;">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] uppercase font-bold tracking-widest mb-0.5" style="color: #D97706; opacity: 0.8;">Aviso</span>
+                        <span class="text-sm font-bold leading-tight text-gray-800">
+                            Solo puede existir una convocatoria <strong style="color: #D97706;">Activa o Pendiente</strong> a la vez — cuando llegue la fecha de publicación de una nueva, el sistema <strong style="color: #D97706;">cerrará</strong> la actual automáticamente.
+                        </span>
+                    </div>
+                    <button type="button" @click="showRestrictionAlert = false" class="ml-auto p-2 text-gray-300 hover:opacity-60 transition-all cursor-pointer">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            </transition>
 
             <!-- Filter Card -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4">

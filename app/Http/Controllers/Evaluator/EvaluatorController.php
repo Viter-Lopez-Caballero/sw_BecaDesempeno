@@ -89,10 +89,13 @@ class EvaluatorController extends Controller
             ])
             ->firstOrFail();
 
-        // Get Active Rubric
+        // Get Active Rubric — fallback to most recent if none is marked active
         $rubric = \App\Models\Rubric::where('is_active', true)
             ->with(['questions.options'])
-            ->first();
+            ->first()
+            ?? \App\Models\Rubric::with(['questions.options'])
+                ->latest()
+                ->first();
 
         // Ensure all relationships are loaded
         $application = $evaluation->application;
@@ -246,9 +249,13 @@ class EvaluatorController extends Controller
             ])
             ->firstOrFail();
 
+        // Get Active Rubric — fallback to most recent if none is marked active
         $rubric = \App\Models\Rubric::where('is_active', true)
             ->with(['questions.options'])
-            ->first();
+            ->first()
+            ?? \App\Models\Rubric::with(['questions.options'])
+                ->latest()
+                ->first();
 
         $application = $evaluation->application;
         $application->load(['announcement', 'documents', 'user.institution', 'user.priorityArea', 'user.subArea', 'positionType']);

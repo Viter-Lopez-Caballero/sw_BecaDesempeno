@@ -81,6 +81,9 @@ class Announcement extends Model
     /**
      * Calcula la etapa actual de la convocatoria basado en el calendario.
      * Posibles retornos: 'publicacion', 'registro', 'evaluacion', 'resultados', 'terminada', 'invalida'
+     *
+     * Lógica en cascada: una etapa permanece activa hasta que comienza la siguiente,
+     * evitando que huecos entre fechas den 'invalida'.
      */
     public function getCurrentStageAttribute(): string
     {
@@ -91,33 +94,32 @@ class Announcement extends Model
         $now = \Carbon\Carbon::now()->startOfDay();
         $cal = $this->calendar;
 
-        // If today is past the results_end date, it's completely finished
+        // Pasada la fecha de cierre de resultados → terminada
         if ($cal->results_end && $now->gt(\Carbon\Carbon::parse($cal->results_end)->endOfDay())) {
             return 'terminada';
         }
 
-        // Check each stage explicitly based on active date ranges
-        if ($cal->publication_start && $cal->registration_start &&
-            $now->between(\Carbon\Carbon::parse($cal->publication_start)->startOfDay(), \Carbon\Carbon::parse($cal->registration_start)->subDay()->endOfDay())) {
-            return 'publicacion';
-        }
+        // Cascada de mayor a menor prioridad: en cuanto se llega a la fecha
+        // de inicio de una etapa, esa etapa es la activa aunque haya un hueco
+        // desde el fin de la etapa anterior.
 
-        if ($cal->registration_start && $cal->registration_end &&
-            $now->between(\Carbon\Carbon::parse($cal->registration_start)->startOfDay(), \Carbon\Carbon::parse($cal->registration_end)->endOfDay())) {
-            return 'registro';
-        }
-
-        if ($cal->evaluation_start && $cal->evaluation_end &&
-            $now->between(\Carbon\Carbon::parse($cal->evaluation_start)->startOfDay(), \Carbon\Carbon::parse($cal->evaluation_end)->endOfDay())) {
-            return 'evaluacion';
-        }
-
-        if ($cal->results_start && $cal->results_end &&
-            $now->between(\Carbon\Carbon::parse($cal->results_start)->startOfDay(), \Carbon\Carbon::parse($cal->results_end)->endOfDay())) {
+        if ($cal->results_start && $now->gte(\Carbon\Carbon::parse($cal->results_start)->startOfDay())) {
             return 'resultados';
         }
 
-        // Si hay una laguna (gap) entre las fechas establecidas
+        if ($cal->evaluation_start && $now->gte(\Carbon\Carbon::parse($cal->evaluation_start)->startOfDay())) {
+            return 'evaluacion';
+        }
+
+        if ($cal->registration_start && $now->gte(\Carbon\Carbon::parse($cal->registration_start)->startOfDay())) {
+            return 'registro';
+        }
+
+        if ($cal->publication_start && $now->gte(\Carbon\Carbon::parse($cal->publication_start)->startOfDay())) {
+            return 'publicacion';
+        }
+
+        // Antes de que comience la publicación
         return 'invalida';
     }
 

@@ -66,6 +66,18 @@ class PdfGenerationService
         // Use the imported page
         $pdf->useTemplate($tplId, 0, 0, 210); // A4 Width
 
+        // --- Snapshot Data Fetch or Create ---
+        $snapshot = is_string($application->snapshot_data) ? json_decode($application->snapshot_data, true) : $application->snapshot_data;
+        if (!$snapshot) {
+            $snapshot = [
+                'date_text' => "CIUDAD DE MÉXICO, A " . mb_strtoupper(Carbon::now()->timezone('America/Mexico_City')->isoFormat('DD [DE] MMMM [DE] YYYY'), 'UTF-8'),
+                'director_name' => 'Ramón Jiménez López',
+                'director_title' => 'Director General'
+            ];
+            $application->snapshot_data = json_encode($snapshot);
+            $application->save();
+        }
+
         // --- Overlay Text Logic ---
         $pdf->SetFont('Arial', 'B', 12);
         $pdf->SetTextColor(0, 0, 0);
@@ -74,8 +86,7 @@ class PdfGenerationService
         // Date (Top Right)
         $pdf->SetFont('Arial', '', 10);
         $pdf->SetXY(130, 45);
-        $dateText = "Chilpancingo de los Bravo, Guerrero, a " . Carbon::now()->isoFormat('D [de] MMMM [de] YYYY');
-        $pdf->Cell(60, 10, iconv('UTF-8', 'ISO-8859-1', $dateText), 0, 1, 'R');
+        $pdf->Cell(60, 10, iconv('UTF-8', 'ISO-8859-1', $snapshot['date_text']), 0, 1, 'R');
 
         // Name
         $pdf->SetFont('Arial', 'B', 11);
@@ -139,47 +150,51 @@ class PdfGenerationService
         // Add a page matching the exact template format
         $pdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
         
-        // Format date and location strings
-        $stateName = $user->institution?->state?->name ?? 'Guerrero';
-        $currentMonth = Carbon::parse($recognition->sent_at)->isoFormat('MMMM');
-        $currentYear = Carbon::parse($recognition->sent_at)->isoFormat('YYYY');
-        $dateText = "Chilpancingo de los Bravo, {$stateName}, {$currentMonth} de {$currentYear}";
+        // --- Snapshot Data Fetch or Create ---
+        $snapshot = is_string($recognition->snapshot_data) ? json_decode($recognition->snapshot_data, true) : $recognition->snapshot_data;
+        if (!$snapshot) {
+            $announcementName = $recognition->announcement ? $recognition->announcement->name : 'CONVOCATORIA GENERAL';
+            $snapshot = [
+                'date_text' => "CIUDAD DE MÉXICO, A " . mb_strtoupper(Carbon::now()->timezone('America/Mexico_City')->isoFormat('DD [DE] MMMM [DE] YYYY'), 'UTF-8'),
+                'director_name' => 'Ramón Jiménez López',
+                'director_title' => 'Director General',
+                'body_text' => "Por su destacada participación como evaluador en la convocatoria:\n" . mb_strtoupper($announcementName)
+            ];
+            $recognition->snapshot_data = json_encode($snapshot);
+            $recognition->save();
+        }
 
+        // Format date and location strings
         $pdf->useTemplate($tplId, 0, 0, $size['width'], $size['height']);
 
-        // Coordinates based on the updated template
-        // Adjusting Y coordinates upwards to match the actual template
         // 1. Participant Name (Centered)
         $pdf->SetFont('Arial', 'B', 24); 
         $pdf->SetTextColor(80, 80, 80); 
-        $pdf->SetXY(0, 121); // Moved up to 118 independently
+        $pdf->SetXY(0, 121);
         $pdf->Cell($size['width'], 10, iconv('UTF-8', 'ISO-8859-1', mb_strtoupper($user->name)), 0, 1, 'C');
 
         // 2. Participating Activity (Centered)
         $pdf->SetFont('Arial', '', 12);
         $pdf->SetTextColor(80, 80, 80);
-        $pdf->SetXY(20, 140); // Moved up proportionally
-        $announcementName = $recognition->announcement ? $recognition->announcement->name : 'CONVOCATORIA GENERAL';
-        $text = "Por su destacada participación como evaluador en la convocatoria:\n" . mb_strtoupper($announcementName);
-        $pdf->MultiCell($size['width'] - 40, 7, iconv('UTF-8', 'ISO-8859-1', $text), 0, 'C');
+        $pdf->SetXY(20, 140);
+        $pdf->MultiCell($size['width'] - 40, 7, iconv('UTF-8', 'ISO-8859-1', $snapshot['body_text']), 0, 'C');
 
         // 3. Signer Information
         $pdf->SetFont('Arial', 'B', 12);
         $pdf->SetTextColor(80, 80, 80);
-        $pdf->SetXY(0, 211); // Restored to 212
-        $pdf->Cell($size['width'], 6, iconv('UTF-8', 'ISO-8859-1', 'Vitervo López Caballero'), 0, 1, 'C');
+        $pdf->SetXY(0, 211);
+        $pdf->Cell($size['width'], 6, iconv('UTF-8', 'ISO-8859-1', $snapshot['director_name']), 0, 1, 'C');
 
         $pdf->SetFont('Arial', '', 10);
         $pdf->SetTextColor(100, 100, 100);
-        $pdf->SetXY(0, 217); // Restored to 218
-        $pdf->Cell($size['width'], 6, iconv('UTF-8', 'ISO-8859-1', 'Profesor Investigador'), 0, 1, 'C');
+        $pdf->SetXY(0, 217);
+        $pdf->Cell($size['width'], 6, iconv('UTF-8', 'ISO-8859-1', $snapshot['director_title']), 0, 1, 'C');
 
         // 4. City, State, Month, Year
         $pdf->SetFont('Arial', 'B', 10);
-        // Yellow-gold color matching the template
         $pdf->SetTextColor(194, 155, 34);
-        $pdf->SetXY(0, 225); // Restored to 226
-        $pdf->Cell($size['width'], 6, iconv('UTF-8', 'ISO-8859-1', $dateText), 0, 1, 'C');
+        $pdf->SetXY(0, 225);
+        $pdf->Cell($size['width'], 6, iconv('UTF-8', 'ISO-8859-1', $snapshot['date_text']), 0, 1, 'C');
 
         // Capture Original String for Signature
         $originalString = "||REC-{$recognition->id}|{$user->id}|" . Carbon::parse($recognition->sent_at)->toIso8601String() . "||";
@@ -240,44 +255,48 @@ class PdfGenerationService
             throw new Exception("Error al procesar la plantilla PDF: " . $e->getMessage());
         }
 
-        // Format date and location strings
-        $stateName = $user->institution?->state?->name ?? 'Guerrero';
-        $currentMonth = Carbon::parse($recognition->sent_at)->isoFormat('MMMM');
-        $currentYear = Carbon::parse($recognition->sent_at)->isoFormat('YYYY');
-        $dateText = "Chilpancingo de los Bravo, {$stateName}, {$currentMonth} de {$currentYear}";
+        // --- Snapshot Data Fetch or Create ---
+        $snapshot = is_string($recognition->snapshot_data) ? json_decode($recognition->snapshot_data, true) : $recognition->snapshot_data;
+        if (!$snapshot) {
+            $announcementName = $recognition->announcement ? $recognition->announcement->name : 'Convocatoria General';
+            $snapshot = [
+                'date_text' => "CIUDAD DE MÉXICO, A " . mb_strtoupper(Carbon::now()->timezone('America/Mexico_City')->isoFormat('DD [DE] MMMM [DE] YYYY'), 'UTF-8'),
+                'director_name' => 'Ramón Jiménez López',
+                'director_title' => 'Director General',
+                'body_text' => "Por su destacada e invaluable participación como postulante en la convocatoria:\n" . mb_strtoupper($announcementName)
+            ];
+            $recognition->snapshot_data = json_encode($snapshot);
+            $recognition->save();
+        }
 
-        // Coordinates based on updated template
-        // Adjusting Y coordinates
         // 1. Teacher Name (Centered)
         $pdf->SetFont('Arial', 'B', 24);
         $pdf->SetTextColor(80, 80, 80);
-        $pdf->SetXY(0, 118); // Moved up to 118 independently
+        $pdf->SetXY(0, 118);
         $pdf->Cell($size['width'], 10, iconv('UTF-8', 'ISO-8859-1', mb_strtoupper($user->name)), 0, 1, 'C');
 
         // 2. Announcement (Centered)
         $pdf->SetFont('Arial', '', 12);
         $pdf->SetTextColor(80, 80, 80);
-        $pdf->SetXY(20, 133); // Moved up proportionally
-        $announcementName = $recognition->announcement ? $recognition->announcement->name : 'Convocatoria General';
-        $text = "Por su destacada e invaluable participación como postulante en la convocatoria:\n" . mb_strtoupper($announcementName);
-        $pdf->MultiCell($size['width'] - 40, 7, iconv('UTF-8', 'ISO-8859-1', $text), 0, 'C');
+        $pdf->SetXY(20, 133);
+        $pdf->MultiCell($size['width'] - 40, 7, iconv('UTF-8', 'ISO-8859-1', $snapshot['body_text']), 0, 'C');
 
         // 3. Signer Information
         $pdf->SetFont('Arial', 'B', 12);
         $pdf->SetTextColor(80, 80, 80);
-        $pdf->SetXY(0, 212); // Restored to 212
-        $pdf->Cell($size['width'], 6, iconv('UTF-8', 'ISO-8859-1', 'Vitervo López Caballero'), 0, 1, 'C');
+        $pdf->SetXY(0, 212);
+        $pdf->Cell($size['width'], 6, iconv('UTF-8', 'ISO-8859-1', $snapshot['director_name']), 0, 1, 'C');
 
         $pdf->SetFont('Arial', '', 10);
         $pdf->SetTextColor(100, 100, 100);
-        $pdf->SetXY(0, 218); // Restored to 218
-        $pdf->Cell($size['width'], 6, iconv('UTF-8', 'ISO-8859-1', 'Profesor Investigador'), 0, 1, 'C');
+        $pdf->SetXY(0, 218);
+        $pdf->Cell($size['width'], 6, iconv('UTF-8', 'ISO-8859-1', $snapshot['director_title']), 0, 1, 'C');
 
         // 4. Date (Bottom Center)
         $pdf->SetFont('Arial', 'B', 10);
         $pdf->SetTextColor(194, 155, 34);
-        $pdf->SetXY(0, 226); // Restored to 226
-        $pdf->Cell($size['width'], 6, iconv('UTF-8', 'ISO-8859-1', $dateText), 0, 1, 'C');
+        $pdf->SetXY(0, 226);
+        $pdf->Cell($size['width'], 6, iconv('UTF-8', 'ISO-8859-1', $snapshot['date_text']), 0, 1, 'C');
 
         // Capture Original String for Signature
         $originalString = "||DOC-{$recognition->id}|{$user->id}|" . Carbon::parse($recognition->sent_at)->toIso8601String() . "||";

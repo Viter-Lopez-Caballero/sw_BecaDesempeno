@@ -32,6 +32,7 @@ class ApplicationsExport implements FromCollection, WithHeadings, WithMapping, S
             ->join('institutions', 'users.institution_id', '=', 'institutions.id')
             ->join('states', 'institutions.state_id', '=', 'states.id')
             ->leftJoin('announcements', 'applications.announcement_id', '=', 'announcements.id')
+            ->leftJoin('position_types', 'applications.position_type_id', '=', 'position_types.id')
             ->select(
                 'applications.id',
                 'users.name as teacher_name',
@@ -39,7 +40,7 @@ class ApplicationsExport implements FromCollection, WithHeadings, WithMapping, S
                 'institutions.name as institution_name',
                 'states.name as state_name',
                 'announcements.name as announcement_name',
-                'applications.position_type',
+                'position_types.name as position_type',
                 'applications.status',
                 'applications.created_at'
             );
@@ -59,8 +60,10 @@ class ApplicationsExport implements FromCollection, WithHeadings, WithMapping, S
             $query->where('states.id', $this->stateId);
         }
 
-        if ($this->status && in_array($this->status, ['approved', 'rejected', 'expired'])) {
+        if ($this->status && in_array($this->status, ['approved', 'rejected'])) {
             $query->where('applications.status', $this->status);
+        } else {
+            $query->whereIn('applications.status', ['approved', 'rejected']);
         }
 
         return $query->orderBy('applications.created_at', 'desc')->get();

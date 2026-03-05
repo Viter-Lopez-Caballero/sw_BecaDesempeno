@@ -23,7 +23,13 @@ class AnnouncementService
     public function createAnnouncement(array $data, $request): Announcement
     {
         return DB::transaction(function () use ($data, $request) {
-            $data['status'] = 'pendiente';
+            $publicationStart = $request->publication_start
+                ? \Carbon\Carbon::parse($request->publication_start)->startOfDay()
+                : null;
+
+            $data['status'] = ($publicationStart && $publicationStart->lte(\Carbon\Carbon::today()))
+                ? 'activa'
+                : 'pendiente';
 
             // Handle File Upload
             if ($request->hasFile('file')) {

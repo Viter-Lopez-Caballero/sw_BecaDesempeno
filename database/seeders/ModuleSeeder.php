@@ -53,6 +53,11 @@ class ModuleSeeder extends Seeder
                 'description' => 'Módulo de evaluaciones y su historial',
                 'key' => 'evaluations', // Was evaluaciones (check match)
             ],
+            [
+                'name' => 'Gestión de Respaldos',
+                'description' => 'Módulo de respaldo y restauración de la base de datos',
+                'key' => 'backup',
+            ],
 
         ];
 

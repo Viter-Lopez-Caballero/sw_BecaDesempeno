@@ -189,10 +189,13 @@ class ApplicationController extends Controller
             ->where('application_id', $application_id)
             ->findOrFail($evaluation_id);
 
-        // Fetch active rubric
+        // Fetch active rubric — fallback to most recent if none is marked active
         $rubric = \App\Models\Rubric::with(['questions.options'])
             ->where('is_active', true)
-            ->first();
+            ->first()
+            ?? \App\Models\Rubric::with(['questions.options'])
+                ->latest()
+                ->first();
 
         // Pass structured view similarly to Evaluator view but strictly read only
         return Inertia::render('Admin/Applications/EvaluationView', [

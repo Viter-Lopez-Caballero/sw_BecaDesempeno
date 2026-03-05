@@ -261,7 +261,7 @@ const getProgressWidth = (count) => {
 
             <!-- Solicitudes por Campus -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-                <h2 class="text-xl font-bold text-gray-900 mb-6">Solicitudes por Campus</h2>
+                <h2 class="text-xl font-bold text-gray-900 mb-6">Solicitudes por Institución</h2>
                 
                 <div class="space-y-4">
                     <div v-for="institution in topInstitutions.data" :key="institution.id" class="flex items-center gap-4">
@@ -323,7 +323,7 @@ const getProgressWidth = (count) => {
                     </div>
                 </div>
                 
-                <div class="text-sm text-gray-500 mb-4">Buscar por nombre de campus o ID</div>
+                <div class="text-sm text-gray-500 mb-4">Buscar por nombre de institución o ID</div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                     <div class="relative">
@@ -336,7 +336,7 @@ const getProgressWidth = (count) => {
                         <input 
                             v-model="search" 
                             type="text" 
-                            placeholder="Buscar por ID, nombre, campus..." 
+                            placeholder="Buscar por ID, nombre, institución..." 
                             class="pl-10 w-full h-[45px] rounded-lg border border-gray-300 text-gray-700 focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition text-sm"
                         />
                     </div>

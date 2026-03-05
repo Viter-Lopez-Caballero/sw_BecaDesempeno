@@ -267,7 +267,7 @@ const exportData = () => {
                             :reduce="option => option.id"
                             label="name"
                             :clearable="true"
-                            placeholder="Todos los campus"
+                            placeholder="Todos las instituciones"
                             class="vue-select-custom"
                         />
                     </div>
@@ -291,7 +291,7 @@ const exportData = () => {
             <!-- Chart Section -->
             <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
                 <div class="mb-6">
-                    <h2 class="text-xl font-bold text-gray-900">Resultado de Evaluación de Solicitudes por Campus</h2>
+                    <h2 class="text-xl font-bold text-gray-900">Resultado de Evaluación de Solicitudes por Institución</h2>
                     <p class="text-sm text-gray-500">Distribución de aprobados y rechazados</p>
                 </div>
                 

@@ -6,7 +6,7 @@ import { ref, watch, computed } from 'vue';
 import { debounce } from 'lodash';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
-import { mdiFileDocumentMultiple, mdiCog } from '@mdi/js';
+import { mdiFileDocumentMultiple } from '@mdi/js';
 
 const props = defineProps({
     stats: Object,
@@ -172,13 +172,6 @@ watch(search, (value) => {
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900">Control de Solicitudes</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
-                        <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
-                            <path :d="mdiCog"/>
-                        </svg>
-                        <span class="text-gray-700 font-medium">Gestión</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
-                            <path d="m321-80-71-71 329-329-329-329 71-71 400 400L321-80Z"/>
-                        </svg>
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
                             <path :d="mdiFileDocumentMultiple"/>
                         </svg>

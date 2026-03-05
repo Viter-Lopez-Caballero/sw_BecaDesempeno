@@ -92,6 +92,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('dashboard/export', [\App\Http\Controllers\SuperAdmin\DashboardController::class, 'export'])->name('dashboard.export');
             Route::get('control-applications', [\App\Http\Controllers\SuperAdmin\RequestControlController::class, 'index'])->name('control-applications'); // control-solicitudes
             Route::get('control-applications/export', [\App\Http\Controllers\SuperAdmin\RequestControlController::class, 'export'])->name('control-applications.export');
+
+        }
+    );
+
+    // ========================
+    // BACKUP MODULE (permission-based, granular per ruta)
+    // ========================
+    Route::middleware(['permission:backup.index'])->prefix('superadmin')->name('superadmin.')->group(
+        function () {
+            Route::get('backup', [\App\Http\Controllers\SuperAdmin\BackupController::class, 'index'])->name('backup.index');
+            Route::get('backup/create', [\App\Http\Controllers\SuperAdmin\BackupController::class, 'create'])->name('backup.create')->middleware('permission:backup.create');
+            Route::post('backup', [\App\Http\Controllers\SuperAdmin\BackupController::class, 'store'])->name('backup.store')->middleware('permission:backup.create');
+            Route::get('backup/schedule', [\App\Http\Controllers\SuperAdmin\BackupController::class, 'editSchedule'])->name('backup.edit')->middleware('permission:backup.schedule');
+            Route::post('backup/schedule', [\App\Http\Controllers\SuperAdmin\BackupController::class, 'updateSchedule'])->name('backup.update-schedule')->middleware('permission:backup.schedule');
+            Route::get('backup/restore', [\App\Http\Controllers\SuperAdmin\BackupController::class, 'showRestore'])->name('backup.restore-view')->middleware('permission:backup.restore');
+            Route::post('backup/restore', [\App\Http\Controllers\SuperAdmin\BackupController::class, 'restore'])->name('backup.do-restore')->middleware('permission:backup.restore');
+            Route::get('backup/{backup}/download', [\App\Http\Controllers\SuperAdmin\BackupController::class, 'download'])->name('backup.download')->middleware('permission:backup.download');
+            Route::delete('backup/{backup}', [\App\Http\Controllers\SuperAdmin\BackupController::class, 'destroy'])->name('backup.destroy')->middleware('permission:backup.delete');
         }
     );
 

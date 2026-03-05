@@ -74,6 +74,88 @@ class UpdateAnnouncementStatus extends Command
             });
         }
 
+        // 1.1 Notificar inicio de etapa de REGISTRO
+        $inicioRegistro = \App\Models\Announcement::where('status', 'activa')
+            ->whereHas('calendar', function ($query) use ($today) {
+                $query->whereDate('registration_start', $today);
+            })
+            ->with('calendar')
+            ->get();
+
+        foreach ($inicioRegistro as $announcement) {
+            // Verificar que no se haya enviado ya esta notificación de etapa
+            $yaNotifico = \App\Models\Notification::where('type', 'announcement_stage_change')
+                ->where('data->stage', 'Registro de Solicitudes')
+                ->where('data->announcement_id', $announcement->id)
+                ->exists();
+
+            if (!$yaNotifico) {
+                $notificationService = app(NotificationService::class);
+                $notificationService->notifyAnnouncementStageChange(
+                    $announcement->id,
+                    $announcement->name,
+                    'Registro de Solicitudes',
+                    $announcement->calendar->registration_end ?? null
+                );
+                $this->info("Notificación de etapa Registro enviada: {$announcement->name}");
+                Log::info("Cron Convocatorias: Etapa Registro notificada para ID {$announcement->id}.");
+            }
+        }
+
+        // 1.2 Notificar inicio de etapa de EVALUACIÓN
+        $inicioEvaluacion = \App\Models\Announcement::where('status', 'activa')
+            ->whereHas('calendar', function ($query) use ($today) {
+                $query->whereDate('evaluation_start', $today);
+            })
+            ->with('calendar')
+            ->get();
+
+        foreach ($inicioEvaluacion as $announcement) {
+            $yaNotifico = \App\Models\Notification::where('type', 'announcement_stage_change')
+                ->where('data->stage', 'Evaluación de Solicitudes')
+                ->where('data->announcement_id', $announcement->id)
+                ->exists();
+
+            if (!$yaNotifico) {
+                $notificationService = app(NotificationService::class);
+                $notificationService->notifyAnnouncementStageChange(
+                    $announcement->id,
+                    $announcement->name,
+                    'Evaluación de Solicitudes',
+                    $announcement->calendar->evaluation_end ?? null
+                );
+                $this->info("Notificación de etapa Evaluación enviada: {$announcement->name}");
+                Log::info("Cron Convocatorias: Etapa Evaluación notificada para ID {$announcement->id}.");
+            }
+        }
+
+        // 1.3 Notificar inicio de etapa de RESULTADOS
+        $inicioResultados = \App\Models\Announcement::where('status', 'activa')
+            ->whereHas('calendar', function ($query) use ($today) {
+                $query->whereDate('results_start', $today);
+            })
+            ->with('calendar')
+            ->get();
+
+        foreach ($inicioResultados as $announcement) {
+            $yaNotifico = \App\Models\Notification::where('type', 'announcement_stage_change')
+                ->where('data->stage', 'Publicación de Resultados')
+                ->where('data->announcement_id', $announcement->id)
+                ->exists();
+
+            if (!$yaNotifico) {
+                $notificationService = app(NotificationService::class);
+                $notificationService->notifyAnnouncementStageChange(
+                    $announcement->id,
+                    $announcement->name,
+                    'Publicación de Resultados',
+                    $announcement->calendar->results_end ?? null
+                );
+                $this->info("Notificación de etapa Resultados enviada: {$announcement->name}");
+                Log::info("Cron Convocatorias: Etapa Resultados notificada para ID {$announcement->id}.");
+            }
+        }
+
         // 1.5 Enviar notificaciones de veredicto diferidas (ocultas a los docentes hasta etapa de resultados)
         $enResultados = \App\Models\Announcement::where('status', 'activa')
             ->whereHas('calendar', function ($query) use ($today) {
@@ -121,17 +203,16 @@ class UpdateAnnouncementStatus extends Command
         foreach ($activas as $announcement) {
             $announcement->update(['status' => 'cerrada']);
 
-            // Notificar el cambio de etapa
+            // Notificar cierre definitivo de la convocatoria
             $notificationService = app(NotificationService::class);
-            $notificationService->notifyAnnouncementStageChange(
+            $notificationService->notifyAnnouncementClosed(
                 $announcement->id,
                 $announcement->name,
-                'Publicación de Resultados',
-                $announcement->calendar->results_start ?? null
+                $announcement->calendar->results_end ?? null
             );
 
-            $this->info("Convocatoria cerrada: {$announcement->name}");
-            Log::info("Cron Convocatorias: Convocatoria ID {$announcement->id} cerrada (finalizó periodo).");
+            $this->info("Convocatoria cerrada automáticamente: {$announcement->name}");
+            Log::info("Cron Convocatorias: Convocatoria ID {$announcement->id} cerrada automáticamente (período de resultados finalizado).");
         }
 
         $this->info('Actualización completada.');

@@ -6,7 +6,7 @@ import { ref, watch } from 'vue';
 import { debounce } from 'lodash';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
-import { mdiDownload, mdiEye, mdiEyeOff } from '@mdi/js';
+import { mdiDownload, mdiEye, mdiEyeOff, mdiStar } from '@mdi/js';
 
 const props = defineProps({
     recognitions: Object,
@@ -63,6 +63,9 @@ watch(search, (value) => {
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900">Mis Reconocimientos</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
+                        <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
+                            <path :d="mdiStar"/>
+                        </svg>
                         <span class="text-gray-900 font-semibold">Reconocimientos</span>
                     </div>
                 </div>

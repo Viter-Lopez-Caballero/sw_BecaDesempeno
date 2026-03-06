@@ -6,7 +6,7 @@ import InputLabel from '@/components/InputLabel.vue';
 import InputError from '@/components/InputError.vue';
 import { mdiArrowLeft, mdiFileDocumentOutline, mdiCloudUpload, mdiCheckBold, mdiEye, mdiEyeOff, mdiRefresh, mdiBullhorn, mdiFilePlus } from '@mdi/js';
 import { ref, onMounted } from 'vue';
-import { alertaCargando, cerrarAlerta, alertaError, alertaPregunta } from '@/utils/alerts.js';
+import { alertaCargando, cerrarAlerta, alertaError, alertaConfirmacionEscrita } from '@/utils/alerts.js';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
 
@@ -181,9 +181,10 @@ const submit = async () => {
         return;
     }
 
-    const confirmed = await alertaPregunta(
+    const confirmed = await alertaConfirmacionEscrita(
         '¿Deseas enviar tu solicitud?',
-        'Una vez enviada, no podrás modificar los documentos adjuntados.'
+        'Una vez enviada, no podrás modificar los documentos adjuntados.',
+        'SOLICITAR'
     );
 
     if (!confirmed) return;

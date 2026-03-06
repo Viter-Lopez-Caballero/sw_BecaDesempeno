@@ -56,56 +56,166 @@ class PdfGenerationService
         $pdf = new Fpdi();
         $pdf->SetAutoPageBreak(false);
 
-        // Add a page
-        $pdf->AddPage();
+        // Import page 1 and detect actual template size (same as Recognition flow)
         $pdf->setSourceFile($templatePath);
-        
-        // Import page 1
         $tplId = $pdf->importPage(1);
-        
-        // Use the imported page
-        $pdf->useTemplate($tplId, 0, 0, 210); // A4 Width
+        $size = $pdf->getTemplateSize($tplId);
+        $w = $size['width'];   // real page width (mm)
+        $h = $size['height'];  // real page height (mm)
+
+        // Add a page matching the exact template format
+        $pdf->AddPage($size['orientation'], [$w, $h]);
+        $pdf->useTemplate($tplId, 0, 0, $w, $h);
 
         // --- Snapshot Data Fetch or Create ---
         $snapshot = is_string($application->snapshot_data) ? json_decode($application->snapshot_data, true) : $application->snapshot_data;
         if (!$snapshot) {
+            $contentData = $template ? $template->content_data : [];
             $snapshot = [
                 'date_text' => "CIUDAD DE MÉXICO, A " . mb_strtoupper(Carbon::now()->timezone('America/Mexico_City')->isoFormat('DD [DE] MMMM [DE] YYYY'), 'UTF-8'),
-                'director_name' => 'Ramón Jiménez López',
-                'director_title' => 'Director General'
+                'director_name' => $contentData['director_name'] ?? 'Ramón Jiménez López',
+                'director_title' => $contentData['director_title'] ?? 'Director General'
             ];
             $application->snapshot_data = json_encode($snapshot);
             $application->save();
         }
 
-        // --- Overlay Text Logic ---
-        $pdf->SetFont('Arial', 'B', 12);
+        // =====================================================================
+        // Coordinates - calibrated empirically to match actual template layout.
+        // The WYSIWYG CSS percentages are relative to the rendered canvas, not
+        // the PDF mm page, so we adjust slightly here.
+        // Date:        top~22%  right:7%  (ABOVE ASUNTO block)
+        // Name:        top~28.5% left:11.5% (ABOVE baked DOCENTE DEL)
+        // Institution: top~31%  left:24%   (ON the baked DOCENTE DEL line)
+        // Body:        top~38%  left:10.5% (BELOW baked PRESENTE)
+        // Director:    top~76%  left:9%
+        // Dir. Title:  top~78%  left:9%
+        // =====================================================================
+
         $pdf->SetTextColor(0, 0, 0);
 
-        // Coordinates based on the new "Hoja_mem_2026" template
-        // Date (Top Right)
+        // Date (top-right, above ASUNTO)
         $pdf->SetFont('Arial', '', 10);
-        $pdf->SetXY(130, 45);
-        $pdf->Cell(60, 10, iconv('UTF-8', 'ISO-8859-1', $snapshot['date_text']), 0, 1, 'R');
+        $dateWidth = $w * 0.50;
+        $dateX = $w - $dateWidth - ($w * 0.065); // right:7%
+        $pdf->SetXY($dateX, $h * 0.22);
+        $pdf->Cell($dateWidth, 6, iconv('UTF-8', 'ISO-8859-1', $snapshot['date_text']), 0, 1, 'R');
 
-        // Name
-        $pdf->SetFont('Arial', 'B', 11);
-        $pdf->SetXY(25, 75); 
-        $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1', $user->name), 0, 1, 'L');
+        // Asunto removed, already baked into PDF.
 
-        // Announcement (Context)
-        $pdf->SetFont('Arial', 'I', 10);
-        $pdf->SetXY(25, 82);
-        $pdf->Cell(0, 10, iconv('UTF-8', 'ISO-8859-1', 'Participante en: ' . $application->announcement->name), 0, 1, 'L');
+        // Name (above the baked DOCENTE DEL line)
+        $pdf->SetFont('Arial', 'B', 9);
+        $pdf->SetXY($w * 0.111, $h * 0.310);
+        $userNameString = $user->name ? mb_strtoupper($user->name, 'UTF-8') : 'XXXXXXXXXX XXXXXXXXXX XXXXXXXXXX';
+        $pdf->Cell(0, 5, iconv('UTF-8', 'ISO-8859-1', $userNameString), 0, 1, 'L');
 
-        // Signature Block (Bottom)
+        // Institution (on the baked DOCENTE DEL line, after the baked text)
+        $institutionName = $user->institution ? mb_strtoupper($user->institution->name, 'UTF-8') : 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX';
+        $pdf->SetFont('Arial', 'B', 9);
+        $pdf->SetXY($w * 0.217, $h * 0.327);
+        $pdf->Cell(0, 5, iconv('UTF-8', 'ISO-8859-1', $institutionName), 0, 1, 'L');
+
+        // Dynamic Variables processing
+        $announcementName = $application->announcement->name ?? 'XXXXX';
+        $statusText = $application->status === 'approved' ? 'APROBADA' : 'XXXXX';
+        $levelText = 'VI'; // Custom level mapping currently hardcoded visually
+        $vigenciaStart = Carbon::now()->isoFormat('DD [de] MMMM [de] YYYY');
+        $vigenciaEnd = Carbon::now()->addYear()->isoFormat('DD [de] MMMM [de] YYYY');
+        $currentYear = Carbon::now()->year;
+
+        $contentData = $template ? $template->content_data : [];
+
+        // Get from snapshot or fallback to content_data if old
+        $rawBodyText = $snapshot['body_text'] ?? ($contentData['body_text'] ?? "De conformidad a su solicitud de la convocatoria de “PROGRAMA DE ESTIMULO AL DESEMPEÑO DEL PERSONAL DOCENTE [AÑO_ACTUAL] PARA INSTITUTOS FEDERALES Y CENTROS”, me complace informarle que el Comité de Evaluación del Tecnológico Nacional de México (TecNM) y de conformidad con los Lineamientos del Programa de Estímulos al Desempeño del Personal Docente para los Institutos Federales Tecnológicos y Centros, ha dictaminado que su solicitud de Estimulo al Desempeño del Personal Docente fue “[ESTADO]” con un nivel asignado de [NIVEL], la cual tendrá una vigencia de 1 (un) año, del periodo de [FECHA_INICIO] a [FECHA_FIN].\n\nEn consecuencia, el TecNM acredita el nivel alcanzado y se invita a mantener y seguir desarrollando sus habilidades en “Docencia”, “Producción Académica”, “Dirección Individualizada” y “Gestión Académica”, por lo que al termino de su vigencia será evaluado nuevamente o cuando le sea requerido por esta Dirección Académica de Investigación e Innovación con el propósito de valorar los avances en su desarrollo.\n\nSin otro particular, aprovecho la ocasión para enviarle un cordial saludo y felicitaciones.");
+        $directorName = $snapshot['director_name'] ?? ($contentData['director_name'] ?? "RAMÓN JIMÉNEZ LÓPEZ");
+        $directorTitle = $snapshot['director_title'] ?? ($contentData['director_title'] ?? "DIRECTOR GENERAL DEL TecNM");
+
+        // Execute placeholder replacements
+        $bodyText = str_replace(
+            ['[CONVOCATORIA]', '[ESTADO]', '[NIVEL]', '[FECHA_INICIO]', '[FECHA_FIN]', '[AÑO_ACTUAL]'],
+            [mb_strtoupper($announcementName, 'UTF-8'), $statusText, $levelText, $vigenciaStart, $vigenciaEnd, $currentYear],
+            $rawBodyText
+        );
+
+        // Print Body Text (Parse **bold** markdown to specific font weights)
+        $bodyLeftMargin = $w * 0.111;
+        $bodyRightMargin = $w * 0.065;
+        $bodyWidth = $w - $bodyLeftMargin - $bodyRightMargin;
+        $lineHeight = 5;
+
+        $pdf->SetLeftMargin($bodyLeftMargin);
+        $pdf->SetRightMargin($bodyRightMargin);
+        $pdf->SetFont('Arial', '', 9);
+        $pdf->SetXY($bodyLeftMargin, $h * 0.37);
+
+        $paragraphs = explode("\n", $bodyText);
+
+        foreach ($paragraphs as $p) {
+            if (trim($p) === '') {
+                $pdf->Ln(4);
+                continue;
+            }
+
+            if (strpos($p, '**') === false) {
+                // No bold: use MultiCell with justification
+                $pdf->SetFont('Arial', '', 9);
+                $safeParagraph = str_replace(["\u{201C}", "\u{201D}", "\u{2018}", "\u{2019}"], ['"', '"', "'", "'"], $p);
+                $encodedParagraph = iconv('UTF-8', 'ISO-8859-1//TRANSLIT//IGNORE', $safeParagraph);
+                $pdf->MultiCell($bodyWidth, $lineHeight, $encodedParagraph !== false ? $encodedParagraph : '', 0, 'J');
+            } else {
+                // Has bold parts: use Write() respecting set margins
+                $parts = explode('**', $p);
+                $isBold = false;
+                foreach ($parts as $part) {
+                    $pdf->SetFont('Arial', $isBold ? 'B' : '', 9);
+                    $safePart = str_replace(["\u{201C}", "\u{201D}", "\u{2018}", "\u{2019}"], ['"', '"', "'", "'"], $part);
+                    $encodedPart = iconv('UTF-8', 'ISO-8859-1//TRANSLIT//IGNORE', $safePart);
+                    $pdf->Write($lineHeight, $encodedPart !== false ? $encodedPart : '');
+                    $isBold = !$isBold;
+                }
+                $pdf->Ln($lineHeight);
+            }
+        }
+
+        // Reset margins to default
+        $pdf->SetLeftMargin(10);
+        $pdf->SetRightMargin(10);
+
+        // Director Box (in signature area before footer logos)
+        $pdf->SetFont('Arial', 'B', 9);
+        $pdf->SetXY($w * 0.111, $h * 0.73); // ~76% from top, left:9%
+        $pdf->Cell(160, 5, iconv('UTF-8', 'ISO-8859-1', mb_strtoupper($directorName, 'UTF-8')), 0, 1, 'L');
+        $pdf->SetXY($w * 0.111, $h * 0.745); // ~78% from top
+        $pdf->Cell(160, 5, iconv('UTF-8', 'ISO-8859-1', mb_strtoupper($directorTitle, 'UTF-8')), 0, 1, 'L');
+
+        // C.c.p. Line is baked into PDF.
+
+        // Signature Block handled on the second dedicated page below.
         $originalString = "||{$application->id}|{$user->id}|" . Carbon::now()->toIso8601String() . "||";
-        $this->addSignatureBlock($pdf, $originalString, 25, 240);
+
+        // Add Legal Signature QR Page (Second Page) - uses same page size as template
+        $this->addLegalSignaturePage($pdf, $originalString, "Carta de Aceptaci\u00f3n", $user->id, $application->id, $size);
 
         // Output PDF
         return response($pdf->Output('S'), 200)
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'inline; filename="Carta_Aceptacion.pdf"');
+    }
+
+    /**
+     * Adds an inline digital signature text block.
+     */
+    private function addSignatureBlock($pdf, $originalString, $x, $y)
+    {
+        try {
+            $digitalSeal = $this->signatureService->sign($originalString) ?? 'Firma Electrónica No Disponible';
+            $pdf->SetXY($x, $y);
+            $pdf->SetFont('Courier', '', 5);
+            $pdf->SetTextColor(160, 160, 160);
+            $pdf->MultiCell(165, 2.5, iconv('UTF-8', 'ISO-8859-1', "Sello Digital:\n") . $digitalSeal, 0, 'L');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Error generating inline signature: " . $e->getMessage());
+        }
     }
 
     /**
@@ -153,12 +263,15 @@ class PdfGenerationService
         // --- Snapshot Data Fetch or Create ---
         $snapshot = is_string($recognition->snapshot_data) ? json_decode($recognition->snapshot_data, true) : $recognition->snapshot_data;
         if (!$snapshot) {
+            $contentData = $template ? $template->content_data : [];
             $announcementName = $recognition->announcement ? $recognition->announcement->name : 'CONVOCATORIA GENERAL';
+            $defaultBody = $contentData['body_text'] ?? "Por su destacada participación como evaluador en la convocatoria:";
+            
             $snapshot = [
                 'date_text' => "CIUDAD DE MÉXICO, A " . mb_strtoupper(Carbon::now()->timezone('America/Mexico_City')->isoFormat('DD [DE] MMMM [DE] YYYY'), 'UTF-8'),
-                'director_name' => 'Ramón Jiménez López',
-                'director_title' => 'Director General',
-                'body_text' => "Por su destacada participación como evaluador en la convocatoria:\n" . mb_strtoupper($announcementName)
+                'director_name' => $contentData['director_name'] ?? 'Ramón Jiménez López',
+                'director_title' => $contentData['director_title'] ?? 'Director General',
+                'body_text' => $defaultBody . "\n" . mb_strtoupper($announcementName)
             ];
             $recognition->snapshot_data = json_encode($snapshot);
             $recognition->save();
@@ -258,12 +371,15 @@ class PdfGenerationService
         // --- Snapshot Data Fetch or Create ---
         $snapshot = is_string($recognition->snapshot_data) ? json_decode($recognition->snapshot_data, true) : $recognition->snapshot_data;
         if (!$snapshot) {
+            $contentData = $template ? $template->content_data : [];
             $announcementName = $recognition->announcement ? $recognition->announcement->name : 'Convocatoria General';
+            $defaultBody = $contentData['body_text'] ?? "Por su destacada e invaluable participación como postulante en la convocatoria:";
+            
             $snapshot = [
                 'date_text' => "CIUDAD DE MÉXICO, A " . mb_strtoupper(Carbon::now()->timezone('America/Mexico_City')->isoFormat('DD [DE] MMMM [DE] YYYY'), 'UTF-8'),
-                'director_name' => 'Ramón Jiménez López',
-                'director_title' => 'Director General',
-                'body_text' => "Por su destacada e invaluable participación como postulante en la convocatoria:\n" . mb_strtoupper($announcementName)
+                'director_name' => $contentData['director_name'] ?? 'Ramón Jiménez López',
+                'director_title' => $contentData['director_title'] ?? 'Director General',
+                'body_text' => $defaultBody . "\n" . mb_strtoupper($announcementName)
             ];
             $recognition->snapshot_data = json_encode($snapshot);
             $recognition->save();
@@ -323,27 +439,35 @@ class PdfGenerationService
         }
         
         try {
-            $recognition = \App\Models\Recognition::find($recognitionId);
+            // Determine which model to use based on document type
+            $isAcceptanceLetter = $documentType === 'Carta de Aceptación';
+            
+            if ($isAcceptanceLetter) {
+                $document = \App\Models\Application::find($recognitionId);
+                $folioPrefix = 'ACE';
+            } else {
+                $document = \App\Models\Recognition::find($recognitionId);
+                $folioPrefix = $documentType === 'Reconocimiento Evaluador' ? 'EVAL' : 'DOC';
+            }
             
             // Check if it already has an identifier, so we don't regenerate on re-download
-            if ($recognition && $recognition->identifier) {
-                $uniqueIdentifier = $recognition->identifier;
-                $digitalSeal = $recognition->digital_seal;
+            if ($document && $document->identifier) {
+                $uniqueIdentifier = $document->identifier;
+                $digitalSeal = $document->digital_seal;
             } else {
                 // Generate Unique Identifier
                 $year = date('Y');
                 $uniqueSuffix = substr(str_shuffle(str_repeat("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 5)), 0, 6);
-                $typeAcronym = $documentType === 'Reconocimiento Evaluador' ? 'EVAL' : 'DOC';
-                $uniqueIdentifier = "REC-{$year}-{$typeAcronym}-{$recognitionId}-{$uniqueSuffix}";
+                $uniqueIdentifier = "ACE-{$year}-{$folioPrefix}-{$recognitionId}-{$uniqueSuffix}";
                 
                 // Generate Seal using SignatureService
                 $digitalSeal = $this->signatureService->sign($originalString);
 
                 // Save to Database
-                if ($recognition) {
-                    $recognition->identifier = $uniqueIdentifier;
-                    $recognition->digital_seal = $digitalSeal;
-                    $recognition->save();
+                if ($document) {
+                    $document->identifier = $uniqueIdentifier;
+                    $document->digital_seal = $digitalSeal;
+                    $document->save();
                 }
             }
 
@@ -389,6 +513,19 @@ class PdfGenerationService
             $startX = 50;
             $startY = 15;
 
+            // Folio (Identificador Único)
+            $pdf->SetFont('Arial', 'B', 8);
+            $pdf->SetTextColor(50, 50, 50);
+            $pdf->SetXY($startX, $startY);
+            $pdf->Cell(10, 4, iconv('UTF-8', 'ISO-8859-1', 'Folio:'), 0, 0, 'L');
+
+            $pdf->SetFont('Arial', '', 8);
+            $pdf->SetTextColor(100, 100, 100);
+            $pdf->Cell(0, 4, iconv('UTF-8', 'ISO-8859-1', $uniqueIdentifier), 0, 1, 'L');
+
+            // Move Y down slightly for Sello
+            $startY = $pdf->GetY() + 2;
+
             // Sello Digital Header
             $pdf->SetFont('Arial', 'B', 8);
             $pdf->SetTextColor(50, 50, 50);
@@ -400,9 +537,6 @@ class PdfGenerationService
             $pdf->SetTextColor(160, 160, 160);
             $pdf->SetXY($startX, $startY + 5);
             $pdf->MultiCell(130, 2.5, $digitalSeal, 0, 'J');
-            
-            // Identificador Value (REMOVED FROM PDF, ONLY IN QR)
-            // Identificador Header (REMOVED)
 
             // Leyenda Legal - Adjusted positioning relative to seal
             $currentY = $pdf->GetY() + 8;

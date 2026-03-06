@@ -278,6 +278,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             Route::post('templates/{template}/toggle-active', [TemplateController::class, 'toggleActive'])->name('templates.toggle-active');
             Route::get('templates/{template}/stream', [TemplateController::class, 'stream'])->name('templates.stream');
+            Route::put('templates/{template}/content', [TemplateController::class, 'updateContent'])->name('templates.update-content');
             Route::resource('templates', TemplateController::class);
             // }); // Removed nested group closing brace
     

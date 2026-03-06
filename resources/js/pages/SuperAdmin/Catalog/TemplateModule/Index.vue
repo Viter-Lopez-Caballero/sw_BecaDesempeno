@@ -7,11 +7,29 @@ import { alertaPregunta, alertaExito, alertaError } from '@/utils/alerts.js';
 import { useCan } from '@/composables/usePermissions';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.js';
+import pdfWorkerUrl from 'pdfjs-dist/legacy/build/pdf.worker.min.js?url';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+
+const previewDate = computed(() => {
+    const today = new Date();
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    const dateStr = today.toLocaleDateString('es-MX', options);
+    return `CIUDAD DE MÉXICO, A ${dateStr.toUpperCase()}`;
+});
 
 const props = defineProps({
     templates: Object,
     filters: Object,
 });
+
+const formatMarkdown = (text) => {
+    if (!text) return '';
+    return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+};
+
+const showModal = ref(false);
 
 const activeTab = ref(props.filters?.type || 'recognition');
 const expandedRows = ref({});
@@ -88,12 +106,105 @@ const deleteTemplate = async (template) => {
     }
 };
 
+const editingTemplateId = ref(null);
+const editForm = useForm({
+    director_name: '',
+    director_title: '',
+    body_text: ''
+});
+
+const toggleEdit = (template) => {
+    if (editingTemplateId.value === template.id) {
+        editingTemplateId.value = null;
+        expandedRows.value[template.id] = false;
+    } else {
+        editingTemplateId.value = template.id;
+        expandedRows.value[template.id] = true;
+        // Cargar data existente
+        const content = template.content_data || {};
+        editForm.director_name = content.director_name || 'RAMÓN JIMÉNEZ LÓPEZ';
+        editForm.director_title = content.director_title || 'DIRECTOR GENERAL';
+        
+        if (template.type === 'recognition') {
+            editForm.body_text = content.body_text || 'Por su destacada participación como miembro de la Comisión de Evaluación\nLocal y Nacional al Programa de Estímulo al Desempeño del Personal\nDocente para los Institutos Federales y Centros';
+        } else {
+            editForm.body_text = content.body_text || 'Con fundamento en las atribuciones que me confiere el numeral 6...\nSe les informa que su solicitud fue dictaminada con un resultado...';
+        }
+
+        // Cargar el PDF real a nuestro canvas virtual
+        renderPdf(template);
+    }
+};
+
+const pdfScale = ref(1.1); // Escala lógica UI
+const canvasRefs = ref({});
+const renderPdf = async (template) => {
+    try {
+        const url = route('catalog.templates.stream', template.id);
+        const loadingTask = pdfjsLib.getDocument(url);
+        const pdf = await loadingTask.promise;
+        
+        // Obtener la primer página
+        const page = await pdf.getPage(1);
+        
+        const scale = pdfScale.value;
+        const viewport = page.getViewport({ scale: scale });
+
+        // Encontrar el canvas de esta fila (Vue re-render delay trick)
+        setTimeout(() => {
+            const canvas = canvasRefs.value[template.id];
+            if (!canvas) return;
+
+            const context = canvas.getContext('2d');
+            
+            // Resolución HD para evitar canvas borroso:
+            const outputScale = window.devicePixelRatio || 2;
+            
+            canvas.width = Math.floor(viewport.width * outputScale);
+            canvas.height = Math.floor(viewport.height * outputScale);
+            canvas.style.width = Math.floor(viewport.width) + "px";
+            canvas.style.height = Math.floor(viewport.height) + "px";
+
+            const transform = outputScale !== 1 
+              ? [outputScale, 0, 0, outputScale, 0, 0] 
+              : null;
+
+            const renderContext = {
+                canvasContext: context,
+                transform: transform,
+                viewport: viewport
+            };
+            page.render(renderContext);
+        }, 100);
+    } catch (error) {
+        console.error('Error rendering PDF:', error);
+    }
+};
+
+const saveTemplateContent = (templateId) => {
+    editForm.put(route('catalog.templates.update-content', templateId), {
+        preserveScroll: true,
+        onSuccess: () => {
+            alertaExito('¡Guardado!', 'Textos oficiales actualizados correctamente.');
+            togglePreview(templateId); // Cerrar visualización automáticamente
+        }
+    });
+};
+
 const togglePreview = (id) => {
     if (expandedRows.value[id]) {
         expandedRows.value[id] = false;
+        editingTemplateId.value = null;
     } else {
         expandedRows.value[id] = true;
+        editingTemplateId.value = null;
     }
+};
+
+const switchTab = (tab) => {
+    activeTab.value = tab;
+    expandedRows.value = {};
+    editingTemplateId.value = null;
 };
 </script>
 
@@ -140,7 +251,7 @@ const togglePreview = (id) => {
                 <div class="flex border-b border-gray-200">
                     <button
                         type="button"
-                        @click="activeTab = 'recognition'"
+                        @click="switchTab('recognition')"
                         class="flex-1 flex items-center justify-center gap-2 px-6 py-4 text-sm font-semibold transition cursor-pointer"
                         :class="activeTab === 'recognition' ? 'text-[#1B396A] border-b-2 border-[#1B396A] bg-blue-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
                     >
@@ -151,8 +262,8 @@ const togglePreview = (id) => {
                     </button>
                     <button
                         type="button"
-                        @click="activeTab = 'acceptance'"
-                        class="flex-1 flex items-center justify-center gap-2 px-6 py-4 text-sm font-semibold transition cursor-pointer"
+                        @click="switchTab('acceptance')"
+                        class="flex-1 flex items-center justify-center gap-2 px-6 py-4 text-sm font-semibold transition cursor-pointer border-l border-gray-200"
                         :class="activeTab === 'acceptance' ? 'text-[#1B396A] border-b-2 border-[#1B396A] bg-blue-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
                     >
                         <svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor">
@@ -258,18 +369,22 @@ const togglePreview = (id) => {
                                     </td>
                                     <td class="px-6 py-4 text-center">
                                         <div class="flex justify-center gap-2">
+                                            <!-- Botón Visualizar y Editar Unificado -->
                                             <button 
-                                                @click="togglePreview(template.id)"
+                                                @click="useCan('templates.edit') ? toggleEdit(template) : togglePreview(template.id)"
                                                 class="inline-flex items-center justify-center gap-2 px-4 py-2.5 border rounded-lg font-bold transition cursor-pointer text-sm whitespace-nowrap"
                                                 :class="expandedRows[template.id] ? 'bg-[#1B396A] text-white border-[#1B396A]' : 'text-[#1B396A] border-[#1B396A] hover:bg-[#1B396A] hover:text-white'"
-                                                title="Visualizar plantilla"
+                                                title="Configurar y Ver Plantilla"
                                             >
-                                                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
-                                                    <path v-if="!expandedRows[template.id]" d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z"/>
-                                                    <path v-else d="m644-428-58-58q9-47-27-88t-93-32l-58-58q17-8 34.5-12t37.5-4q75 0 127.5 52.5T660-500q0 20-4 37.5T644-428Zm128 126-58-56q38-29 67.5-63.5T832-500q-50-101-143.5-160.5T480-720q-29 0-57 4t-55 12l-62-62q41-17 84-25.5t90-8.5q151 0 269 83.5T920-500q-23 59-60.5 109.5T772-302Zm20 246L624-222q-35 11-70.5 16.5T480-200q-151 0-269-83.5T40-500q21-53 53-98.5t73-81.5L56-792l56-56 736 736-56 56ZM222-624q-29 26-53 57t-41 67q50 101 143.5 160.5T480-280q20 0 39-2.5t39-5.5l-36-38q-11 3-21 4.5t-21 1.5q-75 0-127.5-52.5T300-500q0-11 1.5-21t4.5-21l-84-82Zm319 93Zm-151 75Z"/>
+                                                <svg v-if="!(expandedRows[template.id])" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                                    <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z"/>
                                                 </svg>
-                                                {{ expandedRows[template.id] ? 'Ocultar' : 'Visualizar' }}
+                                                <svg v-else xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                                    <path d="m644-428-58-58q9-47-27-88t-93-32l-58-58q17-8 34.5-12t37.5-4q75 0 127.5 52.5T660-500q0 20-4 37.5T644-428Zm128 126-58-56q38-29 67.5-63.5T832-500q-50-101-143.5-160.5T480-720q-29 0-57 4t-55 12l-62-62q41-17 84-25.5t90-8.5q151 0 269 83.5T920-500q-23 59-60.5 109.5T772-302Zm20 246L624-222q-35 11-70.5 16.5T480-200q-151 0-269-83.5T40-500q21-53 53-98.5t73-81.5L56-792l56-56 736 736-56 56ZM222-624q-29 26-53 57t-41 67q50 101 143.5 160.5T480-280q20 0 39-2.5t39-5.5l-36-38q-11 3-21 4.5t-21 1.5q-75 0-127.5-52.5T300-500q0-11 1.5-21t4.5-21l-84-82Zm319 93Zm-151 75Z"/>
+                                                </svg>
+                                                {{ expandedRows[template.id] ? 'Ocultar' : 'Visualizar y Editar' }}
                                             </button>
+
                                             <button 
                                                 v-if="useCan('templates.destroy')"
                                                 @click="deleteTemplate(template)"
@@ -286,31 +401,219 @@ const togglePreview = (id) => {
                                 
                                 <!-- Inline Preview Row -->
                                 <tr v-if="expandedRows[template.id]">
-                                    <td colspan="5" class="px-6 py-6 bg-gray-50 border-b border-gray-200">
+                                    <td colspan="5" class="px-6 py-6 border-b border-gray-200" :class="editingTemplateId === template.id ? 'bg-white' : 'bg-gray-50'">
                                         <div class="flex flex-col gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
                                             <div class="flex justify-between items-center">
-                                                <h3 class="font-bold text-gray-800 text-lg">Vista Previa: {{ template.name }}</h3>
+                                                <h3 class="font-bold text-[#1B396A] text-lg">
+                                                    {{ editingTemplateId === template.id ? 'Configurar Textos Oficiales de: ' : 'Vista Previa de Planta: ' }} "{{ template.name }}"
+                                                </h3>
                                                 <button @click="togglePreview(template.id)" class="text-gray-400 hover:text-gray-600 p-1.5 hover:bg-gray-100 rounded-lg transition cursor-pointer" title="Cerrar vista previa">
                                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                                     </svg>
                                                 </button>
                                             </div>
-                                            <div class="w-full h-[600px] border border-gray-300 rounded-xl overflow-hidden bg-white shadow-inner relative">
-                                                <div class="absolute inset-0 flex items-center justify-center text-gray-400 z-0 text-center">
-                                                    <div class="text-center">
-                                                        <svg class="w-12 h-12 mx-auto animate-pulse mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                            
+                                            
+                                            <div class="flex flex-col gap-6">
+                                                
+                                                <!-- Action Bar -->
+                                                <div v-if="editingTemplateId === template.id" class="flex justify-between items-center bg-blue-50 border border-blue-200 p-4 rounded-xl shadow-sm">
+                                                    <div class="flex items-center gap-3">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1B396A">
+                                                            <path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/>
                                                         </svg>
-                                                        <span>Cargando vista previa...</span>
+                                                            <div class="flex items-center gap-2 mb-4 mt-6">
+                                                                <h4 class="font-bold text-[#1B396A]">Modo Edición Visual</h4>
+                                                                <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded border border-blue-200">Haz clic sobre los recuadros para editar.</span>
+                                                            </div>
                                                     </div>
+                                                    <button 
+                                                        @click="saveTemplateContent(template.id)" 
+                                                        :disabled="editForm.processing"
+                                                        class="flex justify-center py-2.5 px-6 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-[#1B396A] hover:bg-[#0f2347] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B396A] disabled:opacity-50 transition items-center gap-2 cursor-pointer h-fit"
+                                                    >
+                                                        <svg v-if="editForm.processing" class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                        <svg v-else xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                                            <path d="M840-680v480q0 33-23.5 56.5T760-120H200q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h480l160 160Zm-80 34L646-760H200v560h560v-446ZM480-240q50 0 85-35t35-85q0-50-35-85t-85-35q-50 0-85 35t-35 85q0 50 35 85t85 35ZM240-560h360v-160H240v160Zm-40-86v446-560 114Z"/>
+                                                        </svg>
+                                                        Guardar Cambios
+                                                    </button>
                                                 </div>
-                                                <iframe 
-                                                    :src="route('catalog.templates.stream', template.id)" 
-                                                    class="w-full h-full relative z-10" 
-                                                    frameborder="0"
-                                                ></iframe>
+
+                                                <!-- PDF Viewer Envelope -->
+                                                <div class="w-full flex justify-center bg-gray-100 rounded-xl p-8 border border-gray-200">
+                                                    
+                                                    <!-- Canvas Container with Absolute Edit Overlays -->
+                                                    <div class="relative shadow-2xl transition-all inline-block bg-white" style="line-height: 0;">
+                                                        <!-- The background PDF rendered via pdf.js -->
+                                                        <canvas :ref="el => { if (el) canvasRefs[template.id] = el }" class="block mx-auto"></canvas>
+                                                        
+                                                        <!-- Absolute Floating Inputs (WYSIWYG) -->
+                                                        <div v-if="editingTemplateId === template.id" class="absolute inset-0 z-10 w-full h-full pointer-events-none">
+                                                            
+                                                            <!-- ============================================== -->
+                                                            <!-- LOGIC FOR RECOGNITIONS (Horizontal Layout)     -->
+                                                            <!-- ============================================== -->
+                                                            <template v-if="template.type === 'recognition'">
+                                                                <!-- Evaluator / Teacher Name Mockup -->
+                                                                <div 
+                                                                    class="absolute text-[#505050] font-bold text-center font-sans tracking-wide pointer-events-none"
+                                                                    style="top: 45%; left: 10%; width: 80%; height: 3.5%; font-size: calc(1.5 * 14px);"
+                                                                >
+                                                                    NOMBRE DEL EVALUADOR O DOCENTE
+                                                                </div>
+
+                                                                <!-- Body Text (centered block, approx middle) -->
+                                                                <textarea 
+                                                                    v-model="editForm.body_text"
+                                                                    class="absolute bg-transparent text-[#505050] text-center font-sans tracking-wide leading-tight editable-overlay pointer-events-auto resize-none outline-none border-2 border-dashed border-transparent hover:border-blue-400 focus:border-blue-500 focus:bg-blue-50/50 transition-all overflow-hidden"
+                                                                    style="top: 51%; left: 10%; width: 80%; height: 18%; font-size: calc(1.1 * 12px); padding: 5px;"
+                                                                ></textarea>
+
+                                                                <!-- Director Name (centered bottom) -->
+                                                                <input 
+                                                                    v-model="editForm.director_name"
+                                                                    type="text"
+                                                                    class="absolute bg-transparent text-[#505050] font-bold text-center font-sans tracking-wide editable-overlay pointer-events-auto outline-none border-2 border-dashed border-transparent hover:border-blue-400 focus:border-blue-500 focus:bg-blue-50/50 transition-all"
+                                                                    style="top: 74.7%; left: 10%; width: 80%; height: 3.5%; font-size: calc(1.1 * 12px); padding: 0;"
+                                                                />
+
+                                                                <!-- Director Title (centered tiny below name) -->
+                                                                <input 
+                                                                    v-model="editForm.director_title"
+                                                                    type="text"
+                                                                    class="absolute bg-transparent text-[#646464] text-center font-sans tracking-wide editable-overlay pointer-events-auto outline-none border-2 border-dashed border-transparent hover:border-blue-400 focus:border-blue-500 focus:bg-blue-50/50 transition-all"
+                                                                    style="top: 77%; left: 10%; width: 80%; height: 3.5%; font-size: calc(1.1 * 12px); padding: 0;"
+                                                                />
+
+                                                                <!-- Date Mockup (Bottom Center) -->
+                                                                <div 
+                                                                    class="absolute text-[#C29B22] font-bold text-center font-sans tracking-wide pointer-events-none"
+                                                                    style="top: 82%; left: 10%; width: 80%; height: 3.5%; font-size: calc(1.1 * 10px);"
+                                                                >
+                                                                    {{ previewDate }}
+                                                                </div>
+                                                            </template>
+
+                                                            <!-- ============================================== -->
+                                                            <!-- LOGIC FOR ACCEPTANCE LETTERS (Vertical Layout) -->
+                                                            <!-- ============================================== -->
+                                                            <template v-if="template.type === 'acceptance'">
+                                                                <!-- Date (Top Right) -->
+                                                                <div 
+                                                                    class="absolute text-[#000000] text-right font-sans tracking-wide pointer-events-none"
+                                                                    style="top: 20.5%; right: 7%; width: 50%; height: 3.5%; font-size: calc(1.1 * 10px);"
+                                                                >
+                                                                    {{ previewDate }}
+                                                                </div>
+
+
+                                                                <!-- Participant Name -->
+                                                                <div 
+                                                                    class="absolute text-[#000000] font-bold text-left font-sans tracking-wide pointer-events-none"
+                                                                    style="top: 32%; left: 11.5%; width: 80%; font-size: calc(1.1 * 10px);"
+                                                                >
+                                                                    NOMBRE DEL DOCENTE
+                                                                </div>
+
+                                                                <!-- Participant Institution -->
+                                                                <div 
+                                                                    class="absolute text-[#000000] font-bold text-left font-sans tracking-wide pointer-events-none"
+                                                                    style="top: 33.5%; left: 22%; width: 50%; font-size: calc(1.1 * 9px);"
+                                                                >
+                                                                    XXXXXXXXXXXXXXX
+                                                                </div>
+
+                                                                <!-- Body Text as Textarea -->
+                                                                <textarea 
+                                                                    v-model="editForm.body_text"
+                                                                    class="absolute bg-transparent text-[#000000] text-justify font-sans editable-overlay pointer-events-auto outline-none border-2 border-dashed border-transparent hover:border-blue-400 focus:border-blue-500 focus:bg-blue-50/50 transition-all resize-none leading-relaxed"
+                                                                    style="top: 36%; left: 10.5%; width: 83%; height: 27.5%; font-size: calc(1.1 * 9px); padding: 5px; overflow-y: auto;"
+                                                                ></textarea>
+
+                                                                <!-- Director Name (Bottom) -->
+                                                                <input 
+                                                                    v-model="editForm.director_name"
+                                                                    type="text"
+                                                                    class="absolute bg-transparent text-[#000000] font-bold text-left font-sans tracking-wide editable-overlay pointer-events-auto outline-none border-2 border-dashed border-transparent hover:border-blue-400 focus:border-blue-500 focus:bg-blue-50/50 transition-all"
+                                                                    style="top: 73.1%; left: 11.5%; width: 50%; font-size: calc(1.1 * 9px); padding: 0;"
+                                                                />
+
+                                                                <!-- Director Title (Bottom) -->
+                                                                <input 
+                                                                    v-model="editForm.director_title"
+                                                                    type="text"
+                                                                    class="absolute bg-transparent text-[#000000] font-bold text-left font-sans tracking-wide editable-overlay pointer-events-auto outline-none border-2 border-dashed border-transparent hover:border-blue-400 focus:border-blue-500 focus:bg-blue-50/50 transition-all"
+                                                                    style="top: 74.6%; left: 11.5%; width: 50%; font-size: calc(1.1 * 9px); padding: 0;"
+                                                                />
+                                                            </template>
+                                                        </div>
+                                                        <!-- Leyenda Modo Solo Visualizar -->
+                                                        <div v-else class="absolute inset-0 z-10 w-full h-full pointer-events-none">
+                                                            <template v-if="template.type === 'recognition'">
+                                                                <div 
+                                                                    class="absolute text-[#505050] font-bold text-center font-sans tracking-wide pointer-events-none opacity-70"
+                                                                    style="top: 45%; left: 10%; width: 80%; height: 3.5%; font-size: calc(1.5 * 14px);"
+                                                                >
+                                                                    NOMBRE DEL EVALUADOR O DOCENTE
+                                                                </div>
+                                                                <div class="absolute text-[#505050] text-center font-sans tracking-wide leading-tight whitespace-pre-wrap flex items-center justify-center opacity-70"
+                                                                    style="top: 51%; left: 10%; width: 80%; height: 18%; font-size: calc(1.1 * 12px);">{{ template.content_data?.body_text || 'Motivo de participación (Previsualización)' }}</div>
+                                                                <div class="absolute text-[#505050] font-bold text-center font-sans tracking-wide opacity-70"
+                                                                    style="top: 75.3%; left: 10%; width: 80%; height: 3.5%; font-size: calc(1.1 * 12px); line-height: 1;">{{ template.content_data?.director_name || 'NOMBRE DIRECTOR' }}</div>
+                                                                <div class="absolute text-[#646464] text-center font-sans tracking-wide opacity-70"
+                                                                    style="top: 77.8%; left: 10%; width: 80%; height: 3.5%; font-size: calc(1.1 * 10px); line-height: 1;">{{ template.content_data?.director_title || 'CARGO DIRECTOR' }}</div>
+                                                                <div 
+                                                                    class="absolute text-[#C29B22] font-bold text-center font-sans tracking-wide pointer-events-none opacity-70"
+                                                                    style="top: 82%; left: 10%; width: 80%; height: 3.5%; font-size: calc(1.1 * 10px);"
+                                                                >
+                                                                    {{ previewDate }}
+                                                                </div>
+                                                            </template>
+                                                            <template v-else-if="template.type === 'acceptance'">
+                                                                <div 
+                                                                    class="absolute text-[#000000] text-right font-sans tracking-wide pointer-events-none"
+                                                                    style="top: 22.5%; right: 9%; width: 50%; height: 3.5%; font-size: calc(1.1 * 10px);"
+                                                                >
+                                                                    {{ previewDate }}
+                                                                </div>
+                                                                <div 
+                                                                    class="absolute text-[#000000] font-bold text-left font-sans tracking-wide pointer-events-none"
+                                                                    style="top: 31%; left: 9%; width: 80%; font-size: calc(1.1 * 10px);"
+                                                                >
+                                                                    NOMBRE DEL EVALUADOR O DOCENTE
+                                                                </div>
+                                                                <div 
+                                                                    class="absolute text-[#000000] font-bold text-left font-sans tracking-wide pointer-events-none"
+                                                                    style="top: 33.2%; left: 24%; width: 50%; font-size: calc(1.1 * 10px);"
+                                                                >
+                                                                    CENTRO NACIONAL DE INVESTIGACIÓN Y DESARROLLO...
+                                                                </div>
+                                                                <div 
+                                                                    class="absolute text-[#000000] text-justify font-sans tracking-wide leading-relaxed whitespace-pre-wrap flex"
+                                                                    style="top: 40%; left: 9%; width: 82%; height: 38%; font-size: calc(1.1 * 10px);"
+                                                                    v-html="formatMarkdown(template.content_data?.body_text || 'Cuerpo de carta de aceptación...')"
+                                                                ></div>
+                                                                <div 
+                                                                    class="absolute text-[#000000] font-bold text-left font-sans tracking-wide"
+                                                                    style="top: 83.5%; left: 9%; width: 50%; font-size: calc(1.1 * 10px); line-height: 1;"
+                                                                >{{ template.content_data?.director_name || 'XXXXXXXXXXXXXXXXX' }}</div>
+                                                                <div 
+                                                                    class="absolute text-[#000000] font-bold text-left font-sans tracking-wide"
+                                                                    style="top: 85.5%; left: 9%; width: 50%; font-size: calc(1.1 * 10px); line-height: 1;"
+                                                                >{{ template.content_data?.director_title || 'XXXXXXXXXXXXXXXXX' }}</div>
+                                                            </template>
+                                                        </div>
+
+                                                    </div>
+
+                                                </div>
                                             </div>
+                                            
                                         </div>
                                     </td>
                                 </tr>

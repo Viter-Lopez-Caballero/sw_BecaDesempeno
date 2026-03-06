@@ -75,6 +75,21 @@ class TemplateController extends Controller
         return redirect()->back()->with('success', $message);
     }
 
+    public function updateContent(Request $request, Template $template)
+    {
+        $validated = $request->validate([
+            'director_name' => 'nullable|string|max:255',
+            'director_title' => 'nullable|string|max:255',
+            'body_text' => 'nullable|string'
+        ]);
+
+        $template->update([
+            'content_data' => $validated
+        ]);
+
+        return redirect()->back()->with('success', 'Contenido de la plantilla actualizado.');
+    }
+
     public function destroy(Template $template)
     {
         $this->templateService->deleteTemplate($template);

@@ -216,3 +216,4 @@ class User extends Authenticatable implements MustVerifyEmail
             ->queue(new \App\Mail\PasswordResetMail($resetUrl, $this->name));
     }
 }
+

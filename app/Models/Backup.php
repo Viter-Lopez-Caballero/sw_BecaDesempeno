@@ -14,6 +14,7 @@ class Backup extends Model
         'file_size',
         'status',
         'type',
+        'backup_mode',
         'is_encrypted',
         'created_by',
     ];

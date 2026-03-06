@@ -30,6 +30,10 @@ Route::get('/', [HomeController::class, 'index'])->name('inicio');
 
 Route::get('/verify-recognition/{identifier}', [\App\Http\Controllers\Public\VerificationController::class, 'verify'])->name('recognition.verify');
 
+// Public Recognition Search
+Route::get('/recognitions/search', [\App\Http\Controllers\Public\RecognitionSearchController::class, 'index'])->name('recognitions.search');
+Route::get('/recognitions/download/{identifier}', [\App\Http\Controllers\Public\RecognitionSearchController::class, 'download'])->name('recognitions.public-download');
+
 Route::get('/announcement', [HomeController::class, 'showAnnouncement'])->name('announcement.show');
 
 Route::get('/documents', function () { // /documentos -> /documents
@@ -108,6 +112,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('backup/schedule', [\App\Http\Controllers\SuperAdmin\BackupController::class, 'updateSchedule'])->name('backup.update-schedule')->middleware('permission:backup.schedule');
             Route::get('backup/restore', [\App\Http\Controllers\SuperAdmin\BackupController::class, 'showRestore'])->name('backup.restore-view')->middleware('permission:backup.restore');
             Route::post('backup/restore', [\App\Http\Controllers\SuperAdmin\BackupController::class, 'restore'])->name('backup.do-restore')->middleware('permission:backup.restore');
+            Route::post('backup/restore-upload', [\App\Http\Controllers\SuperAdmin\BackupController::class, 'restoreFromUpload'])->name('backup.restore-upload')->middleware('permission:backup.restore');
             Route::get('backup/{backup}/download', [\App\Http\Controllers\SuperAdmin\BackupController::class, 'download'])->name('backup.download')->middleware('permission:backup.download');
             Route::delete('backup/{backup}', [\App\Http\Controllers\SuperAdmin\BackupController::class, 'destroy'])->name('backup.destroy')->middleware('permission:backup.delete');
         }

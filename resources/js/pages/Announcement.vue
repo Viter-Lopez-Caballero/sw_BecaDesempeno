@@ -107,8 +107,12 @@ const etapas = computed(() => {
         <Head title="Convocatoria" />
 
         <!-- Hero Section -->
-        <section class="relative bg-gradient-to-br from-[#1B396A] via-[#2B4A7E] to-[#3B5C92] py-8 px-4 sm:px-6 lg:px-8">
-            <div class="max-w-7xl mx-auto text-center">
+        <section class="relative bg-gradient-to-br from-[#1B396A] via-[#2B4A7E] to-[#3B5C92] py-8 px-4 sm:px-6 lg:px-8 overflow-hidden">
+            <!-- Decorative circles -->
+            <div class="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3"></div>
+            <div class="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4"></div>
+            <div class="absolute top-1/2 left-1/4 w-48 h-48 bg-white/[0.03] rounded-full -translate-y-1/2"></div>
+            <div class="relative max-w-7xl mx-auto text-center">
                 <h1 class="text-4xl md:text-4xl font-bold text-white mb-4">Información de Convocatoria</h1>
                 <p class="text-lg md:text-lg text-gray-100 max-w-3xl mx-auto">Detalles y requisitos para participar en
                     el proceso actual para los Institutos Tecnológicos Federales y Centros</p>

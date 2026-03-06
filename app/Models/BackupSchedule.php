@@ -12,6 +12,7 @@ class BackupSchedule extends Model
         'run_time',
         'email_notifications',
         'is_active',
+        'backup_mode',
         'last_run_at',
         'next_run_at',
     ];
@@ -33,6 +34,7 @@ class BackupSchedule extends Model
             'run_time'            => '12:00:00',
             'email_notifications' => false,
             'is_active'           => true,
+            'backup_mode'         => 'full',
         ]);
     }
 

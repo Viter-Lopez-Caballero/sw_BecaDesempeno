@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('file_size')->nullable()->comment('Bytes');
             $table->enum('status', ['completed', 'failed', 'in_progress'])->default('in_progress');
             $table->enum('type', ['manual', 'scheduled'])->default('manual');
+            $table->enum('backup_mode', ['full', 'incremental'])->default('full');
             $table->boolean('is_encrypted')->default(false);
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();

@@ -3,15 +3,16 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { mdiDatabaseOutline, mdiBell, mdiBellOff, mdiCalendarClock } from '@mdi/js';
-import { alertaCargando, alertaExito, alertaError } from '@/utils/alerts.js';
+import { alertaCargando, alertaExito, alertaError, cerrarAlerta } from '@/utils/alerts.js';
 import { useCan } from '@/composables/usePermissions';
 
 const canSchedule = useCan('backup.schedule');
 
 const props = defineProps({
-    schedule: { type: Object, required: true },
+    schedule:      { type: Object,  required: true },
+    hasFullBackup: { type: Boolean, default: false },
 });
 
 const frequencyOptions = [
@@ -23,6 +24,7 @@ const frequencyOptions = [
 const form = useForm({
     frequency:            props.schedule.frequency    ?? 'daily',
     run_time:             props.schedule.run_time     ?? '02:00',
+    backup_mode:          props.hasFullBackup ? (props.schedule.backup_mode ?? 'full') : 'full',
     email_notifications:  props.schedule.email_notifications ?? false,
     is_active:            props.schedule.is_active    ?? true,
 });
@@ -34,11 +36,50 @@ const frequencyLabel = computed(() => {
 const showScheduleInfo = ref(true);
 const showNextRunInfo  = ref(true);
 
+const showOrderBanner = ref(false);
+
+const timeHour = computed({
+    get: () => (form.run_time || '02:00').split(':')[0],
+    set: (val) => { form.run_time = `${val}:${timeMinute.value}`; }
+});
+const timeMinute = computed({
+    get: () => (form.run_time || '02:00').split(':')[1],
+    set: (val) => { form.run_time = `${timeHour.value}:${val}`; }
+});
+const minuteOptions = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, '0'));
+
+const timePickerOpen = ref(false);
+const timePickerRef  = ref(null);
+
+const selectHour = (h) => { timeHour.value = h; };
+const selectMinute = (m) => { timeMinute.value = m; timePickerOpen.value = false; };
+
+const handleOutsideClick = (e) => {
+    if (timePickerRef.value && !timePickerRef.value.contains(e.target)) {
+        timePickerOpen.value = false;
+    }
+};
+
+onMounted(() => document.addEventListener('mousedown', handleOutsideClick));
+onUnmounted(() => document.removeEventListener('mousedown', handleOutsideClick));
+
+const trySelectIncremental = () => {
+    if (!props.hasFullBackup) {
+        showOrderBanner.value = true;
+        return;
+    }
+    form.backup_mode = 'incremental';
+};
+
 const submit = () => {
     alertaCargando('Guardando...', 'Por favor espera.');
     form.post(route('superadmin.backup.update-schedule'), {
-        onSuccess: () => alertaExito('Configuración guardada', 'La programación de respaldos ha sido actualizada correctamente.'),
-        onError:   (errors) => {
+        onSuccess: () => {
+            cerrarAlerta();
+            alertaExito('Configuración guardada', 'La programación de respaldos ha sido actualizada correctamente.');
+        },
+        onError: (errors) => {
+            cerrarAlerta();
             const msg = Object.values(errors)[0] ?? 'Ocurrió un error al guardar la configuración.';
             alertaError('Error', msg);
         },
@@ -88,7 +129,7 @@ const submit = () => {
                         — Frecuencia actual: <strong>{{ schedule.frequency_label }}</strong>
                     </p>
                 </div>
-                <button type="button" @click="showScheduleInfo = false" class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
+                <button type="button" @click="showScheduleInfo = false" class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
                         <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/>
                     </svg>
@@ -124,12 +165,83 @@ const submit = () => {
                         <!-- Hora de Ejecución -->
                         <div>
                             <label class="block mb-2 text-base text-[#1B396A] font-medium">Hora de Ejecución: <span class="text-red-500">*</span></label>
-                            <input
-                                v-model="form.run_time"
-                                type="time"
-                                class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
-                                :class="{ 'border-b-red-500': form.errors.run_time }"
-                            />
+                            <div class="relative" ref="timePickerRef">
+                                <!-- Trigger -->
+                                <button
+                                    type="button"
+                                    @click="timePickerOpen = !timePickerOpen"
+                                    class="w-full flex items-center gap-3 rounded-lg bg-[#F3F4F6] border-b-2 transition-colors duration-200 h-[44px] px-3 text-left cursor-pointer"
+                                    :class="timePickerOpen ? 'border-b-[#1B396A] bg-white' : (form.errors.run_time ? 'border-b-red-500' : 'border-b-gray-300')"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0 transition-colors" :class="timePickerOpen ? 'text-[#1B396A]' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span class="flex-1 font-base text-gray-900 text-base tracking-widest">
+                                        {{ timeHour }}<span class="text-[#1B396A]">:</span>{{ timeMinute }}
+                                    </span>
+                                    <span
+                                        class="text-xs font-medium px-2 py-0.5 rounded-lg transition-colors shadow-sm"
+                                        :class="parseInt(timeHour) >= 12 ? 'text-gray-700' : 'bg-white text-gray-700'"
+                                    >
+                                        {{ parseInt(timeHour) >= 12 ? 'p.m.' : 'a.m.' }}
+                                    </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 flex-shrink-0 transition-transform duration-200" :class="timePickerOpen ? 'rotate-180 text-[#1B396A]' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+
+                                <!-- Dropdown panel -->
+                                <Transition
+                                    enter-active-class="transition-all duration-200 ease-out"
+                                    enter-from-class="opacity-0 translate-y-1"
+                                    enter-to-class="opacity-100 translate-y-0"
+                                    leave-active-class="transition-all duration-150 ease-in"
+                                    leave-from-class="opacity-100 translate-y-0"
+                                    leave-to-class="opacity-0 translate-y-1"
+                                >
+                                    <div v-if="timePickerOpen"
+                                        class="absolute z-50 top-full left-0 right-0 mt-1 bg-white rounded-xl border border-gray-200 shadow-2xl overflow-hidden"
+                                    >
+                                        <!-- Header -->
+                                        <div class="flex items-center justify-between px-5 py-3 bg-[#1B396A]">
+                                            <span class="text-xs font-bold text-white/60 uppercase tracking-widest">Horas</span>
+                                            <span class="text-2xl font-medium text-white tracking-widest">{{ timeHour }}<span class="opacity-50">:</span>{{ timeMinute }}</span>
+                                            <span class="text-xs font-bold text-white/60 uppercase tracking-widest">Minutos</span>
+                                        </div>
+                                        <!-- Two scrollable columns -->
+                                        <div class="flex h-44 divide-x divide-gray-100">
+                                            <!-- Hours -->
+                                            <div class="flex-1 overflow-y-auto">
+                                                <button
+                                                    v-for="h in 24" :key="h - 1"
+                                                    type="button"
+                                                    @click="selectHour(String(h - 1).padStart(2, '0'))"
+                                                    class="w-full py-2.5 text-center text-sm font-medium transition-colors cursor-pointer"
+                                                    :class="timeHour === String(h - 1).padStart(2, '0')
+                                                        ? 'bg-[#1B396A] text-white'
+                                                        : 'text-gray-700 hover:bg-[#1B396A]/10 hover:text-[#1B396A]'"
+                                                >
+                                                    {{ String(h - 1).padStart(2, '0') }}
+                                                </button>
+                                            </div>
+                                            <!-- Minutes -->
+                                            <div class="flex-1 overflow-y-auto">
+                                                <button
+                                                    v-for="m in minuteOptions" :key="m"
+                                                    type="button"
+                                                    @click="selectMinute(m)"
+                                                    class="w-full py-2.5 text-center text-sm font-medium transition-colors cursor-pointer"
+                                                    :class="timeMinute === m
+                                                        ? 'bg-[#1B396A] text-white'
+                                                        : 'text-gray-700 hover:bg-[#1B396A]/10 hover:text-[#1B396A]'"
+                                                >
+                                                    {{ m }}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Transition>
+                            </div>
                             <div v-if="!form.errors.run_time" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -139,6 +251,89 @@ const submit = () => {
                             <p v-if="form.errors.run_time" class="mt-1 text-sm text-red-600">{{ form.errors.run_time }}</p>
                         </div>
 
+                    </div>
+
+                    <!-- Alerta orden de respaldos -->
+                    <Transition
+                        enter-active-class="transition-all duration-300 ease-out"
+                        enter-from-class="opacity-0 -translate-y-2"
+                        enter-to-class="opacity-100 translate-y-0"
+                        leave-active-class="transition-all duration-200 ease-in"
+                        leave-from-class="opacity-100 translate-y-0"
+                        leave-to-class="opacity-0 -translate-y-2"
+                    >
+                    <div v-if="showOrderBanner" class="flex items-start gap-4 px-5 py-4 bg-white border border-gray-200 border-l-4 border-l-amber-500 rounded-lg shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#F59E0B" class="flex-shrink-0 mt-0.5">
+                            <path d="m40-120 440-760 440 760H40Zm138-80h604L480-720 178-200Zm302-40q17 0 28.5-11.5T520-280q0-17-11.5-28.5T480-320q-17 0-28.5 11.5T440-280q0 17 11.5 28.5T480-240Zm-40-120h80v-200h-80v200Zm40-100Z"/>
+                        </svg>
+                        <div class="flex-1">
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-amber-600 mb-0.5">Orden de respaldos</p>
+                            <p class="text-sm text-gray-800 font-medium">
+                                Para que los respaldos funcionen correctamente, se debe realizar primero un <strong>Respaldo Completo (Full)</strong> como base.
+                                Los respaldos <strong>Incrementales</strong> solo guardan los cambios desde ese Full previo, por lo que <span class="text-amber-600 font-semibold">no es posible restaurar un incremental sin un completo previo.</span>
+                            </p>
+                        </div>
+                        <button type="button" @click="showOrderBanner = false" class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
+                                <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    </Transition>
+                    <div>
+                        <label class="block mb-3 text-base text-[#1B396A] font-medium">Tipo de Respaldo:</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Completo -->
+                            <button
+                                type="button"
+                                @click="form.backup_mode = 'full'"
+                                :class="form.backup_mode === 'full'
+                                    ? 'border-[#1B396A] bg-[#1B396A]/5 ring-2 ring-[#1B396A]/30'
+                                    : 'border-gray-200 bg-gray-50 hover:border-gray-300'"
+                                class="flex items-start gap-4 p-4 rounded-lg border-2 text-left transition-all cursor-pointer"
+                            >
+                                <div class="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center mt-0.5"
+                                    :class="form.backup_mode === 'full' ? 'bg-[#1B396A]' : 'bg-gray-200'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                                        :fill="form.backup_mode === 'full' ? 'white' : '#9CA3AF'">
+                                        <path d="M160-160v-80h80v80h-80Zm160 0v-80h80v80h-80Zm-160-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm160 320v-80h80v80h-80Zm160 0v-80h80v80h-80Zm160 160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80ZM320-640v-80h80v80h-80Zm160 480v-80h80v80h-80Zm-160 0v-80h80v80h-80Zm160-320v-80h80v80h-80Zm160 0v-80h80v80h-80Z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-800">Completo (Full)</p>
+                                    <p class="text-xs text-gray-500 mt-0.5">Esquema completo + todos los datos, rutinas, triggers y eventos.</p>
+                                </div>
+                            </button>
+                            <!-- Incremental -->
+                            <button
+                                type="button"
+                                @click="trySelectIncremental()"
+                                :class="!hasFullBackup
+                                    ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
+                                    : form.backup_mode === 'incremental'
+                                        ? 'border-[#1B396A] bg-[#1B396A]/5 ring-2 ring-[#1B396A]/30 cursor-pointer'
+                                        : 'border-gray-200 bg-gray-50 hover:border-gray-300 cursor-pointer'"
+                                class="relative flex items-start gap-4 p-4 rounded-lg border-2 text-left transition-all"
+                            >
+                                <div v-if="!hasFullBackup" class="absolute top-2 right-2 w-5 h-5 bg-gray-200 rounded-full flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#6B7280">
+                                        <path d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80Zm-120 480v-400 400Z"/>
+                                    </svg>
+                                </div>
+                                <div class="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center mt-0.5"
+                                    :class="form.backup_mode === 'incremental' ? 'bg-[#1B396A]' : 'bg-gray-200'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                                        :fill="form.backup_mode === 'incremental' ? 'white' : '#9CA3AF'">
+                                        <path d="M480-120 200-272v-200L80-536l400-224 400 224v320h-80v-276l-120 67v200L480-120Zm0-332 274-153-274-154-274 154 274 153Zm0 241 160-89v-151L480-321 320-411v151l160 89Zm0-241Zm0 90Zm0 0Z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-800">Incremental</p>
+                                    <p class="text-xs text-gray-500 mt-0.5">Solo registros nuevos o modificados desde el último respaldo completo. Requiere un Full previo.</p>
+                                </div>
+                            </button>
+                        </div>
+                        <p v-if="form.errors.backup_mode" class="mt-1 text-sm text-red-600">{{ form.errors.backup_mode }}</p>
                     </div>
 
                     <!-- Notificaciones por Correo -->
@@ -157,7 +352,7 @@ const submit = () => {
                         <button
                             type="button"
                             @click="form.email_notifications = !form.email_notifications"
-                            class="relative inline-flex w-14 h-7 items-center rounded-full transition-colors focus:outline-none"
+                            class="relative inline-flex w-14 h-7 items-center rounded-full transition-colors focus:outline-none cursor-pointer"
                             :class="form.email_notifications ? 'bg-[#1B396A]' : 'bg-gray-300'"
                         >
                             <span
@@ -183,7 +378,7 @@ const submit = () => {
                         <button
                             type="button"
                             @click="form.is_active = !form.is_active"
-                            class="relative inline-flex w-14 h-7 items-center rounded-full transition-colors focus:outline-none"
+                            class="relative inline-flex w-14 h-7 items-center rounded-full transition-colors focus:outline-none cursor-pointer"
                             :class="form.is_active ? 'bg-green-500' : 'bg-gray-300'"
                         >
                             <span
@@ -202,11 +397,15 @@ const submit = () => {
                         <div class="flex-1">
                             <p class="text-[10px] font-bold uppercase tracking-widest text-green-600 mb-0.5">Configuración Actual</p>
                             <p class="text-sm text-gray-800 font-medium">
-                                Con la configuración actual, el sistema ejecutará respaldos de manera
-                                <strong>{{ frequencyLabel }}</strong> a las <strong>{{ form.run_time }}</strong> hrs.
+                                Con la configuración actual, el sistema ejecutará respaldos
+                                <strong>{{ form.backup_mode === 'incremental' ? 'Incrementales' : 'Completos' }}</strong>
+                                de manera <strong>{{ frequencyLabel }}</strong> a las <strong>{{ form.run_time }}</strong> hrs.
+                                <span v-if="form.backup_mode === 'incremental'" class="text-amber-600 font-semibold">
+                                    Asegúrate de tener un respaldo Completo previo como línea base.
+                                </span>
                             </p>
                         </div>
-                        <button type="button" @click="showNextRunInfo = false" class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
+                        <button type="button" @click="showNextRunInfo = false" class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
                             <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
                                 <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/>
                             </svg>

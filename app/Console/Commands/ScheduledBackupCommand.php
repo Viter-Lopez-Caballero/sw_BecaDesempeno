@@ -7,6 +7,7 @@ use App\Models\Backup;
 use App\Models\BackupSchedule;
 use App\Models\User;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -37,11 +38,14 @@ class ScheduledBackupCommand extends Command
         $this->info('Running scheduled backup...');
 
         $backupName = 'Scheduled Backup';
+        $mode = $schedule->backup_mode ?? 'full';
+
         $backupRecord = Backup::create([
             'name'        => $backupName,
             'description' => 'Respaldo automático - ' . now()->format('d/m/Y H:i'),
             'status'      => 'in_progress',
             'type'        => 'scheduled',
+            'backup_mode' => $mode,
             'created_by'  => null,
         ]);
 
@@ -54,24 +58,79 @@ class ScheduledBackupCommand extends Command
             $dbName    = $dbConfig['database'];
             $dumpBin   = $this->findMysqldumpBinary();
 
-            $dir       = 'backups';
-            $filename  = date('Y_m_d_His') . '_scheduled.sql';
+            $dir         = 'backups';
+            $modeSuffix  = $mode === 'incremental' ? '_incremental' : '_full';
+            $filename    = date('Y_m_d_His') . $modeSuffix . '_scheduled.sql';
             $storagePath = $dir . '/' . $filename;
-            $fullPath  = Storage::disk('local')->path($storagePath);
+            $fullPath    = Storage::disk('local')->path($storagePath);
 
             if (!Storage::disk('local')->exists($dir)) {
                 Storage::disk('local')->makeDirectory($dir);
             }
 
-            $command = sprintf(
-                '"%s" --host=%s --port=%s --user=%s --password=%s %s > "%s" 2>&1',
-                $dumpBin, $host, $port, $user, escapeshellarg($pass), $dbName, $fullPath
-            );
+            if ($mode === 'incremental') {
+                // ── Incremental: data-only rows changed since last full backup ──
+                $lastFull = Backup::where('status', 'completed')
+                    ->where('backup_mode', 'full')
+                    ->latest()
+                    ->first();
 
-            exec($command, $output, $returnCode);
+                if (!$lastFull) {
+                    throw new \RuntimeException(
+                        'No existe un respaldo completo previo. El incremental programado requiere un Full como línea base.'
+                    );
+                }
 
-            if ($returnCode !== 0) {
-                throw new \RuntimeException(implode(' | ', $output));
+                $since  = $lastFull->created_at->format('Y-m-d H:i:s');
+                $header = "-- RESPALDO INCREMENTAL PROGRAMADO\n-- Desde: {$since}\n-- Generado: " . date('Y-m-d H:i:s') . "\nSET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS=0;\n\n";
+                file_put_contents($fullPath, $header);
+
+                $tables = array_column(
+                    array_map(
+                        fn($t) => (array)$t,
+                        DB::select("SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_TYPE = 'BASE TABLE' ORDER BY TABLE_NAME", [$dbName])
+                    ),
+                    'TABLE_NAME'
+                );
+
+                foreach ($tables as $table) {
+                    $timeCols = array_column(
+                        array_map(
+                            fn($c) => (array)$c,
+                            DB::select("SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME IN ('created_at','updated_at')", [$dbName, $table])
+                        ),
+                        'COLUMN_NAME'
+                    );
+
+                    $whereArg = !empty($timeCols)
+                        ? '--where="' . implode(' OR ', array_map(fn($c) => "`{$c}` >= '{$since}'", $timeCols)) . '"'
+                        : '';
+
+                    $tblCmd = sprintf(
+                        '"%s" --host=%s --port=%s --user=%s --password=%s --single-transaction --no-create-info --insert-ignore --skip-add-drop-table --skip-triggers %s %s %s >> "%s" 2>&1',
+                        $dumpBin, $host, $port, $user, escapeshellarg($pass), $whereArg, $dbName, $table, $fullPath
+                    );
+                    exec($tblCmd, $tblOut, $tblCode);
+                    if ($tblCode !== 0) {
+                        throw new \RuntimeException("Incremental falló en `{$table}`: " . implode(' | ', $tblOut));
+                    }
+                }
+
+                file_put_contents($fullPath, "\nSET FOREIGN_KEY_CHECKS=1;\n", FILE_APPEND);
+
+                if (!file_exists($fullPath) || filesize($fullPath) < 100) {
+                    throw new \RuntimeException('El archivo de respaldo incremental está vacío o es inválido.');
+                }
+            } else {
+                // ── Full backup ──────────────────────────────────────────────
+                $command = sprintf(
+                    '"%s" --host=%s --port=%s --user=%s --password=%s --single-transaction --routines --triggers --events --add-drop-table %s > "%s" 2>&1',
+                    $dumpBin, $host, $port, $user, escapeshellarg($pass), $dbName, $fullPath
+                );
+                exec($command, $output, $returnCode);
+                if ($returnCode !== 0) {
+                    throw new \RuntimeException(implode(' | ', $output));
+                }
             }
 
             $backupRecord->update([

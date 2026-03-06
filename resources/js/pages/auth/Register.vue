@@ -323,16 +323,19 @@ const buscarCurp = async () => {
                                     v-model="form.email"
                                     type="email"
                                     autocomplete="email"
+                                    :readonly="usuarioExistente"
+                                    :disabled="usuarioExistente"
                                     class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
-                                    :class="{ 'border-b-red-500': form.errors.email }"
+                                    :class="{ 'border-b-red-500': form.errors.email, 'bg-gray-100 cursor-not-allowed': usuarioExistente }"
                                     placeholder="admin@example.com"
                                     @input="clearError('email')"
                                 />
-                                <div v-if="!form.errors.email" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                <div v-if="!form.errors.email" class="flex items-center gap-1 mt-1 text-xs" :class="usuarioExistente ? '' : 'text-gray-500'" :style="usuarioExistente ? 'color: #1B396A' : ''">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    <span>Por favor, introduce tu correo electrónico</span>
+                                    <span v-if="usuarioExistente">Correo cargado desde tu cuenta existente</span>
+                                    <span v-else>Por favor, introduce tu correo electrónico</span>
                                 </div>
                                 <div v-if="form.errors.email" class="mt-1 text-sm text-red-600">
                                     {{ form.errors.email }}

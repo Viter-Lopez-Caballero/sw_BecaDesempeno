@@ -4,6 +4,7 @@ namespace App\Http\Resources\Catalog;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class AnnouncementResource extends JsonResource
 {
@@ -21,9 +22,9 @@ class AnnouncementResource extends JsonResource
             'status' => $this->status,
             'current_stage' => $this->current_stage,
             'image_path' => $this->image_path,
-            'image_url' => $this->image_path ? asset('storage/' . $this->image_path) : null,
+            'image_url' => $this->image_path && Storage::disk('public')->exists($this->image_path) ? asset('storage/' . $this->image_path) : null,
             'file_path' => $this->file_path,
-            'file_url' => $this->file_path ? asset('storage/' . $this->file_path) : null,
+            'file_url' => $this->file_path && Storage::disk('public')->exists($this->file_path) ? asset('storage/' . $this->file_path) : null,
             'file_name' => $this->file_name,
             'file_type' => $this->file_type,
             'file_size' => $this->file_size,

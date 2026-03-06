@@ -3,25 +3,44 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
 import { ref } from 'vue';
 import { mdiDatabaseOutline, mdiLock, mdiLockOff } from '@mdi/js';
-import { alertaCargando, alertaExito, alertaError } from '@/utils/alerts.js';
+import { alertaCargando, alertaExito, alertaError, cerrarAlerta } from '@/utils/alerts.js';
 import { useCan } from '@/composables/usePermissions';
 
 const canCreate = useCan('backup.create');
+
+const props = defineProps({
+    hasFullBackup: { type: Boolean, default: false },
+});
+
+const showOrderBanner = ref(false);
+
+const trySelectIncremental = () => {
+    if (!props.hasFullBackup) {
+        showOrderBanner.value = true;
+        return;
+    }
+    form.backup_mode = 'incremental';
+};
 
 const descLength = ref(0);
 const showInfo   = ref(true);
 
 const form = useForm({
-    name:         '',
-    description:  '',
-    encrypted: false,
+    name:        '',
+    description: '',
+    backup_mode: 'full',
+    encrypted:   false,
 });
 
 const submit = () => {
+    alertaCargando('Procesando...', 'Ejecutando respaldo de la base de datos, esto puede tomar unos segundos.');
     form.post(route('superadmin.backup.store'), {
-        onStart:   () => alertaCargando('Procesando...', 'Ejecutando respaldo de la base de datos, esto puede tomar unos segundos.'),
-        onSuccess: () => alertaExito('Respaldo completado', 'El respaldo se ha generado exitosamente.'),
-        onError:   (errors) => {
+        onSuccess: () => {
+            cerrarAlerta();
+            alertaExito('Respaldo completado', 'El respaldo se ha generado exitosamente.');
+        },
+        onError: (errors) => {
+            cerrarAlerta();
             const msg = Object.values(errors)[0] ?? 'Ocurrió un error al ejecutar el respaldo.';
             alertaError('Error', msg);
         },
@@ -105,6 +124,89 @@ const submit = () => {
                         </div>
                     </div>
 
+                    <!-- Alerta orden de respaldos -->
+                    <Transition
+                        enter-active-class="transition-all duration-300 ease-out"
+                        enter-from-class="opacity-0 -translate-y-2"
+                        enter-to-class="opacity-100 translate-y-0"
+                        leave-active-class="transition-all duration-200 ease-in"
+                        leave-from-class="opacity-100 translate-y-0"
+                        leave-to-class="opacity-0 -translate-y-2"
+                    >
+                    <div v-if="showOrderBanner" class="flex items-start gap-4 px-5 py-4 bg-white border border-gray-200 border-l-4 border-l-amber-500 rounded-lg shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#F59E0B" class="flex-shrink-0 mt-0.5">
+                            <path d="m40-120 440-760 440 760H40Zm138-80h604L480-720 178-200Zm302-40q17 0 28.5-11.5T520-280q0-17-11.5-28.5T480-320q-17 0-28.5 11.5T440-280q0 17 11.5 28.5T480-240Zm-40-120h80v-200h-80v200Zm40-100Z"/>
+                        </svg>
+                        <div class="flex-1">
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-amber-600 mb-0.5">Orden de respaldos</p>
+                            <p class="text-sm text-gray-800 font-medium">
+                                Para que los respaldos funcionen correctamente, se debe realizar primero un <strong>Respaldo Completo (Full)</strong> como base.
+                                Los respaldos <strong>Incrementales</strong> solo guardan los cambios desde ese Full previo, por lo que <span class="text-amber-600 font-semibold">no es posible restaurar un incremental sin un completo previo.</span>
+                            </p>
+                        </div>
+                        <button type="button" @click="showOrderBanner = false" class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
+                                <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    </Transition>
+                    <div>
+                        <label class="block mb-3 text-base text-[#1B396A] font-medium">Tipo de Respaldo:</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Completo -->
+                            <button
+                                type="button"
+                                @click="form.backup_mode = 'full'"
+                                :class="form.backup_mode === 'full'
+                                    ? 'border-[#1B396A] bg-[#1B396A]/5 ring-2 ring-[#1B396A]/30'
+                                    : 'border-gray-200 bg-gray-50 hover:border-gray-300'"
+                                class="flex items-start gap-4 p-4 rounded-lg border-2 text-left transition-all cursor-pointer"
+                            >
+                                <div class="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center mt-0.5"
+                                    :class="form.backup_mode === 'full' ? 'bg-[#1B396A]' : 'bg-gray-200'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                                        :fill="form.backup_mode === 'full' ? 'white' : '#9CA3AF'">
+                                        <path d="M160-160v-80h80v80h-80Zm160 0v-80h80v80h-80Zm-160-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm160 320v-80h80v80h-80Zm160 0v-80h80v80h-80Zm160 160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80ZM320-640v-80h80v80h-80Zm160 480v-80h80v80h-80Zm-160 0v-80h80v80h-80Zm160-320v-80h80v80h-80Zm160 0v-80h80v80h-80Z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-800">Completo (Full)</p>
+                                    <p class="text-xs text-gray-500 mt-0.5">Esquema completo + todos los datos, rutinas, triggers y eventos. Recomendado para respaldo general.</p>
+                                </div>
+                            </button>
+                            <!-- Incremental -->
+                            <button
+                                type="button"
+                                @click="trySelectIncremental()"
+                                :class="!hasFullBackup
+                                    ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
+                                    : form.backup_mode === 'incremental'
+                                        ? 'border-[#1B396A] bg-[#1B396A]/5 ring-2 ring-[#1B396A]/30 cursor-pointer'
+                                        : 'border-gray-200 bg-gray-50 hover:border-gray-300 cursor-pointer'"
+                                class="relative flex items-start gap-4 p-4 rounded-lg border-2 text-left transition-all"
+                            >
+                                <div v-if="!hasFullBackup" class="absolute top-2 right-2 w-5 h-5 bg-gray-200 rounded-full flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#6B7280">
+                                        <path d="M240-80q-33 0-56.5-23.5T160-160v-400q0-33 23.5-56.5T240-640h40v-80q0-83 58.5-141.5T480-920q83 0 141.5 58.5T680-720v80h40q33 0 56.5 23.5T800-560v400q0 33-23.5 56.5T720-80H240Zm0-80h480v-400H240v400Zm240-120q33 0 56.5-23.5T560-360q0-33-23.5-56.5T480-440q-33 0-56.5 23.5T400-360q0 33 23.5 56.5T480-280ZM360-640h240v-80q0-50-35-85t-85-35q-50 0-85 35t-35 85v80Zm-120 480v-400 400Z"/>
+                                    </svg>
+                                </div>
+                                <div class="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center mt-0.5"
+                                    :class="form.backup_mode === 'incremental' ? 'bg-[#1B396A]' : 'bg-gray-200'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
+                                        :fill="form.backup_mode === 'incremental' ? 'white' : '#9CA3AF'">
+                                        <path d="M480-120 200-272v-200L80-536l400-224 400 224v320h-80v-276l-120 67v200L480-120Zm0-332 274-153-274-154-274 154 274 153Zm0 241 160-89v-151L480-321 320-411v151l160 89Zm0-241Zm0 90Zm0 0Z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-800">Incremental</p>
+                                    <p class="text-xs text-gray-500 mt-0.5">Solo los registros nuevos o modificados desde el último respaldo completo. Requiere un Full previo.</p>
+                                </div>
+                            </button>
+                        </div>
+                        <p v-if="form.errors.backup_mode" class="mt-1 text-sm text-red-600">{{ form.errors.backup_mode }}</p>
+                    </div>
+
                     <!-- Cifrado del Archivo -->
                     <div class="flex items-center justify-between py-4 px-5 bg-gray-50 rounded-lg border border-gray-200">
                         <div class="flex items-center gap-3">
@@ -121,7 +223,7 @@ const submit = () => {
                         <button
                             type="button"
                             @click="form.encrypted = !form.encrypted"
-                            class="relative inline-flex w-14 h-7 items-center rounded-full transition-colors focus:outline-none"
+                            class="relative inline-flex w-14 h-7 items-center rounded-full transition-colors focus:outline-none cursor-pointer"
                             :class="form.encrypted ? 'bg-[#1B396A]' : 'bg-gray-300'"
                         >
                             <span
@@ -138,9 +240,10 @@ const submit = () => {
                         </svg>
                         <div class="flex-1">
                             <p class="text-[10px] font-bold uppercase tracking-widest text-[#1B396A] mb-0.5">Instrucciones</p>
-                            <p class="text-sm text-gray-800 font-medium">El respaldo incluye la <strong>base de datos completa</strong>. El proceso puede tardar unos momentos dependiendo del tamaño de los datos.</p>
+                            <p v-if="form.backup_mode === 'full'" class="text-sm text-gray-800 font-medium">El respaldo incluye la <strong>base de datos completa</strong>: esquema, datos, rutinas almacenadas, triggers y eventos. El proceso puede tardar unos momentos dependiendo del tamaño de los datos.</p>
+                            <p v-else class="text-sm text-gray-800 font-medium">Solo se respaldarán los <strong>registros nuevos o modificados</strong> desde el último respaldo completo. <span class="text-amber-600 font-semibold">Requiere que exista un respaldo Completo previo</span> como línea base.</p>
                         </div>
-                        <button type="button" @click="showInfo = false" class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
+                        <button type="button" @click="showInfo = false" class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
                             <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
                                 <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/>
                             </svg>

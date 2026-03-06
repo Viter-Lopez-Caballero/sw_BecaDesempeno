@@ -6,8 +6,8 @@ import { ref, watch } from 'vue';
 import { debounce } from 'lodash';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
-import { mdiDatabase, mdiDatabaseArrowDown, mdiDatabaseSync, mdiDatabaseRefresh, mdiDownload, mdiDelete, mdiCheck, mdiAlertCircle, mdiClock, mdiDatabaseOutline } from '@mdi/js';
-import { alertaPregunta, alertaExito, alertaError } from '@/utils/alerts.js';
+import { mdiDatabase, mdiDatabaseArrowDown, mdiDatabaseSync, mdiDatabaseRefresh, mdiCheck, mdiAlertCircle, mdiClock, mdiDatabaseOutline } from '@mdi/js';
+import { alertaExito, alertaError, alertaPregunta, cerrarAlerta } from '@/utils/alerts.js';
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { useCan } from '@/composables/usePermissions';
@@ -19,11 +19,10 @@ const canDownload = useCan('backup.download');
 const canDelete   = useCan('backup.delete');
 
 const props = defineProps({
-    backups:    { type: Object, required: true },
-    filters:    { type: Object, required: true },
-    stats:      { type: Object, required: true },
-    schedule:   { type: Object, required: true },
-    backupList: { type: Array,  required: true },
+    backups:  { type: Object, required: true },
+    filters:  { type: Object, required: true },
+    stats:    { type: Object, required: true },
+    schedule: { type: Object, required: true },
 });
 
 const search = ref(props.filters.search || '');
@@ -54,23 +53,35 @@ watch(search, (v) => onSearch(v));
 
 // Flash messages from Laravel
 const page = usePage();
-const flashSuccess = computed(() => page.props.flash?.success || null);
-const flashError   = computed(() => page.props.flash?.error   || null);
+const flashSuccess        = computed(() => page.props.flash?.success            || null);
+const flashError          = computed(() => page.props.flash?.error              || null);
+const flashDownloadBackup = computed(() => page.props.flash?.download_backup_id || null);
 
 watch(flashSuccess, (msg) => { if (msg) alertaExito('Éxito', msg); });
 watch(flashError,   (msg) => { if (msg) alertaError('Error', msg); });
-
-const deleteBackup = async (id, name) => {
-    const confirmed = await alertaPregunta('¿Eliminar respaldo?', `El respaldo "${name}" será eliminado permanentemente junto con su archivo.`);
-    if (!confirmed) return;
-    router.delete(route('superadmin.backup.destroy', id), {
-        preserveScroll: true,
-        onSuccess: () => alertaExito('Eliminado', 'El respaldo fue eliminado correctamente.'),
-        onError:   () => alertaError('Error', 'No se pudo eliminar el respaldo.'),
-    });
-};
+watch(flashDownloadBackup, (id) => {
+    if (id) window.location.href = route('superadmin.backup.download', id);
+}, { immediate: true });
 
 const frequencyLabel = { daily: 'Diario', weekly: 'Semanal', monthly: 'Mensual' };
+
+const downloadBackup = (id) => {
+    window.location.href = route('superadmin.backup.download', id);
+};
+
+const deleteBackup = async (id, name) => {
+    const confirmed = await alertaPregunta(
+        '¿Eliminar respaldo?',
+        `Se eliminará permanentemente el respaldo "${name}"`
+    );
+    if (confirmed) {
+        router.delete(route('superadmin.backup.destroy', id), {
+            preserveScroll: true,
+            onSuccess: () => alertaExito('¡Eliminado!', 'El respaldo ha sido eliminado'),
+            onError:   () => alertaError('Error', 'No se pudo eliminar el respaldo'),
+        });
+    }
+};
 </script>
 
 <template>
@@ -133,39 +144,39 @@ const frequencyLabel = { daily: 'Diario', weekly: 'Semanal', monthly: 'Mensual' 
             <!-- Stat cards -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <!-- Último Respaldo -->
-                <div class="bg-white border-l-4 border-green-500 rounded-lg shadow-sm p-5 flex items-center justify-between hover:shadow-lg transition-shadow">
+                <div class="bg-white border-l-4 border-[#1B396A] rounded-lg shadow-sm p-5 flex items-center justify-between hover:shadow-lg transition-shadow">
                     <div>
                         <p class="text-xs text-gray-500 uppercase tracking-wider font-medium">Último Respaldo</p>
                         <p class="text-lg font-bold text-gray-800 mt-1">{{ stats.last_backup }}</p>
                     </div>
                     <div class="p-2">
-                        <svg viewBox="0 0 24 24" class="w-8 h-8" style="fill:#10B981">
+                        <svg viewBox="0 0 24 24" class="w-8 h-8" style="fill:#1B396A">
                             <path :d="mdiDatabaseArrowDown"/>
                         </svg>
                     </div>
                 </div>
 
                 <!-- Próximo Programado -->
-                <div class="bg-white border-l-4 border-blue-500 rounded-lg shadow-sm p-5 flex items-center justify-between hover:shadow-lg transition-shadow">
+                <div class="bg-white border-l-4 border-[#10A558] rounded-lg shadow-sm p-5 flex items-center justify-between hover:shadow-lg transition-shadow">
                     <div>
                         <p class="text-xs text-gray-500 uppercase tracking-wider font-medium">Próximo Programado</p>
                         <p class="text-lg font-bold text-gray-800 mt-1">{{ stats.next_backup }}</p>
                     </div>
                     <div class="p-2">
-                        <svg viewBox="0 0 24 24" class="w-8 h-8" style="fill:#1B396A">
+                        <svg viewBox="0 0 24 24" class="w-8 h-8" style="fill:#10A558">
                             <path :d="mdiClock"/>
                         </svg>
                     </div>
                 </div>
 
                 <!-- Respaldos Totales -->
-                <div class="bg-white border-l-4 border-[#1B396A] rounded-lg shadow-sm p-5 flex items-center justify-between hover:shadow-lg transition-shadow">
+                <div class="bg-white border-l-4 border-[#2B6CB0] rounded-lg shadow-sm p-5 flex items-center justify-between hover:shadow-lg transition-shadow">
                     <div>
                         <p class="text-xs text-gray-500 uppercase tracking-wider font-medium">Respaldos Totales</p>
                         <p class="text-lg font-bold text-gray-800 mt-1">{{ stats.total }}</p>
                     </div>
                     <div class="p-2">
-                        <svg viewBox="0 0 24 24" class="w-8 h-8" style="fill:#1B396A">
+                        <svg viewBox="0 0 24 24" class="w-8 h-8" style="fill:#2B6CB0">
                             <path :d="mdiDatabase"/>
                         </svg>
                     </div>
@@ -227,13 +238,14 @@ const frequencyLabel = { daily: 'Diario', weekly: 'Semanal', monthly: 'Mensual' 
                                 <th class="px-6 py-4 tracking-wider">Nombre</th>
                                 <th class="px-6 py-4 tracking-wider">Fecha</th>
                                 <th class="px-6 py-4 tracking-wider">Tamaño</th>
+                                <th class="px-6 py-4 text-center tracking-wider">Modo</th>
                                 <th class="px-6 py-4 text-center tracking-wider">Resultado</th>
                                 <th class="px-6 py-4 text-center tracking-wider">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             <tr v-if="!backups.data || backups.data.length === 0">
-                                <td colspan="7" class="px-6 py-12 text-center text-gray-400">
+                                <td colspan="8" class="px-6 py-12 text-center text-gray-400">
                                     <svg viewBox="0 0 24 24" class="w-10 h-10 mx-auto mb-3 opacity-30" style="fill:#6B7280">
                                         <path :d="mdiDatabase"/>
                                     </svg>
@@ -248,39 +260,69 @@ const frequencyLabel = { daily: 'Diario', weekly: 'Semanal', monthly: 'Mensual' 
                                 <td class="px-6 py-4 text-gray-500 text-xs">{{ item.date }}</td>
                                 <td class="px-6 py-4 text-gray-500 text-xs">{{ item.size }}</td>
                                 <td class="px-6 py-4 text-center">
-                                    <span
-                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
-                                        :class="{
-                                            'bg-green-100 text-green-700':  item.status === 'completed',
-                                            'bg-red-100   text-red-700':    item.status === 'failed',
-                                            'bg-yellow-100 text-yellow-700': item.status === 'in_progress',
-                                        }"
-                                    >
-                                        <svg viewBox="0 0 24 24" class="w-3 h-3" style="fill:currentColor">
-                                            <path :d="item.status === 'completed' ? mdiCheck : mdiAlertCircle"/>
-                                        </svg>
-                                        {{ item.result }}
-                                    </span>
+                                    <div class="flex items-center justify-center">
+                                        <span v-if="item.backup_mode === 'incremental'"
+                                            class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-white text-[13px] font-bold text-purple-700 shadow-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="14px" viewBox="0 -960 960 960" width="14px" fill="currentColor">
+                                                <path d="M480-120 200-272v-200L80-536l400-224 400 224v320h-80v-276l-120 67v200L480-120Zm0-332 274-153-274-154-274 154 274 153Zm0 241 160-89v-151L480-321 320-411v151l160 89Zm0-241Zm0 90Zm0 0Z"/>
+                                            </svg>
+                                            Incremental
+                                        </span>
+                                        <span v-else
+                                            class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-white text-[13px] font-bold text-blue-700 shadow-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="14px" viewBox="0 -960 960 960" width="14px" fill="currentColor">
+                                                <path d="M160-160v-80h80v80h-80Zm160 0v-80h80v80h-80Zm-160-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm160 320v-80h80v80h-80Zm160 0v-80h80v80h-80Zm160 160v-80h80v80h-80Zm0-160v-80h80v80h-80Zm0-160v-80h80v80h-80ZM320-640v-80h80v80h-80Zm160 480v-80h80v80h-80Zm-160 0v-80h80v80h-80Zm160-320v-80h80v80h-80Zm160 0v-80h80v80h-80Z"/>
+                                            </svg>
+                                            Completo
+                                        </span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <div class="flex items-center justify-center">
+                                        <span v-if="item.status === 'completed'"
+                                            class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-white text-[13px] font-bold text-green-700 shadow-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="14px" viewBox="0 -960 960 960" width="14px" fill="currentColor">
+                                                <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/>
+                                            </svg>
+                                            Realizado
+                                        </span>
+                                        <span v-else-if="item.status === 'failed'"
+                                            class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-white text-[13px] font-bold text-red-700 shadow-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="14px" viewBox="0 -960 960 960" width="14px" fill="currentColor">
+                                                <path d="M480-280q17 0 28.5-11.5T520-320q0-17-11.5-28.5T480-360q-17 0-28.5 11.5T440-320q0 17 11.5 28.5T480-280Zm-40-160h80v-240h-80v240Zm40 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"/>
+                                            </svg>
+                                            Error
+                                        </span>
+                                        <span v-else
+                                            class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-white text-[13px] font-bold text-yellow-700 shadow-sm">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="14px" viewBox="0 -960 960 960" width="14px" fill="currentColor">
+                                                <path d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm-40-246v-334h80v334h-80Zm40 126q17 0 28.5-11.5T520-240q0-17-11.5-28.5T480-280q-17 0-28.5 11.5T440-240q0 17 11.5 28.5T480-200Z"/>
+                                            </svg>
+                                            En progreso
+                                        </span>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <!-- Download -->
-                                        <a
-                                            v-if="canDownload && item.status === 'completed' && item.file_path"
-                                            :href="route('superadmin.backup.download', item.id)"
+                                        <button
+                                            v-if="canDownload && item.status === 'completed'"
+                                            @click="downloadBackup(item.id)"
                                             class="p-2 text-[#1B396A] border border-[#1B396A] rounded-full hover:bg-[#1B396A] hover:text-white transition cursor-pointer"
                                             title="Descargar"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor"><path :d="mdiDownload"/></svg>
-                                        </a>
-                                        <!-- Delete -->
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                                <path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
+                                            </svg>
+                                        </button>
                                         <button
                                             v-if="canDelete"
                                             @click="deleteBackup(item.id, item.name)"
                                             class="p-2 text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition cursor-pointer"
                                             title="Eliminar"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor"><path :d="mdiDelete"/></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
+                                                <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
+                                            </svg>
                                         </button>
                                     </div>
                                 </td>

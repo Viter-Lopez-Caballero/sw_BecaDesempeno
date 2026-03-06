@@ -137,29 +137,23 @@ const togglePreview = (id) => {
 
             <!-- Tabs -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="flex">
-                    <button 
+                <div class="flex border-b border-gray-200">
+                    <button
+                        type="button"
                         @click="activeTab = 'recognition'"
-                        :class="[
-                            'flex-1 px-6 py-4 text-base font-medium transition-all flex items-center justify-center gap-2 border-r border-gray-200 cursor-pointer',
-                            activeTab === 'recognition'
-                                ? 'bg-[#1B396A] text-white'
-                                : 'bg-white text-gray-700 hover:bg-gray-100'
-                        ]"
+                        class="flex-1 flex items-center justify-center gap-2 px-6 py-4 text-sm font-semibold transition cursor-pointer"
+                        :class="activeTab === 'recognition' ? 'text-[#1B396A] border-b-2 border-[#1B396A] bg-blue-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
                     >
                         <svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor">
                             <path :d="mdiStar"/>
                         </svg>
                         Reconocimientos (Evaluadores)
                     </button>
-                    <button 
+                    <button
+                        type="button"
                         @click="activeTab = 'acceptance'"
-                        :class="[
-                            'flex-1 px-6 py-4 text-base font-medium transition-all flex items-center justify-center gap-2 cursor-pointer',
-                            activeTab === 'acceptance'
-                                ? 'bg-[#1B396A] text-white'
-                                : 'bg-white text-gray-700 hover:bg-gray-100'
-                        ]"
+                        class="flex-1 flex items-center justify-center gap-2 px-6 py-4 text-sm font-semibold transition cursor-pointer"
+                        :class="activeTab === 'acceptance' ? 'text-[#1B396A] border-b-2 border-[#1B396A] bg-blue-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
                     >
                         <svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor">
                             <path :d="mdiSchool"/>

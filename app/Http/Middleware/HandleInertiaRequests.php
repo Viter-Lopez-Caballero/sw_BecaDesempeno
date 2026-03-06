@@ -69,8 +69,9 @@ class HandleInertiaRequests extends Middleware
             'unreadNotifications' => $unreadNotifications,
             'sidebarOpen' => !$request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'flash' => [
-                'success' => fn() => $request->session()->get('success'),
-                'error' => fn() => $request->session()->get('error'),
+                'success'            => fn() => $request->session()->get('success'),
+                'error'              => fn() => $request->session()->get('error'),
+                'download_backup_id' => fn() => $request->session()->get('download_backup_id'),
             ],
         ];
     }

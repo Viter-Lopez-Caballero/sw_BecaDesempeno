@@ -318,6 +318,7 @@ const getIconComponent = (iconName) => {
                                     'w-full h-full object-cover transition-transform duration-500',
                                     convocatoria.status === 'activa' ? 'group-hover:scale-110' : 'opacity-60'
                                 ]"
+                                @error="$event.target.src = 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600&h=400&fit=crop'"
                             />
                             <div class="absolute inset-0 bg-gradient-to-t" :class="convocatoria.status === 'activa' ? 'from-black/40' : 'from-black/20'"></div>
                         </div>

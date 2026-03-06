@@ -246,34 +246,28 @@ const viewDetails = (id) => {
 
             <!-- Tabs -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-                <div class="flex">
-                    <button 
-                        @click="switchTab('requeridos')" 
-                        :class="[
-                            'flex-1 px-6 py-4 text-base font-medium transition-all flex items-center justify-center gap-2 border-r border-gray-200 cursor-pointer',
-                            currentTab === 'requeridos' 
-                                ? 'bg-[#1B396A] text-white' 
-                                : 'bg-white text-gray-700 hover:bg-gray-100'
-                        ]"
+                <div class="flex border-b border-gray-200">
+                    <button
+                        type="button"
+                        @click="switchTab('requeridos')"
+                        class="flex-1 flex items-center justify-center gap-2 px-6 py-4 text-sm font-semibold transition cursor-pointer"
+                        :class="currentTab === 'requeridos' ? 'text-[#1B396A] border-b-2 border-[#1B396A] bg-blue-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                             <path d="M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Z"/>
                         </svg>
-                        Documentos requeridos en la convocatoria
+                        Documentos Requeridos por el Sistema
                     </button>
-                    <button 
-                        @click="switchTab('docentes')" 
-                        :class="[
-                            'flex-1 px-6 py-4 text-base font-medium transition-all flex items-center justify-center gap-2 cursor-pointer',
-                            currentTab === 'docentes' 
-                                ? 'bg-[#1B396A] text-white' 
-                                : 'bg-white text-gray-700 hover:bg-gray-100'
-                        ]"
+                    <button
+                        type="button"
+                        @click="switchTab('docentes')"
+                        class="flex-1 flex items-center justify-center gap-2 px-6 py-4 text-sm font-semibold transition cursor-pointer"
+                        :class="currentTab === 'docentes' ? 'text-[#1B396A] border-b-2 border-[#1B396A] bg-blue-50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'"
                     >
                         <svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor">
                             <path :d="mdiAccountSchool"/>
                         </svg>
-                        Documentos del docente
+                        Documentos del Docente
                     </button>
                 </div>
             </div>

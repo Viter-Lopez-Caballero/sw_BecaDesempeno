@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Storage;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,6 +14,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Limpiar archivos físicos generados por datos de prueba
+        foreach (['announcements', 'templates', 'documents', 'catalog_documents'] as $folder) {
+            if (Storage::disk('public')->exists($folder)) {
+                Storage::disk('public')->deleteDirectory($folder);
+            }
+        }
+
         // User::factory(10)->create();
 
         /* User::factory()->create([

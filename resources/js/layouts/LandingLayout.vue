@@ -57,21 +57,19 @@ const showingNavigationDropdown = ref(false);
                         </div>
                     </div>
 
-                    <div class="hidden md:flex space-x-8">
-                        <Link :href="route('inicio')" :class="{'border-b-2 border-white': route().current('inicio')}" class="hover:text-blue-300 transition font-medium py-1">INICIO</Link>
-                        <Link :href="route('announcement.show')" :class="{'border-b-2 border-white': route().current('announcement.show')}" class="hover:text-blue-300 transition font-medium py-1">CONVOCATORIA</Link>
-                        <Link :href="route('documents.index')" :class="{'border-b-2 border-white': route().current('documents.index')}" class="hover:text-blue-300 transition font-medium py-1">DOCUMENTOS</Link>
-                        <Link :href="route('contact')" :class="{'border-b-2 border-white': route().current('contact')}" class="hover:text-blue-300 transition font-medium py-1">CONTACTO</Link>
+                    <div class="hidden md:flex items-center space-x-5">
+                        <Link :href="route('inicio')" :class="{'border-b-2 border-white': route().current('inicio')}" class="text-sm hover:text-blue-300 transition font-medium py-1 whitespace-nowrap">INICIO</Link>
+                        <Link :href="route('announcement.show')" :class="{'border-b-2 border-white': route().current('announcement.show')}" class="text-sm hover:text-blue-300 transition font-medium py-1 whitespace-nowrap">CONVOCATORIA</Link>
+                        <Link :href="route('documents.index')" :class="{'border-b-2 border-white': route().current('documents.index')}" class="text-sm hover:text-blue-300 transition font-medium py-1 whitespace-nowrap">DOCUMENTOS</Link>
+                        <Link :href="route('recognitions.search')" :class="{'border-b-2 border-white': route().current('recognitions.search')}" class="text-sm hover:text-blue-300 transition font-medium py-1 whitespace-nowrap">RECONOCIMIENTOS</Link>
+                        <Link :href="route('contact')" :class="{'border-b-2 border-white': route().current('contact')}" class="text-sm hover:text-blue-300 transition font-medium py-1 whitespace-nowrap">CONTACTO</Link>
                     </div>
 
-                    <div class="hidden md:flex items-center space-x-4">
-                        <Link :href="route('login')" class="text-white hover:text-blue-300 transition font-medium">
+                    <div class="hidden md:flex items-center space-x-3 ml-4 pl-4 border-l border-blue-500/40">
+                        <Link :href="route('login')" class="text-sm text-white hover:text-blue-300 transition font-medium whitespace-nowrap">
                             INICIAR SESIÓN
                         </Link>
-                        <Link
-                            :href="route('register')"
-                            class="text-white hover:text-blue-300 transition font-medium"
-                        >
+                        <Link :href="route('register')" class="text-sm text-white hover:text-blue-300 transition font-medium whitespace-nowrap">
                             REGISTRARSE
                         </Link>
                     </div>
@@ -86,6 +84,7 @@ const showingNavigationDropdown = ref(false);
                     <Link :href="route('inicio')" :class="{'bg-blue-800 border-l-4 border-white': route().current('inicio')}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 hover:border-blue-300 transition duration-150 ease-in-out">INICIO</Link>
                     <Link :href="route('announcement.show')" :class="{'bg-blue-800 border-l-4 border-white': route().current('announcement.show')}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 hover:border-blue-300 transition duration-150 ease-in-out">CONVOCATORIA</Link>
                     <Link :href="route('documents.index')" :class="{'bg-blue-800 border-l-4 border-white': route().current('documents.index')}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 hover:border-blue-300 transition duration-150 ease-in-out">DOCUMENTOS</Link>
+                    <Link :href="route('recognitions.search')" :class="{'bg-blue-800 border-l-4 border-white': route().current('recognitions.search')}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 hover:border-blue-300 transition duration-150 ease-in-out">RECONOCIMIENTOS</Link>
                     <Link :href="route('contact')" :class="{'bg-blue-800 border-l-4 border-white': route().current('contact')}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 hover:border-blue-300 transition duration-150 ease-in-out">CONTACTO</Link>
                 </div>
 

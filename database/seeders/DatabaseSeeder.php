@@ -32,7 +32,6 @@ class DatabaseSeeder extends Seeder
             ModuleSeeder::class,
             RoleSeeder::class,
             PermissionSeeder::class,
-            UserSeeder::class,
             StateSeeder::class,
             InstitutionSeeder::class,
             PriorityAreaSeeder::class,
@@ -41,6 +40,7 @@ class DatabaseSeeder extends Seeder
             CatalogDocumentSeeder::class,
             //AnnouncementSeeder::class,
             PositionTypeSeeder::class,
+            UserSeeder::class,
         ]);
     }
 }

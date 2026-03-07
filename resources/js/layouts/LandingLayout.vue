@@ -14,95 +14,78 @@ const showingNavigationDropdown = ref(false);
 <template>
     <div class="font-sans text-gray-800 bg-gray-50 min-h-screen flex flex-col">
         <nav class="bg-[#1B396A] text-white fixed w-full z-50 shadow-md">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center h-20 relative">
-                    <div class="flex items-center md:static">
-                        <div class="-mr-2 flex items-center md:hidden mr-4">
-                            <button
-                                @click="showingNavigationDropdown = !showingNavigationDropdown"
-                                class="inline-flex items-center justify-center p-2 rounded-md text-blue-200 hover:text-white hover:bg-blue-800 focus:outline-none focus:bg-blue-800 transition duration-150 ease-in-out"
-                            >
-                                <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                                    <path
-                                        :class="{
-                                            hidden: showingNavigationDropdown,
-                                            'inline-flex': !showingNavigationDropdown,
-                                        }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M4 6h16M4 12h16M4 18h16"
-                                    />
-                                    <path
-                                        :class="{
-                                            hidden: !showingNavigationDropdown,
-                                            'inline-flex': showingNavigationDropdown,
-                                        }"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12"
-                                    />
-                                </svg>
-                            </button>
-                        </div>
+            <!-- Desktop & Tablet -->
+            <div class="hidden md:flex items-center justify-between w-full px-6 lg:px-10 h-24">
+                <!-- Logos -->
+                <div class="flex items-center gap-3 shrink-0">
+                    <img src="/img/LogoTecNMCompleto.png" alt="TecNM" class="h-12 lg:h-14 w-auto" />
+                    <img src="/img/LogoCenidetCompleto.png" alt="Cenidet" class="h-12 lg:h-14 w-auto" />
+                </div>
 
-                        <div class="flex items-center space-x-3 absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 md:static md:transform-none md:translate-x-0 md:translate-y-0">
-                            <img src="/img/LogoTecNMCompleto.png" alt="TecNM" class="block md:hidden h-10 w-auto" />
-                            
-                            <img src="/img/LogoTecNMCompleto.png" alt="TecNM" class="hidden md:block h-12 w-auto" />
-                            
-                            <img src="/img/LogoCenidetCompleto.png" alt="Cenidet" class="h-10 md:h-12 w-auto" />
-                            
-                        </div>
-                    </div>
+                <!-- Nav links -->
+                <div class="flex items-center gap-4 lg:gap-6">
+                    <Link :href="route('inicio')" :class="{'border-b-2 border-white': route().current('inicio')}" class="text-sm lg:text-base hover:text-blue-300 transition font-medium py-1 whitespace-nowrap">INICIO</Link>
+                    <Link :href="route('announcement.show')" :class="{'border-b-2 border-white': route().current('announcement.show')}" class="text-sm lg:text-base hover:text-blue-300 transition font-medium py-1 whitespace-nowrap">CONVOCATORIA</Link>
+                    <Link :href="route('documents.index')" :class="{'border-b-2 border-white': route().current('documents.index')}" class="text-sm lg:text-base hover:text-blue-300 transition font-medium py-1 whitespace-nowrap">DOCUMENTOS</Link>
+                    <Link :href="route('recognitions.search')" :class="{'border-b-2 border-white': route().current('recognitions.search')}" class="text-sm lg:text-base hover:text-blue-300 transition font-medium py-1 whitespace-nowrap">RECONOCIMIENTOS</Link>
+                    <Link :href="route('contact')" :class="{'border-b-2 border-white': route().current('contact')}" class="text-sm lg:text-base hover:text-blue-300 transition font-medium py-1 whitespace-nowrap">CONTACTO</Link>
+                </div>
 
-                    <div class="hidden md:flex items-center space-x-5">
-                        <Link :href="route('inicio')" :class="{'border-b-2 border-white': route().current('inicio')}" class="text-sm hover:text-blue-300 transition font-medium py-1 whitespace-nowrap">INICIO</Link>
-                        <Link :href="route('announcement.show')" :class="{'border-b-2 border-white': route().current('announcement.show')}" class="text-sm hover:text-blue-300 transition font-medium py-1 whitespace-nowrap">CONVOCATORIA</Link>
-                        <Link :href="route('documents.index')" :class="{'border-b-2 border-white': route().current('documents.index')}" class="text-sm hover:text-blue-300 transition font-medium py-1 whitespace-nowrap">DOCUMENTOS</Link>
-                        <Link :href="route('recognitions.search')" :class="{'border-b-2 border-white': route().current('recognitions.search')}" class="text-sm hover:text-blue-300 transition font-medium py-1 whitespace-nowrap">RECONOCIMIENTOS</Link>
-                        <Link :href="route('contact')" :class="{'border-b-2 border-white': route().current('contact')}" class="text-sm hover:text-blue-300 transition font-medium py-1 whitespace-nowrap">CONTACTO</Link>
-                    </div>
-
-                    <div class="hidden md:flex items-center space-x-3 ml-4 pl-4 border-l border-blue-500/40">
-                        <Link :href="route('login')" class="text-sm text-white hover:text-blue-300 transition font-medium whitespace-nowrap">
-                            INICIAR SESIÓN
-                        </Link>
-                        <Link :href="route('register')" class="text-sm text-white hover:text-blue-300 transition font-medium whitespace-nowrap">
-                            REGISTRARSE
-                        </Link>
-                    </div>
+                <!-- Auth buttons -->
+                <div class="flex items-center gap-3 pl-4 border-l border-blue-500/40 shrink-0">
+                    <Link :href="route('login')" class="text-sm lg:text-base text-white hover:text-blue-300 transition font-medium whitespace-nowrap">INICIAR SESIÓN</Link>
+                    <Link :href="route('register')" class="text-sm lg:text-base text-white hover:text-blue-300 transition font-medium whitespace-nowrap">REGISTRARSE</Link>
                 </div>
             </div>
 
+            <!-- Mobile -->
+            <div class="md:hidden flex items-center justify-between px-4 h-16">
+                <!-- Logos -->
+                <div class="flex items-center gap-2">
+                    <img src="/img/LogoTecNMCompleto.png" alt="TecNM" class="h-9 w-auto" />
+                    <img src="/img/LogoCenidetCompleto.png" alt="Cenidet" class="h-9 w-auto" />
+                </div>
+
+                <!-- Hamburger -->
+                <button
+                    @click="showingNavigationDropdown = !showingNavigationDropdown"
+                    class="inline-flex items-center justify-center p-2 rounded-md text-blue-200 hover:text-white hover:bg-blue-800 focus:outline-none transition duration-150 ease-in-out"
+                >
+                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                        <path
+                            :class="{ hidden: showingNavigationDropdown, 'inline-flex': !showingNavigationDropdown }"
+                            stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16"
+                        />
+                        <path
+                            :class="{ hidden: !showingNavigationDropdown, 'inline-flex': showingNavigationDropdown }"
+                            stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"
+                        />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Mobile Dropdown Menu -->
             <div
                 :class="{ block: showingNavigationDropdown, hidden: !showingNavigationDropdown }"
                 class="md:hidden bg-[#162e55]"
             >
                 <div class="pt-2 pb-3 space-y-1">
-                    <Link :href="route('inicio')" :class="{'bg-blue-800 border-l-4 border-white': route().current('inicio')}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 hover:border-blue-300 transition duration-150 ease-in-out">INICIO</Link>
-                    <Link :href="route('announcement.show')" :class="{'bg-blue-800 border-l-4 border-white': route().current('announcement.show')}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 hover:border-blue-300 transition duration-150 ease-in-out">CONVOCATORIA</Link>
-                    <Link :href="route('documents.index')" :class="{'bg-blue-800 border-l-4 border-white': route().current('documents.index')}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 hover:border-blue-300 transition duration-150 ease-in-out">DOCUMENTOS</Link>
-                    <Link :href="route('recognitions.search')" :class="{'bg-blue-800 border-l-4 border-white': route().current('recognitions.search')}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 hover:border-blue-300 transition duration-150 ease-in-out">RECONOCIMIENTOS</Link>
-                    <Link :href="route('contact')" :class="{'bg-blue-800 border-l-4 border-white': route().current('contact')}" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 hover:border-blue-300 transition duration-150 ease-in-out">CONTACTO</Link>
+                    <Link :href="route('inicio')" :class="{'bg-blue-800 border-l-4 border-white': route().current('inicio')}" class="block pl-4 pr-4 py-3 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 hover:border-blue-300 transition">INICIO</Link>
+                    <Link :href="route('announcement.show')" :class="{'bg-blue-800 border-l-4 border-white': route().current('announcement.show')}" class="block pl-4 pr-4 py-3 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 hover:border-blue-300 transition">CONVOCATORIA</Link>
+                    <Link :href="route('documents.index')" :class="{'bg-blue-800 border-l-4 border-white': route().current('documents.index')}" class="block pl-4 pr-4 py-3 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 hover:border-blue-300 transition">DOCUMENTOS</Link>
+                    <Link :href="route('recognitions.search')" :class="{'bg-blue-800 border-l-4 border-white': route().current('recognitions.search')}" class="block pl-4 pr-4 py-3 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 hover:border-blue-300 transition">RECONOCIMIENTOS</Link>
+                    <Link :href="route('contact')" :class="{'bg-blue-800 border-l-4 border-white': route().current('contact')}" class="block pl-4 pr-4 py-3 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 hover:border-blue-300 transition">CONTACTO</Link>
                 </div>
-
-                <!-- Responsive Settings Options -->
-                <div class="pt-4 pb-1 border-t border-blue-800">
-                    <div class="space-y-1">
-                        <Link :href="route('login')" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 transition duration-150 ease-in-out">
-                            INICIAR SESIÓN
-                        </Link>
-                        <Link :href="route('register')" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 transition duration-150 ease-in-out">
-                            REGISTRARSE
-                        </Link>
-                    </div>
+                <div class="pt-3 pb-3 border-t border-blue-800 space-y-1">
+                    <Link :href="route('login')" class="block pl-4 pr-4 py-3 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 transition">INICIAR SESIÓN</Link>
+                    <Link :href="route('register')" class="block pl-4 pr-4 py-3 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 transition">REGISTRARSE</Link>
                 </div>
             </div>
         </nav>
 
-        <main class="flex-grow pt-20">
+        <main class="flex-grow pt-16 md:pt-24">
             <slot />
         </main>
 

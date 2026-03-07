@@ -20,6 +20,8 @@ return new class extends Migration
             $table->foreignId('position_type_id')->nullable()->constrained('position_types')->onDelete('set null');
             $table->foreignId('template_id')->nullable()->constrained('templates')->onDelete('set null');
             $table->text('admin_comment')->nullable();
+            $table->string('identifier')->nullable()->unique(); // Folio único del PDF
+            $table->text('digital_seal')->nullable(); // Sello digital firmado
             $table->softDeletes();
             $table->timestamps();
         });

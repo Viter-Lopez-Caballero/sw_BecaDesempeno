@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('file_path');
             $table->string('file_name');
             $table->boolean('is_active')->default(false);
+            $table->json('content_data')->nullable();
             $table->timestamps();
         });
     }

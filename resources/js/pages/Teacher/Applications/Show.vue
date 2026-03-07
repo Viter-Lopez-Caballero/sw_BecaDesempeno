@@ -20,6 +20,11 @@ const props = defineProps({
 // State to track preview visibility for each document
 const documentsState = ref({});
 
+// State for the acceptance letter inline preview
+const showAcceptancePreview = ref(false);
+
+const acceptanceUrl = route('teacher.documents.downloadAcceptance', props.application.id);
+
 const togglePreview = (docId) => {
     if (!documentsState.value[docId]) {
         documentsState.value[docId] = { showPreview: false };
@@ -112,19 +117,61 @@ const getFileIcon = (type) => {
 
                     <!-- Action buttons for approved state -->
                     <div v-if="application.status === 'approved'" class="ml-auto flex items-center gap-2">
+                        <button 
+                            @click="showAcceptancePreview = !showAcceptancePreview"
+                            class="flex items-center gap-2 px-3 py-2 border rounded-lg font-bold transition cursor-pointer text-xs uppercase shadow-sm"
+                            :class="showAcceptancePreview ? 'bg-green-600 text-white border-green-600' : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-600 hover:text-white'"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path v-if="!showAcceptancePreview" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path v-if="!showAcceptancePreview" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                            </svg>
+                            {{ showAcceptancePreview ? 'Cerrar' : 'Ver Carta' }}
+                        </button>
+                    </div>
+                </div>
+            </transition>
+
+            <!-- Inline Acceptance Letter Preview -->
+            <div v-if="application.status === 'approved' && showAcceptancePreview" class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden animate-fadeIn">
+                <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200">
+                    <h3 class="font-bold text-gray-800 text-lg flex items-center gap-2">
+                        <svg viewBox="0 0 24 24" class="w-5 h-5 flex-shrink-0" style="fill: #1B396A;">
+                            <path :d="mdiFileDocumentMultiple"/>
+                        </svg>
+                        Carta de Aceptación
+                    </h3>
+                    <div class="flex items-center gap-2">
                         <a 
-                            :href="route('teacher.documents.downloadAcceptance', application.id)" 
-                            target="_blank"
-                            class="flex items-center gap-2 px-3 py-2 bg-green-50 text-green-700 border border-green-200 rounded-lg font-bold hover:bg-green-600 hover:text-white transition shadow-sm text-xs"
+                            :href="acceptanceUrl" 
+                            download
+                            class="flex items-center gap-2 px-3 py-2 bg-[#1B396A] text-white rounded-lg font-bold text-xs uppercase shadow-sm hover:bg-[#152b52] transition"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            Descargar Carta
+                            Descargar
                         </a>
+                        <button @click="showAcceptancePreview = false" class="text-gray-400 hover:text-gray-600 p-1.5 hover:bg-gray-100 rounded-lg transition cursor-pointer" title="Cerrar">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
                     </div>
                 </div>
-            </transition>
+                <div class="w-full h-[700px] bg-gray-50 relative">
+                    <div class="absolute inset-0 flex items-center justify-center text-gray-400 z-0 text-center">
+                        <div class="flex flex-col items-center gap-2">
+                            <svg class="w-10 h-10 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <span>Cargando carta...</span>
+                        </div>
+                    </div>
+                    <iframe :src="acceptanceUrl" class="w-full h-full relative z-10" frameborder="0"></iframe>
+                </div>
+            </div>
 
             <div class="bg-white overflow-hidden shadow-md rounded-lg border border-gray-200 p-8">
                 <!-- Info Header -->

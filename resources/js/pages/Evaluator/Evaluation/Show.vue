@@ -130,23 +130,44 @@ const saveDraft = (showMessage = false) => {
     }
 };
 
-onMounted(() => {
+const loadDraft = () => {
     if (isReadOnly.value) return;
     
+    // Prevent state bleed if component is reused by Inertia
+    form.answers = {};
+    updateFormScore();
+
     // Attempt hydration
     const savedDraft = localStorage.getItem(draftKey.value);
     if (savedDraft) {
         try {
             const parsedAnswers = JSON.parse(savedDraft);
             if (Object.keys(parsedAnswers).length > 0) {
-                form.answers = parsedAnswers;
+                // Filter strictly to current rubric questions to avoid zombie answers from old rubrics
+                const validAnswers = {};
+                const validQuestionIds = props.rubric?.questions?.map(q => q.id.toString()) || [];
+                
+                for (const [qId, answerData] of Object.entries(parsedAnswers)) {
+                    if (validQuestionIds.includes(qId.toString())) {
+                        validAnswers[qId] = answerData;
+                    }
+                }
+                
+                form.answers = validAnswers;
                 updateFormScore();
-                // User requested NO text/alert for auto-recovery: Just do it silently.
             }
         } catch (e) {
             console.error('Error parsing evaluation draft from local storage:', e);
         }
     }
+};
+
+onMounted(() => {
+    loadDraft();
+});
+
+watch(() => props.evaluation?.id, () => {
+    loadDraft();
 });
 
 // Autosave silently whenever an answer is selected

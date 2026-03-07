@@ -13,10 +13,12 @@ class Template extends Model
         'file_path',
         'file_name',
         'is_active',
+        'content_data',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'content_data' => 'array',
     ];
 
     public function scopeActive($query)

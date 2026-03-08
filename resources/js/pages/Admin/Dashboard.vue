@@ -288,12 +288,12 @@ const getProgressWidth = (count) => {
                 </div>
 
                 <!-- Pagination for Top Institutions -->
-                <div v-if="topInstitutions.meta && topInstitutions.meta.last_page > 1" class="mt-6 pt-4 border-t border-gray-200">
+                <div v-if="topInstitutions.total > 0" class="mt-6 pt-4 border-t border-gray-200">
                     <Pagination 
-                        :links="topInstitutions.meta.links" 
-                        :total="topInstitutions.meta.total" 
-                        :from="topInstitutions.meta.from" 
-                        :to="topInstitutions.meta.to" 
+                        :links="topInstitutions.links" 
+                        :total="topInstitutions.total" 
+                        :from="topInstitutions.from" 
+                        :to="topInstitutions.to" 
                     />
                 </div>
             </div>

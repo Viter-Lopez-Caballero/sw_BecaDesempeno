@@ -56,18 +56,9 @@ class UpdateAnnouncementStatus extends Command
 
                 $announcement->update(['status' => 'activa']);
 
-                // Notificar el cambio de etapa
+                // Notificar nueva convocatoria
                 $notificationService = app(NotificationService::class);
-
-                // Nueva Convocatoria
                 $notificationService->notifyNewAnnouncement($announcement->id);
-
-                $notificationService->notifyAnnouncementStageChange(
-                    $announcement->id,
-                    $announcement->name,
-                    'Registro de Solicitudes',
-                    $announcement->calendar->registration_start ?? null
-                );
 
                 $this->info("Convocatoria activada: {$announcement->name}");
                 Log::info("Cron Convocatorias: Convocatoria ID {$announcement->id} activada.");

@@ -72,7 +72,44 @@ const showCurrentPassword = ref(false);
 const showPassword = ref(false);
 const showPasswordConfirmation = ref(false);
 
+const clearProfileError = (field) => {
+    if (profileForm.errors[field]) {
+        delete profileForm.errors[field];
+    }
+};
+
+const clearPasswordError = (field) => {
+    if (passwordForm.errors[field]) {
+        delete passwordForm.errors[field];
+    }
+};
+
 const updateProfile = () => {
+    profileForm.clearErrors();
+
+    if (!profileForm.name) {
+        profileForm.errors.name = 'El nombre completo es obligatorio';
+        return;
+    }
+    if (!profileForm.email) {
+        profileForm.errors.email = 'El correo electrónico es obligatorio';
+        return;
+    }
+    if (!isSuperAdmin.value) {
+        if (!profileForm.institution_id) {
+            profileForm.errors.institution_id = 'Debes seleccionar una institución';
+            return;
+        }
+        if (!profileForm.priority_area_id) {
+            profileForm.errors.priority_area_id = 'Debes seleccionar un área prioritaria';
+            return;
+        }
+        if (!profileForm.sub_area_id) {
+            profileForm.errors.sub_area_id = 'Debes seleccionar una sub área';
+            return;
+        }
+    }
+
     alertaCargando('Actualizando perfil', 'Por favor espera...');
     profileForm.patch(route('profile.update'), {
         preserveScroll: true,
@@ -88,6 +125,25 @@ const updateProfile = () => {
 };
 
 const updatePassword = () => {
+    passwordForm.clearErrors();
+
+    if (!passwordForm.current_password) {
+        passwordForm.errors.current_password = 'La contraseña actual es obligatoria';
+        return;
+    }
+    if (!passwordForm.password) {
+        passwordForm.errors.password = 'La nueva contraseña es obligatoria';
+        return;
+    }
+    if (!passwordForm.password_confirmation) {
+        passwordForm.errors.password_confirmation = 'Debes confirmar la nueva contraseña';
+        return;
+    }
+    if (passwordForm.password !== passwordForm.password_confirmation) {
+        passwordForm.errors.password_confirmation = 'Las contraseñas no coinciden';
+        return;
+    }
+
     alertaCargando('Actualizando contraseña', 'Por favor espera...');
     passwordForm.put(route('user-password.update'), {
         preserveScroll: true,
@@ -119,45 +175,49 @@ const updatePassword = () => {
                 <form @submit.prevent="updateProfile" class="space-y-5">
                     <!-- Name -->
                     <div>
-                        <label for="name" class="block mb-2 text-base text-[#1B396A] font-medium">
-                            Nombre Completo
-                        </label>
+                        <label for="name" class="block mb-2 text-base text-[#1B396A] font-medium">Nombre Completo: <span class="text-red-500">*</span></label>
                         <input
                             id="name"
                             v-model="profileForm.name"
                             type="text"
-                            required
                             class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
+                            :class="{ 'border-b-red-500': profileForm.errors.name }"
                             placeholder="Tu nombre completo"
+                            @input="clearProfileError('name')"
                         />
-                        <div v-if="profileForm.errors.name" class="mt-1 text-sm text-red-600">
-                            {{ profileForm.errors.name }}
+                        <div v-if="!profileForm.errors.name" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Por favor, introduce tu nombre completo</span>
                         </div>
+                        <p v-if="profileForm.errors.name" class="mt-1 text-sm text-red-600">{{ profileForm.errors.name }}</p>
                     </div>
 
                     <!-- Email -->
                     <div>
-                        <label for="email" class="block mb-2 text-base text-[#1B396A] font-medium">
-                            Correo Electrónico
-                        </label>
+                        <label for="email" class="block mb-2 text-base text-[#1B396A] font-medium">Correo Electrónico: <span class="text-red-500">*</span></label>
                         <input
                             id="email"
                             v-model="profileForm.email"
                             type="email"
-                            required
                             class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
+                            :class="{ 'border-b-red-500': profileForm.errors.email }"
                             placeholder="tu@email.com"
+                            @input="clearProfileError('email')"
                         />
-                        <div v-if="profileForm.errors.email" class="mt-1 text-sm text-red-600">
-                            {{ profileForm.errors.email }}
+                        <div v-if="!profileForm.errors.email" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Por favor, introduce tu correo electrónico</span>
                         </div>
+                        <p v-if="profileForm.errors.email" class="mt-1 text-sm text-red-600">{{ profileForm.errors.email }}</p>
                     </div>
 
                     <!-- Institution (only for non-SuperAdmin) -->
                     <div v-if="!isSuperAdmin">
-                        <label for="institucion" class="block mb-2 text-base text-[#1B396A] font-medium">
-                            Institución
-                        </label>
+                        <label for="institucion" class="block mb-2 text-base text-[#1B396A] font-medium">Institución: <span class="text-red-500">*</span></label>
                         <VueSelect
                             v-model="profileForm.institution_id"
                             :options="institutions"
@@ -165,17 +225,22 @@ const updatePassword = () => {
                             label="name"
                             placeholder="Selecciona una institución"
                             class="vue-select-custom"
+                            :class="{ 'vue-select-error': profileForm.errors.institution_id }"
+                            @option:selected="clearProfileError('institution_id')"
+                            @option:deselected="clearProfileError('institution_id')"
                         />
-                        <div v-if="profileForm.errors.institution_id" class="mt-1 text-sm text-red-600">
-                            {{ profileForm.errors.institution_id }}
+                        <div v-if="!profileForm.errors.institution_id" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Selecciona la institución a la que perteneces</span>
                         </div>
+                        <p v-if="profileForm.errors.institution_id" class="mt-1 text-sm text-red-600">{{ profileForm.errors.institution_id }}</p>
                     </div>
 
                     <!-- Priority Area (only for non-SuperAdmin) -->
                     <div v-if="!isSuperAdmin">
-                        <label for="priority_area" class="block mb-2 text-base text-[#1B396A] font-medium">
-                            Área Prioritaria
-                        </label>
+                        <label for="priority_area" class="block mb-2 text-base text-[#1B396A] font-medium">Área Prioritaria: <span class="text-red-500">*</span></label>
                         <VueSelect
                             v-model="profileForm.priority_area_id"
                             :options="priorityAreas"
@@ -183,17 +248,22 @@ const updatePassword = () => {
                             label="name"
                             placeholder="Selecciona un área prioritaria"
                             class="vue-select-custom"
+                            :class="{ 'vue-select-error': profileForm.errors.priority_area_id }"
+                            @option:selected="clearProfileError('priority_area_id')"
+                            @option:deselected="clearProfileError('priority_area_id')"
                         />
-                        <div v-if="profileForm.errors.priority_area_id" class="mt-1 text-sm text-red-600">
-                            {{ profileForm.errors.priority_area_id }}
+                        <div v-if="!profileForm.errors.priority_area_id" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Selecciona el área prioritaria de tu trabajo</span>
                         </div>
+                        <p v-if="profileForm.errors.priority_area_id" class="mt-1 text-sm text-red-600">{{ profileForm.errors.priority_area_id }}</p>
                     </div>
 
                     <!-- Sub Area (only for non-SuperAdmin) -->
                     <div v-if="!isSuperAdmin">
-                        <label for="sub_area" class="block mb-2 text-base text-[#1B396A] font-medium">
-                            Sub Área
-                        </label>
+                        <label for="sub_area" class="block mb-2 text-base text-[#1B396A] font-medium">Sub Área: <span class="text-red-500">*</span></label>
                         <VueSelect
                             v-model="profileForm.sub_area_id"
                             :options="filteredSubAreas"
@@ -203,6 +273,9 @@ const updatePassword = () => {
                             :searchable="true"
                             :clearable="true"
                             class="vue-select-custom"
+                            :class="{ 'vue-select-error': profileForm.errors.sub_area_id }"
+                            @option:selected="clearProfileError('sub_area_id')"
+                            @option:deselected="clearProfileError('sub_area_id')"
                         >
                             <template #no-options="{ search, searching }">
                                 <template v-if="searching">
@@ -211,9 +284,13 @@ const updatePassword = () => {
                                 <em v-else>Selecciona un Área Prioritaria primero...</em>
                             </template>
                         </VueSelect>
-                        <div v-if="profileForm.errors.sub_area_id" class="mt-1 text-sm text-red-600">
-                            {{ profileForm.errors.sub_area_id }}
+                        <div v-if="!profileForm.errors.sub_area_id" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Selecciona la sub área correspondiente</span>
                         </div>
+                        <p v-if="profileForm.errors.sub_area_id" class="mt-1 text-sm text-red-600">{{ profileForm.errors.sub_area_id }}</p>
                     </div>
 
                     <!-- Email Verification -->
@@ -248,16 +325,16 @@ const updatePassword = () => {
                 <form @submit.prevent="updatePassword" class="space-y-5">
                     <!-- Current Password -->
                     <div>
-                        <label for="current_password" class="block mb-2 text-base text-[#1B396A] font-medium">
-                            Contraseña Actual
-                        </label>
+                        <label for="current_password" class="block mb-2 text-base text-[#1B396A] font-medium">Contraseña Actual: <span class="text-red-500">*</span></label>
                         <div class="relative">
                             <input
                                 id="current_password"
                                 v-model="passwordForm.current_password"
                                 :type="showCurrentPassword ? 'text' : 'password'"
                                 class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 pr-10 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
+                                :class="{ 'border-b-red-500': passwordForm.errors.current_password }"
                                 placeholder="••••••••"
+                                @input="clearPasswordError('current_password')"
                             />
                             <button
                                 type="button"
@@ -268,23 +345,27 @@ const updatePassword = () => {
                                 <EyeOffIcon v-else size="20" class="text-gray-600" />
                             </button>
                         </div>
-                        <div v-if="passwordForm.errors.current_password" class="mt-1 text-sm text-red-600">
-                            {{ passwordForm.errors.current_password }}
+                        <div v-if="!passwordForm.errors.current_password" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Introduce tu contraseña actual para confirmar el cambio</span>
                         </div>
+                        <p v-if="passwordForm.errors.current_password" class="mt-1 text-sm text-red-600">{{ passwordForm.errors.current_password }}</p>
                     </div>
 
                     <!-- New Password -->
                     <div>
-                        <label for="password" class="block mb-2 text-base text-[#1B396A] font-medium">
-                            Nueva Contraseña
-                        </label>
+                        <label for="password" class="block mb-2 text-base text-[#1B396A] font-medium">Nueva Contraseña: <span class="text-red-500">*</span></label>
                         <div class="relative">
                             <input
                                 id="password"
                                 v-model="passwordForm.password"
                                 :type="showPassword ? 'text' : 'password'"
                                 class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 pr-10 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
+                                :class="{ 'border-b-red-500': passwordForm.errors.password }"
                                 placeholder="••••••••"
+                                @input="clearPasswordError('password')"
                             />
                             <button
                                 type="button"
@@ -295,23 +376,27 @@ const updatePassword = () => {
                                 <EyeOffIcon v-else size="20" class="text-gray-600" />
                             </button>
                         </div>
-                        <div v-if="passwordForm.errors.password" class="mt-1 text-sm text-red-600">
-                            {{ passwordForm.errors.password }}
+                        <div v-if="!passwordForm.errors.password" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Introduce la nueva contraseña</span>
                         </div>
+                        <p v-if="passwordForm.errors.password" class="mt-1 text-sm text-red-600">{{ passwordForm.errors.password }}</p>
                     </div>
 
                     <!-- Confirm Password -->
                     <div>
-                        <label for="password_confirmation" class="block mb-2 text-base text-[#1B396A] font-medium">
-                            Confirmar Nueva Contraseña
-                        </label>
+                        <label for="password_confirmation" class="block mb-2 text-base text-[#1B396A] font-medium">Confirmar Nueva Contraseña: <span class="text-red-500">*</span></label>
                         <div class="relative">
                             <input
                                 id="password_confirmation"
                                 v-model="passwordForm.password_confirmation"
                                 :type="showPasswordConfirmation ? 'text' : 'password'"
                                 class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 pr-10 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
+                                :class="{ 'border-b-red-500': passwordForm.errors.password_confirmation }"
                                 placeholder="••••••••"
+                                @input="clearPasswordError('password_confirmation')"
                             />
                             <button
                                 type="button"
@@ -322,9 +407,13 @@ const updatePassword = () => {
                                 <EyeOffIcon v-else size="20" class="text-gray-600" />
                             </button>
                         </div>
-                        <div v-if="passwordForm.errors.password_confirmation" class="mt-1 text-sm text-red-600">
-                            {{ passwordForm.errors.password_confirmation }}
+                        <div v-if="!passwordForm.errors.password_confirmation" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Repite la nueva contraseña para confirmar</span>
                         </div>
+                        <p v-if="passwordForm.errors.password_confirmation" class="mt-1 text-sm text-red-600">{{ passwordForm.errors.password_confirmation }}</p>
                     </div>
 
 
@@ -435,5 +524,12 @@ const updatePassword = () => {
     background: linear-gradient(to bottom right, #E5E7EB, #D1D5DB);
     cursor: not-allowed;
     opacity: 0.6;
+}
+
+/* Error state */
+.vue-select-error :deep(.vs__dropdown-toggle),
+.vue-select-error :deep(.vs--open .vs__dropdown-toggle),
+.vue-select-error :deep(.vs__dropdown-toggle):hover {
+    border-bottom-color: #EF4444 !important;
 }
 </style>

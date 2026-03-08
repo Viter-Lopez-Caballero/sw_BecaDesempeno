@@ -34,33 +34,44 @@ const getFase = (convocatoria) => {
         return { 
             nombre: 'Cerrada', 
             color: 'bg-red-100 text-red-800', 
-            canRegister: false 
+            canRegister: false,
+            etapaLabel: 'Convocatoria Cerrada'
         };
     }
 
     // 2. Estado Activa
-    // Calculamos si está en periodo de registro para habilitar el botón
     let canRegister = false;
+    let etapaLabel = 'Convocatoria Activa';
     
     if (convocatoria.calendar) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
-        // Usar parseDateLocal para evitar desfases de zona horaria (UTC vs Local)
-        const regInicio = parseDateLocal(convocatoria.calendar.registration_start);
-        const regFin = parseDateLocal(convocatoria.calendar.registration_end);
-        
-        // Comparación inclusiva
-        if (regInicio && regFin && today >= regInicio && today <= regFin) {
+        const pubInicio    = parseDateLocal(convocatoria.calendar.publication_start);
+        const regInicio    = parseDateLocal(convocatoria.calendar.registration_start);
+        const regFin       = parseDateLocal(convocatoria.calendar.registration_end);
+        const evalInicio   = parseDateLocal(convocatoria.calendar.evaluation_start);
+        const evalFin      = parseDateLocal(convocatoria.calendar.evaluation_end);
+        const resInicio    = parseDateLocal(convocatoria.calendar.results_start);
+        const resFin       = parseDateLocal(convocatoria.calendar.results_end);
+
+        if (resInicio && today >= resInicio) {
+            etapaLabel = 'En etapa de Resultados';
+        } else if (evalInicio && today >= evalInicio) {
+            etapaLabel = 'En etapa de Evaluación';
+        } else if (regInicio && regFin && today >= regInicio && today <= regFin) {
             canRegister = true;
+            etapaLabel = 'Periodo de Registro abierto';
+        } else if (pubInicio && today >= pubInicio) {
+            etapaLabel = 'En etapa de Publicación';
         }
     }
 
-    // Retornamos siempre "Activa" si el estado es activa
     return { 
         nombre: 'Activa', 
         color: 'bg-green-100 text-green-800', 
-        canRegister: canRegister 
+        canRegister,
+        etapaLabel
     };
 };
 
@@ -363,7 +374,7 @@ const getIconComponent = (iconName) => {
                             <div class="mt-auto">
                                 <!-- Lógica de Botones según Estado y Login -->
                                 <Link 
-                                    v-if="!user && convocatoria.status === 'activa'" 
+                                    v-if="!user && getFase(convocatoria).canRegister" 
                                     :href="route('login')"
                                     class="w-full block py-3 rounded-xl transition-all font-semibold cursor-pointer text-center bg-white border-2 border-[#2c5282] text-[#2c5282] hover:bg-[#2c5282] hover:text-white shadow-md hover:shadow-lg"
                                 >
@@ -377,8 +388,8 @@ const getIconComponent = (iconName) => {
                                 >
                                     Ir a Panel Docente
                                 </Link>
-                                <div v-else class="w-full py-3 rounded-xl font-semibold text-center border-2 border-gray-300 text-gray-500 bg-gray-50 cursor-not-allowed">
-                                    {{ convocatoria.status === 'activa' ? 'Ver Detalles' : 'Convocatoria Cerrada' }}
+                                <div v-else class="w-full py-3 rounded-xl font-semibold text-center border-2 border-gray-200 text-gray-500 bg-gray-50 text-sm">
+                                    {{ getFase(convocatoria).etapaLabel }}
                                 </div>
                             </div>
                         </div>

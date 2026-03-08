@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Mail\EvaluatorAssigned;
+use App\Mail\EvaluatorReminder;
 use App\Mail\ApplicationVerdict;
 use App\Mail\AnnouncementStageChange;
 use App\Mail\AnnouncementDateChange;
@@ -36,7 +37,21 @@ class NotificationService
         Mail::to($evaluator->email)->queue(new EvaluatorAssigned(
             $evaluator->name,
             $evaluationsCount,
-            5 // days limit
+            7 // días hábiles límite
+        ));
+    }
+
+    /**
+     * Send reminder email to an evaluator when their deadline is approaching
+     */
+    public function notifyEvaluatorReminder(int $evaluatorId, int $pendingCount, int $daysLeft): void
+    {
+        $evaluator = User::findOrFail($evaluatorId);
+
+        Mail::to($evaluator->email)->queue(new EvaluatorReminder(
+            $evaluator->name,
+            $pendingCount,
+            $daysLeft
         ));
     }
 

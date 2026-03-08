@@ -28,7 +28,8 @@ class AdminController extends Controller
             ->withCount('applications')
             ->having('applications_count', '>', 0)
             ->orderByDesc('applications_count')
-            ->paginate(5, ['*'], 'top_page');
+            ->paginate(5, ['*'], 'top_page')
+            ->withQueryString();
 
         // Main Table: Institutions with Approved/Rejected counts (filterable)
         $search = $request->input('search');

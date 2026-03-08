@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nuevas Evaluaciones Asignadas</title>
+    <title>Recordatorio: Evaluaciones Pendientes</title>
     <style>
         * {
             margin: 0;
@@ -28,7 +28,7 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #1B396A 0%, #0f2347 100%);
+            background: linear-gradient(135deg, #B45309 0%, #78350F 100%);
             padding: 40px 30px;
             text-align: center;
         }
@@ -61,16 +61,16 @@
         }
 
         .info-box {
-            background: linear-gradient(to bottom right, #F3F4F6, #E5E7EB);
+            background: linear-gradient(to bottom right, #FEF3C7, #FDE68A);
             border-radius: 16px;
             padding: 35px 30px;
             margin: 35px 0;
-            border: 2px solid #D1D5DB;
+            border: 2px solid #FCD34D;
             text-align: center;
         }
 
         .info-label {
-            color: #1B396A;
+            color: #92400E;
             font-size: 14px;
             font-weight: 600;
             margin-bottom: 15px;
@@ -81,16 +81,49 @@
 
         .info-value {
             background-color: #ffffff;
-            border: 2px dashed #1B396A;
+            border: 2px dashed #B45309;
             border-radius: 12px;
             padding: 20px;
             font-size: 42px;
             font-weight: 800;
-            color: #1B396A;
+            color: #B45309;
             font-family: 'Courier New', monospace;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
             display: inline-block;
             min-width: 100px;
+        }
+
+        .days-box {
+            background: linear-gradient(to bottom right, #FEE2E2, #FECACA);
+            border-radius: 16px;
+            padding: 25px 30px;
+            margin: 25px 0;
+            border: 2px solid #F87171;
+            text-align: center;
+        }
+
+        .days-label {
+            color: #7F1D1D;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .days-value {
+            color: #991B1B;
+            font-size: 36px;
+            font-weight: 800;
+            font-family: 'Courier New', monospace;
+        }
+
+        .days-unit {
+            color: #B91C1C;
+            font-size: 16px;
+            font-weight: 600;
+            margin-left: 6px;
         }
 
         .warning-box {
@@ -123,103 +156,60 @@
             margin: 0;
         }
 
-        /* Responsive Design para Móviles */
         @media only screen and (max-width: 600px) {
-            body {
-                padding: 15px 8px;
-            }
-
-            .email-container {
-                max-width: 100%;
-                border-radius: 10px;
-            }
-
-            .header {
-                padding: 20px 12px;
-            }
-
-            .header-title {
-                font-size: 15px;
-                line-height: 1.3;
-            }
-
-            .content {
-                padding: 25px 15px;
-            }
-
-            .greeting {
-                font-size: 16px;
-            }
-
-            .message {
-                font-size: 13px;
-                line-height: 1.6;
-            }
-
-            .info-box {
-                padding: 20px 12px;
-                margin: 20px 0;
-                border-radius: 12px;
-            }
-
-            .info-label {
-                font-size: 11px;
-                letter-spacing: 1px;
-            }
-
-            .info-value {
-                padding: 15px;
-                font-size: 28px;
-            }
-
-            .warning-box {
-                padding: 12px;
-                margin: 15px 0;
-            }
-
-            .warning-text {
-                font-size: 11px;
-            }
-
-            .footer {
-                padding: 18px 12px;
-            }
-
-            .footer-text {
-                font-size: 10px;
-                line-height: 1.6;
-            }
+            body { padding: 15px 8px; }
+            .email-container { max-width: 100%; border-radius: 10px; }
+            .header { padding: 20px 12px; }
+            .header-title { font-size: 15px; line-height: 1.3; }
+            .content { padding: 25px 15px; }
+            .greeting { font-size: 16px; }
+            .message { font-size: 13px; line-height: 1.6; }
+            .info-box { padding: 20px 12px; margin: 20px 0; }
+            .info-label { font-size: 11px; letter-spacing: 1px; }
+            .info-value { padding: 15px; font-size: 28px; }
+            .days-box { padding: 15px 12px; }
+            .days-value { font-size: 28px; }
+            .warning-box { padding: 12px; margin: 15px 0; }
+            .warning-text { font-size: 11px; }
+            .footer { padding: 18px 12px; }
+            .footer-text { font-size: 10px; line-height: 1.6; }
         }
     </style>
 </head>
 <body>
     <div class="email-container">
         <div class="header">
-            <h1 class="header-title">Nuevas Evaluaciones Asignadas</h1>
+            <h1 class="header-title">⏰ Recordatorio: Evaluaciones Pendientes</h1>
         </div>
 
         <div class="content">
             <p class="greeting">Hola {{ $evaluatorName }},</p>
 
             <p class="message">
-                Se te han asignado nuevas evaluaciones en el Sistema de Becas TecNM.<br>
-                Por favor, revisa tu panel de evaluaciones para comenzar con la revisión.
+                Este es un recordatorio de que tienes evaluaciones pendientes por completar
+                en el Sistema de Becas TecNM. Por favor, ingresa y revisa las solicitudes asignadas.
             </p>
 
             <div class="info-box">
-                <span class="info-label">Evaluaciones asignadas</span>
-                <div class="info-value">{{ $evaluationsCount }}</div>
+                <span class="info-label">Evaluaciones pendientes</span>
+                <div class="info-value">{{ $pendingCount }}</div>
+            </div>
+
+            <div class="days-box">
+                <span class="days-label">Días hábiles restantes</span>
+                <span class="days-value">{{ $daysLeft }}</span>
+                <span class="days-unit">día{{ $daysLeft !== 1 ? 's' : '' }} hábil{{ $daysLeft !== 1 ? 'es' : '' }}</span>
             </div>
 
             <div class="warning-box">
                 <p class="warning-text">
-                    ⏰ Tienes {{ $daysLimit }} días hábiles para completar las evaluaciones a partir de hoy.<br>
-                    Pasado este tiempo, las asignaciones serán removidas automáticamente.
+                    ⚠️ Si no completas las evaluaciones antes de que venza el plazo, las asignaciones
+                    serán removidas automáticamente del sistema.
                 </p>
             </div>
 
             <p class="message">
-                Te recomendamos iniciar sesión lo antes posible para revisar las solicitudes asignadas.
+                Ingresa a tu panel de evaluaciones lo antes posible para no perder las asignaciones.
             </p>
         </div>
 

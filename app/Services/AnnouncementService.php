@@ -22,7 +22,9 @@ class AnnouncementService
      */
     public function createAnnouncement(array $data, $request): Announcement
     {
-        return DB::transaction(function () use ($data, $request) {
+        $activatedOnCreate = false;
+
+        $announcement = DB::transaction(function () use ($data, $request, &$activatedOnCreate) {
             $publicationStart = $request->publication_start
                 ? \Carbon\Carbon::parse($request->publication_start)->startOfDay()
                 : null;
@@ -54,6 +56,7 @@ class AnnouncementService
             // Enforce single active announcement
             if (isset($data['status']) && $data['status'] === 'activa') {
                 Announcement::where('status', 'activa')->update(['status' => 'cerrada']);
+                $activatedOnCreate = true;
             }
 
             $announcement = Announcement::create($data);
@@ -74,6 +77,13 @@ class AnnouncementService
 
             return $announcement;
         });
+
+        // Si la convocatoria nació directamente como activa, notificar nueva convocatoria
+        if ($activatedOnCreate) {
+            $this->notificationService->notifyNewAnnouncement($announcement->id);
+        }
+
+        return $announcement;
     }
 
     /**

@@ -21,6 +21,9 @@ class Application extends Model
         'admin_comment',
         'position_type_id',
         'template_id',
+        'identifier',
+        'digital_seal',
+        'snapshot_data',
     ];
 
     protected $appends = ['position_full_type'];
@@ -70,6 +73,11 @@ class Application extends Model
     | Scopes
     |--------------------------------------------------------------------------
     */
+
+    public function scopeValidByIdentifier($query, $identifier)
+    {
+        return $query->where('identifier', $identifier)->with('user', 'announcement');
+    }
 
     /**
      * Scope para búsqueda global en solicitudes.

@@ -49,6 +49,7 @@ class UserController extends SecurityController
 
         $query = $this->model->query()
             ->with('roles')
+            ->whereDoesntHave('roles', fn($q) => $q->where('name', 'Super Admin'))
             ->buscarGlobal($filters->search)
             ->when($roleFilter, function ($q) use ($roleFilter) {
                 $q->whereHas('roles', function ($query) use ($roleFilter) {
@@ -66,7 +67,7 @@ class UserController extends SecurityController
             ->withQueryString()
             ->appends(['role_id' => $roleFilter]);
 
-        $roles = Role::orderBy('name')->get();
+        $roles = Role::where('name', '!=', 'Super Admin')->orderBy('name')->get();
         $rolesForImport = Role::where('name', 'Evaluador')->orderBy('name')->get();
 
         return Inertia::render("{$this->source}Index", [

@@ -369,17 +369,17 @@ const downloadTemplate = () => {
                                 <td class="px-6 py-4 font-semibold text-gray-800">{{ user.name }}</td>
                                 <td class="px-6 py-4 text-gray-600">{{ user.email }}</td>
                                 <td class="px-6 py-4">
-                                    <div class="flex flex-wrap gap-1">
+                                    <div class="flex flex-wrap gap-1.5">
                                         <span
                                             v-for="rol in user.roles"
                                             :key="rol.id"
-                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                            class="inline-flex items-center px-3 py-1.5 rounded-md bg-white text-[13px] font-bold shadow-sm"
                                             :class="{
-                                                'bg-purple-100 text-purple-800': rol.name === 'Super Admin',
-                                                'bg-blue-100 text-blue-800': rol.name === 'Admin',
-                                                'bg-green-100 text-green-800': rol.name === 'Docente',
-                                                'bg-orange-100 text-orange-800': rol.name === 'Evaluador',
-                                                'bg-gray-100 text-gray-700': !['Super Admin','Admin','Docente','Evaluador'].includes(rol.name),
+                                                'text-purple-700': rol.name === 'Super Admin',
+                                                'text-blue-700':   rol.name === 'Admin',
+                                                'text-green-700':  rol.name === 'Docente',
+                                                'text-orange-600': rol.name === 'Evaluador',
+                                                'text-gray-600':   !['Super Admin','Admin','Docente','Evaluador'].includes(rol.name),
                                             }"
                                         >
                                             {{ rol.name }}

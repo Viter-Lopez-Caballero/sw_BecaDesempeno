@@ -36,15 +36,15 @@ class RecognitionSearchController extends Controller
                 ->whereNotNull('identifier');
 
             if ($folio !== '') {
-                $query->where('identifier', $folio);
+                $query->whereRaw('UPPER(identifier) = ?', [strtoupper($folio)]);
             }
 
             if ($curp !== '') {
-                $query->whereHas('user', fn ($q) => $q->where('curp', strtoupper($curp)));
+                $query->whereHas('user', fn ($q) => $q->whereRaw('UPPER(curp) = ?', [strtoupper($curp)]));
             }
 
             if ($name !== '') {
-                $query->whereHas('user', fn ($q) => $q->where('name', 'like', '%' . $name . '%'));
+                $query->whereHas('user', fn ($q) => $q->whereRaw('UPPER(name) LIKE ?', ['%' . strtoupper($name) . '%']));
             }
 
             $recognitions = $query->orderBy('sent_at', 'desc')->get()->map(function ($r) {

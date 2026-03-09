@@ -286,7 +286,15 @@ const validateDates = (newDates) => {
         if (i > 0) {
             const prev = order[i - 1];
             const prevEnd = newDates[prev.end];
-            if (prevEnd && curStart && curStart <= prevEnd) {
+
+            // In edit mode, skip sequence check if both phases are already concluded (non-editable)
+            const currentPhase = phases.find(p => p.startKey === current.start);
+            const prevPhase = phases.find(p => p.startKey === prev.start);
+            const bothConcluded = props.isEdit
+                && currentPhase && !editablePhases.value.includes(currentPhase.key)
+                && prevPhase && !editablePhases.value.includes(prevPhase.key);
+
+            if (!bothConcluded && prevEnd && curStart && curStart <= prevEnd) {
                 errMessage.value = `Advertencia: La etapa de ${current.name} debe iniciar después de que termine la etapa de ${prev.name}.`;
                 return false;
             }

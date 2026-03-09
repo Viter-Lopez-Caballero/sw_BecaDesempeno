@@ -139,9 +139,10 @@ const typeIcon = (type) => {
                                     <input
                                         v-model="name"
                                         type="text"
-                                        placeholder="Ej. Juan Pérez García"
+                                        placeholder="Ej. JUAN PÉREZ GARCÍA"
+                                        @input="name = name.toUpperCase()"
                                         @keyup.enter="search"
-                                        class="pl-10 w-full h-[45px] rounded-xl border border-gray-300 text-gray-700 text-sm focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition"
+                                        class="pl-10 w-full h-[45px] rounded-xl border border-gray-300 text-gray-700 text-sm focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition uppercase"
                                     />
                                 </div>
                             </div>
@@ -161,8 +162,9 @@ const typeIcon = (type) => {
                                         v-model="folio"
                                         type="text"
                                         placeholder="Ej. REC-2025-EV-12-ABCD"
+                                        @input="folio = folio.toUpperCase()"
                                         @keyup.enter="search"
-                                        class="pl-10 w-full h-[45px] rounded-xl border border-gray-300 text-gray-700 text-sm focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition"
+                                        class="pl-10 w-full h-[45px] rounded-xl border border-gray-300 text-gray-700 text-sm focus:border-[#1B396A] focus:ring focus:ring-[#1B396A] focus:ring-opacity-20 hover:bg-gray-50 transition uppercase"
                                     />
                                 </div>
                             </div>
@@ -173,7 +175,7 @@ const typeIcon = (type) => {
                             <button
                                 @click="search"
                                 :disabled="loading || (!curp && !name && !folio)"
-                                class="flex-1 flex items-center justify-center gap-2 h-[45px] rounded-xl bg-[#1B396A] text-white text-sm font-semibold hover:bg-[#162e55] disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm"
+                                class="flex-1 flex items-center justify-center gap-2 h-[45px] rounded-xl bg-[#1B396A] text-white text-sm font-semibold hover:bg-[#162e55] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition shadow-sm"
                             >
                                 <svg v-if="!loading" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="w-5 h-5 fill-white">
                                     <path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/>
@@ -188,10 +190,10 @@ const typeIcon = (type) => {
                             <button
                                 v-if="searched"
                                 @click="clearFilters"
-                                class="sm:w-44 flex items-center justify-center gap-2 h-[45px] rounded-xl border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition"
+                                class="sm:w-44 flex items-center justify-center gap-2 h-[45px] rounded-xl border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 cursor-pointer transition"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="w-5 h-5 fill-gray-500">
-                                    <path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/>
+                                <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
+                                    <path d="M400-240v-80h240v80H400Zm-158 0L15-467l57-57 170 170 366-366 57 57-423 423Zm318-160v-80h240v80H560Zm160-160v-80h240v80H720Z"/>
                                 </svg>
                                 Limpiar
                             </button>

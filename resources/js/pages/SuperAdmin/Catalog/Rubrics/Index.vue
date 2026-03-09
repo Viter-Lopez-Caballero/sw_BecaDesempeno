@@ -19,6 +19,10 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    evaluacionEnCurso: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 const search = ref(props.filters.search);
@@ -78,19 +82,32 @@ const sortBy = (field) => {
     }, { preserveState: true, replace: true });
 };
 
+const canToggle = (rubric) => {
+    const anyActive = props.rubrics.data.some(r => r.is_active);
+    if (props.evaluacionEnCurso && anyActive) return false;
+    if (rubric.is_active) return true;
+    return !anyActive;
+};
+
+const toggleReasonBlocked = (rubric) => {
+    const anyActive = props.rubrics.data.some(r => r.is_active);
+    if (props.evaluacionEnCurso && anyActive) return 'Hay una convocatoria en etapa de Evaluación. No se puede cambiar la rúbrica activa.';
+    if (!rubric.is_active) return 'Ya existe una rúbrica activa. Desactívala primero.';
+    return '';
+};
+
 const toggleActive = (rubric) => {
+    if (!canToggle(rubric)) {
+        alertaError('No permitido', toggleReasonBlocked(rubric));
+        return;
+    }
     router.post(route('catalog.rubrics.toggle-active', rubric.id), {}, {
         preserveScroll: true,
         onSuccess: () => {
             alertaExito('Actualizado', 'El estado de la rúbrica ha sido actualizado correctamente');
         },
-        onError: (errors) => {
-            if (errors.error) {
-                alertaError('Error', errors.error);
-                location.reload(); 
-            } else {
-                alertaError('Error', 'No se pudo actualizar el estado de la rúbrica');
-            }
+        onError: () => {
+            alertaError('Error', 'No se pudo actualizar el estado de la rúbrica');
         }
     });
 };
@@ -207,10 +224,23 @@ const deleteItem = async (id) => {
                                 <td class="px-6 py-4 font-medium text-gray-900">{{ rubrics.from + index }}</td>
                                 <td class="px-6 py-4 font-semibold text-gray-800">{{ rubric.title }}</td>
                                 <td class="px-6 py-4">
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" :checked="rubric.is_active" @change="toggleActive(rubric)" class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1B396A]"></div>
-                                    </label>
+                                    <button
+                                        type="button"
+                                        @click="toggleActive(rubric)"
+                                        :class="[
+                                            'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none',
+                                            rubric.is_active ? 'bg-[#1B396A]' : 'bg-gray-200',
+                                            !canToggle(rubric) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                                        ]"
+                                        :title="!canToggle(rubric) ? toggleReasonBlocked(rubric) : (rubric.is_active ? 'Desactivar' : 'Activar')"
+                                    >
+                                        <span
+                                            :class="[
+                                                'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
+                                                rubric.is_active ? 'translate-x-6' : 'translate-x-1'
+                                            ]"
+                                        />
+                                    </button>
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">

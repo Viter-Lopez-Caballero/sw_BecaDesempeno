@@ -4,7 +4,8 @@ import AdminLayout from '@/layouts/AdminLayout.vue';
 import { computed, ref } from 'vue';
 import { 
     mdiFileDocumentMultiple, 
-    mdiChevronRight
+    mdiChevronRight,
+    mdiMessageText
 } from '@mdi/js';
 
 const props = defineProps({
@@ -118,12 +119,21 @@ const currentScore = computed(() => {
                             <h3 class="text-xs font-bold text-[#1B396A] uppercase tracking-wider mb-1">Tipo de Plaza</h3>
                             <p class="text-md font-medium text-gray-900">{{ application.position_full_type || application.data?.position_full_type || 'No especificado' }}</p>
                         </div>
-                        <div v-if="evaluation.status === 'rejected' && evaluation.comment" class="md:col-span-3">
-                            <h3 class="text-xs font-bold text-red-600 uppercase tracking-widest mb-2">Motivo / Comentario del Evaluador:</h3>
-                            <div class="bg-red-50 p-4 rounded-lg border border-red-100">
-                                <p class="text-red-800 italic font-medium">"{{ evaluation.comment }}"</p>
-                            </div>
-                        </div>
+                    </div>
+                </div>
+
+                <!-- Motivo de Rechazo -->
+                <div v-if="evaluation.status === 'rejected' && evaluation.comment"
+                    class="relative flex items-start gap-4 px-5 py-4 rounded-lg bg-white shadow-sm border border-gray-100"
+                    style="border-left: 5px solid #EF4444;"
+                >
+                    <div class="p-2 flex-shrink-0">
+                        <svg viewBox="0 0 24 24" class="w-7 h-7" style="fill: #EF4444;"><path :d="mdiMessageText"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-wider mb-0.5" style="color: #EF4444;">Motivo de Rechazo</p>
+                        <h3 class="font-bold text-gray-900 text-base">Comentario del Evaluador</h3>
+                        <p class="text-sm text-gray-900 mt-0.5 italic">"{{ evaluation.comment }}"</p>
                     </div>
                 </div>
 

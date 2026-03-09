@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Catalogos\StoreRubricRequest;
 use App\Http\Requests\Catalogos\UpdateRubricRequest;
 use App\Http\Resources\Catalog\RubricResource;
+use App\Models\Announcement;
 use App\Models\Rubric;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -42,9 +43,23 @@ class RubricController extends Controller
             ->paginate($rows)
             ->withQueryString();
 
+        $today = now()->startOfDay();
+        $evaluacionEnCurso = Announcement::whereHas('calendar', function ($q) use ($today) {
+            $q->whereDate('evaluation_start', '<=', $today)
+              ->where(function ($q2) use ($today) {
+                  $q2->whereNull('results_start')
+                     ->orWhereDate('results_start', '>', $today);
+              })
+              ->where(function ($q3) use ($today) {
+                  $q3->whereNull('results_end')
+                     ->orWhereDate('results_end', '>=', $today);
+              });
+        })->exists();
+
         return Inertia::render('SuperAdmin/Catalog/Rubrics/Index', [
             'rubrics' => $rubrics,
             'filters' => $request->all(['search', 'rows', 'order', 'direction']),
+            'evaluacionEnCurso' => $evaluacionEnCurso,
         ]);
     }
 
@@ -191,6 +206,28 @@ class RubricController extends Controller
 
     public function toggleActive(Rubric $rubric)
     {
+        // Block any rubric switch while an announcement is in evaluation stage
+        $today = now()->startOfDay();
+        $evaluacionEnCurso = Announcement::whereHas('calendar', function ($q) use ($today) {
+            $q->whereDate('evaluation_start', '<=', $today)
+              ->where(function ($q2) use ($today) {
+                  $q2->whereNull('results_start')
+                     ->orWhereDate('results_start', '>', $today);
+              })
+              ->where(function ($q3) use ($today) {
+                  $q3->whereNull('results_end')
+                     ->orWhereDate('results_end', '>=', $today);
+              });
+        })->exists();
+
+        if ($evaluacionEnCurso) {
+            // Only block if there's already an active rubric — switching is not allowed mid-evaluation.
+            // Activating one when none is active is still permitted.
+            if (Rubric::where('is_active', true)->exists()) {
+                return back()->withErrors(['error' => 'No se puede cambiar la rúbrica activa mientras hay una convocatoria en etapa de Evaluación. Espera a que concluya la evaluación.']);
+            }
+        }
+
         if (!$rubric->is_active) {
             if (Rubric::where('is_active', true)->exists()) {
                 return back()->withErrors(['error' => 'Ya existe una rúbrica activa. Desactívala primero para activar esta.']);

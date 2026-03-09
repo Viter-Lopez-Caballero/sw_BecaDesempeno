@@ -9,6 +9,7 @@ use App\Mail\AnnouncementStageChange;
 use App\Mail\AnnouncementDateChange;
 use App\Mail\AnnouncementClosed;
 use App\Mail\NewAnnouncement;
+use App\Mail\RecognitionAvailable;
 use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
@@ -206,6 +207,33 @@ class NotificationService
             } catch (\Exception $e) {
                 \Log::error("❌ Error enviando correo de nueva convocatoria a {$user->email}: " . $e->getMessage());
             }
+        }
+    }
+
+    /**
+     * Send notification when a teacher's recognition becomes available for download.
+     */
+    public function notifyRecognitionAvailable($userId, $announcementId, $announcementTitle): void
+    {
+        $teacher = User::findOrFail($userId);
+
+        Notification::create([
+            'title' => 'Reconocimiento Disponible',
+            'data' => [
+                'message' => "Tu reconocimiento de la convocatoria '{$announcementTitle}' ya está disponible para descargar.",
+                'announcement_id' => $announcementId,
+            ],
+            'type' => 'recognition_available',
+            'user_id' => $userId,
+        ]);
+
+        try {
+            Mail::to($teacher->email)->queue(new RecognitionAvailable(
+                $teacher->name,
+                $announcementTitle
+            ));
+        } catch (\Exception $e) {
+            \Log::error("❌ Error enviando correo de reconocimiento a {$teacher->email}: " . $e->getMessage());
         }
     }
 }

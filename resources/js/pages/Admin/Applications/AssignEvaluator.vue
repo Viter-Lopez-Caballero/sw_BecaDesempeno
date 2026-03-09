@@ -17,19 +17,14 @@ const props = defineProps({
     evaluators: Array,
 });
 
-const selectedEvaluatorIds = ref([]);
+const selectedEvaluators = ref([]);
 
-// Computed to get full objects for the table based on IDs
-const selectedEvaluatorsObjects = computed(() => {
-    return props.evaluators.filter(e => selectedEvaluatorIds.value.includes(e.id));
-});
+// Alias para la tabla (misma referencia)
+const selectedEvaluatorsObjects = computed(() => selectedEvaluators.value);
 
 const availableEvaluators = computed(() => {
-    // Filter out already selected evaluators from the dropdown options if desired, 
-    // or keep them but they are handled by v-model. 
-    // Usually better to keep them selectable or highlight them.
-    // For now returning all.
-    return props.evaluators;
+    const selectedIds = selectedEvaluators.value.map(e => e.id);
+    return props.evaluators.filter(e => !selectedIds.includes(e.id));
 });
 
 const form = useForm({
@@ -45,16 +40,16 @@ const getUser = () => unwrap(props.application.user);
 const getConvocatoria = () => unwrap(props.application.announcement);
 
 // Update form when selection changes
-watch(selectedEvaluatorIds, (newVal) => {
-    form.evaluator_ids = newVal;
-});
+watch(selectedEvaluators, (newVal) => {
+    form.evaluator_ids = newVal.map(e => e.id);
+}, { deep: true });
 
 const removeEvaluator = (id) => {
-    selectedEvaluatorIds.value = selectedEvaluatorIds.value.filter(val => val !== id);
+    selectedEvaluators.value = selectedEvaluators.value.filter(e => e.id !== id);
 };
 
 const submit = () => {
-    if (selectedEvaluatorIds.value.length === 0) return;
+    if (selectedEvaluators.value.length === 0) return;
     // Limpiar errores previos
     form.clearErrors();
     alertaCargando('Asignando', 'Por favor espera...');
@@ -221,9 +216,8 @@ const isStageEvaluacion = computed(() => {
                         <div>
                             <label class="block text-sm font-semibold text-gray-900 mb-2">Buscar Evaluador</label>
                             <VueSelect
-                                v-model="selectedEvaluatorIds"
+                                v-model="selectedEvaluators"
                                 :options="availableEvaluators"
-                                :reduce="evaluator => evaluator.id"
                                 :filter="filterEvaluators"
                                 label="name"
                                 multiple
@@ -301,7 +295,7 @@ const isStageEvaluacion = computed(() => {
                             <button 
                                 type="submit" 
                                 class="px-6 py-2.5 bg-[#1B396A] text-white rounded-lg font-bold uppercase text-[11px] tracking-wider hover:bg-[#152d47] transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
-                                :disabled="form.processing || selectedEvaluatorIds.length === 0"
+                                :disabled="form.processing || selectedEvaluators.length === 0"
                             >
                                 <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path :d="mdiAccountPlus"/></svg>
                                 Asignar Evaluador(es)
@@ -347,14 +341,15 @@ const isStageEvaluacion = computed(() => {
 }
 
 .vue-select-custom :deep(.vs__selected) {
-    background-color: #eff6ff;
+    background-color: #ffffff;
     color: #1e3a8a;
-    border: 1px solid #bfdbfe;
-    border-radius: 4px;
-    padding: 2px 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 3px 10px;
     margin: 2px;
     font-size: 0.85rem;
-    font-weight: 500;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 
 .vue-select-custom :deep(.vs__actions) {

@@ -33,7 +33,7 @@ const getFase = (convocatoria) => {
     if (convocatoria.status !== 'activa') {
         return { 
             nombre: 'Cerrada', 
-            color: 'bg-red-100 text-red-800', 
+            color: 'text-red-600', 
             canRegister: false,
             etapaLabel: 'Convocatoria Cerrada'
         };
@@ -69,7 +69,7 @@ const getFase = (convocatoria) => {
 
     return { 
         nombre: 'Activa', 
-        color: 'bg-green-100 text-green-800', 
+        color: 'text-green-700', 
         canRegister,
         etapaLabel
     };
@@ -335,13 +335,17 @@ const getIconComponent = (iconName) => {
                         </div>
                         <div class="p-6 flex-1 flex flex-col">
                             <div class="flex justify-between items-center mb-4">
-                                <span 
-                                    :class="getFase(convocatoria).color"
-                                    class="text-xs font-bold px-3 py-1.5 rounded-full shadow-md"
-                                >
-                                    {{ getFase(convocatoria).nombre }}
+                                <span v-if="convocatoria.status === 'activa'"
+                                    class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-white text-[13px] font-bold text-green-700 shadow-sm">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
+                                    Activa
                                 </span>
-                                <span class="text-sm font-semibold bg-gray-100 px-3 py-1 rounded-full" :class="convocatoria.status === 'activa' ? 'text-gray-600' : 'text-gray-500'">
+                                <span v-else
+                                    class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-white text-[13px] font-bold text-red-700 shadow-sm">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                                    Cerrada
+                                </span>
+                                <span class="text-[13px] font-bold px-3 py-1.5 rounded-md bg-white shadow-sm text-gray-500">
                                     {{ new Date(convocatoria.created_at).getFullYear() }}
                                 </span>
                             </div>

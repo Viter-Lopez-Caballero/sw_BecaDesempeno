@@ -207,7 +207,7 @@ const submit = () => {
                                             <input id="archivo-plantilla-change" type="file" class="hidden" @change="handleFileChange" accept=".pdf" />
                                         </label>
                                         <button type="button" @click="removeFile"
-                                            class="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition shadow-sm font-medium">
+                                            class="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition shadow-sm font-medium cursor-pointer">
                                             Eliminar
                                         </button>
                                     </div>

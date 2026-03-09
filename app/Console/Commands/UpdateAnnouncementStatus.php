@@ -180,6 +180,29 @@ class UpdateAnnouncementStatus extends Command
                     Log::info("Cron Convocatorias: Notificación diferida enviada al Docente {$app->user_id} para Solicitud {$app->id}");
                 }
             }
+
+            // Send recognition available emails to teachers whose recognitions are active
+            // but the notification hasn't been sent yet
+            $reconocimientos = \App\Models\Recognition::where('announcement_id', $announcement->id)
+                ->where('active', true)
+                ->get();
+
+            foreach ($reconocimientos as $rec) {
+                $yaNotificoReconocimiento = \App\Models\Notification::where('type', 'recognition_available')
+                    ->where('user_id', $rec->user_id)
+                    ->where('data->announcement_id', $announcement->id)
+                    ->exists();
+
+                if (!$yaNotificoReconocimiento) {
+                    $notificationService->notifyRecognitionAvailable(
+                        $rec->user_id,
+                        $announcement->id,
+                        $announcement->name
+                    );
+                    $this->info("Cron: Reconocimiento disponible notificado al Docente {$rec->user_id}.");
+                    Log::info("Cron Convocatorias: Reconocimiento notificado al Docente {$rec->user_id} para Convocatoria {$announcement->id}");
+                }
+            }
         }
 
         // 2. Cerrar convocatorias activas cuya fecha de resultados ya pasó

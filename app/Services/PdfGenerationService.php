@@ -194,7 +194,7 @@ class PdfGenerationService
         $originalString = "||{$application->id}|{$user->id}|" . Carbon::now()->toIso8601String() . "||";
 
         // Add Legal Signature QR Page (Second Page) - uses same page size as template
-        $this->addLegalSignaturePage($pdf, $originalString, "Carta de Aceptaci\u00f3n", $user->id, $application->id, $size);
+        $this->addLegalSignaturePage($pdf, $originalString, 'Carta de Aceptación', $user->id, $application->id, $size);
 
         // Output PDF
         return response($pdf->Output('S'), 200)

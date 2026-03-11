@@ -35,9 +35,9 @@ class AssignmentService
                 if (!$exists) {
                     Evaluation::create([
                         'application_id' => $applicationId,
-                        'evaluator_id' => $userId,
-                        'status' => 'pending',
-                        'deadline_at' => Carbon::now()->addWeekdays(7),
+                        'evaluator_id'   => $userId,
+                        'status'         => 'pending',
+                        'deadline_at'    => Carbon::now()->addWeekdays(7),
                     ]);
 
                     // Contar cuántas evaluaciones tiene el evaluador
@@ -45,8 +45,7 @@ class AssignmentService
                         ->where('status', 'pending')
                         ->count();
 
-                    // Enviar notificación (se recomienda fuera del loop o manejar cuidadosamente)
-                    // Según la guía, se envía notificación individual
+                    // Enviar notificación individual
                     $this->notificationService->notifyEvaluatorAssignment($userId, $evaluationsCount);
                 }
             }

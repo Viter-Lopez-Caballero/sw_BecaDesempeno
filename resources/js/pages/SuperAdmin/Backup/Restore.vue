@@ -484,6 +484,13 @@ const submit = async () => {
     color: white;
 }
 
+/* Fix: el badge de modo (Completo/Incremental) tiene bg-white, al hacer hover
+   el texto se vuelve blanco sobre blanco. Cambiamos el fondo a transparente blanco. */
+.vue-select-custom :deep(.vs__dropdown-option--highlight .rounded-md) {
+    background: rgba(255, 255, 255, 0.25) !important;
+    color: white !important;
+}
+
 .vue-select-custom :deep(.vs__no-options) {
     padding: 0.75rem;
     color: #6B7280;

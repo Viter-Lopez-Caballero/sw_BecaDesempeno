@@ -403,7 +403,7 @@ class BackupController extends Controller
                 'date'  => $b->created_at->format('d/m/Y H:i'),
                 'size'  => $b->file_size_formatted,
                 'type'  => $b->type === 'scheduled' ? 'Automático' : 'Manual',
-                'mode'  => $b->backup_mode === 'incremental' ? 'Incremental' : 'Completo',
+                'mode'  => $b->backup_mode === 'incremental' ? 'Incremental' : 'Completa',
             ])
             ->all();
 

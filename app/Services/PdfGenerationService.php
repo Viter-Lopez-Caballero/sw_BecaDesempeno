@@ -369,19 +369,25 @@ class PdfGenerationService
         }
 
         // --- Snapshot Data Fetch or Create ---
-        $snapshot = is_string($recognition->snapshot_data) ? json_decode($recognition->snapshot_data, true) : $recognition->snapshot_data;
+        // Teacher recognitions use a FIXED body text — NOT the editable template text (that's for evaluators).
+        // snapshot_data cast as 'array' in Recognition, so it's already decoded here.
+        $snapshot = $recognition->snapshot_data;
         if (!$snapshot) {
             $contentData = $template ? $template->content_data : [];
             $announcementName = $recognition->announcement ? $recognition->announcement->name : 'Convocatoria General';
-            $defaultBody = $contentData['body_text'] ?? "Por su destacada e invaluable participación como postulante en la convocatoria:";
-            
+
+            // Fixed body text for teacher (postulant) — does NOT come from the template
+            $teacherBodyText = "Por su destacada participación como postulante en el Programa de Estímulo"
+                . "\nal Desempeño del Personal Docente para los Institutos Federales y Centros:";
+
             $snapshot = [
-                'date_text' => "CIUDAD DE MÉXICO, A " . mb_strtoupper(Carbon::now()->timezone('America/Mexico_City')->isoFormat('DD [DE] MMMM [DE] YYYY'), 'UTF-8'),
+                'date_text'     => "CIUDAD DE MÉXICO, A " . mb_strtoupper(Carbon::now()->timezone('America/Mexico_City')->isoFormat('DD [DE] MMMM [DE] YYYY'), 'UTF-8'),
                 'director_name' => $contentData['director_name'] ?? 'Ramón Jiménez López',
-                'director_title' => $contentData['director_title'] ?? 'Director General',
-                'body_text' => $defaultBody . "\n" . mb_strtoupper($announcementName)
+                'director_title'=> $contentData['director_title'] ?? 'Director General',
+                'body_text'     => $teacherBodyText . "\n" . mb_strtoupper($announcementName),
             ];
-            $recognition->snapshot_data = json_encode($snapshot);
+            // Assign array directly — 'array' cast on Recognition handles json_encode automatically
+            $recognition->snapshot_data = $snapshot;
             $recognition->save();
         }
 
@@ -450,22 +456,29 @@ class PdfGenerationService
                 $folioPrefix = $documentType === 'Reconocimiento Evaluador' ? 'EVAL' : 'DOC';
             }
             
-            // Check if it already has an identifier, so we don't regenerate on re-download
-            if ($document && $document->identifier) {
+            // If document already has an identifier AND a digital seal, reuse both (idempotent re-downloads).
+            // If it has an identifier but NO seal (sign failed on first download), generate the seal now.
+            // If it has neither, generate both from scratch.
+            if ($document && $document->identifier && $document->digital_seal) {
+                // Fully formed → just reuse
                 $uniqueIdentifier = $document->identifier;
-                $digitalSeal = $document->digital_seal;
+                $digitalSeal      = $document->digital_seal;
             } else {
-                // Generate Unique Identifier
-                $year = date('Y');
-                $uniqueSuffix = substr(str_shuffle(str_repeat("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 5)), 0, 6);
-                $uniqueIdentifier = "ACE-{$year}-{$folioPrefix}-{$recognitionId}-{$uniqueSuffix}";
-                
-                // Generate Seal using SignatureService
+                // Generate identifier if missing
+                if ($document && $document->identifier) {
+                    $uniqueIdentifier = $document->identifier;
+                } else {
+                    $year            = date('Y');
+                    $uniqueSuffix    = substr(str_shuffle(str_repeat("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 5)), 0, 6);
+                    $uniqueIdentifier = "ACE-{$year}-{$folioPrefix}-{$recognitionId}-{$uniqueSuffix}";
+                }
+
+                // Always generate / re-generate the seal
                 $digitalSeal = $this->signatureService->sign($originalString);
 
-                // Save to Database
+                // Persist both
                 if ($document) {
-                    $document->identifier = $uniqueIdentifier;
+                    $document->identifier  = $uniqueIdentifier;
                     $document->digital_seal = $digitalSeal;
                     $document->save();
                 }

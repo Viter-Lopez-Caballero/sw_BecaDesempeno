@@ -20,11 +20,13 @@ class Recognition extends Model
         'identifier',
         'digital_seal',
         'template_id',
+        'snapshot_data',
     ];
 
     protected $casts = [
-        'active' => 'boolean',
-        'sent_at' => 'datetime',
+        'active'        => 'boolean',
+        'sent_at'       => 'datetime',
+        'snapshot_data' => 'array',   // Auto JSON decode/encode
     ];
 
     // Relaciones

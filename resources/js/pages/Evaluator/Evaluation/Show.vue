@@ -119,42 +119,63 @@ const isReadOnly = computed(() => {
 // LocalStorage Draft Management
 import { watch, onMounted } from 'vue';
 
-const draftKey = computed(() => `evaluator_draft_${props.evaluation.id}`);
+// Key includes BOTH evaluation.id AND application.id so that:
+// - The same evaluation resumed later restores the correct draft.
+// - If the same evaluation.id is ever reused with a different application (edge case),
+//   the key is different → clean slate automatically.
+const draftKey = computed(() =>
+    `evaluator_draft_eval${props.evaluation.id}_app${props.application?.id ?? 0}`
+);
+
+const hasDraft = ref(false); // true when a saved draft exists in localStorage
 
 const saveDraft = (showMessage = false) => {
     if (isReadOnly.value) return;
     localStorage.setItem(draftKey.value, JSON.stringify(form.answers));
+    hasDraft.value = Object.keys(form.answers).length > 0;
     if (showMessage) {
-        // Usa una alerta pequeña de éxito si es manual
         alertaExito('Borrador guardado', 'Tus respuestas han sido guardadas temporalmente de forma exitosa.');
     }
 };
 
-const loadDraft = () => {
-    if (isReadOnly.value) return;
-    
-    // Prevent state bleed if component is reused by Inertia
+const clearDraft = async () => {
+    const confirmed = await alertaPregunta(
+        '¿Empezar de nuevo?',
+        'Se borrará el borrador guardado y la rúbrica quedará en blanco. Esta acción no se puede deshacer.'
+    );
+    if (!confirmed) return;
+    localStorage.removeItem(draftKey.value);
     form.answers = {};
     updateFormScore();
+    hasDraft.value = false;
+};
 
-    // Attempt hydration
+const loadDraft = () => {
+    if (isReadOnly.value) return;
+
+    // Reset form first to prevent bleed between navigations
+    form.answers = {};
+    updateFormScore();
+    hasDraft.value = false;
+
     const savedDraft = localStorage.getItem(draftKey.value);
     if (savedDraft) {
         try {
             const parsedAnswers = JSON.parse(savedDraft);
             if (Object.keys(parsedAnswers).length > 0) {
-                // Filter strictly to current rubric questions to avoid zombie answers from old rubrics
+                // Filter strictly to current rubric questions to avoid zombie answers from different rubrics
                 const validAnswers = {};
                 const validQuestionIds = props.rubric?.questions?.map(q => q.id.toString()) || [];
-                
+
                 for (const [qId, answerData] of Object.entries(parsedAnswers)) {
                     if (validQuestionIds.includes(qId.toString())) {
                         validAnswers[qId] = answerData;
                     }
                 }
-                
+
                 form.answers = validAnswers;
                 updateFormScore();
+                hasDraft.value = Object.keys(validAnswers).length > 0;
             }
         } catch (e) {
             console.error('Error parsing evaluation draft from local storage:', e);
@@ -174,6 +195,7 @@ watch(() => props.evaluation?.id, () => {
 watch(() => form.answers, () => {
     if (!isReadOnly.value) {
         localStorage.setItem(draftKey.value, JSON.stringify(form.answers));
+        hasDraft.value = Object.keys(form.answers).length > 0;
     }
 }, { deep: true });
 
@@ -511,7 +533,7 @@ const formatDate = (dateString) => {
                                 <button 
                                     type="button" 
                                     @click="saveDraft(true)"
-                                    class="w-full flex justify-center py-2.5 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition gap-2 items-center"
+                                    class="w-full flex justify-center py-2.5 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition gap-2 items-center cursor-pointer"
                                 >
                                     <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
@@ -520,6 +542,21 @@ const formatDate = (dateString) => {
                                     </svg>
                                     Guardar Borrador
                                 </button>
+
+                                <!-- Empezar de nuevo: solo visible si hay borrador guardado -->
+                                <button
+                                    v-if="hasDraft"
+                                    type="button"
+                                    @click="clearDraft()"
+                                    class="mt-2 w-full flex justify-center py-2 px-4 border border-red-200 rounded-lg text-xs font-medium text-red-500 bg-red-50 hover:bg-red-100 transition gap-2 items-center cursor-pointer"
+                                >
+                                    <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="1 4 1 10 7 10"></polyline>
+                                        <path d="M3.51 15a9 9 0 1 0 .49-3.09"></path>
+                                    </svg>
+                                    Empezar de nuevo (limpiar borrador)
+                                </button>
+
                                 <p class="text-xs text-gray-500 mt-2 text-center">
                                     Tus selecciones se guardan automáticamente, pero puedes asegurar el guardado manualmente.
                                 </p>

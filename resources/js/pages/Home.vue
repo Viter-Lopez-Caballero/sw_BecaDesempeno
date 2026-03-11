@@ -109,6 +109,7 @@ const etapas = computed(() => {
             descripcion: 'Periodo de Revisión.',
             icono: 'ClipboardCheck',
             dateStartKey: 'evaluation_start',
+            dateEndKey: 'evaluation_end',
             color: '#E9C81F'
         },
         {
@@ -118,7 +119,8 @@ const etapas = computed(() => {
             descripcion: 'Publicación de Resultados.',
             icono: 'Award',
             dateStartKey: 'results_start',
-            color: '#2B6CB0' // Azul medio — igual que en AnnouncementCalendar
+            dateEndKey: 'results_end',
+            color: '#2B6CB0'
         }
     ];
 

@@ -1,21 +1,15 @@
 import { test, expect } from '@playwright/test';
 
-const EMAIL = 'lalo104lucky@gmail.com';
-const PASSWORD = 'password';
-
-async function login(page) {
-  await page.goto('/login');
-  await page.fill('input[type="email"]', EMAIL);
-  await page.fill('input[type="password"]', PASSWORD);
-  await page.click('button[type="submit"]');
-  await page.waitForURL(url => url.toString().includes('/superadmin/dashboard'), { timeout: 10000 });
-}
+// La autenticación se maneja mediante storageState (ver playwright.config.js)
+// Solo se hace login una vez por rol para evitar el rate limit de Fortify (429).
 
 // ─────────────────────────────────────────────
 // Dashboard
 // ─────────────────────────────────────────────
 test.describe('SuperAdmin - Dashboard', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/superadmin/dashboard');
+  });
 
   test('dashboard carga correctamente', async ({ page }) => {
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 10000 });
@@ -26,7 +20,6 @@ test.describe('SuperAdmin - Dashboard', () => {
 // Convocatorias
 // ─────────────────────────────────────────────
 test.describe('SuperAdmin - Convocatorias', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
 
   test('lista de convocatorias carga', async ({ page }) => {
     await page.goto('/announcements');
@@ -44,7 +37,6 @@ test.describe('SuperAdmin - Convocatorias', () => {
 // Catálogo: Instituciones
 // ─────────────────────────────────────────────
 test.describe('SuperAdmin - Catálogo: Instituciones', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
 
   test('lista de instituciones carga', async ({ page }) => {
     await page.goto('/catalog/institutions');
@@ -69,7 +61,6 @@ test.describe('SuperAdmin - Catálogo: Instituciones', () => {
 // Catálogo: Áreas Prioritarias
 // ─────────────────────────────────────────────
 test.describe('SuperAdmin - Catálogo: Áreas Prioritarias', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
 
   test('lista de áreas prioritarias carga', async ({ page }) => {
     await page.goto('/catalog/priority-areas');
@@ -87,7 +78,6 @@ test.describe('SuperAdmin - Catálogo: Áreas Prioritarias', () => {
 // Catálogo: Sub Áreas
 // ─────────────────────────────────────────────
 test.describe('SuperAdmin - Catálogo: Sub Áreas', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
 
   test('lista de sub áreas carga', async ({ page }) => {
     await page.goto('/catalog/sub-areas');
@@ -112,7 +102,6 @@ test.describe('SuperAdmin - Catálogo: Sub Áreas', () => {
 // Catálogo: Documentos
 // ─────────────────────────────────────────────
 test.describe('SuperAdmin - Catálogo: Documentos', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
 
   test('lista de documentos del catálogo carga', async ({ page }) => {
     await page.goto('/catalog/documents');
@@ -124,7 +113,6 @@ test.describe('SuperAdmin - Catálogo: Documentos', () => {
 // Catálogo: Rúbricas
 // ─────────────────────────────────────────────
 test.describe('SuperAdmin - Catálogo: Rúbricas', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
 
   test('lista de rúbricas carga', async ({ page }) => {
     await page.goto('/catalog/rubrics');
@@ -151,7 +139,6 @@ test.describe('SuperAdmin - Catálogo: Rúbricas', () => {
 // Catálogo: Plantillas
 // ─────────────────────────────────────────────
 test.describe('SuperAdmin - Catálogo: Plantillas', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
 
   test('lista de plantillas carga', async ({ page }) => {
     await page.goto('/catalog/templates');
@@ -163,7 +150,6 @@ test.describe('SuperAdmin - Catálogo: Plantillas', () => {
 // Seguridad: Módulos
 // ─────────────────────────────────────────────
 test.describe('SuperAdmin - Seguridad: Módulos', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
 
   test('lista de módulos carga', async ({ page }) => {
     await page.goto('/security/modules');
@@ -190,7 +176,6 @@ test.describe('SuperAdmin - Seguridad: Módulos', () => {
 // Seguridad: Permisos
 // ─────────────────────────────────────────────
 test.describe('SuperAdmin - Seguridad: Permisos', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
 
   test('lista de permisos carga', async ({ page }) => {
     await page.goto('/security/permissions');
@@ -208,7 +193,6 @@ test.describe('SuperAdmin - Seguridad: Permisos', () => {
 // Seguridad: Roles
 // ─────────────────────────────────────────────
 test.describe('SuperAdmin - Seguridad: Roles', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
 
   test('lista de roles carga', async ({ page }) => {
     await page.goto('/security/roles');
@@ -233,7 +217,6 @@ test.describe('SuperAdmin - Seguridad: Roles', () => {
 // Seguridad: Usuarios
 // ─────────────────────────────────────────────
 test.describe('SuperAdmin - Seguridad: Usuarios', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
 
   test('lista de usuarios carga', async ({ page }) => {
     await page.goto('/security/users');
@@ -260,12 +243,12 @@ test.describe('SuperAdmin - Seguridad: Usuarios', () => {
     await page.fill('input[placeholder="Nombre completo del usuario"]', 'Usuario Playwright');
     await page.fill('input[placeholder="correo@ejemplo.com"]', `playwright_${Date.now()}@becas.test`);
     await page.fill('input[placeholder="********"]', 'password123');
-    // Seleccionar el primer rol disponible (checkbox)
-    await page.locator('input[type="checkbox"]').first().check();
+    // Seleccionar el primer rol disponible (checkbox custom - requiere force)
+    await page.locator('input[type="checkbox"]').first().check({ force: true });
     await page.click('button[type="submit"]');
     // Esperar SweetAlert de éxito o redirección al listado
     await expect(
-      page.locator('.swal2-popup').or(page.locator('h1').filter({ hasText: /Usuario/i }))
+      page.locator('.swal2-popup').or(page.locator('h1').filter({ hasText: /Usuario/i })).first()
     ).toBeVisible({ timeout: 10000 });
   });
 });
@@ -274,7 +257,6 @@ test.describe('SuperAdmin - Seguridad: Usuarios', () => {
 // Backup
 // ─────────────────────────────────────────────
 test.describe('SuperAdmin - Backup', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
 
   test('página de backup carga correctamente', async ({ page }) => {
     await page.goto('/superadmin/backup');
@@ -286,7 +268,6 @@ test.describe('SuperAdmin - Backup', () => {
 // Control de Solicitudes
 // ─────────────────────────────────────────────
 test.describe('SuperAdmin - Control de Solicitudes', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
 
   test('control de solicitudes carga correctamente', async ({ page }) => {
     await page.goto('/superadmin/control-applications');

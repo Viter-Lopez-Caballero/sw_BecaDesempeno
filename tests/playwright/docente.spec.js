@@ -1,22 +1,15 @@
 import { test, expect } from '@playwright/test';
 
-// doc1@becas.test ya existe en el UserSeeder con institución, área y subárea asignadas
-const EMAIL = 'doc1@becas.test';
-const PASSWORD = 'password';
-
-async function login(page) {
-  await page.goto('/login');
-  await page.fill('input[type="email"]', EMAIL);
-  await page.fill('input[type="password"]', PASSWORD);
-  await page.click('button[type="submit"]');
-  await page.waitForURL(url => url.toString().includes('/teacher/dashboard'), { timeout: 10000 });
-}
+// La autenticación se maneja mediante storageState (ver playwright.config.js)
+// Solo se hace login una vez por rol para evitar el rate limit de Fortify (429).
 
 // ─────────────────────────────────────────────
 // Dashboard
 // ─────────────────────────────────────────────
 test.describe('Docente - Dashboard', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/teacher/dashboard');
+  });
 
   test('dashboard carga correctamente', async ({ page }) => {
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 10000 });
@@ -49,8 +42,6 @@ test.describe('Docente - Dashboard', () => {
 // Convocatorias
 // ─────────────────────────────────────────────
 test.describe('Docente - Convocatorias', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
-
   test('lista de convocatorias carga correctamente', async ({ page }) => {
     await page.goto('/teacher/announcements');
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 10000 });
@@ -74,8 +65,6 @@ test.describe('Docente - Convocatorias', () => {
 // Solicitud de Beca - Formulario de Postulación
 // ─────────────────────────────────────────────
 test.describe('Docente - Postulación a Convocatoria', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
-
   test('el formulario de postulación requiere tipo de puesto', async ({ page }) => {
     await page.goto('/teacher/announcements');
 
@@ -104,9 +93,8 @@ test.describe('Docente - Postulación a Convocatoria', () => {
 // Solicitudes Enviadas (historial del docente)
 // ─────────────────────────────────────────────
 test.describe('Docente - Mis Solicitudes', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
-
   test('dashboard muestra historial de solicitudes', async ({ page }) => {
+    await page.goto('/teacher/dashboard');
     // El teacher dashboard ya muestra la tabla de solicitudes del docente
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 10000 });
   });
@@ -116,8 +104,6 @@ test.describe('Docente - Mis Solicitudes', () => {
 // Reconocimientos
 // ─────────────────────────────────────────────
 test.describe('Docente - Reconocimientos', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
-
   test('lista de reconocimientos carga correctamente', async ({ page }) => {
     await page.goto('/teacher/recognitions');
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 10000 });
@@ -147,3 +133,4 @@ test.describe('Docente - Reconocimientos', () => {
     await expect(page.locator('h1').first()).toBeVisible();
   });
 });
+

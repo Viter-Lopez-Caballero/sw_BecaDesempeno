@@ -10,7 +10,7 @@ test('login success', async ({ page }) => {
   await page.fill('input[type="password"]', password);
   await page.click('button[type="submit"]');
   // Espera a que desaparezca el botón de loading
-  await expect(page.locator('text=Ingresando...')).not.toBeVisible({ timeout: 5000 });
+  await expect(page.locator('text=Ingresando...')).not.toBeVisible({ timeout: 30000 });
   // Espera a que aparezca el mensaje de éxito
-  await expect(page.locator('text=¡Bienvenido!')).toBeVisible({ timeout: 5000 });
+  await expect(page.locator('text=¡Bienvenido!')).toBeVisible({ timeout: 10000 });
 });

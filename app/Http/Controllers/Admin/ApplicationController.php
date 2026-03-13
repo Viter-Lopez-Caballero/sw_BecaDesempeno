@@ -145,13 +145,26 @@ class ApplicationController extends Controller
         $application->save();
 
         if ($validated['status'] === 'approved') {
-            \App\Models\Recognition::firstOrCreate([
+            $recognition = \App\Models\Recognition::firstOrNew([
                 'user_id' => $application->user_id,
                 'announcement_id' => $application->announcement_id,
-            ], [
-                'active' => true,
-                'sent_at' => now(),
             ]);
+
+            // Make sure approved teacher recognitions are immediately visible and searchable.
+            if (!$recognition->exists || !$recognition->active) {
+                $recognition->active = true;
+                $recognition->sent_at = now();
+            }
+
+            $recognition->save();
+
+            // Generate identifier now so public search can find it before first PDF download.
+            if (!$recognition->identifier) {
+                $year = date('Y');
+                $suffix = substr(str_shuffle(str_repeat('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 5)), 0, 6);
+                $recognition->identifier = "ACE-{$year}-DOC-{$recognition->id}-{$suffix}";
+                $recognition->save();
+            }
         }
 
         $application->loadMissing('announcement.calendar');

@@ -181,13 +181,20 @@ class UpdateAnnouncementStatus extends Command
                 }
             }
 
-            // Send recognition available emails to teachers whose recognitions are active
-            // but the notification hasn't been sent yet
-            $reconocimientos = \App\Models\Recognition::where('announcement_id', $announcement->id)
+            // Send recognition available emails to teachers (Docentes) whose recognitions are active
+            // but the notification hasn't been sent yet.
+            // Evaluators (Evaluador role) are notified immediately when the Admin activates their recognition.
+            $reconocimientos = \App\Models\Recognition::with('user')
+                ->where('announcement_id', $announcement->id)
                 ->where('active', true)
                 ->get();
 
             foreach ($reconocimientos as $rec) {
+                // Skip evaluators — they are notified at activation time by the Admin
+                if ($rec->user && $rec->user->hasRole('Evaluador')) {
+                    continue;
+                }
+
                 $yaNotificoReconocimiento = \App\Models\Notification::where('type', 'recognition_available')
                     ->where('user_id', $rec->user_id)
                     ->where('data->announcement_id', $announcement->id)

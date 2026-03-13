@@ -1,22 +1,15 @@
 import { test, expect } from '@playwright/test';
 
-// eval1@becas.test ya existe en el UserSeeder con institución, área y subárea asignadas
-const EMAIL = 'eval1@becas.test';
-const PASSWORD = 'password';
-
-async function login(page) {
-  await page.goto('/login');
-  await page.fill('input[type="email"]', EMAIL);
-  await page.fill('input[type="password"]', PASSWORD);
-  await page.click('button[type="submit"]');
-  await page.waitForURL(url => url.toString().includes('/evaluator/dashboard'), { timeout: 10000 });
-}
+// La autenticación se maneja mediante storageState (ver playwright.config.js)
+// Solo se hace login una vez por rol para evitar el rate limit de Fortify (429).
 
 // ─────────────────────────────────────────────
 // Dashboard
 // ─────────────────────────────────────────────
 test.describe('Evaluador - Dashboard', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/evaluator/dashboard');
+  });
 
   test('dashboard carga correctamente', async ({ page }) => {
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 10000 });
@@ -43,8 +36,6 @@ test.describe('Evaluador - Dashboard', () => {
 // Historial de Evaluaciones
 // ─────────────────────────────────────────────
 test.describe('Evaluador - Historial de Evaluaciones', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
-
   test('historial de evaluaciones carga correctamente', async ({ page }) => {
     await page.goto('/evaluator/evaluations');
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 10000 });
@@ -107,10 +98,9 @@ test.describe('Evaluador - Historial de Evaluaciones', () => {
 // Reconocimientos
 // ─────────────────────────────────────────────
 test.describe('Evaluador - Reconocimientos', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
-
   test('lista de reconocimientos carga correctamente', async ({ page }) => {
     await page.goto('/evaluator/recognitions');
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 10000 });
   });
 });
+

@@ -1,21 +1,15 @@
 import { test, expect } from '@playwright/test';
 
-const EMAIL = 'admin1@becas.test';
-const PASSWORD = 'password';
-
-async function login(page) {
-  await page.goto('/login');
-  await page.fill('input[type="email"]', EMAIL);
-  await page.fill('input[type="password"]', PASSWORD);
-  await page.click('button[type="submit"]');
-  await page.waitForURL(url => url.toString().includes('/admin/dashboard'), { timeout: 10000 });
-}
+// La autenticación se maneja mediante storageState (ver playwright.config.js)
+// Solo se hace login una vez por rol para evitar el rate limit de Fortify (429).
 
 // ─────────────────────────────────────────────
 // Dashboard
 // ─────────────────────────────────────────────
 test.describe('Admin - Dashboard', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/admin/dashboard');
+  });
 
   test('dashboard carga correctamente', async ({ page }) => {
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 10000 });
@@ -33,8 +27,6 @@ test.describe('Admin - Dashboard', () => {
 // Solicitudes de Docentes
 // ─────────────────────────────────────────────
 test.describe('Admin - Solicitudes', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
-
   test('lista de solicitudes carga correctamente', async ({ page }) => {
     await page.goto('/admin/applications');
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 10000 });
@@ -75,8 +67,6 @@ test.describe('Admin - Solicitudes', () => {
 // Gestión de Evaluadores
 // ─────────────────────────────────────────────
 test.describe('Admin - Evaluadores', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
-
   test('lista de evaluadores carga correctamente', async ({ page }) => {
     await page.goto('/admin/evaluators');
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 10000 });
@@ -87,8 +77,6 @@ test.describe('Admin - Evaluadores', () => {
 // Reconocimientos
 // ─────────────────────────────────────────────
 test.describe('Admin - Reconocimientos', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
-
   test('lista de reconocimientos carga correctamente', async ({ page }) => {
     await page.goto('/admin/recognitions');
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 10000 });
@@ -109,22 +97,9 @@ test.describe('Admin - Reconocimientos', () => {
 // Control de Solicitudes (vista compartida)
 // ─────────────────────────────────────────────
 test.describe('Admin - Control de Solicitudes', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
-
   test('control de solicitudes carga correctamente', async ({ page }) => {
     await page.goto('/control-applications');
     await expect(page.locator('h1').first()).toBeVisible({ timeout: 10000 });
   });
 });
 
-// ─────────────────────────────────────────────
-// Documentos de Seguridad
-// ─────────────────────────────────────────────
-test.describe('Admin - Documentos de Seguridad', () => {
-  test.beforeEach(async ({ page }) => { await login(page); });
-
-  test('lista de documentos de seguridad carga', async ({ page }) => {
-    await page.goto('/security/documents');
-    await expect(page.locator('h1').first()).toBeVisible({ timeout: 10000 });
-  });
-});

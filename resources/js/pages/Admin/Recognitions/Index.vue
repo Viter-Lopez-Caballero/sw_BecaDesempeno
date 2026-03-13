@@ -88,6 +88,7 @@ const toggleReconocimiento = (userId, announcementId, currentStatus, application
         announcement_id: announcementId,
     }, {
         preserveScroll: true,
+        only: ['recognitions'],
         onSuccess: () => {
             alertaExito(
                 currentStatus ? 'Reconocimiento desactivado' : 'Reconocimiento activado',

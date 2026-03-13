@@ -157,7 +157,7 @@ watch(search, (value) => {
                                         <div class="flex items-center justify-center">
                                             <button 
                                                 @click="togglePreview(item.id)"
-                                                class="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-md transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B396A]"
+                                                class="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-md transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1B396A] cursor-pointer"
                                                 :class="expandedRows[item.id] ? 'bg-gray-200 text-gray-800' : 'text-white bg-[#1B396A] hover:bg-[#234a85]'"
                                             >
                                                 <svg viewBox="0 0 24 24" class="w-4 h-4" style="fill: currentColor"><path :d="expandedRows[item.id] ? mdiEyeOff : mdiEye"/></svg>

@@ -82,23 +82,21 @@ class RecognitionController extends Controller
             $recognition->save();
         }
 
-        // If activating, check if the announcement is already in resultados/terminada
-        // so the teacher gets notified immediately. Otherwise the cron will handle it.
+        // Notify the evaluator immediately when their recognition is activated,
+        // regardless of the announcement stage.
         if ($recognition->active) {
-            $announcement = Announcement::with('calendar')->find($recognition->announcement_id);
-            if ($announcement && in_array($announcement->current_stage, ['resultados', 'terminada'])) {
-                $alreadyNotified = \App\Models\Notification::where('type', 'recognition_available')
-                    ->where('user_id', $recognition->user_id)
-                    ->where('data->announcement_id', $recognition->announcement_id)
-                    ->exists();
+            $announcement = Announcement::find($recognition->announcement_id);
+            $alreadyNotified = \App\Models\Notification::where('type', 'recognition_available')
+                ->where('user_id', $recognition->user_id)
+                ->where('data->announcement_id', $recognition->announcement_id)
+                ->exists();
 
-                if (!$alreadyNotified) {
-                    app(NotificationService::class)->notifyRecognitionAvailable(
-                        $recognition->user_id,
-                        $recognition->announcement_id,
-                        $announcement->name
-                    );
-                }
+            if ($announcement && !$alreadyNotified) {
+                app(NotificationService::class)->notifyRecognitionAvailable(
+                    $recognition->user_id,
+                    $recognition->announcement_id,
+                    $announcement->name
+                );
             }
         }
 

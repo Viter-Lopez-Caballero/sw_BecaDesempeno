@@ -37,7 +37,21 @@ Route::get('/recognitions/download/{identifier}', [\App\Http\Controllers\Public\
 Route::get('/announcement', [HomeController::class, 'showAnnouncement'])->name('announcement.show');
 
 Route::get('/documents', function () { // /documentos -> /documents
-    return Inertia::render('Documents'); // View name
+    $activeAnnouncement = \App\Models\Announcement::with('calendar')
+        ->where('status', 'activa')
+        ->latest('created_at')
+        ->first();
+
+    if (!$activeAnnouncement) {
+        $activeAnnouncement = \App\Models\Announcement::with('calendar')
+            ->where('status', 'cerrada')
+            ->latest('created_at')
+            ->first();
+    }
+
+    return Inertia::render('Documents', [
+        'activeAnnouncement' => $activeAnnouncement ? (new \App\Http\Resources\Catalog\AnnouncementResource($activeAnnouncement))->resolve() : null,
+    ]);
 })->name('documents.index'); // documents.index
 
 Route::get('/contact', function () { // /contacto -> /contact
@@ -256,6 +270,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             // Route::prefix('catalog')->name('catalog.')->group(function () { // Removed nested group
             Route::get('documents/{id}/download', [DocumentController::class, 'download'])->name('documents.download');
             Route::post('documents/{id}/toggle-active', [DocumentController::class, 'toggleActive'])->name('documents.toggleActive');
+            Route::post('documents/{id}/update-via', [DocumentController::class, 'updateVia'])->name('documents.updateVia');
             Route::get('documents/{document}/download-docente', [DocumentController::class, 'downloadDocente'])->name('documents.downloadDocente');
             Route::get('documents/{document}/stream-docente', [DocumentController::class, 'streamDocente'])->name('documents.streamDocente');
             Route::resource('documents', DocumentController::class);

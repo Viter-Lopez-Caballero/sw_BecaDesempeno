@@ -47,6 +47,7 @@ class ApplicationService
      * @param array|null $uploadedFiles Archivos subidos en la petición ('files').
      * @param array|null $fileTypes Tipos correspondientes a los archivos subidos.
      * @param array|null $reusedDocuments Documentos reusados.
+     * @param string $via La vía de solicitud (larga o corta).
      * @return Application
      * @throws Exception Si falta un documento requerido.
      */
@@ -56,13 +57,18 @@ class ApplicationService
         int $positionTypeId,
         ?array $uploadedFiles,
         ?array $fileTypes,
-        ?array $reusedDocuments
+        ?array $reusedDocuments,
+        string $via
     ): Application {
         // Validación manual de los documentos requeridos de la convocatoria.
         // Nota: Idealmente esto podría moverse a un Form Request, pero debido a la lógica mixta (archivos nuevos vs reusados),
         // es necesario verificar qué documentos aplican en total y si cubren los obligatorios.
         $announcement = Announcement::with('catalogDocuments')->findOrFail($announcementId);
-        $requiredDocs = $announcement->catalogDocuments()->where('is_mandatory', true)->pluck('name')->toArray();
+        $requiredDocs = $announcement->catalogDocuments()
+            ->where('is_mandatory', true)
+            ->whereIn('announcement_document.via', ['ambas', $via])
+            ->pluck('name')
+            ->toArray();
 
         $providedDocs = [];
 
@@ -89,19 +95,21 @@ class ApplicationService
             }
         }
 
-        return DB::transaction(function () use (
+            return DB::transaction(function () use (
             $userId,
             $announcementId,
             $positionTypeId,
             $uploadedFiles,
             $fileTypes,
-            $reusedDocuments
+            $reusedDocuments,
+            $via
         ) {
             $application = Application::create([
                 'user_id' => $userId,
                 'announcement_id' => $announcementId,
                 'status' => 'pending',
                 'position_type_id' => $positionTypeId,
+                'via' => $via,
             ]);
 
             // Guardar nuevos archivos subidos

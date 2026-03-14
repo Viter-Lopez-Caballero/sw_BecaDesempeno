@@ -215,17 +215,18 @@ class AnnouncementService
     {
         if ($documentIds) {
             $syncData = [];
-            foreach ($documentIds as $docId) {
-                $syncData[$docId] = ['is_mandatory' => true];
+            $docs = CatalogDocument::whereIn('id', $documentIds)->get(['id', 'via']);
+            foreach ($docs as $doc) {
+                $syncData[$doc->id] = ['is_mandatory' => true, 'via' => $doc->via];
             }
             $announcement->catalogDocuments()->sync($syncData);
         } else {
             // Default active documents
-            $activeDocuments = CatalogDocument::where('active', true)->pluck('id');
+            $activeDocuments = CatalogDocument::where('active', true)->get(['id', 'via']);
             if ($activeDocuments->isNotEmpty()) {
                 $syncData = [];
-                foreach ($activeDocuments as $docId) {
-                    $syncData[$docId] = ['is_mandatory' => true];
+                foreach ($activeDocuments as $doc) {
+                    $syncData[$doc->id] = ['is_mandatory' => true, 'via' => $doc->via];
                 }
                 $announcement->catalogDocuments()->sync($syncData);
             }

@@ -258,7 +258,7 @@ const switchTab = (tab) => {
                         <svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor">
                             <path :d="mdiStar"/>
                         </svg>
-                        Reconocimientos (Evaluadores)
+                        Reconocimientos
                     </button>
                     <button
                         type="button"
@@ -269,7 +269,7 @@ const switchTab = (tab) => {
                         <svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor">
                             <path :d="mdiSchool"/>
                         </svg>
-                        Cartas de Aceptación (Docentes)
+                        Carta de Aceptación
                     </button>
                 </div>
             </div>

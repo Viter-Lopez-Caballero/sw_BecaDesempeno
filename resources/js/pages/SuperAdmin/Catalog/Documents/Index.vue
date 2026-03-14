@@ -185,6 +185,17 @@ const toggleActivo = (id, active) => {
     });
 };
 
+const updateVia = (id, newVia) => {
+    router.post(route('catalog.documents.updateVia', id), { via: newVia }, {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: () => {
+             // Optional success alert here, but may be too noisy for a dropdown change
+        },
+        onError: () => alertaError('Error', 'No se pudo actualizar la vía')
+    });
+};
+
 // viewFile is now defined above for the inline preview
 
 const downloadFile = (id) => {
@@ -341,6 +352,7 @@ const viewDetails = (id) => {
                                     </th>
                                     <th scope="col" class="px-6 py-4 text-center tracking-wider">Archivo</th>
                                     <th scope="col" class="px-6 py-4 text-center tracking-wider">Activo</th>
+                                    <th scope="col" class="px-6 py-4 text-center tracking-wider">Vía</th>
                                     <th scope="col" class="px-6 py-4 text-center tracking-wider">Acciones</th>
                                 </tr>
                             </thead>
@@ -392,6 +404,31 @@ const viewDetails = (id) => {
                                                 <input type="checkbox" :checked="document.active" @change="toggleActivo(document.id, document.active)" class="sr-only peer" />
                                                 <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#1B396A]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1B396A]"></div>
                                             </label>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                                            <div class="inline-flex rounded-lg border border-gray-200 p-1 bg-gray-50 shadow-sm w-full xl:w-[220px]">
+                                                <button 
+                                                    @click="document.via = 'ambas'; updateVia(document.id, 'ambas')"
+                                                    :class="document.via === 'ambas' ? 'bg-gray-700 text-white shadow-md' : 'text-gray-500 hover:bg-gray-200/50 hover:text-gray-900'"
+                                                    class="flex-1 px-1 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all duration-200 cursor-pointer"
+                                                >
+                                                    Ambas
+                                                </button>
+                                                <button 
+                                                    @click="document.via = 'larga'; updateVia(document.id, 'larga')"
+                                                    :class="document.via === 'larga' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-500 hover:bg-blue-50 hover:text-blue-700'"
+                                                    class="flex-1 px-1 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all duration-200 cursor-pointer"
+                                                >
+                                                    Larga
+                                                </button>
+                                                <button 
+                                                    @click="document.via = 'corta'; updateVia(document.id, 'corta')"
+                                                    :class="document.via === 'corta' ? 'bg-purple-600 text-white shadow-md' : 'text-gray-500 hover:bg-purple-50 hover:text-purple-700'"
+                                                    class="flex-1 px-1 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all duration-200 cursor-pointer"
+                                                >
+                                                    Corta
+                                                </button>
+                                            </div>
                                         </td>
                                         <td class="px-6 py-4 text-center">
                                             <div class="flex items-center justify-center gap-2">

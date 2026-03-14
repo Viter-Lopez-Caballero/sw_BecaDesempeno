@@ -5,7 +5,7 @@ import TextInput from '@/components/TextInput.vue';
 import InputLabel from '@/components/InputLabel.vue';
 import InputError from '@/components/InputError.vue';
 import { mdiArrowLeft, mdiFileDocumentOutline, mdiCloudUpload, mdiCheckBold, mdiEye, mdiEyeOff, mdiRefresh, mdiBullhorn, mdiFilePlus } from '@mdi/js';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { alertaCargando, cerrarAlerta, alertaError, alertaConfirmacionEscrita } from '@/utils/alerts.js';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
@@ -32,15 +32,23 @@ const form = useForm({
     files: [], 
     file_types: [], 
     reused_documents: {}, 
+    via: 'larga',
 });
 
 // State for display
 // Map docId -> { type: 'new'|'reused'|'empty', file: File|null, originalDoc: Object|null, showPreview: boolean }
 const documentState = ref({}); 
 
+const filteredCatalogDocuments = computed(() => {
+    if (!props.catalog_documents) return [];
+    return props.catalog_documents.filter(doc => {
+        return doc.via === 'ambas' || doc.via === form.via;
+    });
+});
+
 const initializeState = () => {
-    if (props.catalog_documents) {
-        props.catalog_documents.forEach(doc => {
+    if (filteredCatalogDocuments.value) {
+        filteredCatalogDocuments.value.forEach(doc => {
             if (!documentState.value[doc.id]) {
                  documentState.value[doc.id] = { type: 'empty', file: null, originalDoc: null, showPreview: false, errorMessage: '' };
             }
@@ -140,7 +148,7 @@ const submit = async () => {
     let fileIndexToDocId = {}; // Map form.files index -> docId
 
     // Reset document errors
-    props.catalog_documents.forEach(doc => {
+    filteredCatalogDocuments.value.forEach(doc => {
         if(documentState.value[doc.id]) {
             documentState.value[doc.id].errorMessage = '';
         }
@@ -149,7 +157,7 @@ const submit = async () => {
     // Clear form errors
     form.clearErrors();
 
-    props.catalog_documents.forEach(doc => {
+    filteredCatalogDocuments.value.forEach(doc => {
         const state = documentState.value[doc.id];
         
         // Safety check if state is still missing for some reason
@@ -304,6 +312,31 @@ const submit = async () => {
                         </div>
                     </div>
 
+                    <!-- Selección de Vía -->
+                    <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+                        <h2 class="text-xl font-bold text-gray-900 mb-4 border-b pb-2">Vía de Solicitud</h2>
+                        <div class="space-y-4 flex flex-col md:flex-row md:space-y-0 gap-4">
+                            <label class="flex-1 flex items-start gap-3 cursor-pointer p-4 border rounded-lg transition-all" :class="form.via === 'larga' ? 'border-[#1B396A] bg-blue-50/50' : 'border-gray-200 hover:bg-gray-50'">
+                                <div class="flex items-center h-5">
+                                    <input type="radio" v-model="form.via" value="larga" class="w-4 h-4 text-[#1B396A] bg-gray-100 border-gray-300 focus:ring-[#1B396A]" @change="initializeState" />
+                                </div>
+                                <div class="flex-1">
+                                    <span class="block text-sm font-semibold text-gray-900 mb-1">Vía Larga (Evaluación Docente)</span>
+                                    <span class="block text-xs text-gray-500">Deberás presentar todos los documentos probatorios requeridos en esta modalidad.</span>
+                                </div>
+                            </label>
+                            <label class="flex-1 flex items-start gap-3 cursor-pointer p-4 border rounded-lg transition-all" :class="form.via === 'corta' ? 'border-[#1B396A] bg-blue-50/50' : 'border-gray-200 hover:bg-gray-50'">
+                                <div class="flex items-center h-5">
+                                    <input type="radio" v-model="form.via" value="corta" class="w-4 h-4 text-[#1B396A] bg-gray-100 border-gray-300 focus:ring-[#1B396A]" @change="initializeState" />
+                                </div>
+                                <div class="flex-1">
+                                    <span class="block text-sm font-semibold text-gray-900 mb-1">Vía Corta (Promoción Docente)</span>
+                                    <span class="block text-xs text-gray-500">Aplica si presentas dictamen del Sistema de Promoción Docente. Requiere menos documentos.</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
                     <!-- 2. Documentation Card -->
                     <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
                         <h2 class="text-xl font-bold text-gray-900 mb-4 border-b pb-2">Documentación Requerida</h2>
@@ -312,8 +345,8 @@ const submit = async () => {
                         </p>
 
                         <!-- Dynamic Documents List -->
-                        <div v-if="catalog_documents && catalog_documents.length > 0" class="space-y-8">
-                            <div v-for="doc in catalog_documents" :key="doc.id" class="border-b border-gray-100 pb-8 last:border-0 last:pb-0">
+                        <div v-if="filteredCatalogDocuments && filteredCatalogDocuments.length > 0" class="space-y-8">
+                            <div v-for="doc in filteredCatalogDocuments" :key="doc.id" class="border-b border-gray-100 pb-8 last:border-0 last:pb-0">
                                  <div class="flex items-center justify-between mb-2">
                                     <div>
                                         <div class="flex items-center gap-2">
@@ -451,11 +484,11 @@ const submit = async () => {
                              <div class="flex justify-between items-center text-sm">
                                 <span class="text-gray-600">Documentos listos:</span>
                                 <span class="font-bold text-gray-900">
-                                    {{ Object.values(documentState).filter(s => s.type !== 'empty').length }} / {{ catalog_documents.filter(d => d.is_required).length }} (Req)
+                                    {{ Object.values(documentState).filter(s => s.type !== 'empty').length }} / {{ filteredCatalogDocuments.filter(d => d.is_required).length }} (Req)
                                 </span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                <div class="bg-[#1B396A] h-2.5 rounded-full transition-all duration-500" :style="{ width: catalog_documents.length > 0 ? (Object.values(documentState).filter(s => s.type !== 'empty').length / catalog_documents.filter(d => d.is_required).length * 100) + '%' : '0%' }"></div>
+                                <div class="bg-[#1B396A] h-2.5 rounded-full transition-all duration-500" :style="{ width: filteredCatalogDocuments.length > 0 ? (Object.values(documentState).filter(s => s.type !== 'empty').length / filteredCatalogDocuments.filter(d => d.is_required).length * 100) + '%' : '0%' }"></div>
                             </div>
                         </div>
 

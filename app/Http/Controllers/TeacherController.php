@@ -169,7 +169,8 @@ class TeacherController extends Controller
                 $request->position_type_id,
                 $request->file('files'),
                 $request->file_types,
-                $request->reused_documents
+                $request->reused_documents,
+                $request->via
             );
 
             return redirect()->route('teacher.dashboard')->with('success', 'Solicitud enviada correctamente.');

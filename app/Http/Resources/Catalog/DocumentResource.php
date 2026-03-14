@@ -27,6 +27,7 @@ class DocumentResource extends JsonResource
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
             // Pivot data when loaded via announcement relationship
             'is_mandatory' => isset($this->pivot) ? (bool) $this->pivot->is_mandatory : true,
+            'via' => isset($this->pivot) ? $this->pivot->via : ($this->via ?? 'ambas'),
             // Alias for frontend compatibility
             'is_required' => isset($this->pivot) ? (bool) $this->pivot->is_mandatory : true,
             // Template URL for download (if it has file)

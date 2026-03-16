@@ -1,8 +1,7 @@
 <script setup>
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import LandingLayout from '@/layouts/LandingLayout.vue';
-import Pagination from '@/Shared/Pagination.vue';
-import { CheckCircle, Clock, AlertCircle, Calendar, ClipboardCheck, Award, FileText } from 'lucide-vue-next';
+import { CheckCircle, Clock, AlertCircle, Calendar, ClipboardCheck, Award, FileText, X } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 
 const props = defineProps({
@@ -166,6 +165,22 @@ const getIconComponent = (iconName) => {
         FileText
     };
     return icons[iconName];
+};
+
+const showPdfModal = ref(false);
+const currentPdfUrl = ref('');
+const currentPdfTitle = ref('');
+
+const openPdfPreview = (url, title) => {
+    currentPdfUrl.value = url;
+    currentPdfTitle.value = title;
+    showPdfModal.value = true;
+};
+
+const closePdfPreview = () => {
+    showPdfModal.value = false;
+    currentPdfUrl.value = '';
+    currentPdfTitle.value = '';
 };
 </script>
 
@@ -367,14 +382,13 @@ const getIconComponent = (iconName) => {
 
                             <!-- Document Link -->
                             <div v-if="convocatoria.file_url" class="mb-4">
-                                <a 
-                                    :href="convocatoria.file_url" 
-                                    target="_blank" 
-                                    class="inline-flex items-center text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors group/pdf"
+                                <button 
+                                    @click="openPdfPreview(convocatoria.file_url, convocatoria.name)" 
+                                    class="inline-flex items-center text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors group/pdf cursor-pointer"
                                 >
                                     <FileText class="w-4 h-4 mr-1 group-hover/pdf:scale-110 transition-transform"/>
                                     Más sobre la convocatoria
-                                </a>
+                                </button>
                             </div>
                             
                             <div class="mt-auto">
@@ -421,5 +435,63 @@ const getIconComponent = (iconName) => {
 
 
 
+        <!-- PDF Modal -->
+        <Teleport to="body">
+            <Transition name="modal">
+                <div v-if="showPdfModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <!-- Backdrop -->
+                    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+                    
+                    <!-- Modal Content -->
+                    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col">
+                        <!-- Modal Header -->
+                        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                            <h2 class="text-lg font-semibold text-gray-900">{{ currentPdfTitle }}</h2>
+                            <button @click="closePdfPreview" class="text-gray-400 hover:text-gray-800 transition-colors cursor-pointer">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <!-- PDF Viewer -->
+                        <div class="flex-1 overflow-hidden relative bg-gray-100">
+                             <div class="absolute inset-0 flex items-center justify-center text-gray-400 z-0">
+                                <div class="text-center">
+                                    <svg class="w-12 h-12 mx-auto animate-pulse mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    <span>Cargando vista previa...</span>
+                                </div>
+                            </div>
+                            <iframe :src="currentPdfUrl" class="w-full h-full relative z-10" frameborder="0"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
     </LandingLayout>
 </template>
+
+<style scoped>
+.modal-enter-active,
+.modal-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+    opacity: 0;
+}
+
+.modal-enter-active .relative,
+.modal-leave-active .relative {
+    transition: transform 0.3s ease;
+}
+
+.modal-enter-from .relative,
+.modal-leave-to .relative {
+    transform: scale(0.95);
+}
+</style>

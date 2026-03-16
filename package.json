@@ -41,6 +41,7 @@
         "clsx": "^2.1.1",
         "laravel-vite-plugin": "^2.0.0",
         "lucide-vue-next": "^0.468.0",
+        "pdf-parse": "^2.4.5",
         "pdfjs-dist": "^2.16.105",
         "pinia": "^3.0.4",
         "reka-ui": "^2.6.1",

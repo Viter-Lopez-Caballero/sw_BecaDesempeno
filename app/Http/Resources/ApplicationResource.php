@@ -41,6 +41,7 @@ class ApplicationResource extends JsonResource
             'user_id' => $this->user_id,
             'announcement_id' => $this->announcement_id,
             'status' => $status,
+            'via' => $this->via,
             'position_type_id' => $this->position_type_id,
             'position_type_name' => $this->positionType?->name,
             'position_type_code' => $this->positionType?->code,

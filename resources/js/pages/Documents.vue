@@ -1,7 +1,18 @@
 <script setup>
 import { Head } from '@inertiajs/vue3';
 import LandingLayout from '@/layouts/LandingLayout.vue';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+
+const props = defineProps({
+    activeAnnouncement: Object
+});
+
+const announcementYear = computed(() => {
+    if (props.activeAnnouncement && props.activeAnnouncement.created_at) {
+        return new Date(props.activeAnnouncement.created_at).getFullYear();
+    }
+    return 2026;
+});
 
 const activeDocument = ref(null);
 const currentPdfUrl = ref('');
@@ -164,15 +175,34 @@ const closeDocument = () => {
                         </div>
                     </button>
                     
-                    <!-- 6. Convocatoria 2025 -->
-                    <button @click="toggleDocument('doc6', 'https://edd.tecnm.mx/formatos/2025/CONVOCATORIA_EDD_2025.pdf', 'Convocatoria 2026')" class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-md border-l-4 border-[#1B396A] hover:shadow-xl transition-all group text-left w-full cursor-pointer" :class="{'ring-2 ring-offset-2 ring-[#1B396A]': activeDocument === 'doc6'}">
+                    <!-- 6. Convocatoria (Dinámica) -->
+                    <button v-if="activeAnnouncement && activeAnnouncement.file_url" @click="toggleDocument('doc6', activeAnnouncement.file_url, `Convocatoria ${announcementYear}`)" class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-md border-l-4 border-[#1B396A] hover:shadow-xl transition-all group text-left w-full cursor-pointer" :class="{'ring-2 ring-offset-2 ring-[#1B396A]': activeDocument === 'doc6'}">
                         <div class="flex-shrink-0">
                             <svg class="w-8 h-8 text-[#1B396A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
                             </svg>
                         </div>
                         <div class="flex-1">
-                            <h3 class="font-semibold text-gray-900 text-lg mb-2">Convocatoria 2026</h3>
+                            <h3 class="font-semibold text-gray-900 text-lg mb-2">Convocatoria {{ announcementYear }}</h3>
+                            <p class="text-sm text-gray-600 mb-3">Documento oficial de convocatoria del TecNM para el programa de estímulos {{ announcementYear }}: bases de participación, registro, evaluación, estímulos diferenciados, suspensiones, responsabilidades y contacto oficial.</p>
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs text-gray-500">PDF • Dinámico</span>
+                                <svg class="w-5 h-5 text-[#1B396A] group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </button>
+                    <!-- Fallback 6. Convocatoria Estática -->
+                    <button v-else @click="toggleDocument('doc6', 'https://edd.tecnm.mx/formatos/2025/CONVOCATORIA_EDD_2025.pdf', 'Convocatoria 2026')" class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-md border-l-4 border-[#1B396A] hover:shadow-xl transition-all group text-left w-full cursor-pointer" :class="{'ring-2 ring-offset-2 ring-[#1B396A]': activeDocument === 'doc6'}">
+                        <div class="flex-shrink-0">
+                            <svg class="w-8 h-8 text-[#1B396A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-gray-900 text-lg mb-2">Convocatoria 2026 (Estática)</h3>
                             <p class="text-sm text-gray-600 mb-3">Documento oficial de convocatoria del TecNM para el programa de estímulos 2025: bases de participación, registro, evaluación, estímulos diferenciados, suspensiones, responsabilidades y contacto oficial.</p>
                             <div class="flex items-center justify-between">
                                 <span class="text-xs text-gray-500">PDF • 2.7 MB</span>

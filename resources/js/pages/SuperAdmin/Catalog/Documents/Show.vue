@@ -105,9 +105,21 @@ const getFileIcon = (type) => {
                         <p class="text-sm font-medium text-gray-600 mb-1">Estado</p>
                         <p class="text-gray-900 font-medium text-base">{{ application.teacher?.state || 'N/A' }}</p>
                     </div>
-                    <div v-if="application.announcement" class="md:col-span-3">
+                    <div v-if="application.announcement" class="md:col-span-2">
                         <p class="text-sm font-medium text-gray-600 mb-1">Convocatoria</p>
                         <p class="text-gray-900 font-medium text-base leading-snug">{{ application.announcement.name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-600 mb-1">Vía Seleccionada</p>
+                        <div class="mt-1">
+                            <span v-if="application.via === 'larga'" class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-blue-100 text-blue-800 border-2 border-blue-200 shadow-sm">
+                                Vía Larga
+                            </span>
+                            <span v-else-if="application.via === 'corta'" class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-purple-100 text-purple-800 border-2 border-purple-200 shadow-sm">
+                                Vía Corta
+                            </span>
+                            <span v-else class="text-xs text-gray-400 font-semibold italic">N/A</span>
+                        </div>
                     </div>
                 </div>
 

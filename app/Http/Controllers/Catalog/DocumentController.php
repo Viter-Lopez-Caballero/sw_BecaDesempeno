@@ -269,6 +269,32 @@ class DocumentController extends Controller
     }
 
     /**
+     * Update via status.
+     */
+    public function updateVia(Request $request, $id): RedirectResponse
+    {
+        $request->validate([
+            'via' => 'required|in:larga,corta,ambas',
+        ]);
+
+        $document = CatalogDocument::findOrFail($id);
+        $document->update(['via' => $request->via]);
+
+        // Si se cambia la vía, podríamos querer sincronizar el campo 'via' de las convocatorias activas para preservar consistencia
+        // en la tabla pivote, pero el RequestController y AnnouncementController deben estar configurados.
+        $activeAnnouncements = Announcement::where('status', 'activa')->pluck('id');
+        if ($activeAnnouncements->isNotEmpty()) {
+            $syncData = [];
+            foreach ($activeAnnouncements as $convId) {
+                $syncData[$convId] = ['is_mandatory' => true, 'via' => $request->via];
+            }
+            $document->announcements()->syncWithoutDetaching($syncData);
+        }
+
+        return back()->with('success', 'Vía de solicitud actualizada correctamente');
+    }
+
+    /**
      * Download a teacher's document (from Application/Solicitud).
      */
     public function downloadDocente(\App\Models\Document $document) // Typehint Document

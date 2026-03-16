@@ -24,6 +24,7 @@ class Application extends Model
         'identifier',
         'digital_seal',
         'snapshot_data',
+        'via',
     ];
 
     protected $appends = ['position_full_type'];

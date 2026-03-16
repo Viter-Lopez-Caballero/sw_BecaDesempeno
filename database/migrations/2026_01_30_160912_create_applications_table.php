@@ -22,6 +22,7 @@ return new class extends Migration
             $table->text('admin_comment')->nullable();
             $table->string('identifier')->nullable()->unique(); // Folio único del PDF
             $table->text('digital_seal')->nullable(); // Sello digital firmado
+            $table->enum('via', ['larga', 'corta'])->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

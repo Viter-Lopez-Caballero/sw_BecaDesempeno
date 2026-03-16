@@ -52,7 +52,7 @@ class Announcement extends Model
     public function catalogDocuments(): BelongsToMany
     {
         return $this->belongsToMany(CatalogDocument::class, 'announcement_document', 'announcement_id', 'catalog_document_id')
-            ->withPivot('is_mandatory')
+            ->withPivot('is_mandatory', 'via')
             ->withTimestamps();
     }
 

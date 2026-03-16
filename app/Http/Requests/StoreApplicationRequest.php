@@ -26,6 +26,7 @@ class StoreApplicationRequest extends FormRequest
             'files.*' => 'file|mimes:pdf|max:10240', // 10MB max
             'file_types' => 'nullable|array',
             'reused_documents' => 'nullable|array',
+            'via' => 'required|in:larga,corta',
         ];
     }
     
@@ -41,6 +42,8 @@ class StoreApplicationRequest extends FormRequest
             'position_type_id.exists' => 'El tipo de plaza seleccionado no es válido.',
             'files.*.mimes' => 'Los archivos deben ser en formato PDF.',
             'files.*.max' => 'Los archivos no deben superar los 10MB.',
+            'via.required' => 'La vía de solicitud es obligatoria.',
+            'via.in' => 'La vía seleccionada no es válida.',
         ];
     }
 }

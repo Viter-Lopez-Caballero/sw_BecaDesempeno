@@ -21,6 +21,7 @@ class CatalogDocument extends Model
         'file_type',
         'file_size',
         'active',
+        'via'
     ];
 
     protected $casts = [
@@ -33,7 +34,7 @@ class CatalogDocument extends Model
     public function announcements(): BelongsToMany
     {
         return $this->belongsToMany(Announcement::class, 'announcement_document', 'catalog_document_id', 'announcement_id')
-            ->withPivot('is_mandatory')
+            ->withPivot('is_mandatory', 'via')
             ->withTimestamps();
     }
 

@@ -195,11 +195,7 @@ const isEvaluatedByAdmin = computed(() => {
                         </div>
                         <div>
                             <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Vía de Solicitud</h3>
-                            <p class="text-md font-medium text-gray-900">
-                                <span v-if="application.via === 'larga'" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white text-xs font-bold shadow-sm border border-blue-200 text-blue-700">Vía Larga</span>
-                                <span v-else-if="application.via === 'corta'" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white text-xs font-bold shadow-sm border border-purple-200 text-purple-700">Vía Corta</span>
-                                <span v-else class="text-gray-500 italic">No especificada</span>
-                            </p>
+                            <p class="text-md font-medium text-gray-900">{{ application.via === 'larga' ? 'Vía Larga' : (application.via === 'corta' ? 'Vía Corta' : 'No especificada') }}</p>
                         </div>
                     </div>
                 </div>

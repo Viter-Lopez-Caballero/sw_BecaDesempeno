@@ -204,6 +204,10 @@ const getFileIcon = (type) => {
                         <p class="text-gray-900 text-base">{{ application.position_full_type || 'No especificado' }}</p>
                     </div>
                     <div>
+                        <p class="text-sm font-medium text-gray-600 mb-1">Vía de Solicitud</p>
+                        <p class="text-gray-900 text-base">{{ application.via === 'larga' ? 'Vía Larga' : (application.via === 'corta' ? 'Vía Corta' : 'No especificada') }}</p>
+                    </div>
+                    <div>
                          <p class="text-sm font-medium text-gray-600 mb-1">Fecha de Solicitud</p>
                          <p class="text-gray-900 text-base">{{ new Date(application.created_at).toLocaleDateString() }}</p>
                     </div>

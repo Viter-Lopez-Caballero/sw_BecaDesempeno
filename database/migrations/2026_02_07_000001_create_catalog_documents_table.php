@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('file_type')->nullable();
             $table->integer('file_size')->nullable();
             $table->boolean('active')->default(false);
+            $table->enum('via', ['larga', 'corta', 'ambas'])->default('ambas');
             $table->timestamps();
             $table->softDeletes();
         });

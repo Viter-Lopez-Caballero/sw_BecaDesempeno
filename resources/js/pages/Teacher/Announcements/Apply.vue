@@ -5,8 +5,8 @@ import TextInput from '@/components/TextInput.vue';
 import InputLabel from '@/components/InputLabel.vue';
 import InputError from '@/components/InputError.vue';
 import { mdiArrowLeft, mdiFileDocumentOutline, mdiCloudUpload, mdiCheckBold, mdiEye, mdiEyeOff, mdiRefresh, mdiBullhorn, mdiFilePlus } from '@mdi/js';
-import { ref, onMounted, computed } from 'vue';
-import { alertaCargando, cerrarAlerta, alertaError, alertaConfirmacionEscrita } from '@/utils/alerts.js';
+import { ref, onMounted, computed, watch } from 'vue';
+import { alertaCargando, cerrarAlerta, alertaError, alertaConfirmacionEscrita, alertaPregunta } from '@/utils/alerts.js';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
 
@@ -35,6 +35,8 @@ const form = useForm({
     via: 'larga',
 });
 
+const viaUiVersion = ref(0);
+
 // State for display
 // Map docId -> { type: 'new'|'reused'|'empty', file: File|null, originalDoc: Object|null, showPreview: boolean }
 const documentState = ref({}); 
@@ -46,7 +48,12 @@ const filteredCatalogDocuments = computed(() => {
     });
 });
 
-const initializeState = () => {
+const initializeState = ({ reset = false, includePrevious = true } = {}) => {
+    if (reset) {
+        // Al cambiar de via, se reinicia el estado temporal de cargas para evitar arrastre entre modalidades.
+        documentState.value = {};
+    }
+
     if (filteredCatalogDocuments.value) {
         filteredCatalogDocuments.value.forEach(doc => {
             if (!documentState.value[doc.id]) {
@@ -55,9 +62,9 @@ const initializeState = () => {
         });
     }
 
-    if (props.previous_documents && props.previous_documents.length > 0) {
+    if (includePrevious && props.previous_documents && props.previous_documents.length > 0) {
         props.previous_documents.forEach(prevDoc => {
-            const catalogDoc = props.catalog_documents.find(d => d.name === prevDoc.name);
+            const catalogDoc = filteredCatalogDocuments.value.find(d => d.name === prevDoc.name);
             if (catalogDoc) {
                 documentState.value[catalogDoc.id] = {
                     type: 'reused',
@@ -71,6 +78,51 @@ const initializeState = () => {
     }
 };
 
+const handleViaChange = async (newVia) => {
+    if (newVia === form.via) return;
+
+    // Fuerza sincronizacion visual de radios controlados por :checked
+    // para evitar que el navegador deje marcado temporalmente el radio clicado.
+    viaUiVersion.value += 1;
+
+    const hasNewUploadedDocuments = Object.values(documentState.value).some(
+        (state) => state && state.type === 'new'
+    );
+
+    if (hasNewUploadedDocuments) {
+        const confirmed = await alertaPregunta(
+            '¿Cambiar vía de solicitud?',
+            'Cambiar de vía limpiará los archivos cargados. ¿Deseas continuar?'
+        );
+
+        if (!confirmed) {
+            viaUiVersion.value += 1;
+            return;
+        }
+    }
+
+    form.via = newVia;
+    viaUiVersion.value += 1;
+    initializeState({ reset: true, includePrevious: false });
+};
+
+const requiredDocsCount = computed(() => {
+    return filteredCatalogDocuments.value.filter(doc => doc.is_required).length;
+});
+
+const readyRequiredDocsCount = computed(() => {
+    return filteredCatalogDocuments.value.filter(doc => {
+        if (!doc.is_required) return false;
+        const state = documentState.value[doc.id];
+        return state && state.type !== 'empty';
+    }).length;
+});
+
+const completionPercentage = computed(() => {
+    if (requiredDocsCount.value === 0) return 0;
+    return (readyRequiredDocsCount.value / requiredDocsCount.value) * 100;
+});
+
 // Initialize immediately
 initializeState();
 
@@ -78,6 +130,14 @@ initializeState();
 onMounted(() => {
     initializeState();
 });
+
+watch(
+    () => props.previous_documents,
+    () => {
+        initializeState();
+    },
+    { deep: true }
+);
 
 const handleFileUpload = (event, docId) => {
     const file = event.target.files[0];
@@ -315,10 +375,10 @@ const submit = async () => {
                     <!-- Selección de Vía -->
                     <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
                         <h2 class="text-xl font-bold text-gray-900 mb-4 border-b pb-2">Vía de Solicitud</h2>
-                        <div class="space-y-4 flex flex-col md:flex-row md:space-y-0 gap-4">
+                        <div :key="viaUiVersion" class="space-y-4 flex flex-col md:flex-row md:space-y-0 gap-4">
                             <label class="flex-1 flex items-start gap-3 cursor-pointer p-4 border rounded-lg transition-all" :class="form.via === 'larga' ? 'border-[#1B396A] bg-blue-50/50' : 'border-gray-200 hover:bg-gray-50'">
                                 <div class="flex items-center h-5">
-                                    <input type="radio" v-model="form.via" value="larga" class="w-4 h-4 text-[#1B396A] bg-gray-100 border-gray-300 focus:ring-[#1B396A]" @change="initializeState" />
+                                    <input type="radio" name="via" :checked="form.via === 'larga'" value="larga" class="w-4 h-4 text-[#1B396A] bg-gray-100 border-gray-300 focus:ring-[#1B396A]" @click.prevent="handleViaChange('larga')" />
                                 </div>
                                 <div class="flex-1">
                                     <span class="block text-sm font-semibold text-gray-900 mb-1">Vía Larga (Evaluación Docente)</span>
@@ -327,7 +387,7 @@ const submit = async () => {
                             </label>
                             <label class="flex-1 flex items-start gap-3 cursor-pointer p-4 border rounded-lg transition-all" :class="form.via === 'corta' ? 'border-[#1B396A] bg-blue-50/50' : 'border-gray-200 hover:bg-gray-50'">
                                 <div class="flex items-center h-5">
-                                    <input type="radio" v-model="form.via" value="corta" class="w-4 h-4 text-[#1B396A] bg-gray-100 border-gray-300 focus:ring-[#1B396A]" @change="initializeState" />
+                                    <input type="radio" name="via" :checked="form.via === 'corta'" value="corta" class="w-4 h-4 text-[#1B396A] bg-gray-100 border-gray-300 focus:ring-[#1B396A]" @click.prevent="handleViaChange('corta')" />
                                 </div>
                                 <div class="flex-1">
                                     <span class="block text-sm font-semibold text-gray-900 mb-1">Vía Corta (Promoción Docente)</span>
@@ -484,11 +544,11 @@ const submit = async () => {
                              <div class="flex justify-between items-center text-sm">
                                 <span class="text-gray-600">Documentos listos:</span>
                                 <span class="font-bold text-gray-900">
-                                    {{ Object.values(documentState).filter(s => s.type !== 'empty').length }} / {{ filteredCatalogDocuments.filter(d => d.is_required).length }} (Req)
+                                    {{ readyRequiredDocsCount }} / {{ requiredDocsCount }} (Req)
                                 </span>
                             </div>
                             <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                <div class="bg-[#1B396A] h-2.5 rounded-full transition-all duration-500" :style="{ width: filteredCatalogDocuments.length > 0 ? (Object.values(documentState).filter(s => s.type !== 'empty').length / filteredCatalogDocuments.filter(d => d.is_required).length * 100) + '%' : '0%' }"></div>
+                                <div class="bg-[#1B396A] h-2.5 rounded-full transition-all duration-500" :style="{ width: `${completionPercentage}%` }"></div>
                             </div>
                         </div>
 

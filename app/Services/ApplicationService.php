@@ -65,6 +65,7 @@ class ApplicationService
         // es necesario verificar qué documentos aplican en total y si cubren los obligatorios.
         $announcement = Announcement::with('catalogDocuments')->findOrFail($announcementId);
         $requiredDocs = $announcement->catalogDocuments()
+            ->where('catalog_documents.active', true)
             ->where('is_mandatory', true)
             ->whereIn('announcement_document.via', ['ambas', $via])
             ->pluck('name')

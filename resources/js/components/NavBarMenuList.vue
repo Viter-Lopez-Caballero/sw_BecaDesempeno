@@ -1,5 +1,5 @@
 <script setup>
-import NavBarItem from "@/Components/NavBarItem.vue";
+import NavBarItem from "@/components/NavBarItem.vue";
 
 defineProps({
   menu: {
@@ -23,3 +23,4 @@ const menuClick = (event, item) => {
     @menu-click="menuClick"
   />
 </template>
+

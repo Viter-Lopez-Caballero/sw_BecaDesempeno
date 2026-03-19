@@ -1,5 +1,5 @@
 <script setup>
-import UserAvatar from "@/Components/UserAvatar.vue";
+import UserAvatar from "@/components/UserAvatar.vue";
 import { usePage } from "@inertiajs/vue3";
 import { computed } from "vue";
 
@@ -12,3 +12,4 @@ const userName = computed(() => usePage().props.auth.user.name);
     <slot />
   </UserAvatar>
 </template>
+

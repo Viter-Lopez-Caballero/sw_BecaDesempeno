@@ -642,3 +642,4 @@ const buscarCurp = async () => {
     text-align: center;
 }
 </style>
+

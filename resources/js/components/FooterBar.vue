@@ -1,6 +1,6 @@
 <script setup>
 import { containerMaxW } from "@/config.js";
-import BaseLevel from "@/Components/BaseLevel.vue";
+import BaseLevel from "@/components/BaseLevel.vue";
 import { Link } from "@inertiajs/vue3";
 
 const year = new Date().getFullYear();
@@ -18,3 +18,4 @@ const year = new Date().getFullYear();
     </BaseLevel>
   </footer>
 </template>
+

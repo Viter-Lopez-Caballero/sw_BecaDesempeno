@@ -2,9 +2,9 @@
 import { ref } from "vue";
 import { mdiClose, mdiDotsVertical } from "@mdi/js";
 import { containerMaxW } from "@/config.js";
-import BaseIcon from "@/Components/BaseIcon.vue";
-import NavBarMenuList from "@/Components/NavBarMenuList.vue";
-import NavBarItemPlain from "@/Components/NavBarItemPlain.vue";
+import BaseIcon from "@/components/BaseIcon.vue";
+import NavBarMenuList from "@/components/NavBarMenuList.vue";
+import NavBarItemPlain from "@/components/NavBarItemPlain.vue";
 
 defineProps({
   menu: {
@@ -49,3 +49,4 @@ const isMenuNavBarActive = ref(false);
     </div>
   </nav>
 </template>
+

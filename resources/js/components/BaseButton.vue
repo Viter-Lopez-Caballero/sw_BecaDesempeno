@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import { Link } from "@inertiajs/vue3";
 import { getButtonColor } from "@/config/colors.js";
-import BaseIcon from "@/Components/BaseIcon.vue";
+import BaseIcon from "@/components/BaseIcon.vue";
 
 const props = defineProps({
   label: {

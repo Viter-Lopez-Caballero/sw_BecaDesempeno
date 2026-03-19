@@ -1,5 +1,5 @@
 <script setup>
-import BaseIcon from "@/Components/BaseIcon.vue";
+import BaseIcon from "@/components/BaseIcon.vue";
 
 defineProps({
   label: {
@@ -30,3 +30,4 @@ defineProps({
     <span>{{ label }}</span>
   </div>
 </template>
+

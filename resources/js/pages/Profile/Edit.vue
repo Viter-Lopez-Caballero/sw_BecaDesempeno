@@ -533,3 +533,4 @@ const updatePassword = () => {
     border-bottom-color: #EF4444 !important;
 }
 </style>
+

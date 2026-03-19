@@ -12,7 +12,7 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from '@/Components/ui/avatar';
+} from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,13 +21,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/Components/ui/dropdown-menu';
+} from '@/components/ui/dropdown-menu';
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from '@/Components/ui/sidebar';
+} from '@/components/ui/sidebar';
 
 const props = defineProps({
   user: { type: Object, required: true },
@@ -100,3 +100,4 @@ const { isMobile } = useSidebar();
     </SidebarMenuItem>
   </SidebarMenu>
 </template>
+

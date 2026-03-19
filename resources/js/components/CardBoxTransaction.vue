@@ -6,10 +6,10 @@ import {
   mdiReceipt,
   mdiCreditCardOutline,
 } from "@mdi/js";
-import CardBox from "@/Components/CardBox.vue";
-import BaseLevel from "@/Components/BaseLevel.vue";
-import PillTag from "@/Components/PillTag.vue";
-import IconRounded from "@/Components/IconRounded.vue";
+import CardBox from "@/components/CardBox.vue";
+import BaseLevel from "@/components/BaseLevel.vue";
+import PillTag from "@/components/PillTag.vue";
+import IconRounded from "@/components/IconRounded.vue";
 
 const props = defineProps({
   amount: {
@@ -86,3 +86,4 @@ const icon = computed(() => {
     </BaseLevel>
   </CardBox>
 </template>
+

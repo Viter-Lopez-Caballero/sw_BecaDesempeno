@@ -1,6 +1,6 @@
 <script setup>
 import { cn } from "@/lib/utils";
-import { Label } from '@/Components/ui/label';
+import { Label } from '@/components/ui/label';
 import { useFormField } from "./useFormField";
 
 const props = defineProps({
@@ -23,3 +23,4 @@ const { error, formItemId } = useFormField();
     <slot />
   </Label>
 </template>
+

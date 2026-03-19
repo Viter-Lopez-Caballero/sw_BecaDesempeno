@@ -28,11 +28,11 @@
 </template>
 
 <script setup>
-import BaseButton from '@/Components/BaseButton.vue';
+import BaseButton from '@/components/BaseButton.vue';
 import BaseIcon from './BaseIcon.vue';
-import CardBox from '@/Components/CardBox.vue';
-import FormControl from '@/Components/FormControl.vue';
-import FormField from '@/Components/FormField.vue';
+import CardBox from '@/components/CardBox.vue';
+import FormControl from '@/components/FormControl.vue';
+import FormField from '@/components/FormField.vue';
 import InputError from './InputError.vue';
 import { mdiClose, mdiFileDocumentOutline } from '@mdi/js';
 

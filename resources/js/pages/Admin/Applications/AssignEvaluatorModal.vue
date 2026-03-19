@@ -103,7 +103,7 @@
 </template>
 
 <script setup>
-import Modal from '@/Components/Modal.vue';
+import Modal from '@/components/Modal.vue';
 import { useForm, router } from '@inertiajs/vue3';
 import { ref, watch, computed } from 'vue';
 import { mdiDelete } from '@mdi/js';
@@ -190,3 +190,4 @@ const save = () => {
     padding-bottom: 2px;
 }
 </style>
+

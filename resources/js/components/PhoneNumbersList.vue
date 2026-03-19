@@ -25,8 +25,8 @@
 </template>
 
 <script setup>
-import Badge from '@/Components/Badge.vue';
-import CardBoxComponentEmpty from '@/Components/CardBoxComponentEmpty.vue';
+import Badge from '@/components/Badge.vue';
+import CardBoxComponentEmpty from '@/components/CardBoxComponentEmpty.vue';
 
 
 defineProps({

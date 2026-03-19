@@ -1,8 +1,8 @@
 <script setup>
-import CardBox from "@/Components/CardBox.vue";
+import CardBox from "@/components/CardBox.vue";
 import { ref, watch, watchEffect, inject } from "vue";
 import axios from "axios";
-import BaseButton from "@/Components/BaseButton.vue";
+import BaseButton from "@/components/BaseButton.vue";
 import Swal from "sweetalert2";
 import { mdiClose } from "@mdi/js";
 
@@ -51,3 +51,4 @@ const getPDF = () => {
 
 watchEffect(getPDF);
 </script>
+

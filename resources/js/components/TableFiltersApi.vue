@@ -20,9 +20,9 @@
 </template>
 
 <script setup>
-import BaseButton from '@/Components/BaseButton.vue';
-import FormField from '@/Components/FormField.vue';
-import FormControl from '@/Components/FormControl.vue';
+import BaseButton from '@/components/BaseButton.vue';
+import FormField from '@/components/FormField.vue';
+import FormControl from '@/components/FormControl.vue';
 import { mdiBroom, mdiMagnify, mdiNumeric } from '@mdi/js';
 
 const props = defineProps({

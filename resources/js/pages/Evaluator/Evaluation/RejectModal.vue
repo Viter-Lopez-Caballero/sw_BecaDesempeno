@@ -86,10 +86,10 @@
 </template>
 
 <script setup>
-import DialogModal from '@/Components/DialogModal.vue';
-import InputError from '@/Components/InputError.vue';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
+import DialogModal from '@/components/DialogModal.vue';
+import InputError from '@/components/InputError.vue';
+import SecondaryButton from '@/components/SecondaryButton.vue';
+import PrimaryButton from '@/components/PrimaryButton.vue';
 import { useForm } from '@inertiajs/vue3';
 import { watch } from 'vue';
 import { alertaCargando, cerrarAlerta, alertaExito, alertaError, alertaConfirmacionEscrita } from '@/utils/alerts.js';
@@ -162,3 +162,4 @@ const submit = () => {
     });
 };
 </script>
+

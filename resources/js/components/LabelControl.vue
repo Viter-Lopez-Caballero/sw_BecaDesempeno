@@ -9,7 +9,7 @@ import {
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
-} from "@/Components/ui/tooltip"
+} from "@/components/ui/tooltip"
 
 const props = defineProps({
     value: {

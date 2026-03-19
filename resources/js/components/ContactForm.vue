@@ -47,8 +47,8 @@
 </template>
 
 <script setup>
-import FormField from '@/Components/FormField.vue';
-import FormControl from '@/Components/FormControl.vue';
+import FormField from '@/components/FormField.vue';
+import FormControl from '@/components/FormControl.vue';
 import PhoneNumbersForm from './PhoneNumbersForm.vue';
 import SocialLinks from './SocialLinks.vue';
 import BaseDivider from './BaseDivider.vue';
@@ -97,3 +97,4 @@ const props = defineProps({
 })
 
 </script>
+

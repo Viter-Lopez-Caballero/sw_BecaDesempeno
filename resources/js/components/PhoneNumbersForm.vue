@@ -61,7 +61,7 @@
 </template>
 
 <script setup>
-import BaseButton from '@/Components/BaseButton.vue';
+import BaseButton from '@/components/BaseButton.vue';
 import { mdiAlphabeticalVariant, mdiCellphone, mdiFax, mdiHomeOutline, mdiNumeric, mdiOfficeBuildingOutline, mdiPlus, mdiTrashCan } from '@mdi/js';
 import FormControl from './FormControl.vue';
 import InputError from './InputError.vue';

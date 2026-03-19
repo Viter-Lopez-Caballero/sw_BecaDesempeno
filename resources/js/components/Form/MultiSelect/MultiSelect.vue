@@ -69,9 +69,9 @@
 </template>
 
 <script setup>
-import BaseButton from '@/Components/BaseButton.vue';
-import BaseIcon from '@/Components/BaseIcon.vue';
-import FormControl from '@/Components/FormControl.vue';
+import BaseButton from '@/components/BaseButton.vue';
+import BaseIcon from '@/components/BaseIcon.vue';
+import FormControl from '@/components/FormControl.vue';
 import { useMultiSelectState } from './useMultiSelectState';
 import { useMultiSelectSelection } from './useMultiSelectSelection';
 import { useMultiSelectSearch } from './useMultiSelectSearch';
@@ -83,7 +83,7 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuTrigger,
-} from '@/Components/ui/dropdown-menu'
+} from '@/components/ui/dropdown-menu'
 
 const props = defineProps({
     options: {

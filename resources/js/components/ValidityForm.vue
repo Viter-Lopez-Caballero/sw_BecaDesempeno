@@ -46,11 +46,11 @@
 </template>
 
 <script setup>
-import BaseButton from '@/Components/BaseButton.vue';
-import CardBox from '@/Components/CardBox.vue';
-import FormControl from '@/Components/FormControl.vue';
-import FormField from '@/Components/FormField.vue';
-import Modal from '@/Components/Modal.vue';
+import BaseButton from '@/components/BaseButton.vue';
+import CardBox from '@/components/CardBox.vue';
+import FormControl from '@/components/FormControl.vue';
+import FormField from '@/components/FormField.vue';
+import Modal from '@/components/Modal.vue';
 import { mdiCheck, mdiClose } from '@mdi/js';
 import { CalendarCog } from 'lucide-vue-next';
 import { useValidity } from '@/Hooks/useValidity';
@@ -65,3 +65,4 @@ const emit = defineEmits(['close']);
 
 const { form, close, updateValidity } = useValidity(props, emit);
 </script>
+

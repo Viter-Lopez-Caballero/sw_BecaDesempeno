@@ -24,11 +24,11 @@
     </CardBox>
 </template>
 <script setup>
-import BaseButton from '@/Components/BaseButton.vue';
-import BaseIcon from '@/Components/BaseIcon.vue';
-import CardBox from '@/Components/CardBox.vue';
-import FormControl from '@/Components/FormControl.vue';
-import FormField from '@/Components/FormField.vue';
+import BaseButton from '@/components/BaseButton.vue';
+import BaseIcon from '@/components/BaseIcon.vue';
+import CardBox from '@/components/CardBox.vue';
+import FormControl from '@/components/FormControl.vue';
+import FormField from '@/components/FormField.vue';
 import { mdiBroom, mdiFilter, mdiMagnify, mdiPlus } from '@mdi/js';
 import { reactive } from 'vue';
 

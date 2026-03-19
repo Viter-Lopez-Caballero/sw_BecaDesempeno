@@ -29,10 +29,10 @@
 </template>
 
 <script setup>
-import CardSection from '@/Components/CardSection.vue';
-import LabelText from '@/Components/LabelText.vue';
-import PhoneNumbersList from '@/Components/PhoneNumbersList.vue';
-import SocialLinksList from '@/Components/SocialLinksList.vue';
+import CardSection from '@/components/CardSection.vue';
+import LabelText from '@/components/LabelText.vue';
+import PhoneNumbersList from '@/components/PhoneNumbersList.vue';
+import SocialLinksList from '@/components/SocialLinksList.vue';
 
 defineProps({
     contact: {

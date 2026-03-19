@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from "vue";
-import FormCheckRadio from "@/Components/FormCheckRadio.vue";
+import FormCheckRadio from "@/components/FormCheckRadio.vue";
 
 const props = defineProps({
   options: {
@@ -57,3 +57,4 @@ const computedValue = computed({
     />
   </div>
 </template>
+

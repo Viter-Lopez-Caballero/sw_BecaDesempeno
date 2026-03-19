@@ -15,7 +15,7 @@
     </label>
 </template>
 <script setup>
-import BaseIcon from '@/Components/BaseIcon.vue';
+import BaseIcon from '@/components/BaseIcon.vue';
 import { computed } from 'vue';
 
 const model = defineModel({ type: [String, Number] })

@@ -111,15 +111,7 @@ const getFileIcon = (type) => {
                     </div>
                     <div>
                         <p class="text-sm font-medium text-gray-600 mb-1">Vía Seleccionada</p>
-                        <div class="mt-1">
-                            <span v-if="application.via === 'larga'" class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-blue-100 text-blue-800 border-2 border-blue-200 shadow-sm">
-                                Vía Larga
-                            </span>
-                            <span v-else-if="application.via === 'corta'" class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-purple-100 text-purple-800 border-2 border-purple-200 shadow-sm">
-                                Vía Corta
-                            </span>
-                            <span v-else class="text-xs text-gray-400 font-semibold italic">N/A</span>
-                        </div>
+                        <p class="text-gray-900 font-medium text-base">{{ application.via === 'larga' ? 'Vía Larga' : (application.via === 'corta' ? 'Vía Corta' : 'N/A') }}</p>
                     </div>
                 </div>
 

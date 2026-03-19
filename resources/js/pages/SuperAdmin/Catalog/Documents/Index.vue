@@ -22,9 +22,11 @@ const viewFile = (document) => {
         if (document.file_path) {
             const isPdf = document.file_path.toLowerCase().endsWith('.pdf');
             const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(document.file_path);
+            const baseUrl = `/storage/${document.file_path}`;
+            const previewUrl = isPdf ? `${baseUrl}#view=FitH&zoom=page-width` : baseUrl;
             
             currentFile.value = {
-                url: `/storage/${document.file_path}`,
+                url: previewUrl,
                 name: document.name,
                 type: isPdf ? 'application/pdf' : (isImage ? 'image/jpeg' : 'other'),
                 id: document.id
@@ -406,27 +408,27 @@ const viewDetails = (id) => {
                                             </label>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-center">
-                                            <div class="inline-flex rounded-lg border border-gray-200 p-1 bg-gray-50 shadow-sm w-full xl:w-[220px]">
-                                                <button 
+                                            <div class="via-segment" role="group" aria-label="Seleccionar via del documento">
+                                                <button
                                                     @click="document.via = 'ambas'; updateVia(document.id, 'ambas')"
-                                                    :class="document.via === 'ambas' ? 'bg-gray-700 text-white shadow-md' : 'text-gray-500 hover:bg-gray-200/50 hover:text-gray-900'"
-                                                    class="flex-1 px-1 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all duration-200 cursor-pointer"
+                                                    class="via-option via-option-neutral cursor-pointer"
+                                                    :class="{ 'is-active': document.via === 'ambas' }"
                                                 >
-                                                    Ambas
+                                                    AMBAS
                                                 </button>
-                                                <button 
+                                                <button
                                                     @click="document.via = 'larga'; updateVia(document.id, 'larga')"
-                                                    :class="document.via === 'larga' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-500 hover:bg-blue-50 hover:text-blue-700'"
-                                                    class="flex-1 px-1 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all duration-200 cursor-pointer"
+                                                    class="via-option via-option-long cursor-pointer"
+                                                    :class="{ 'is-active': document.via === 'larga' }"
                                                 >
-                                                    Larga
+                                                    LARGA
                                                 </button>
-                                                <button 
+                                                <button
                                                     @click="document.via = 'corta'; updateVia(document.id, 'corta')"
-                                                    :class="document.via === 'corta' ? 'bg-purple-600 text-white shadow-md' : 'text-gray-500 hover:bg-purple-50 hover:text-purple-700'"
-                                                    class="flex-1 px-1 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all duration-200 cursor-pointer"
+                                                    class="via-option via-option-short cursor-pointer"
+                                                    :class="{ 'is-active': document.via === 'corta' }"
                                                 >
-                                                    Corta
+                                                    CORTA
                                                 </button>
                                             </div>
                                         </td>
@@ -447,7 +449,7 @@ const viewDetails = (id) => {
                                     </tr>
                                     <!-- Inline Preview Row -->
                                     <tr v-if="expandedRows[document.id]">
-                                        <td colspan="6" class="px-6 py-6 bg-gray-50 border-b border-gray-200">
+                                        <td colspan="7" class="px-6 py-6 bg-gray-50 border-b border-gray-200">
                                             <div class="flex flex-col gap-4">
                                                 <div class="flex justify-between items-center">
                                                     <h3 class="font-bold text-gray-800 text-lg">Vista Previa: {{ document.name }}</h3>
@@ -498,7 +500,7 @@ const viewDetails = (id) => {
                                     </tr>
                                 </template>
                                 <tr v-if="!documents?.data || documents.data.length === 0">
-                                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                    <td colspan="7" class="px-6 py-12 text-center text-gray-500">
                                         No se encontraron registros
                                     </td>
                                 </tr>
@@ -673,5 +675,66 @@ const viewDetails = (id) => {
 .modal-enter-from .relative,
 .modal-leave-to .relative {
     transform: scale(0.95);
+}
+
+.via-segment {
+    display: inline-flex;
+    width: 100%;
+    max-width: 230px;
+    border-radius: 0.5rem;
+    border: 1px solid #d1d5db;
+    background: #f8fafc;
+    padding: 0.2rem;
+    gap: 0.2rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 2px 8px rgba(15, 35, 71, 0.08);
+}
+
+.via-option {
+    position: relative;
+    flex: 1;
+    border-radius: 0.5rem;
+    padding: 0.42rem 0.3rem;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: #4b5563;
+    transition: all 0.2s ease;
+}
+
+.via-option:hover {
+    transform: translateY(-1px);
+}
+
+.via-option-neutral:not(.is-active):hover {
+    background: #dce6f5;
+    color: #1b396a;
+}
+
+.via-option-long:not(.is-active):hover {
+    background: #dce6f5;
+    color: #1b396a;
+}
+
+.via-option-short:not(.is-active):hover {
+    background: #dce6f5;
+    color: #1b396a;
+}
+
+.via-option.is-active {
+    color: #ffffff;
+    box-shadow: 0 5px 12px rgba(15, 23, 42, 0.24);
+}
+
+.via-option-neutral.is-active {
+    background: #1b396a;
+}
+
+.via-option-long.is-active {
+    background: #1b396a;
+}
+
+.via-option-short.is-active {
+    background: #1b396a;
+    color: #ffffff;
 }
 </style>

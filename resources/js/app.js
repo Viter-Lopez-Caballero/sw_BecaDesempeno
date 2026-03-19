@@ -17,7 +17,25 @@ const pinia = createPinia();
 
 createInertiaApp({
   title: (title) => `${title} - ${appName}`,
-  resolve: (name) => resolvePageComponent(`./pages/${name}.vue`, import.meta.glob('./pages/**/*.vue')),
+  resolve: (name) => {
+    const pages = import.meta.glob<Record<string, any>>('./pages/**/*.vue', { eager: true });
+    const path = `./pages/${name}.vue`;
+    
+    if (path in pages) {
+      return pages[path];
+    }
+    
+    // Fallback: try case-insensitive lookup for Linux
+    const lowerName = name.toLowerCase();
+    for (const [key, value] of Object.entries(pages)) {
+      if (key.toLowerCase().endsWith(lowerName.toLowerCase() + '.vue')) {
+        return value;
+      }
+    }
+    
+    console.error(`Page not found: ${path}`);
+    throw new Error(`Page not found: ${path}`);
+  },
   setup({ el, App, props, plugin }) {
     return createApp({ render: () => h(App, props) })
       .use(plugin)

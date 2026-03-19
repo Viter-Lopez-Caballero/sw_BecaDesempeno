@@ -22,9 +22,11 @@ const viewFile = (document) => {
         if (document.file_path) {
             const isPdf = document.file_path.toLowerCase().endsWith('.pdf');
             const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(document.file_path);
+            const baseUrl = `/storage/${document.file_path}`;
+            const previewUrl = isPdf ? `${baseUrl}#view=FitH&zoom=page-width` : baseUrl;
             
             currentFile.value = {
-                url: `/storage/${document.file_path}`,
+                url: previewUrl,
                 name: document.name,
                 type: isPdf ? 'application/pdf' : (isImage ? 'image/jpeg' : 'other'),
                 id: document.id
@@ -447,7 +449,7 @@ const viewDetails = (id) => {
                                     </tr>
                                     <!-- Inline Preview Row -->
                                     <tr v-if="expandedRows[document.id]">
-                                        <td colspan="6" class="px-6 py-6 bg-gray-50 border-b border-gray-200">
+                                        <td colspan="7" class="px-6 py-6 bg-gray-50 border-b border-gray-200">
                                             <div class="flex flex-col gap-4">
                                                 <div class="flex justify-between items-center">
                                                     <h3 class="font-bold text-gray-800 text-lg">Vista Previa: {{ document.name }}</h3>
@@ -498,7 +500,7 @@ const viewDetails = (id) => {
                                     </tr>
                                 </template>
                                 <tr v-if="!documents?.data || documents.data.length === 0">
-                                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                    <td colspan="7" class="px-6 py-12 text-center text-gray-500">
                                         No se encontraron registros
                                     </td>
                                 </tr>
@@ -709,13 +711,13 @@ const viewDetails = (id) => {
 }
 
 .via-option-long:not(.is-active):hover {
-    background: #d0f2e3;
-    color: #10a558;
+    background: #dce6f5;
+    color: #1b396a;
 }
 
 .via-option-short:not(.is-active):hover {
-    background: #dbeafe;
-    color: #2b6cb0;
+    background: #dce6f5;
+    color: #1b396a;
 }
 
 .via-option.is-active {
@@ -728,11 +730,11 @@ const viewDetails = (id) => {
 }
 
 .via-option-long.is-active {
-    background: #10a558;
+    background: #1b396a;
 }
 
 .via-option-short.is-active {
-    background: #2b6cb0;
+    background: #1b396a;
     color: #ffffff;
 }
 </style>

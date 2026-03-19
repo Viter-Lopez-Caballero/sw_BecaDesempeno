@@ -36,6 +36,22 @@ const form = useForm({
 });
 
 const viaUiVersion = ref(0);
+const showExampleModal = ref(false);
+const currentExampleUrl = ref('');
+const currentExampleTitle = ref('');
+
+const openExampleModal = (url, title) => {
+    if (!url) return;
+    currentExampleUrl.value = url;
+    currentExampleTitle.value = title;
+    showExampleModal.value = true;
+};
+
+const closeExampleModal = () => {
+    showExampleModal.value = false;
+    currentExampleUrl.value = '';
+    currentExampleTitle.value = '';
+};
 
 // State for display
 // Map docId -> { type: 'new'|'reused'|'empty', file: File|null, originalDoc: Object|null, showPreview: boolean }
@@ -90,9 +106,10 @@ const handleViaChange = async (newVia) => {
     );
 
     if (hasNewUploadedDocuments) {
-        const confirmed = await alertaPregunta(
+        const confirmed = await alertaConfirmacionEscrita(
             '¿Cambiar vía de solicitud?',
-            'Cambiar de vía limpiará los archivos cargados. ¿Deseas continuar?'
+            'Cambiar de vía limpiará los archivos cargados. Esta acción no se puede deshacer.',
+            'CAMBIAR'
         );
 
         if (!confirmed) {
@@ -103,7 +120,7 @@ const handleViaChange = async (newVia) => {
 
     form.via = newVia;
     viaUiVersion.value += 1;
-    initializeState({ reset: true, includePrevious: false });
+    initializeState({ reset: true, includePrevious: true });
 };
 
 const requiredDocsCount = computed(() => {
@@ -427,9 +444,9 @@ const submit = async () => {
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                     <span class="text-xs text-gray-600">¿No sabes cómo debe verse este documento?</span>
-                                    <a :href="doc.template_url" target="_blank" class="text-xs font-bold hover:underline transition ml-1" style="color: #1B396A;">
+                                    <button type="button" @click="openExampleModal(doc.template_url, doc.name)" class="text-xs font-bold hover:underline transition ml-1 cursor-pointer" style="color: #1B396A;">
                                         Ver Ejemplo
-                                    </a>
+                                    </button>
                                 </div>
 
 
@@ -577,6 +594,29 @@ const submit = async () => {
                 </div>
             </div>
         </div>
+
+        <Teleport to="body">
+            <Transition name="modal">
+                <div v-if="showExampleModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+
+                    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col">
+                        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                            <h2 class="text-lg font-semibold text-gray-900">{{ currentExampleTitle }}</h2>
+                            <button @click="closeExampleModal" class="text-gray-400 hover:text-gray-800 transition-colors cursor-pointer">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="flex-1 overflow-hidden">
+                            <iframe :src="currentExampleUrl" class="w-full h-full" frameborder="0"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
     </TeacherLayout>
 </template>
 <style scoped>
@@ -636,5 +676,25 @@ const submit = async () => {
 
 .vue-select-custom :deep(.vs__dropdown-option--highlight span) {
     color: white !important;
+}
+
+.modal-enter-active,
+.modal-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+    opacity: 0;
+}
+
+.modal-enter-active .relative,
+.modal-leave-active .relative {
+    transition: transform 0.3s ease;
+}
+
+.modal-enter-from .relative,
+.modal-leave-to .relative {
+    transform: scale(0.95);
 }
 </style>

@@ -516,12 +516,6 @@ class PdfGenerationService
             $pdf->Image($tempQR, 15, 15, 30, 30, 'PNG');
             unlink($tempQR); // Cleanup
 
-            // Print the URL below the QR for visual inspection
-            $pdf->SetFont('Arial', '', 5); // Smaller text to fit
-            $pdf->SetTextColor(50, 50, 50);
-            $pdf->SetXY(15, 47);
-            $pdf->Cell(30, 3, iconv('UTF-8', 'ISO-8859-1', $validationUrl), 0, 1, 'C');
-
             // Right side block: Texts
             $startX = 50;
             $startY = 15;

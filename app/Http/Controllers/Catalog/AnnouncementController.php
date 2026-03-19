@@ -163,9 +163,9 @@ class AnnouncementController extends Controller
         $documents = $request->input('documents', []);
         $syncData = [];
 
-        $catalogDocs = CatalogDocument::whereIn('id', $documents)->get(['id', 'via']);
+        $catalogDocs = CatalogDocument::whereIn('id', $documents)->get(['id']);
         foreach ($catalogDocs as $doc) {
-            $syncData[$doc->id] = ['is_mandatory' => true, 'via' => $doc->via]; // Por defecto obligatorio y copiando 'via'
+            $syncData[$doc->id] = ['is_mandatory' => true, 'via' => 'ambas']; // Por defecto obligatorio y ambas vías
         }
 
         $announcement->catalogDocuments()->sync($syncData);

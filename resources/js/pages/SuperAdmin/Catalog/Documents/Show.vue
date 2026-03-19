@@ -66,7 +66,7 @@ const getFileIcon = (type) => {
                         <span class="text-gray-900 font-semibold">Detalles</span>
                     </div>
                 </div>
-                <Link :href="route(`${routeName}index`, { tab: 'docentes' })" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium bg-white cursor-pointer">
+                <Link :href="route(`${routeName}index`, { tab: 'docentes' })" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
                     </svg>
@@ -110,8 +110,18 @@ const getFileIcon = (type) => {
                         <p class="text-gray-900 font-medium text-base leading-snug">{{ application.announcement.name }}</p>
                     </div>
                     <div>
-                        <p class="text-sm font-medium text-gray-600 mb-1">Vía Seleccionada</p>
-                        <p class="text-gray-900 font-medium text-base">{{ application.via === 'larga' ? 'Vía Larga' : (application.via === 'corta' ? 'Vía Corta' : 'N/A') }}</p>
+                        <p class="text-sm font-medium text-gray-600 mb-2">Vía Seleccionada</p>
+                        <div class="inline-flex">
+                            <span v-if="application.via === 'larga'" class="inline-flex items-center px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-white shadow-md hover:shadow-lg transition" style="background-color: #1B396A; border: 1px solid #0f2347;">
+                                Vía Larga
+                            </span>
+                            <span v-else-if="application.via === 'corta'" class="inline-flex items-center px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-white shadow-md hover:shadow-lg transition" style="background-color: #10A558; border: 1px solid #0d8d47;">
+                                Vía Corta
+                            </span>
+                            <span v-else class="inline-flex items-center px-4 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider bg-gray-100 text-gray-600 border border-gray-300">
+                                No Especificada
+                            </span>
+                        </div>
                     </div>
                 </div>
 

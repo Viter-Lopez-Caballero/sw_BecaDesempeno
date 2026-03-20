@@ -246,7 +246,7 @@
             El sistema está temporalmente en mantenimiento. 
             Volveremos pronto. Gracias por tu paciencia.
         </p>
-        <a href="{{ url('/') }}" class="btn-home">Volver al Inicio</a>
+        <a href="{{ url('/') }}" class="btn-home" target="_top" rel="noopener noreferrer">Volver al Inicio</a>
     </div>
 </body>
 </html>

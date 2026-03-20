@@ -64,7 +64,7 @@ class RecognitionController extends Controller
             ->firstOrFail();
         try {
             return $this->pdfGenerationService->generateRecognitionPdf($recognition, $user);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return response()->view('errors.pdf_missing', ['message' => $e->getMessage()], 404);
         }
     }

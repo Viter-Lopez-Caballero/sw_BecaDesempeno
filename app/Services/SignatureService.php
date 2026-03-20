@@ -13,10 +13,10 @@ class SignatureService
 
     public function __construct()
     {
-        // Rutas basadas en la solicitud y estructura de Laravel
-        $this->cerPath = storage_path('app/firma/VIICyT.cer');
-        $this->keyPath = storage_path('app/firma/VIICyT.key');
-        $this->password = 'viicyt2024';
+        // Configurable from environment for safer deployments.
+        $this->cerPath = storage_path('app/' . env('SIGNATURE_CER_PATH', 'firma/VIICyT.cer'));
+        $this->keyPath = storage_path('app/' . env('SIGNATURE_KEY_PATH', 'firma/VIICyT.key'));
+        $this->password = (string) env('SIGNATURE_KEY_PASSWORD', 'viicyt2024');
     }
 
     /**
@@ -37,26 +37,35 @@ class SignatureService
         
         // El archivo .key suele estar en formato DER, necesitamos convertirlo o usarlo directamente si OpenSSL lo soporta
         // Intentar cargar la llave privada
-        $privateKey = openssl_pkey_get_private($privateKeyContent, $this->password);
+        $privateKey = @openssl_pkey_get_private($privateKeyContent, $this->password);
 
         if (!$privateKey) {
-            // Intentar convertir de DER a PEM si falla (común en certificados de México)
+            // Attempt DER -> PEM wrapping for PKCS#8 keys when raw load fails.
             $privateKey = $this->convertDerToPem($privateKeyContent);
         }
 
         if (!$privateKey) {
-            throw new Exception("No se pudo cargar la llave privada. Verifique la contraseña.");
+            $opensslError = $this->drainOpenSslErrors();
+            Log::error('No se pudo cargar la llave privada de firma', [
+                'key_path' => $this->keyPath,
+                'openssl_error' => $opensslError,
+            ]);
+            throw new Exception("No se pudo cargar la llave privada. Verifique contraseña, formato .key y extensión OpenSSL.");
         }
 
         $signature = '';
         // Firmar usando algoritmos estándares (SHA256)
-        $result = openssl_sign($cadenaOriginal, $signature, $privateKey, OPENSSL_ALGO_SHA256);
+        $result = @openssl_sign($cadenaOriginal, $signature, $privateKey, OPENSSL_ALGO_SHA256);
         
         openssl_free_key($privateKey);
 
         if ($result) {
             return base64_encode($signature);
         }
+
+        Log::error('No se pudo generar la firma con OpenSSL', [
+            'openssl_error' => $this->drainOpenSslErrors(),
+        ]);
 
         return null;
     }
@@ -112,10 +121,34 @@ class SignatureService
     /**
      * Convierte una llave privada DER a formato PEM (PKCS#8).
      */
-    private function convertDerToPem(string $derContent): string
+    private function convertDerToPem(string $derContent)
     {
-        // Esta es una simplificación. Si el .key está cifrado, requiere manejo específico.
-        // Pero openssl_pkey_get_private suele manejarlo si se pasa el contenido crudo y el password.
-        return $derContent; 
+        if (str_contains($derContent, 'BEGIN')) {
+            return @openssl_pkey_get_private($derContent, $this->password);
+        }
+
+        $pkcs8Pem = "-----BEGIN PRIVATE KEY-----\n"
+            . chunk_split(base64_encode($derContent), 64, "\n")
+            . "-----END PRIVATE KEY-----\n";
+        $key = @openssl_pkey_get_private($pkcs8Pem, $this->password);
+        if ($key) {
+            return $key;
+        }
+
+        $encPkcs8Pem = "-----BEGIN ENCRYPTED PRIVATE KEY-----\n"
+            . chunk_split(base64_encode($derContent), 64, "\n")
+            . "-----END ENCRYPTED PRIVATE KEY-----\n";
+
+        return @openssl_pkey_get_private($encPkcs8Pem, $this->password);
+    }
+
+    private function drainOpenSslErrors(): string
+    {
+        $errors = [];
+        while ($msg = openssl_error_string()) {
+            $errors[] = $msg;
+        }
+
+        return empty($errors) ? 'sin detalle de OpenSSL' : implode(' | ', $errors);
     }
 }

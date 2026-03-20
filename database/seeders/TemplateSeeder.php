@@ -21,8 +21,8 @@ class TemplateSeeder extends Seeder
                 'source_file' => database_path('seeders/templates/reconocimiento.pdf'),
                 'target_file' => 'templates/template_reconocimiento.pdf',
                 'content_data' => [
-                    'body_text' => "Por su destacada participacion como miembro de la Comision de Evaluacion\nLocal y Nacional al Programa de Estimulo al Desempeno del Personal\nDocente para los Institutos Federales y Centros",
-                    'director_name' => 'RAMON JIMENEZ LOPEZ',
+                    'body_text' => "Por su destacada participación como miembro de la Comisión de Evaluación\nLocal y Nacional al Programa de Estímulo al Desempeño del Personal\nDocente para los Institutos Federales y Centros\n[CONVOCATORIA]",
+                    'director_name' => 'RAMÓN JIMÉNEZ LÓPEZ',
                     'director_title' => 'DIRECTOR GENERAL',
                 ],
             ],
@@ -33,8 +33,8 @@ class TemplateSeeder extends Seeder
                 'source_file' => database_path('seeders/templates/carta_aceptacion.pdf'),
                 'target_file' => 'templates/template_carta_aceptacion.pdf',
                 'content_data' => [
-                    'body_text' => 'De conformidad a su solicitud de la convocatoria vigente, se notifica el resultado de su evaluacion y nivel asignado conforme a lineamientos.',
-                    'director_name' => 'RAMON JIMENEZ LOPEZ',
+                    'body_text' => "De conformidad a su solicitud de la convocatoria de **\"PROGRAMA DE ESTIMULO AL DESEMPEÑO DEL PERSONAL DOCENTE [AÑO_ACTUAL] PARA INSTITUTOS FEDERALES Y CENTROS\"**, me complace informarle que el Comité de Evaluación del Tecnológico Nacional de México (TecNM) y de conformidad con los Lineamientos del Programa de Estímulos al Desempeño del Personal Docente para los Institutos Federales Tecnológicos y Centros, ha dictaminado que su solicitud de Estimulo al Desempeño del Personal Docente fue **\"APROBADA\"** con un nivel asignado de **[NIVEL]**, la cual tendrá una vigencia de **1 (un) año**, del periodo de **[FECHA_INICIO]** a **[FECHA_FIN]**.\n\nEn consecuencia, el TecNM acredita el nivel alcanzado y se invita a mantener y seguir desarrollando sus habilidades en \"Docencia\", \"Producción Académica\", \"Dirección Individualizada\" y \"Gestión Académica\", por lo que al termino de su vigencia será evaluado nuevamente o cuando le sea requerido por esta Dirección Académica de Investigación e Innovación con el propósito de valorar los avances en su desarrollo.\n\n\nSin otro particular, aprovecho la ocasión para enviarle un cordial saludo y felicitaciones.",
+                    'director_name' => 'RAMÓN JIMÉNEZ LÓPEZ',
                     'director_title' => 'DIRECTOR GENERAL DEL TecNM',
                 ],
             ],

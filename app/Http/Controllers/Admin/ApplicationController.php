@@ -100,7 +100,10 @@ class ApplicationController extends Controller
         ])
             ->findOrFail($id);
 
-        $evaluators = User::role('Evaluador')->with('institution')->get();
+        $evaluators = User::role('Evaluador')
+            ->where('id', '!=', $application->user_id)
+            ->with('institution')
+            ->get();
 
         return Inertia::render('Admin/Applications/AssignEvaluator', [
             'application' => (new ApplicationResource($application))->resolve(),

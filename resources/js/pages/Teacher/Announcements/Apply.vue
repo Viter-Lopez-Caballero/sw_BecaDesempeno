@@ -315,7 +315,7 @@ const submit = async () => {
             <!-- Header -->
              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Solicitud de Beca</h1>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Solicitud de Beca</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
                             <path :d="mdiBullhorn"/>
@@ -606,7 +606,7 @@ const submit = async () => {
                 <div v-if="showExampleModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
 
-                    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col">
+                    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[85vh] sm:h-[90vh] flex flex-col">
                         <div class="flex items-center justify-between p-6 border-b border-gray-200">
                             <h2 class="text-lg font-semibold text-gray-900">{{ currentExampleTitle }}</h2>
                             <button @click="closeExampleModal" class="text-gray-400 hover:text-gray-800 transition-colors cursor-pointer">
@@ -730,4 +730,5 @@ const submit = async () => {
     transform: scale(0.95);
 }
 </style>
+
 

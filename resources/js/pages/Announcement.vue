@@ -119,8 +119,8 @@ const etapas = computed(() => {
             <div class="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4"></div>
             <div class="absolute top-1/2 left-1/4 w-48 h-48 bg-white/[0.03] rounded-full -translate-y-1/2"></div>
             <div class="relative max-w-7xl mx-auto text-center">
-                <h1 class="text-4xl md:text-4xl font-bold text-white mb-4">Información de Convocatoria</h1>
-                <p class="text-lg md:text-lg text-gray-100 max-w-3xl mx-auto">Detalles y requisitos para participar en
+                <h1 class="text-3xl sm:text-4xl font-bold text-white mb-4">Información de Convocatoria</h1>
+                <p class="text-base sm:text-lg text-gray-100 max-w-3xl mx-auto">Detalles y requisitos para participar en
                     el proceso actual para los Institutos Tecnológicos Federales y Centros</p>
             </div>
         </section>
@@ -129,7 +129,7 @@ const etapas = computed(() => {
         <section class="bg-gray-50 py-16">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
                     <!-- LADO IZQUIERDO: ¿A quién va dirigido? y Bases -->
                     <div class="space-y-8">
                         <!-- ¿A quién va dirigido? -->
@@ -232,7 +232,7 @@ const etapas = computed(() => {
                          
                         <!-- Case: Active or Closed Announcement -->
                         <div v-if="announcementData"
-                            class="bg-gradient-to-br from-[#2d4a7c] via-[#3a5a8c] to-[#4a6a9c] text-white rounded-3xl p-8 shadow-md">
+                            class="bg-gradient-to-br from-[#2d4a7c] via-[#3a5a8c] to-[#4a6a9c] text-white rounded-3xl p-6 sm:p-8 shadow-md">
                             <h2 class="text-3xl font-bold mb-4 text-center">{{ announcementData.name }}</h2>
                             <p class="text-base leading-relaxed mb-8 text-blue-50 line-clamp-4">
                                 {{ announcementData.description || 'Sin descripción disponible.' }}
@@ -259,13 +259,13 @@ const etapas = computed(() => {
                         </div>
 
                          <!-- Case: NO active announcement -->
-                         <div v-else class="bg-gray-100 rounded-3xl p-8 shadow-inner text-center">
+                         <div v-else class="bg-gray-100 rounded-3xl p-6 sm:p-8 shadow-inner text-center">
                             <h2 class="text-2xl font-bold text-gray-700">No hay convocatorias activas</h2>
                             <p class="text-gray-500 mt-2">Por favor, vuelve más tarde.</p>
                         </div>
 
                         <!-- Calendario de Actividades (Always visible, might imply default dates or empty if no announcement) -->
-                        <div class="bg-white p-8 rounded-2xl shadow-md">
+                        <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-md">
                             <h3 class="text-2xl font-bold text-gray-900 mb-8">Calendario de Actividades</h3>
 
                             <div v-for="(etapa, index) in etapas" :key="etapa.id" class="relative" :class="{ 'mb-10': index < etapas.length - 1 }">
@@ -303,9 +303,9 @@ const etapas = computed(() => {
                     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
                     
                     <!-- Modal Content -->
-                    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col">
+                    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[88vh] sm:h-[90vh] flex flex-col">
                         <!-- Modal Header -->
-                        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                        <div class="flex items-start sm:items-center justify-between gap-3 p-4 sm:p-6 border-b border-gray-200">
                             <h2 class="text-lg font-semibold text-gray-900">{{ currentPdfTitle }}</h2>
                             <button @click="closeModal" class="text-gray-400 hover:text-gray-800 transition-colors cursor-pointer">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

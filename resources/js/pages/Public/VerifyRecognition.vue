@@ -1,22 +1,22 @@
 <template>
-    <div class="min-h-screen bg-gray-50 flex py-10 px-4 justify-center items-start font-sans">
+    <div class="min-h-screen bg-gray-50 flex py-6 sm:py-10 px-3 sm:px-4 justify-center items-start font-sans">
         <!-- Top Green Border Line Effect (like the screenshot) -->
-        <div class="max-w-md w-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mt-4 relative">
+        <div class="max-w-md w-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mt-2 sm:mt-4 relative">
             <div class="absolute top-0 left-0 right-0 h-1.5 bg-green-600 rounded-t-xl"></div>
             
             <!-- Header Section -->
-            <div class="px-8 pt-10 pb-6 text-center">
+            <div class="px-4 sm:px-8 pt-8 sm:pt-10 pb-6 text-center">
                 <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-xl bg-green-500 text-white mb-5 shadow-sm shadow-green-200">
                     <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                     </svg>
                 </div>
                 <!-- Title matching screenshot lines -->
-                <h2 class="text-xl font-bold text-green-600 mb-4 leading-snug px-4">
+                <h2 class="text-lg sm:text-xl font-bold text-green-600 mb-4 leading-snug px-2 sm:px-4">
                     Reconocimiento de<br>Participación Válido
                 </h2>
                 <!-- Validation Text matching screenshot -->
-                <p class="text-[15px] text-gray-600 leading-relaxed px-2">
+                <p class="text-sm sm:text-[15px] text-gray-600 leading-relaxed px-1 sm:px-2">
                     El documento con el siguiente folio<br>
                     es auténtico y ha sido verificado en<br>
                     nuestra base de datos:
@@ -24,7 +24,7 @@
             </div>
 
             <!-- Content Section -->
-            <div class="px-8 pb-8">
+            <div class="px-4 sm:px-8 pb-8">
                 
                 <div class="border-t border-gray-100 mb-6"></div>
 
@@ -54,7 +54,7 @@
                 <div class="text-center mb-8 space-y-4">
                     <div>
                         <h4 class="text-[13px] font-bold text-gray-400 uppercase tracking-widest mb-1">Participante</h4>
-                        <p class="text-[16px] text-gray-800 uppercase font-medium">{{ participant || 'NO ESPECIFICADO' }}</p>
+                        <p class="text-sm sm:text-[16px] text-gray-800 uppercase font-medium">{{ participant || 'NO ESPECIFICADO' }}</p>
                     </div>
                     <div>
                         <h4 class="text-[13px] font-bold text-gray-400 uppercase tracking-widest mb-1">Convocatoria</h4>
@@ -67,7 +67,7 @@
                 <!-- Digital Seal Section -->
                 <div class="text-center mb-8">
                     <h3 class="text-[16px] font-bold text-black mb-4">Sello Digital de Verificación</h3>
-                    <div class="bg-white p-3 border border-gray-200 rounded-sm text-left shadow-sm max-h-24 overflow-y-auto custom-scrollbar">
+                    <div class="bg-white p-3 border border-gray-200 rounded-sm text-left shadow-sm max-h-32 sm:max-h-24 overflow-y-auto custom-scrollbar">
                         <p class="text-[13px] text-gray-600 font-mono break-all whitespace-pre-wrap leading-relaxed">
                             {{ digitalSeal || 'No se proporcionó sello digital' }}
                         </p>

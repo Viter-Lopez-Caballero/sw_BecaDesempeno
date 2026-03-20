@@ -63,6 +63,7 @@ class RecognitionController extends Controller
         $recognition = \App\Models\Recognition::firstOrNew([
             'user_id' => $userId,
             'announcement_id' => $announcementId,
+            'type' => 'evaluator',
         ]);
 
         $recognition->active = !$recognition->active;
@@ -73,13 +74,11 @@ class RecognitionController extends Controller
 
         $recognition->save();
 
-        // Generate identifier immediately on activation so the recognition is searchable
-        // without needing the PDF to be downloaded first.
-        if ($recognition->active && !$recognition->identifier) {
-            $year = date('Y');
-            $suffix = substr(str_shuffle(str_repeat('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 5)), 0, 6);
-            $recognition->identifier = "ACE-{$year}-EVAL-{$recognition->id}-{$suffix}";
-            $recognition->save();
+        // Generate snapshot, folio and cryptoseal automatically on activation
+        if ($recognition->active) {
+            $pdfService = app(\App\Services\PdfGenerationService::class);
+            $user = \App\Models\User::find($userId);
+            $pdfService->freezeEvaluatorRecognition($recognition, $user);
         }
 
         // Notify the evaluator immediately when their recognition is activated,

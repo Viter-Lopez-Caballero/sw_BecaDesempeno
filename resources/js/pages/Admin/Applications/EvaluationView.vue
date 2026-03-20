@@ -52,8 +52,8 @@ const currentScore = computed(() => {
             <!-- Header with Breadcrumbs -->
             <div class="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div class="w-full md:w-auto">
-                    <h1 class="text-3xl font-bold text-gray-900">Respuestas del Evaluador</h1>
-                    <div class="flex items-center gap-2 mt-2 text-sm">
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Respuestas del Evaluador</h1>
+                    <div class="flex flex-wrap items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
                             <path :d="mdiFileDocumentMultiple"/>
                         </svg>
@@ -78,7 +78,7 @@ const currentScore = computed(() => {
 
             <div class="space-y-6">
                 <!-- Info Header -->
-                <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
+                <div class="bg-white p-5 sm:p-8 rounded-xl shadow-sm border border-gray-200">
                     <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-100 pb-4 mb-6 gap-2">
                         <h2 class="text-lg font-bold text-gray-900">Datos de la Evaluación</h2>
                          <!-- Badge Status -->
@@ -102,7 +102,7 @@ const currentScore = computed(() => {
                         </span>
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                         <div>
                             <h3 class="text-xs font-bold text-[#1B396A] uppercase tracking-wider mb-1">Evaluador Asignado</h3>
                             <p class="text-md font-medium text-gray-900">{{ evaluation.evaluator?.name || 'Sistema' }}</p>
@@ -139,18 +139,18 @@ const currentScore = computed(() => {
 
                 <!-- Main Content Grid -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="bg-[#1B396A] px-6 py-4 border-b border-gray-200 flex justify-between items-center text-white">
+                    <div class="bg-[#1B396A] px-4 sm:px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 text-white">
                         <div>
                             <h2 class="font-bold text-lg">Criterios Seleccionados</h2>
                             <p class="text-blue-100 text-sm">Vista solo lectura de las calificaciones emitidas</p>
                         </div>
-                        <div class="text-right">
+                        <div class="text-left sm:text-right">
                             <p class="text-xs opacity-80 uppercase tracking-widest">Puntuación Total</p>
-                            <p class="text-3xl font-bold">{{ currentScore }} <span class="text-lg font-normal">pts</span></p>
+                            <p class="text-2xl sm:text-3xl font-bold">{{ currentScore }} <span class="text-base sm:text-lg font-normal">pts</span></p>
                         </div>
                     </div>
                     
-                    <div class="p-6 space-y-8">
+                    <div class="p-4 sm:p-6 space-y-8">
                         <div v-if="!rubric" class="text-center py-8 text-gray-500">
                             No hay rúbrica configurada.
                         </div>
@@ -171,7 +171,7 @@ const currentScore = computed(() => {
                                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                                             </svg>
                                         </div>
-                                        <div class="ml-3 flex-1 flex justify-between items-center">
+                                        <div class="ml-3 flex-1 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
                                             <span class="text-sm font-bold text-blue-900">
                                                 {{ option.text }}
                                             </span>

@@ -149,6 +149,7 @@ class ApplicationController extends Controller
             $recognition = \App\Models\Recognition::firstOrNew([
                 'user_id' => $application->user_id,
                 'announcement_id' => $application->announcement_id,
+                'type' => 'postulante',
             ]);
 
             // Make sure approved teacher recognitions are immediately visible and searchable.
@@ -159,13 +160,10 @@ class ApplicationController extends Controller
 
             $recognition->save();
 
-            // Generate identifier now so public search can find it before first PDF download.
-            if (!$recognition->identifier) {
-                $year = date('Y');
-                $suffix = substr(str_shuffle(str_repeat('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 5)), 0, 6);
-                $recognition->identifier = "ACE-{$year}-DOC-{$recognition->id}-{$suffix}";
-                $recognition->save();
-            }
+            // Generate snapshot, folio and cryptoseal automatically
+            $pdfService = app(\App\Services\PdfGenerationService::class);
+            $pdfService->freezeAcceptanceLetter($application);
+            $pdfService->freezeTeacherRecognition($recognition, $application->user);
         } else {
             // If admin changes verdict to rejected, make sure any prior teacher recognition is disabled.
             $recognition = \App\Models\Recognition::where('user_id', $application->user_id)

@@ -59,9 +59,9 @@ watch(search, (value) => {
 
         <div class="space-y-6">
             <!-- Header -->
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Mis Reconocimientos</h1>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Mis Reconocimientos</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
                             <path :d="mdiStar"/>
@@ -73,7 +73,7 @@ watch(search, (value) => {
 
             <!-- Filter Card -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4">
-                <div class="flex items-center justify-between mb-2">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                     <div class="flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#374151">
                             <path d="M440-160q-17 0-28.5-11.5T400-200v-240L168-736q-15-20-4.5-42t36.5-22h560q26 0 36.5 22t-4.5 42L560-440v240q0 17-11.5 28.5T520-160h-80Zm40-308 198-252H282l198 252Zm0 0Z"/>
@@ -121,7 +121,7 @@ watch(search, (value) => {
             <!-- Table -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left">
+                    <table class="w-full min-w-[860px] text-sm text-left">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
                                 <th scope="col" class="px-6 py-4 tracking-wider text-center w-16">ID</th>
@@ -173,7 +173,7 @@ watch(search, (value) => {
                                             <div class="flex justify-between items-center">
                                                 <h3 class="font-bold text-gray-800 text-lg">Vista Previa del Reconocimiento</h3>
                                             </div>
-                                            <div class="w-full h-[600px] border border-gray-300 rounded-lg overflow-hidden bg-white relative">
+                                            <div class="w-full h-[55vh] sm:h-[65vh] lg:h-[600px] border border-gray-300 rounded-lg overflow-hidden bg-white relative">
                                                 <div class="absolute inset-0 flex items-center justify-center text-gray-400 z-0">
                                                     Cargando vista previa...
                                                 </div>

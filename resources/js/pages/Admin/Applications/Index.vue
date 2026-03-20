@@ -105,9 +105,9 @@ watch([search, status], debounce(() => {
     <AdminLayout>
         <div class="space-y-6">
             <!-- Header -->
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Solicitudes</h1>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Solicitudes</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
                             <path :d="mdiFileDocumentMultiple"/>
@@ -119,14 +119,14 @@ watch([search, status], debounce(() => {
 
             <!-- Filter Card -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4">
-                <div class="flex items-center justify-between mb-2">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-3">
                     <div class="flex items-center gap-2">
                          <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#374151">
                             <path d="M440-160q-17 0-28.5-11.5T400-200v-240L168-736q-15-20-4.5-42t36.5-22h560q26 0 36.5 22t-4.5 42L560-440v240q0 17-11.5 28.5T520-160h-80Zm40-308 198-252H282l198 252Zm0 0Z"/>
                         </svg>
                         <h2 class="text-xl font-semibold text-gray-800">Filtro de Búsqueda</h2>
                     </div>
-                    <button @click="cleanFilters" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-sm font-medium transition cursor-pointer">
+                    <button @click="cleanFilters" class="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2 text-sm font-medium transition cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
                              <path d="M400-240v-80h240v80H400Zm-158 0L15-467l57-57 170 170 366-366 57 57-423 423Zm318-160v-80h240v80H560Zm160-160v-80h240v80H720Z"/>
                         </svg>
@@ -184,11 +184,11 @@ watch([search, status], debounce(() => {
             <!-- Table -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left">
+                    <table class="w-full min-w-[980px] text-left">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
-                                <th class="px-6 py-4 whitespace-nowrap">ID</th>
-                                <th class="px-6 py-4 whitespace-nowrap">
+                                <th class="px-3 md:px-6 py-4 whitespace-nowrap">ID</th>
+                                <th class="px-3 md:px-6 py-4 whitespace-nowrap">
                                     <div @click="sortBy('user_name')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
                                         Docente
                                         <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'user_name', 'opacity-50': sortField !== 'user_name' }">
@@ -196,7 +196,7 @@ watch([search, status], debounce(() => {
                                         </svg>
                                     </div>
                                 </th>
-                                <th class="px-6 py-4 whitespace-nowrap">
+                                <th class="px-3 md:px-6 py-4 whitespace-nowrap">
                                     <div @click="sortBy('campus')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
                                         Institución
                                         <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'campus', 'opacity-50': sortField !== 'campus' }">
@@ -204,10 +204,10 @@ watch([search, status], debounce(() => {
                                         </svg>
                                     </div>
                                 </th>
-                                <th class="px-6 py-4 whitespace-nowrap">
+                                <th class="px-3 md:px-6 py-4 whitespace-nowrap">
                                     Evaluador(es)
                                 </th>
-                                <th class="px-6 py-4 whitespace-nowrap">
+                                <th class="px-3 md:px-6 py-4 whitespace-nowrap">
                                     <div @click="sortBy('status')" class="flex items-center gap-1 cursor-pointer hover:text-gray-200 transition">
                                         Estado
                                         <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor" :class="{ 'opacity-100': sortField === 'status', 'opacity-50': sortField !== 'status' }">
@@ -215,23 +215,23 @@ watch([search, status], debounce(() => {
                                         </svg>
                                     </div>
                                 </th>
-                                <th class="px-6 py-4 text-center whitespace-nowrap">Acciones</th>
+                                <th class="px-3 md:px-6 py-4 text-center whitespace-nowrap">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
                             <tr v-for="(application, index) in applications.data" :key="application.id" class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">{{ applications.meta.from + index }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-900 whitespace-nowrap overflow-hidden">
+                                <td class="px-3 md:px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">{{ applications.meta.from + index }}</td>
+                                <td class="px-3 md:px-6 py-4 text-sm text-gray-900 whitespace-nowrap overflow-hidden">
                                     <div class="font-semibold text-gray-800 truncate max-w-[200px]" :title="application.user?.name">
                                         {{ application.user?.name }}
                                     </div>
                                 </td>
-                                 <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap overflow-hidden">
+                                 <td class="px-3 md:px-6 py-4 text-sm text-gray-600 whitespace-nowrap overflow-hidden">
                                     <div class="truncate max-w-[250px]" :title="application.campus">
                                         {{ application.campus }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-3 md:px-6 py-4 whitespace-nowrap">
                                     <template v-if="application.evaluations && application.evaluations.length > 0">
                                         <span class="inline-flex items-center gap-1 text-sm text-gray-600">
                                             <svg style="width:16px;height:16px; color: #1B396A;" viewBox="0 0 24 24">
@@ -248,7 +248,7 @@ watch([search, status], debounce(() => {
                                     <Link 
                                         v-else 
                                         :href="route('admin.applications.assign_view', application.id)"
-                                        class="inline-flex items-center justify-center gap-2 px-4 py-2 border border-[#1B396A] text-[#1B396A] rounded-lg hover:bg-[#1B396A] hover:text-white transition text-[11px] font-bold uppercase cursor-pointer whitespace-nowrap shadow-sm group"
+                                        class="inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 border border-[#1B396A] text-[#1B396A] rounded-lg hover:bg-[#1B396A] hover:text-white transition text-[11px] font-bold uppercase cursor-pointer whitespace-nowrap shadow-sm group"
                                     >
                                         <svg style="width:16px;height:16px" viewBox="0 0 24 24" class="group-hover:text-white transition-colors duration-200">
                                             <path fill="currentColor" :d="mdiAccountPlus" />
@@ -256,7 +256,7 @@ watch([search, status], debounce(() => {
                                         Asignar
                                     </Link>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-3 md:px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <span 
                                             class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white text-xs font-bold shadow-sm border border-gray-100"
@@ -278,11 +278,11 @@ watch([search, status], debounce(() => {
                                         </span>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-center whitespace-nowrap text-xs">
+                                <td class="px-3 md:px-6 py-4 text-center whitespace-nowrap text-xs">
                                     <div class="flex items-center justify-center">
                                         <Link 
                                             :href="route('admin.applications.show', application.id)"
-                                            class="inline-flex items-center justify-center gap-2 px-4 py-2 border border-[#1B396A] text-[#1B396A] rounded-lg hover:bg-[#1B396A] hover:text-white transition text-[11px] font-bold uppercase cursor-pointer whitespace-nowrap shadow-sm"
+                                            class="inline-flex items-center justify-center gap-2 px-3 md:px-4 py-2 border border-[#1B396A] text-[#1B396A] rounded-lg hover:bg-[#1B396A] hover:text-white transition text-[11px] font-bold uppercase cursor-pointer whitespace-nowrap shadow-sm"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
                                                 <path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z"/>

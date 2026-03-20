@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import AuthLayout from '@/layouts/AuthLayout.vue';
+import LandingLayout from '@/layouts/LandingLayout.vue';
 import { store } from '@/routes/password/confirm';
 import { Form, Head, useForm } from '@inertiajs/vue3';
 import { alertaExito, alertaError, alertaCargando, cerrarAlerta } from '@/utils/alerts.js';
@@ -46,10 +46,7 @@ const submit = () => {
 </script>
 
 <template>
-    <AuthLayout
-        title="Confirm your password"
-        description="This is a secure area of the application. Please confirm your password before continuing."
-    >
+    <LandingLayout>
         <Head title="Confirm password" />
 
         <form @submit.prevent="submit">
@@ -84,6 +81,6 @@ const submit = () => {
                 </div>
             </div>
         </form>
-    </AuthLayout>
+    </LandingLayout>
 </template>
 

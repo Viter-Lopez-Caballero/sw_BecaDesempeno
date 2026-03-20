@@ -42,6 +42,7 @@ class RecognitionController extends Controller
             ->leftJoin('announcements', 'recognitions.announcement_id', '=', 'announcements.id')
             ->select('recognitions.*')
             ->where('user_id', $user->id)
+            ->where('recognitions.type', 'postulante')
             ->where('recognitions.active', true)
             ->whereExists(function ($query) {
                 $query->selectRaw('1')
@@ -84,9 +85,9 @@ class RecognitionController extends Controller
     {
         $user = $request->user();
 
-        // Asegurar que el reconocimiento pertenece al docente actual
-        if ($recognition->user_id !== $user->id || !$recognition->active) {
-            abort(403, 'No tienes permiso para descargar este reconocimiento o no está activo.');
+        // Asegurar que el reconocimiento pertenece al docente actual y es de tipo postulante
+        if ($recognition->user_id !== $user->id || !$recognition->active || $recognition->type !== 'postulante') {
+            abort(403, 'No tienes permiso para descargar este reconocimiento, no está activo, o es de evaluador.');
         }
 
         // Ensure relations are loaded

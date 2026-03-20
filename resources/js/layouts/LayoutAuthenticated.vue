@@ -96,8 +96,6 @@ const applyMobileTableLabels = () => {
     const tables = document.querySelectorAll('main table');
 
     tables.forEach((table) => {
-        if (table.dataset.mobileStack === 'false') return;
-
         const headers = Array.from(table.querySelectorAll('thead th')).map((th) =>
             (th.textContent || '').replace(/\s+/g, ' ').trim()
         );

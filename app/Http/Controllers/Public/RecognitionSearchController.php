@@ -33,7 +33,16 @@ class RecognitionSearchController extends Controller
         if ($searched) {
             $query = Recognition::with(['user', 'announcement', 'template'])
                 ->where('active', true)
-                ->whereNotNull('identifier');
+                ->whereNotNull('identifier')
+                ->where(function ($q) {
+                    $q->where('type', 'evaluator')
+                      ->orWhere(function ($sub) {
+                          $sub->where('type', 'postulante')
+                              ->whereHas('announcement', function ($a) {
+                                  $a->where('current_stage', 'resultados');
+                              });
+                      });
+                });
 
             if ($folio !== '') {
                 $query->whereRaw('UPPER(identifier) = ?', [strtoupper($folio)]);
@@ -80,6 +89,15 @@ class RecognitionSearchController extends Controller
         $recognition = Recognition::with(['user', 'announcement', 'template'])
             ->where('identifier', $identifier)
             ->where('active', true)
+            ->where(function ($q) {
+                $q->where('type', 'evaluator')
+                  ->orWhere(function ($sub) {
+                      $sub->where('type', 'postulante')
+                          ->whereHas('announcement', function ($a) {
+                              $a->where('current_stage', 'resultados');
+                          });
+                  });
+            })
             ->firstOrFail();
 
         try {

@@ -53,6 +53,12 @@ const closeExampleModal = () => {
     currentExampleTitle.value = '';
 };
 
+const isPdfResource = (url) => /\.pdf($|\?)/i.test(url || '');
+const isImageResource = (url) => /\.(png|jpe?g|gif|webp|bmp|svg)($|\?)/i.test(url || '');
+
+const currentExampleIsPdf = computed(() => isPdfResource(currentExampleUrl.value));
+const currentExampleIsImage = computed(() => isImageResource(currentExampleUrl.value));
+
 // State for display
 // Map docId -> { type: 'new'|'reused'|'empty', file: File|null, originalDoc: Object|null, showPreview: boolean }
 const documentState = ref({}); 
@@ -610,8 +616,34 @@ const submit = async () => {
                             </button>
                         </div>
 
-                        <div class="flex-1 overflow-hidden">
-                            <iframe :src="currentExampleUrl" class="w-full h-full" frameborder="0"></iframe>
+                        <div class="flex-1 overflow-hidden bg-gray-100">
+                            <iframe
+                                v-if="currentExampleIsPdf"
+                                :src="currentExampleUrl"
+                                class="w-full h-full"
+                                frameborder="0"
+                            ></iframe>
+
+                            <div
+                                v-else-if="currentExampleIsImage"
+                                class="w-full h-full overflow-auto flex items-center justify-center p-4"
+                            >
+                                <img
+                                    :src="currentExampleUrl"
+                                    :alt="currentExampleTitle"
+                                    class="max-w-full max-h-full object-contain mx-auto"
+                                />
+                            </div>
+
+                            <div v-else class="w-full h-full flex items-center justify-center p-8">
+                                <a
+                                    :href="currentExampleUrl"
+                                    target="_blank"
+                                    class="px-4 py-2 rounded-md bg-[#1B396A] text-white font-medium hover:bg-[#152d47]"
+                                >
+                                    Abrir documento
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Teacher;
 
 use App\Http\Controllers\Controller;
+use App\Models\Application;
 use App\Models\Recognition;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -42,6 +43,13 @@ class RecognitionController extends Controller
             ->select('recognitions.*')
             ->where('user_id', $user->id)
             ->where('recognitions.active', true)
+            ->whereExists(function ($query) {
+                $query->selectRaw('1')
+                    ->from('applications')
+                    ->whereColumn('applications.user_id', 'recognitions.user_id')
+                    ->whereColumn('applications.announcement_id', 'recognitions.announcement_id')
+                    ->where('applications.status', 'approved');
+            })
             ->orderBy($sortColumn, $sortDirection)
             ->get();
 
@@ -91,9 +99,18 @@ class RecognitionController extends Controller
             }
         }
 
+        $isApproved = Application::where('user_id', $recognition->user_id)
+            ->where('announcement_id', $recognition->announcement_id)
+            ->where('status', 'approved')
+            ->exists();
+
+        if (!$isApproved) {
+            abort(403, 'Solo los docentes aprobados pueden descargar este reconocimiento.');
+        }
+
         try {
             return $this->pdfGenerationService->generateTeacherRecognitionPdf($recognition, $user);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return response()->view('errors.pdf_missing', ['message' => $e->getMessage()], 404);
         }
     }

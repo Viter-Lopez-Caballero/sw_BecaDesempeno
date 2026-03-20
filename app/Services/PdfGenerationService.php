@@ -133,7 +133,7 @@ class PdfGenerationService
         // Execute placeholder replacements
         $bodyText = str_replace(
             ['[CONVOCATORIA]', '[ESTADO]', '[NIVEL]', '[FECHA_INICIO]', '[FECHA_FIN]', '[AÑO_ACTUAL]'],
-            [mb_strtoupper($announcementName, 'UTF-8'), $statusText, $levelText, $vigenciaStart, $vigenciaEnd, $currentYear],
+            [$announcementName, $statusText, $levelText, $vigenciaStart, $vigenciaEnd, $currentYear],
             $rawBodyText
         );
 
@@ -265,13 +265,18 @@ class PdfGenerationService
         if (!$snapshot) {
             $contentData = $template ? $template->content_data : [];
             $announcementName = $recognition->announcement ? $recognition->announcement->name : 'CONVOCATORIA GENERAL';
-            $defaultBody = $contentData['body_text'] ?? "Por su destacada participación como evaluador en la convocatoria:";
+            $defaultBody = $contentData['body_text'] ?? "Por su destacada participación como evaluador en la convocatoria:\n[CONVOCATORIA]";
+            $resolvedBody = str_replace('[CONVOCATORIA]', $announcementName, $defaultBody);
+
+            if ($resolvedBody === $defaultBody) {
+                $resolvedBody = rtrim($defaultBody) . "\n" . $announcementName;
+            }
             
             $snapshot = [
                 'date_text' => "CIUDAD DE MÉXICO, A " . mb_strtoupper(Carbon::now()->timezone('America/Mexico_City')->isoFormat('DD [DE] MMMM [DE] YYYY'), 'UTF-8'),
                 'director_name' => $contentData['director_name'] ?? 'Ramón Jiménez López',
                 'director_title' => $contentData['director_title'] ?? 'Director General',
-                'body_text' => $defaultBody . "\n" . mb_strtoupper($announcementName)
+                'body_text' => $resolvedBody,
             ];
             $recognition->snapshot_data = json_encode($snapshot);
             $recognition->save();
@@ -384,7 +389,7 @@ class PdfGenerationService
                 'date_text'     => "CIUDAD DE MÉXICO, A " . mb_strtoupper(Carbon::now()->timezone('America/Mexico_City')->isoFormat('DD [DE] MMMM [DE] YYYY'), 'UTF-8'),
                 'director_name' => $contentData['director_name'] ?? 'Ramón Jiménez López',
                 'director_title'=> $contentData['director_title'] ?? 'Director General',
-                'body_text'     => $teacherBodyText . "\n" . mb_strtoupper($announcementName),
+                'body_text'     => $teacherBodyText . "\n" . $announcementName,
             ];
             // Assign array directly — 'array' cast on Recognition handles json_encode automatically
             $recognition->snapshot_data = $snapshot;

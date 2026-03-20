@@ -24,6 +24,12 @@ const closeModal = () => {
     currentPdfTitle.value = '';
 };
 
+const isPdfResource = (url) => /\.pdf($|\?)/i.test(url || '');
+const isImageResource = (url) => /\.(png|jpe?g|gif|webp|bmp|svg)($|\?)/i.test(url || '');
+
+const currentPreviewIsPdf = computed(() => isPdfResource(currentPdfUrl.value));
+const currentPreviewIsImage = computed(() => isImageResource(currentPdfUrl.value));
+
 // Acceder a los datos correctamente (handling Resource wrapper)
 const announcementData = computed(() => {
     return props.announcement?.data || props.announcement;
@@ -308,9 +314,35 @@ const etapas = computed(() => {
                             </button>
                         </div>
                         
-                        <!-- PDF Viewer -->
-                        <div class="flex-1 overflow-hidden">
-                            <iframe :src="currentPdfUrl" class="w-full h-full" frameborder="0"></iframe>
+                        <!-- Document Viewer -->
+                        <div class="flex-1 overflow-hidden bg-gray-100">
+                            <iframe
+                                v-if="currentPreviewIsPdf"
+                                :src="currentPdfUrl"
+                                class="w-full h-full"
+                                frameborder="0"
+                            ></iframe>
+
+                            <div
+                                v-else-if="currentPreviewIsImage"
+                                class="w-full h-full overflow-auto flex items-center justify-center p-4"
+                            >
+                                <img
+                                    :src="currentPdfUrl"
+                                    :alt="currentPdfTitle"
+                                    class="max-w-full max-h-full object-contain mx-auto"
+                                />
+                            </div>
+
+                            <div v-else class="w-full h-full flex items-center justify-center p-8">
+                                <a
+                                    :href="currentPdfUrl"
+                                    target="_blank"
+                                    class="px-4 py-2 rounded-md bg-[#1B396A] text-white font-medium hover:bg-[#152d47]"
+                                >
+                                    Abrir documento
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -246,7 +246,7 @@
             Lo sentimos, no tienes permisos para acceder a esta página. 
             Si crees que esto es un error, contacta al administrador del sistema.
         </p>
-        <a href="{{ url('/') }}" class="btn-home">Volver al Inicio</a>
+        <a href="{{ url('/') }}" class="btn-home" target="_top" rel="noopener noreferrer">Volver al Inicio</a>
     </div>
 </body>
 </html>

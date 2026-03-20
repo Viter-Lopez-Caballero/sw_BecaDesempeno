@@ -2,7 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import TeacherLayout from '@/layouts/TeacherLayout.vue';
 import { mdiBullhorn } from '@mdi/js';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 const props = defineProps({
     announcements: Object,
@@ -15,6 +15,29 @@ const DESCRIPTION_LIMIT = 220;
 const toggleDescription = (id) => {
     expandedDescriptions.value[id] = !expandedDescriptions.value[id];
 };
+
+const showDocumentModal = ref(false);
+const currentDocumentUrl = ref('');
+const currentDocumentTitle = ref('');
+
+const openDocumentModal = (url, title) => {
+    if (!url) return;
+    currentDocumentUrl.value = url;
+    currentDocumentTitle.value = title;
+    showDocumentModal.value = true;
+};
+
+const closeDocumentModal = () => {
+    showDocumentModal.value = false;
+    currentDocumentUrl.value = '';
+    currentDocumentTitle.value = '';
+};
+
+const isPdfResource = (url) => /\.pdf($|\?)/i.test(url || '');
+const isImageResource = (url) => /\.(png|jpe?g|gif|webp|bmp|svg)($|\?)/i.test(url || '');
+
+const currentDocumentIsPdf = computed(() => isPdfResource(currentDocumentUrl.value));
+const currentDocumentIsImage = computed(() => isImageResource(currentDocumentUrl.value));
 
 // Helper para parsear fecha "YYYY-MM-DD", "YYYY-MM-DD HH:MM:SS" o ISO "YYYY-MM-DDTHH:mm:ss"
 const parseDateLocal = (dateString) => {
@@ -179,17 +202,17 @@ const getFase = (announcement) => {
 
                         <div class="flex flex-col sm:flex-row gap-4 mt-auto items-center">
                              <!-- Document Link -->
-                            <a 
+                            <button
                                 v-if="announcement.file_url"
-                                :href="announcement.file_url" 
-                                target="_blank" 
-                                class="text-[#1B396A] font-semibold hover:underline flex items-center gap-2 group/link"
+                                type="button"
+                                @click="openDocumentModal(announcement.file_url, announcement.name)"
+                                class="text-[#1B396A] font-semibold hover:underline flex items-center gap-2 group/link cursor-pointer"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover/link:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
                                 Ver Convocatoria (PDF)
-                            </a>
+                            </button>
 
                              <!-- Botón Solicitar / Estado -->
                              <div class="flex-1 w-full sm:w-auto">
@@ -253,5 +276,76 @@ const getFase = (announcement) => {
                 <p class="text-gray-500 mt-2">Mantente al pendiente para futuras oportunidades.</p>
             </div>
         </div>
+
+        <Teleport to="body">
+            <Transition name="modal">
+                <div v-if="showDocumentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+
+                    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col">
+                        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                            <h2 class="text-lg font-semibold text-gray-900">{{ currentDocumentTitle }}</h2>
+                            <button @click="closeDocumentModal" class="text-gray-400 hover:text-gray-800 transition-colors cursor-pointer">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="flex-1 overflow-hidden bg-gray-100">
+                            <iframe
+                                v-if="currentDocumentIsPdf"
+                                :src="currentDocumentUrl"
+                                class="w-full h-full"
+                                frameborder="0"
+                            ></iframe>
+
+                            <div
+                                v-else-if="currentDocumentIsImage"
+                                class="w-full h-full overflow-auto flex items-center justify-center p-4"
+                            >
+                                <img
+                                    :src="currentDocumentUrl"
+                                    :alt="currentDocumentTitle"
+                                    class="max-w-full max-h-full object-contain mx-auto"
+                                />
+                            </div>
+
+                            <div v-else class="w-full h-full flex items-center justify-center p-8">
+                                <a
+                                    :href="currentDocumentUrl"
+                                    target="_blank"
+                                    class="px-4 py-2 rounded-md bg-[#1B396A] text-white font-medium hover:bg-[#152d47]"
+                                >
+                                    Abrir documento
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
     </TeacherLayout>
 </template>
+
+<style scoped>
+.modal-enter-active,
+.modal-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+    opacity: 0;
+}
+
+.modal-enter-active .relative,
+.modal-leave-active .relative {
+    transition: transform 0.3s ease;
+}
+
+.modal-enter-from .relative,
+.modal-leave-to .relative {
+    transform: scale(0.95);
+}
+</style>

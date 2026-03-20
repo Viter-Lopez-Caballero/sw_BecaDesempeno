@@ -227,7 +227,7 @@ const submit = () => {
 
         <div class="space-y-6">
             <!-- Header -->
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                     <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">{{ title }}</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
@@ -243,7 +243,7 @@ const submit = () => {
                         <span class="text-gray-900 font-semibold">Editar Convocatoria</span>
                     </div>
                 </div>
-                <Link :href="route(`${routeName}index`)" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium">
+                <Link :href="route(`${routeName}index`)" class="w-full sm:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
                     </svg>
@@ -309,7 +309,7 @@ const submit = () => {
                         </div>
 
                         <!-- Imagen de Convocatoria -->
-                        <div class="col-span-2">
+                        <div class="col-span-1 md:col-span-2">
                             <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">
                                 Imagen de Portada:
                             </label>
@@ -354,7 +354,7 @@ const submit = () => {
                         </div>
 
                         <!-- Archivo de Convocatoria -->
-                        <div class="col-span-2">
+                        <div class="col-span-1 md:col-span-2">
                             <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">
                                 Archivo de Convocatoria:
                             </label>
@@ -454,7 +454,7 @@ const submit = () => {
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-end gap-3 pt-6 border-t border-gray-200">
                         <Link :href="route(`${routeName}index`)" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition">
                             Cancelar
                         </Link>

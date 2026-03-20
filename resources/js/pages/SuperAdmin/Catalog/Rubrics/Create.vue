@@ -145,8 +145,8 @@ const submit = () => {
 
         <div class="space-y-6">
             <!-- Header -->
-            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <div class="w-full md:w-auto">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div class="w-full sm:w-auto">
                     <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">{{ title }}</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
@@ -168,7 +168,7 @@ const submit = () => {
                         <span class="text-gray-900 font-semibold">Agregar Rúbrica</span>
                     </div>
                 </div>
-                <Link :href="route('catalog.rubrics.index')" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium cursor-pointer">
+                <Link :href="route('catalog.rubrics.index')" class="w-full sm:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
                     </svg>
@@ -228,7 +228,7 @@ const submit = () => {
                                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>
                                     </button>
                                 </div>
-                                <div class="w-full md:w-auto md:hidden">
+                                <div class="w-full sm:w-auto md:hidden">
                                      <p v-if="form.errors[`questions.${qIndex}.options.${oIndex}.score`]" class="text-red-600 text-xs mt-1">{{ form.errors[`questions.${qIndex}.options.${oIndex}.score`] }}</p>
                                 </div>
                                 <div class="hidden md:block w-32 -ml-32 mt-16">

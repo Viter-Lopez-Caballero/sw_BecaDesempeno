@@ -168,7 +168,7 @@ watch(search, (value) => {
 
         <div class="space-y-6">
             <!-- Header -->
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-900">Control de Solicitudes</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
@@ -181,7 +181,7 @@ watch(search, (value) => {
                 <!-- Export Button -->
                 <button
                     @click="exportData"
-                    class="w-full md:w-auto justify-center px-4 py-2.5 bg-[#0D7239] text-white rounded-lg hover:bg-green-800 transition flex items-center gap-2 font-medium cursor-pointer"
+                    class="w-full sm:w-auto justify-center px-4 py-2.5 bg-[#0D7239] text-white rounded-lg hover:bg-green-800 transition flex items-center gap-2 font-medium cursor-pointer"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/>
@@ -192,7 +192,7 @@ watch(search, (value) => {
 
             <!-- Filter Card -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4">
-                <div class="flex items-center justify-between mb-2">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                     <div class="flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#374151">
                             <path d="M440-160q-17 0-28.5-11.5T400-200v-240L168-736q-15-20-4.5-42t36.5-22h560q26 0 36.5 22t-4.5 42L560-440v240q0 17-11.5 28.5T520-160h-80Zm40-308 198-252H282l198 252Zm0 0Z"/>

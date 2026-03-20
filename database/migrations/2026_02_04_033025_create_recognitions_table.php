@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Evaluator
             $table->foreignId('announcement_id')->constrained('announcements')->onDelete('cascade');
+            $table->enum('type', ['postulante', 'evaluator'])->default('evaluator'); // Distinguir docente vs evaluador
             $table->foreignId('template_id')->nullable()->constrained('templates')->onDelete('set null');
             $table->boolean('active')->default(false); // Switch estado
             $table->timestamp('sent_at')->nullable(); // When it was sent/activated
@@ -23,8 +24,8 @@ return new class extends Migration
             $table->json('snapshot_data')->nullable();
             $table->timestamps();
             
-            // An evaluator can only have one recognition per announcement
-            $table->unique(['user_id', 'announcement_id']);
+            // An evaluator or teacher can only have one recognition per type per announcement
+            $table->unique(['user_id', 'announcement_id', 'type']);
         });
     }
 

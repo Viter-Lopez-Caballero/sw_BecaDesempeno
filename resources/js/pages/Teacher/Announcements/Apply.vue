@@ -313,7 +313,7 @@ const submit = async () => {
         
         <div class="space-y-6">
             <!-- Header -->
-             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                     <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Solicitud de Beca</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
@@ -333,7 +333,7 @@ const submit = async () => {
                     </div>
                     <p class="text-gray-600 mt-3 text-sm">Convocatoria: <span class="font-semibold text-[#1B396A]">{{ announcement.name }}</span></p>
                 </div>
-                <Link :href="route('teacher.announcements.index')" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium">
+                <Link :href="route('teacher.announcements.index')" class="w-full sm:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
                     </svg>
@@ -430,7 +430,7 @@ const submit = async () => {
                         <!-- Dynamic Documents List -->
                         <div v-if="filteredCatalogDocuments && filteredCatalogDocuments.length > 0" class="space-y-8">
                             <div v-for="doc in filteredCatalogDocuments" :key="doc.id" class="border-b border-gray-100 pb-8 last:border-0 last:pb-0">
-                                 <div class="flex items-center justify-between mb-2">
+                                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                                     <div>
                                         <div class="flex items-center gap-2">
                                             <h3 class="text-lg font-bold text-gray-800">{{ doc.name }} <span v-if="doc.is_required" class="text-red-500">*</span></h3>

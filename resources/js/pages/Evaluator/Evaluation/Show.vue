@@ -260,8 +260,8 @@ const formatDate = (dateString) => {
 
         <div class="space-y-6">
             <!-- Header with Breadcrumbs -->
-            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <div class="w-full md:w-auto">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div class="w-full sm:w-auto">
                     <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Evaluación de Solicitud</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
@@ -274,7 +274,7 @@ const formatDate = (dateString) => {
                         <span class="text-gray-900 font-semibold">Evaluación</span>
                     </div>
                 </div>
-                <Link :href="route('evaluator.dashboard')" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium">
+                <Link :href="route('evaluator.dashboard')" class="w-full sm:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
                     </svg>
@@ -324,7 +324,7 @@ const formatDate = (dateString) => {
 
                 <!-- Información General (Applicant) -->
                 <div class="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 relative">
-                     <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-100 pb-4 mb-6 gap-2 md:gap-4">
+                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-gray-100 pb-4 mb-6 gap-2 sm:gap-4">
                         <h2 class="text-lg font-bold text-gray-900">Información General</h2>
                      </div>
                      

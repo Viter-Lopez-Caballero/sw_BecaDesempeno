@@ -90,7 +90,7 @@ const deleteBackup = async (id, name) => {
 
         <div class="space-y-6">
             <!-- Header -->
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                     <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Gestión de Respaldos</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
@@ -185,7 +185,7 @@ const deleteBackup = async (id, name) => {
 
             <!-- Filter Card -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4">
-                <div class="flex items-center justify-between mb-2">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                     <div class="flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#374151">
                             <path d="M440-160q-17 0-28.5-11.5T400-200v-240L168-736q-15-20-4.5-42t36.5-22h560q26 0 36.5 22t-4.5 42L560-440v240q0 17-11.5 28.5T520-160h-80Zm40-308 198-252H282l198 252Zm0 0Z"/>
@@ -200,7 +200,7 @@ const deleteBackup = async (id, name) => {
                     </button>
                 </div>
                 <div class="text-sm text-gray-500 mb-4">Buscar y filtrar registros de respaldo</div>
-                <div class="flex flex-col md:flex-row gap-4 items-end">
+                <div class="flex flex-col sm:flex-row gap-4 sm:items-end">
                     <div class="relative w-full md:flex-1">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#1B396A">

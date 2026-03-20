@@ -169,7 +169,7 @@ const closeViewer = (id) => {
 
         <div class="space-y-6">
             <!-- Header -->
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                     <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">{{ title }}</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
@@ -181,7 +181,7 @@ const closeViewer = (id) => {
                 </div>
                 <div class="flex items-center gap-2 group relative">
                     <Link v-if="useCan('announcements.create') && canCreate" :href="route(`${routeName}create`)"
-                        class="w-full md:w-auto justify-center px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium">
+                        class="w-full sm:w-auto justify-center px-4 py-2.5 bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition flex items-center gap-2 font-medium">
                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
                             fill="currentColor">
                             <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
@@ -190,7 +190,7 @@ const closeViewer = (id) => {
                     </Link>
                     <button v-else-if="useCan('announcements.create')"
                         @click="triggerRestrictionAlert"
-                        class="w-full md:w-auto justify-center px-4 py-2.5 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed flex items-center gap-2 font-medium">
+                        class="w-full sm:w-auto justify-center px-4 py-2.5 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed flex items-center gap-2 font-medium">
                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
                             fill="currentColor">
                             <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
@@ -298,7 +298,7 @@ const closeViewer = (id) => {
                     </button>
                 </div>
                 <div class="text-sm text-gray-500 mb-4">Buscar y filtrar convocatorias</div>
-                <div class="flex flex-col md:flex-row gap-4 items-end">
+                <div class="flex flex-col sm:flex-row gap-4 sm:items-end">
                     <div class="relative w-full md:flex-1">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"

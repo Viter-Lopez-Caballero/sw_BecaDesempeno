@@ -50,7 +50,8 @@ class Evaluation extends Model
             ->join('announcements', 'applications.announcement_id', '=', 'announcements.id')
             ->leftJoin('recognitions', function ($join) {
                 $join->on('recognitions.user_id', '=', 'users.id')
-                    ->on('recognitions.announcement_id', '=', 'announcements.id');
+                    ->on('recognitions.announcement_id', '=', 'announcements.id')
+                    ->where('recognitions.type', '=', 'evaluator');
             })
             ->select(
                 'users.id as evaluator_id',

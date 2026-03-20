@@ -46,7 +46,7 @@
 
 <script setup>
 // import AppSidebar from '@/components/Sidebar/AppSidebar.vue';
-import { ref, onMounted, onUnmounted, provide, computed } from 'vue';
+import { ref, onMounted, onUnmounted, onUpdated, nextTick, provide, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { menuConfigs } from '@/config/menu/menuConfig';
 import AppSidebar from '@/components/Sidebar/AppSidebar.vue';
@@ -92,13 +92,53 @@ const checkMobile = () => {
     isMobile.value = window.innerWidth < 1024;
 };
 
+const applyMobileTableLabels = () => {
+    const tables = document.querySelectorAll('main table');
+
+    tables.forEach((table) => {
+        if (table.dataset.mobileStack === 'false') return;
+
+        const headers = Array.from(table.querySelectorAll('thead th')).map((th) =>
+            (th.textContent || '').replace(/\s+/g, ' ').trim()
+        );
+
+        if (!headers.length || !table.querySelector('tbody')) return;
+
+        table.setAttribute('data-mobile-stack', 'true');
+
+        table.querySelectorAll('tbody tr').forEach((tr) => {
+            const cells = Array.from(tr.children).filter((el) => el.tagName === 'TD');
+
+            cells.forEach((td, index) => {
+                const label = headers[index] || `Campo ${index + 1}`;
+                td.setAttribute('data-label', label);
+
+                if (/acciones/i.test(label)) {
+                    td.classList.add('table-actions-cell');
+                }
+            });
+        });
+    });
+};
+
+const handleInertiaFinish = () => {
+    nextTick(() => applyMobileTableLabels());
+};
+
 onMounted(() => {
     checkMobile();
     window.addEventListener('resize', checkMobile);
+    window.addEventListener('inertia:finish', handleInertiaFinish);
+    nextTick(() => applyMobileTableLabels());
+});
+
+onUpdated(() => {
+    nextTick(() => applyMobileTableLabels());
 });
 
 onUnmounted(() => {
     window.removeEventListener('resize', checkMobile);
+    window.removeEventListener('inertia:finish', handleInertiaFinish);
 });
 </script>
 

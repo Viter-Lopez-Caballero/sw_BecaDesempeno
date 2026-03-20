@@ -184,9 +184,9 @@ const getProgressWidth = (count) => {
 
         <div class="space-y-6">
             <!-- Header -->
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Inicio</h1>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Inicio</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
                             <path :d="mdiHome"/>
@@ -260,7 +260,7 @@ const getProgressWidth = (count) => {
             </div>
 
             <!-- Solicitudes por Campus -->
-            <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6">
                 <h2 class="text-xl font-bold text-gray-900 mb-6">Solicitudes por Institución</h2>
                 
                 <div class="space-y-4">
@@ -325,7 +325,7 @@ const getProgressWidth = (count) => {
                 
                 <div class="text-sm text-gray-500 mb-4">Buscar por nombre de institución o ID</div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-end">
                     <div class="relative">
                         <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Buscar</label>
                         <div class="absolute bottom-0 left-0 pl-3 flex items-center pointer-events-none" style="height:45px">
@@ -390,7 +390,7 @@ const getProgressWidth = (count) => {
             <!-- Table Section -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left">
+                    <table class="w-full min-w-[920px] text-sm text-left">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
                                 <th scope="col" class="px-6 py-4 tracking-wider">ID</th>

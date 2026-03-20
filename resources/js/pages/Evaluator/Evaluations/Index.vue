@@ -82,9 +82,9 @@ const getStatusLabel = (status) => {
 
         <div class="space-y-6">
             <!-- Header -->
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Historial de Evaluaciones</h1>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Historial de Evaluaciones</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
                             <path :d="mdiSchool"/>
@@ -95,7 +95,7 @@ const getStatusLabel = (status) => {
             </div>
 
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 <!-- Aprobadas -->
                 <div class="bg-white rounded-lg shadow-md border-l-4 border-[#10B981] p-4 hover:shadow-lg transition-shadow">
                     <div class="flex items-center justify-between">
@@ -138,14 +138,14 @@ const getStatusLabel = (status) => {
 
             <!-- Filter and Table Section -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4">
-                <div class="flex items-center justify-between mb-4">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
                     <div class="flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#374151">
                             <path d="M440-160q-17 0-28.5-11.5T400-200v-240L168-736q-15-20-4.5-42t36.5-22h560q26 0 36.5 22t-4.5 42L560-440v240q0 17-11.5 28.5T520-160h-80Zm40-308 198-252H282l198 252Zm0 0Z"/>
                         </svg>
                         <h2 class="text-xl font-semibold text-gray-800">Filtro de Búsqueda</h2>
                     </div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-3 w-full sm:w-auto">
                         <button @click="cleanFilters" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-sm font-medium transition cursor-pointer">
                             <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="currentColor">
                                 <path d="M400-240v-80h240v80H400Zm-158 0L15-467l57-57 170 170 366-366 57 57-423 423Zm318-160v-80h240v80H560Zm160-160v-80h240v80H720Z"/>
@@ -206,13 +206,13 @@ const getStatusLabel = (status) => {
                     <h3 class="text-lg font-bold text-gray-900">Evaluaciones Completadas</h3>
                 </div>
                 
-                <div class="p-6">
+                <div class="p-4 sm:p-6">
                     <div class="space-y-4">
                         <div v-if="applications.data.length === 0" class="text-center py-8 text-gray-500">
                             No has realizado ninguna evaluación aún.
                         </div>
 
-                        <div v-for="application in applications.data" :key="application.evaluation_id" class="border border-gray-300 rounded-lg p-5 hover:shadow-md transition-shadow bg-white flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div v-for="application in applications.data" :key="application.evaluation_id" class="border border-gray-300 rounded-lg p-4 sm:p-5 hover:shadow-md transition-shadow bg-white flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                             
                             <!-- Columna Izquierda: Datos Principales -->
                             <div class="flex-1">

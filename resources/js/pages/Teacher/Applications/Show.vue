@@ -47,9 +47,9 @@ const getFileIcon = (type) => {
 
         <div class="space-y-6">
             <!-- Header -->
-            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div class="w-full md:w-auto">
-                    <h1 class="text-3xl font-bold text-gray-900">Detalles de la Solicitud</h1>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Detalles de la Solicitud</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
                             <path :d="mdiFileDocumentMultiple"/>
@@ -285,7 +285,7 @@ const getFileIcon = (type) => {
                                             </svg>
                                         </button>
                                     </div>
-                                    <div class="w-full h-[600px] bg-white rounded-xl overflow-hidden border border-gray-300 shadow-inner relative">
+                                    <div class="w-full h-[55vh] sm:h-[65vh] lg:h-[600px] bg-white rounded-xl overflow-hidden border border-gray-300 shadow-inner relative">
                                         <div class="absolute inset-0 flex items-center justify-center text-gray-400 z-0 text-center">
                                             <div class="flex flex-col items-center gap-2">
                                                 <svg class="w-10 h-10 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -316,3 +316,4 @@ const getFileIcon = (type) => {
     to { opacity: 1; transform: translateY(0); }
 }
 </style>
+

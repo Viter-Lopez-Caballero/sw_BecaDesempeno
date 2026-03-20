@@ -58,13 +58,13 @@ const submit = () => {
     <LandingLayout>
         <Head title="Recuperar Contraseña" />
 
-        <div class="flex items-center justify-center min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
+        <div class="flex items-center justify-center min-h-screen py-8 sm:py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
             <div class="max-w-md w-full">
                 <!-- Card Principal -->
-                <div class="bg-white rounded-lg shadow-xl p-10 space-y-7">
+                <div class="bg-white rounded-lg shadow-xl p-5 sm:p-8 md:p-10 space-y-6 sm:space-y-7">
                     <!-- Title -->
                     <div class="text-center">
-                        <h2 class="text-3xl text-[#1B396A] font-semibold">¿Olvidaste tu contraseña?</h2>
+                        <h2 class="text-2xl sm:text-3xl text-[#1B396A] font-semibold">¿Olvidaste tu contraseña?</h2>
                         <p class="mt-2 text-sm text-gray-600">
                             No te preocupes, te enviaremos instrucciones para restablecerla
                         </p>

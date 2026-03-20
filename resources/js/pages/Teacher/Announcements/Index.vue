@@ -101,7 +101,7 @@ const getFase = (announcement) => {
         <div class="space-y-6">
              <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Convocatoria Disponible</h1>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Convocatoria Disponible</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
                             <path :d="mdiBullhorn"/>
@@ -163,7 +163,7 @@ const getFase = (announcement) => {
                             </div>
                         </div>
 
-                        <h2 class="text-3xl font-bold text-gray-900 mt-0 mb-3 leading-tight">
+                        <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mt-0 mb-3 leading-tight">
                             {{ announcement.name }}
                         </h2>
                         <div class="w-20 h-1.5 bg-[#1B396A] rounded-full mb-4"></div>
@@ -282,7 +282,7 @@ const getFase = (announcement) => {
                 <div v-if="showDocumentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
 
-                    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col">
+                    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[85vh] sm:h-[90vh] flex flex-col">
                         <div class="flex items-center justify-between p-6 border-b border-gray-200">
                             <h2 class="text-lg font-semibold text-gray-900">{{ currentDocumentTitle }}</h2>
                             <button @click="closeDocumentModal" class="text-gray-400 hover:text-gray-800 transition-colors cursor-pointer">
@@ -349,3 +349,4 @@ const getFase = (announcement) => {
     transform: scale(0.95);
 }
 </style>
+

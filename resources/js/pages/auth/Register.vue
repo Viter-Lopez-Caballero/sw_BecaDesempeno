@@ -219,13 +219,13 @@ const buscarCurp = async () => {
     <LandingLayout>
         <Head title="Crear Cuenta" />
 
-        <div class="flex items-center justify-center min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-center min-h-screen py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
             <div class="max-w-5xl w-full">
                 <!-- Register Card -->
-                <div class="bg-white rounded-lg shadow-xl p-10 space-y-7">
+                <div class="bg-white rounded-lg shadow-xl p-5 sm:p-8 md:p-10 space-y-6 sm:space-y-7">
                     <!-- Title -->
                     <div class="text-center">
-                        <h2 class="text-3xl font-semibold text-[#1B396A]">Crear Cuenta</h2>
+                        <h2 class="text-2xl sm:text-3xl font-semibold text-[#1B396A]">Crear Cuenta</h2>
                     </div>
 
                     <!-- Form -->

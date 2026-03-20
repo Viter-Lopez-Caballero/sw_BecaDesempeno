@@ -84,7 +84,7 @@ watch(search, (value) => {
             <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Mis Reconocimientos</h1>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Mis Reconocimientos</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
                             <path :d="mdiStar"/>
@@ -206,7 +206,7 @@ watch(search, (value) => {
                                             <div class="flex justify-between items-center">
                                                 <h3 class="font-bold text-gray-800 text-lg">Vista Previa del Reconocimiento</h3>
                                             </div>
-                                            <div class="w-full h-[600px] border border-gray-300 rounded-lg overflow-hidden bg-white relative">
+                                            <div class="w-full h-[55vh] sm:h-[65vh] lg:h-[600px] border border-gray-300 rounded-lg overflow-hidden bg-white relative">
                                                 <div class="absolute inset-0 flex items-center justify-center text-gray-400 z-0">
                                                     Cargando vista previa...
                                                 </div>
@@ -298,3 +298,4 @@ watch(search, (value) => {
     to { opacity: 1; transform: translateY(0); }
 }
 </style>
+

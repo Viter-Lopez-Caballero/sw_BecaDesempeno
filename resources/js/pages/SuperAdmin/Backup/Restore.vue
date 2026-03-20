@@ -148,7 +148,7 @@ const submit = async () => {
             <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Restauración de Base de Datos</h1>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Restauración de Base de Datos</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill:#1B396A">
                             <path :d="mdiDatabaseOutline"/>
@@ -291,7 +291,7 @@ const submit = async () => {
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-end gap-3 pt-6 border-t border-gray-200">
                         <Link :href="route('superadmin.backup.index')" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition">
                             Cancelar
                         </Link>
@@ -376,7 +376,7 @@ const submit = async () => {
                             <input id="archivo-restauracion-change" type="file" class="hidden" @change="onFileChange" accept=".sql,.enc" />
                         </div>
 
-                        <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-end gap-3 pt-6 border-t border-gray-200">
                             <Link :href="route('superadmin.backup.index')" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition">
                                 Cancelar
                             </Link>
@@ -498,3 +498,4 @@ const submit = async () => {
     text-align: center;
 }
 </style>
+

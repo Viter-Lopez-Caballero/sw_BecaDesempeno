@@ -58,7 +58,7 @@
         </template>
 
         <template #footer>
-            <div class="flex items-center gap-3 w-full sm:w-auto">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
                 <SecondaryButton 
                     @click="close"
                     class="flex-1 sm:flex-none justify-center px-6 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-gray-200 transition-all duration-200 cursor-pointer"

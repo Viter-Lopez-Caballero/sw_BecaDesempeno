@@ -260,9 +260,9 @@ const formatDate = (dateString) => {
 
         <div class="space-y-6">
             <!-- Header with Breadcrumbs -->
-            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div class="w-full md:w-auto">
-                    <h1 class="text-3xl font-bold text-gray-900">Evaluación de Solicitud</h1>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Evaluación de Solicitud</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
                             <path :d="mdiFileDocumentMultiple"/>
@@ -323,12 +323,12 @@ const formatDate = (dateString) => {
             <div class="space-y-6">
 
                 <!-- Información General (Applicant) -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative">
+                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 relative">
                      <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-100 pb-4 mb-6 gap-2 md:gap-4">
                         <h2 class="text-lg font-bold text-gray-900">Información General</h2>
                      </div>
                      
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         <div>
                             <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Docente</h3>
                             <p class="text-md font-medium text-gray-900">{{ teacher.name || 'Completar datos' }}</p>
@@ -381,7 +381,7 @@ const formatDate = (dateString) => {
                 </div>
 
                 <!-- Documentación -->
-                <div class="bg-white p-8 rounded-lg shadow-md border border-gray-200">
+                <div class="bg-white p-4 sm:p-6 md:p-8 rounded-lg shadow-md border border-gray-200">
                     <h3 class="text-lg font-bold text-gray-900 mb-6">Documentación</h3>
                     
                     <div class="grid grid-cols-1 gap-4">
@@ -442,7 +442,7 @@ const formatDate = (dateString) => {
                                             </svg>
                                         </button>
                                     </div>
-                                    <div class="w-full h-[600px] bg-white rounded-xl overflow-hidden border border-gray-300 shadow-inner relative">
+                                    <div class="w-full h-[55vh] sm:h-[65vh] lg:h-[600px] bg-white rounded-xl overflow-hidden border border-gray-300 shadow-inner relative">
                                         <div class="absolute inset-0 flex items-center justify-center text-gray-400 z-0 text-center">
                                             <div class="flex flex-col items-center gap-2">
                                                 <svg class="w-10 h-10 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -475,7 +475,7 @@ const formatDate = (dateString) => {
                                 </div>
                             </div>
                             
-                            <div class="p-6 space-y-8">
+                            <div class="p-4 sm:p-6 space-y-8">
                                 <div v-if="!rubric" class="text-center py-8 text-gray-500">
                                     No hay una rúbrica activa asignada. Contacte al administrador.
                                 </div>
@@ -526,7 +526,7 @@ const formatDate = (dateString) => {
 
                     <!-- Column Right: Progress Summary & Actions -->
                     <div class="lg:col-span-1">
-                        <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6 sticky top-6">
+                        <div class="bg-white rounded-xl shadow-md border border-gray-200 p-4 sm:p-6 sticky top-6">
                             <h3 class="text-lg font-bold text-gray-900 mb-4">Progreso de Evaluación</h3>
                             
                             <!-- Progress Bar -->

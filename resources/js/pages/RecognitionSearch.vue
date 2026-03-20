@@ -73,17 +73,17 @@ const typeIcon = (type) => {
         <Head title="Buscador de Reconocimientos" />
 
         <!-- Hero Section -->
-        <section class="relative bg-gradient-to-br from-[#1B396A] via-[#2B4A7E] to-[#3B5C92] py-14 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        <section class="relative bg-gradient-to-br from-[#1B396A] via-[#2B4A7E] to-[#3B5C92] py-10 sm:py-14 px-4 sm:px-6 lg:px-8 overflow-hidden">
             <!-- Decorative circles -->
             <div class="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3"></div>
             <div class="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4"></div>
             <div class="absolute top-1/2 left-1/4 w-48 h-48 bg-white/[0.03] rounded-full -translate-y-1/2"></div>
 
             <div class="relative max-w-4xl mx-auto text-center">
-                <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+                <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
                     Buscador de Reconocimientos
                 </h1>
-                <p class="text-lg text-blue-100 max-w-2xl mx-auto leading-relaxed">
+                <p class="text-base sm:text-lg text-blue-100 max-w-2xl mx-auto leading-relaxed">
                     Encuentra fácilmente los reconocimientos que has obtenido a través de tu participación
                     en convocatorias organizadas por el TecNM.
                 </p>
@@ -91,21 +91,21 @@ const typeIcon = (type) => {
         </section>
 
         <!-- Search Section -->
-        <section class="bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <section class="bg-gray-50 py-10 sm:py-12 px-4 sm:px-6 lg:px-8">
             <div class="max-w-4xl mx-auto">
 
                 <!-- Search Card -->
                 <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
                     <!-- Card Header -->
-                    <div class="bg-gradient-to-r from-[#1B396A] to-[#2B4A7E] px-6 py-4 flex items-center gap-3">
+                    <div class="bg-gradient-to-r from-[#1B396A] to-[#2B4A7E] px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="w-5 h-5 fill-white/80">
                             <path d="M440-160q-17 0-28.5-11.5T400-200v-240L168-736q-15-20-4.5-42t36.5-22h560q26 0 36.5 22t-4.5 42L560-440v240q0 17-11.5 28.5T520-160h-80Zm40-308 198-252H282l198 252Zm0 0Z"/>
                         </svg>
                         <h2 class="text-white font-semibold text-lg">Criterios de Búsqueda</h2>
-                        <span class="text-blue-200 text-sm ml-auto">Ingresa al menos un criterio</span>
+                        <span class="text-blue-200 text-sm sm:ml-auto">Ingresa al menos un criterio</span>
                     </div>
 
-                    <div class="p-6">
+                    <div class="p-4 sm:p-6">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                             <!-- CURP -->
                             <div>
@@ -225,7 +225,7 @@ const typeIcon = (type) => {
 
                     <!-- Results grid -->
                     <div v-else>
-                        <div class="flex items-center justify-between mb-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
                             <h3 class="text-lg font-bold text-gray-800">
                                 Resultados encontrados
                                 <span class="ml-2 text-sm font-normal text-gray-500">({{ recognitions.length }} reconocimiento{{ recognitions.length !== 1 ? 's' : '' }})</span>
@@ -244,7 +244,7 @@ const typeIcon = (type) => {
 
                                 <div class="p-5">
                                     <!-- Header row -->
-                                    <div class="flex items-start justify-between gap-3 mb-3">
+                                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
                                         <div>
                                             <h4 class="text-base font-bold text-gray-800 leading-snug">
                                                 {{ rec.template_name }}
@@ -308,7 +308,7 @@ const typeIcon = (type) => {
 
                         <!-- Inline PDF Viewer -->
                         <div v-if="expandedRec" class="mt-5 bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden animate-fadeIn">
-                            <div class="flex items-center justify-between px-5 py-3 bg-gray-50 border-b border-gray-200">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-4 sm:px-5 py-3 bg-gray-50 border-b border-gray-200">
                                 <div class="flex items-center gap-3">
                                     <div :class="typeColor(expandedRec.template_type)" class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0">
                                         <svg v-if="typeIcon(expandedRec.template_type) === 'star'" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="w-4 h-4 fill-white">
@@ -329,7 +329,7 @@ const typeIcon = (type) => {
                                     </svg>
                                 </button>
                             </div>
-                            <div class="w-full h-[600px] relative bg-gray-100">
+                            <div class="w-full h-[55vh] sm:h-[65vh] lg:h-[600px] relative bg-gray-100">
                                 <div class="absolute inset-0 flex items-center justify-center text-gray-400 z-0">
                                     Cargando vista previa...
                                 </div>

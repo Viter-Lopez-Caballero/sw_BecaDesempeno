@@ -15,6 +15,7 @@ class Recognition extends Model
     protected $fillable = [
         'user_id',
         'announcement_id',
+        'type',
         'active',
         'sent_at',
         'identifier',

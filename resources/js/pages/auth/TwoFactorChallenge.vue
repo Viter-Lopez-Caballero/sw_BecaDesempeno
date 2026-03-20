@@ -7,7 +7,7 @@ import {
     InputOTPGroup,
     InputOTPSlot,
 } from '@/components/ui/input-otp';
-import AuthLayout from '@/layouts/AuthLayout.vue';
+import LandingLayout from '@/layouts/LandingLayout.vue';
 import { store } from '@/routes/two-factor/login';
 import { Form, Head } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
@@ -48,10 +48,7 @@ const code = ref<string>('');
 </script>
 
 <template>
-    <AuthLayout
-        :title="authConfigContent.title"
-        :description="authConfigContent.description"
-    >
+    <LandingLayout>
         <Head title="Two-Factor Authentication" />
 
         <div class="space-y-6">
@@ -134,6 +131,6 @@ const code = ref<string>('');
                 </Form>
             </template>
         </div>
-    </AuthLayout>
+    </LandingLayout>
 </template>
 

@@ -27,6 +27,7 @@ class RecognitionController extends Controller
         // Fetch active recognitions for the current user
         $recognitions = Recognition::with('announcement')
             ->where('user_id', $user->id)
+            ->where('type', 'evaluator')
             ->where('active', true)
             ->when($search, function ($query, $search) {
                 $query->whereHas('announcement', function ($q) use ($search) {
@@ -60,6 +61,7 @@ class RecognitionController extends Controller
         $recognition = Recognition::with('announcement')
             ->where('id', $id)
             ->where('user_id', $user->id)
+            ->where('type', 'evaluator')
             ->where('active', true)
             ->firstOrFail();
         try {

@@ -9,6 +9,7 @@ use setasign\Fpdi\Fpdi;
 use Carbon\Carbon;
 use Exception;
 use App\Models\Recognition;
+use App\Models\User;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel;
@@ -22,6 +23,145 @@ class PdfGenerationService
     {
         $this->signatureService = $signatureService;
     }
+
+    public function freezeAcceptanceLetter(Application $application)
+    {
+        $user = $application->user;
+        $template = $application->template ?? Template::active()->type('acceptance')->first();
+
+        if ($template && !$application->template_id) {
+            $application->template_id = $template->id;
+            $application->save();
+        }
+
+        if (!$template) return;
+
+        $snapshot = is_string($application->snapshot_data) ? json_decode($application->snapshot_data, true) : $application->snapshot_data;
+        if (!$snapshot) {
+            $contentData = $template->content_data ?? [];
+            $rawBodyText = $contentData['body_text'] ?? "De conformidad a su solicitud de la convocatoria de “PROGRAMA DE ESTIMULO AL DESEMPEÑO DEL PERSONAL DOCENTE [AÑO_ACTUAL] PARA INSTITUTOS FEDERALES Y CENTROS”, me complace informarle que el Comité de Evaluación del Tecnológico Nacional de México (TecNM) y de conformidad con los Lineamientos del Programa de Estímulos al Desempeño del Personal Docente para los Institutos Federales Tecnológicos y Centros, ha dictaminado que su solicitud de Estimulo al Desempeño del Personal Docente fue “[ESTADO]” con un nivel asignado de [NIVEL], la cual tendrá una vigencia de 1 (un) año, del periodo de [FECHA_INICIO] a [FECHA_FIN].\n\nEn consecuencia, el TecNM acredita el nivel alcanzado y se invita a mantener y seguir desarrollando sus habilidades en “Docencia”, “Producción Académica”, “Dirección Individualizada” y “Gestión Académica”, por lo que al termino de su vigencia será evaluado nuevamente o cuando le sea requerido por esta Dirección Académica de Investigación e Innovación con el propósito de valorar los avances en su desarrollo.\n\nSin otro particular, aprovecho la ocasión para enviarle un cordial saludo y felicitaciones.";
+
+            $announcementName = $application->announcement->name ?? 'XXXXX';
+            $statusText = $application->status === 'approved' ? 'APROBADA' : 'XXXXX';
+            $levelText = 'VI';
+            $vigenciaStart = Carbon::now()->isoFormat('DD [de] MMMM [de] YYYY');
+            $vigenciaEnd = Carbon::now()->addYear()->isoFormat('DD [de] MMMM [de] YYYY');
+            $currentYear = Carbon::now()->year;
+
+            $resolvedBodyText = str_replace(
+                ['[CONVOCATORIA]', '[ESTADO]', '[NIVEL]', '[FECHA_INICIO]', '[FECHA_FIN]', '[AÑO_ACTUAL]'],
+                [$announcementName, $statusText, $levelText, $vigenciaStart, $vigenciaEnd, $currentYear],
+                $rawBodyText
+            );
+
+            $snapshot = [
+                'date_text' => "CIUDAD DE MÉXICO, A " . mb_strtoupper(Carbon::now()->timezone('America/Mexico_City')->isoFormat('DD [DE] MMMM [DE] YYYY'), 'UTF-8'),
+                'director_name' => $contentData['director_name'] ?? 'Ramón Jiménez López',
+                'director_title' => $contentData['director_title'] ?? 'Director General DEL TecNM',
+                'body_text' => $resolvedBodyText,
+            ];
+            $application->snapshot_data = json_encode($snapshot);
+            $application->save();
+        }
+
+        if (!$application->identifier || !$application->digital_seal) {
+            if (!$application->identifier) {
+                $year = date('Y');
+                $uniqueSuffix = substr(str_shuffle(str_repeat("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 5)), 0, 6);
+                $application->identifier = "ACE-{$year}-ACE-{$application->id}-{$uniqueSuffix}";
+            }
+            if (!$application->digital_seal) {
+                $originalString = "||{$application->id}|{$user->id}|" . Carbon::now()->toIso8601String() . "||";
+                $application->digital_seal = $this->signatureService->sign($originalString);
+            }
+            $application->save();
+        }
+    }
+
+    public function freezeEvaluatorRecognition(Recognition $recognition, User $user)
+    {
+        $template = $recognition->template ?? Template::active()->type('recognition')->first();
+
+        if ($template && !$recognition->template_id) {
+            $recognition->template_id = $template->id;
+            $recognition->save();
+        }
+
+        if (!$template) return;
+
+        $snapshot = is_string($recognition->snapshot_data) ? json_decode($recognition->snapshot_data, true) : $recognition->snapshot_data;
+        if (!$snapshot) {
+            $contentData = $template->content_data ?? [];
+            $announcementName = $recognition->announcement ? $recognition->announcement->name : 'CONVOCATORIA GENERAL';
+            $defaultBody = $contentData['body_text'] ?? "Por su destacada participación como miembro de la Comisión de Evaluación\nLocal y Nacional al Programa de Estímulo al Desempeño del Personal\nDocente para los Institutos Federales y Centros";
+            $resolvedBody = str_replace('[CONVOCATORIA]', $announcementName, $defaultBody);
+            
+            $snapshot = [
+                'date_text' => "CIUDAD DE MÉXICO, A " . mb_strtoupper(Carbon::now()->timezone('America/Mexico_City')->isoFormat('DD [DE] MMMM [DE] YYYY'), 'UTF-8'),
+                'director_name' => $contentData['director_name'] ?? 'Ramón Jiménez López',
+                'director_title' => $contentData['director_title'] ?? 'Director General',
+                'body_text' => $resolvedBody,
+            ];
+            $recognition->snapshot_data = json_encode($snapshot);
+            $recognition->save();
+        }
+
+        if (!$recognition->identifier || !$recognition->digital_seal) {
+            if (!$recognition->identifier) {
+                $year = date('Y');
+                $uniqueSuffix = substr(str_shuffle(str_repeat("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 5)), 0, 6);
+                $recognition->identifier = "ACE-{$year}-EVAL-{$recognition->id}-{$uniqueSuffix}";
+            }
+            if (!$recognition->digital_seal) {
+                $sentAtIso = Carbon::parse($recognition->sent_at ?? now())->toIso8601String();
+                $originalString = "||REC-{$recognition->id}|{$user->id}|{$sentAtIso}||";
+                $recognition->digital_seal = $this->signatureService->sign($originalString);
+            }
+            $recognition->save();
+        }
+    }
+
+    public function freezeTeacherRecognition(Recognition $recognition, User $user)
+    {
+        $template = $recognition->template ?? Template::active()->type('recognition')->first();
+
+        if ($template && !$recognition->template_id) {
+            $recognition->template_id = $template->id;
+            $recognition->save();
+        }
+
+        if (!$template) return;
+
+        $snapshot = is_string($recognition->snapshot_data) ? json_decode($recognition->snapshot_data, true) : $recognition->snapshot_data;
+        if (!$snapshot) {
+            $contentData = $template->content_data ?? [];
+            $teacherBodyText = "Por su destacada participación como postulante en el Programa de Estímulo"
+                . "\nal Desempeño del Personal Docente para los Institutos Federales y Centros.";
+
+            $snapshot = [
+                'date_text' => "CIUDAD DE MÉXICO, A " . mb_strtoupper(Carbon::now()->timezone('America/Mexico_City')->isoFormat('DD [DE] MMMM [DE] YYYY'), 'UTF-8'),
+                'director_name' => $contentData['director_name'] ?? 'Ramón Jiménez López',
+                'director_title' => $contentData['director_title'] ?? 'Director General',
+                'body_text' => $teacherBodyText,
+            ];
+            $recognition->snapshot_data = $snapshot; // Auto json cast if array
+            $recognition->save();
+        }
+
+        if (!$recognition->identifier || !$recognition->digital_seal) {
+            if (!$recognition->identifier) {
+                $year = date('Y');
+                $uniqueSuffix = substr(str_shuffle(str_repeat("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 5)), 0, 6);
+                $recognition->identifier = "ACE-{$year}-DOC-{$recognition->id}-{$uniqueSuffix}";
+            }
+            if (!$recognition->digital_seal) {
+                $sentAtIso = Carbon::parse($recognition->sent_at ?? now())->toIso8601String();
+                $originalString = "||DOC-{$recognition->id}|{$user->id}|{$sentAtIso}||";
+                $recognition->digital_seal = $this->signatureService->sign($originalString);
+            }
+            $recognition->save();
+        }
+    }
     /**
      * Genera una carta de aceptación en formato PDF inyectando texto en una plantilla.
      *
@@ -33,19 +173,9 @@ class PdfGenerationService
     {
         $user = $application->user;
 
-        // 1. Fetch Template (Priority: Frozen Template > Active Template)
+        $this->freezeAcceptanceLetter($application);
+
         $template = $application->template;
-
-        if (!$template) {
-            $template = Template::active()->type('acceptance')->first();
-            
-            // If we found an active template but this application didn't have one frozen, freeze it now
-            if ($template && isset($application->id)) {
-                $application->template_id = $template->id;
-                $application->save();
-            }
-        }
-
         $templatePath = $template ? Storage::disk('public')->path($template->file_path) : null;
 
         if (!$templatePath || !file_exists($templatePath)) {
@@ -56,28 +186,18 @@ class PdfGenerationService
         $pdf = new Fpdi();
         $pdf->SetAutoPageBreak(false);
 
-        // Import page 1 and detect actual template size (same as Recognition flow)
         $pdf->setSourceFile($templatePath);
         $tplId = $pdf->importPage(1);
         $size = $pdf->getTemplateSize($tplId);
-        $w = $size['width'];   // real page width (mm)
-        $h = $size['height'];  // real page height (mm)
+        $w = $size['width'];
+        $h = $size['height'];
 
-        // Add a page matching the exact template format
         $pdf->AddPage($size['orientation'], [$w, $h]);
         $pdf->useTemplate($tplId, 0, 0, $w, $h);
 
-        // --- Snapshot Data Fetch or Create ---
         $snapshot = is_string($application->snapshot_data) ? json_decode($application->snapshot_data, true) : $application->snapshot_data;
         if (!$snapshot) {
-            $contentData = $template ? $template->content_data : [];
-            $snapshot = [
-                'date_text' => "CIUDAD DE MÉXICO, A " . mb_strtoupper(Carbon::now()->timezone('America/Mexico_City')->isoFormat('DD [DE] MMMM [DE] YYYY'), 'UTF-8'),
-                'director_name' => $contentData['director_name'] ?? 'Ramón Jiménez López',
-                'director_title' => $contentData['director_title'] ?? 'Director General'
-            ];
-            $application->snapshot_data = json_encode($snapshot);
-            $application->save();
+            throw new Exception("Datos de congelación no disponibles.");
         }
 
         // =====================================================================
@@ -115,27 +235,10 @@ class PdfGenerationService
         $pdf->SetXY($w * 0.217, $h * 0.327);
         $pdf->Cell(0, 5, iconv('UTF-8', 'ISO-8859-1', $institutionName), 0, 1, 'L');
 
-        // Dynamic Variables processing
-        $announcementName = $application->announcement->name ?? 'XXXXX';
-        $statusText = $application->status === 'approved' ? 'APROBADA' : 'XXXXX';
-        $levelText = 'VI'; // Custom level mapping currently hardcoded visually
-        $vigenciaStart = Carbon::now()->isoFormat('DD [de] MMMM [de] YYYY');
-        $vigenciaEnd = Carbon::now()->addYear()->isoFormat('DD [de] MMMM [de] YYYY');
-        $currentYear = Carbon::now()->year;
-
-        $contentData = $template ? $template->content_data : [];
-
-        // Get from snapshot or fallback to content_data if old
-        $rawBodyText = $snapshot['body_text'] ?? ($contentData['body_text'] ?? "De conformidad a su solicitud de la convocatoria de “PROGRAMA DE ESTIMULO AL DESEMPEÑO DEL PERSONAL DOCENTE [AÑO_ACTUAL] PARA INSTITUTOS FEDERALES Y CENTROS”, me complace informarle que el Comité de Evaluación del Tecnológico Nacional de México (TecNM) y de conformidad con los Lineamientos del Programa de Estímulos al Desempeño del Personal Docente para los Institutos Federales Tecnológicos y Centros, ha dictaminado que su solicitud de Estimulo al Desempeño del Personal Docente fue “[ESTADO]” con un nivel asignado de [NIVEL], la cual tendrá una vigencia de 1 (un) año, del periodo de [FECHA_INICIO] a [FECHA_FIN].\n\nEn consecuencia, el TecNM acredita el nivel alcanzado y se invita a mantener y seguir desarrollando sus habilidades en “Docencia”, “Producción Académica”, “Dirección Individualizada” y “Gestión Académica”, por lo que al termino de su vigencia será evaluado nuevamente o cuando le sea requerido por esta Dirección Académica de Investigación e Innovación con el propósito de valorar los avances en su desarrollo.\n\nSin otro particular, aprovecho la ocasión para enviarle un cordial saludo y felicitaciones.");
-        $directorName = $snapshot['director_name'] ?? ($contentData['director_name'] ?? "RAMÓN JIMÉNEZ LÓPEZ");
-        $directorTitle = $snapshot['director_title'] ?? ($contentData['director_title'] ?? "DIRECTOR GENERAL DEL TecNM");
-
-        // Execute placeholder replacements
-        $bodyText = str_replace(
-            ['[CONVOCATORIA]', '[ESTADO]', '[NIVEL]', '[FECHA_INICIO]', '[FECHA_FIN]', '[AÑO_ACTUAL]'],
-            [$announcementName, $statusText, $levelText, $vigenciaStart, $vigenciaEnd, $currentYear],
-            $rawBodyText
-        );
+        // Textos directos del snapshot
+        $bodyText = $snapshot['body_text'];
+        $directorName = $snapshot['director_name'];
+        $directorTitle = $snapshot['director_title'];
 
         // Print Body Text (Parse **bold** markdown to specific font weights)
         $bodyLeftMargin = $w * 0.111;
@@ -190,11 +293,8 @@ class PdfGenerationService
 
         // C.c.p. Line is baked into PDF.
 
-        // Signature Block handled on the second dedicated page below.
-        $originalString = "||{$application->id}|{$user->id}|" . Carbon::now()->toIso8601String() . "||";
-
         // Add Legal Signature QR Page (Second Page) - uses same page size as template
-        $this->addLegalSignaturePage($pdf, $originalString, 'Carta de Aceptación', $user->id, $application->id, $size);
+        $this->addLegalSignaturePage($pdf, 'Carta de Aceptación', $user->id, $application->id, $size);
 
         // Output PDF
         return response($pdf->Output('S'), 200)
@@ -227,60 +327,24 @@ class PdfGenerationService
      */
     public function generateRecognitionPdf($recognition, $user)
     {
-        // Path to the template (Priority: Frozen Template > Active Template)
-        $template = $recognition->template;
+        $this->freezeEvaluatorRecognition($recognition, $user);
 
-        if (!$template) {
-            $template = Template::active()->type('recognition')->first();
-            
-            // If we found an active template but this recognition didn't have one frozen, freeze it now
-            if ($template && isset($recognition->id)) {
-                $recognition->template_id = $template->id;
-                $recognition->save();
-            }
-        }
-        
+        $template = $recognition->template;
         $templatePath = $template ? Storage::disk('public')->path($template->file_path) : null;
 
         if (!$templatePath || !file_exists($templatePath)) {
             throw new Exception("El reconocimiento aún no se encuentra disponible.");
         }
 
-        // Initialize FPDI
         $pdf = new Fpdi();
         $pdf->SetAutoPageBreak(false);
-
-        // Add a page
         $pdf->setSourceFile($templatePath);
         
-        // Import page 1
         $tplId = $pdf->importPage(1);
         $size = $pdf->getTemplateSize($tplId);
-
-        // Add a page matching the exact template format
         $pdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
-        
-        // --- Snapshot Data Fetch or Create ---
-        $snapshot = is_string($recognition->snapshot_data) ? json_decode($recognition->snapshot_data, true) : $recognition->snapshot_data;
-        if (!$snapshot) {
-            $contentData = $template ? $template->content_data : [];
-            $announcementName = $recognition->announcement ? $recognition->announcement->name : 'CONVOCATORIA GENERAL';
-            $defaultBody = $contentData['body_text'] ?? "Por su destacada participación como evaluador en la convocatoria:\n[CONVOCATORIA]";
-            $resolvedBody = str_replace('[CONVOCATORIA]', $announcementName, $defaultBody);
 
-            if ($resolvedBody === $defaultBody) {
-                $resolvedBody = rtrim($defaultBody) . "\n" . $announcementName;
-            }
-            
-            $snapshot = [
-                'date_text' => "CIUDAD DE MÉXICO, A " . mb_strtoupper(Carbon::now()->timezone('America/Mexico_City')->isoFormat('DD [DE] MMMM [DE] YYYY'), 'UTF-8'),
-                'director_name' => $contentData['director_name'] ?? 'Ramón Jiménez López',
-                'director_title' => $contentData['director_title'] ?? 'Director General',
-                'body_text' => $resolvedBody,
-            ];
-            $recognition->snapshot_data = json_encode($snapshot);
-            $recognition->save();
-        }
+        $snapshot = is_string($recognition->snapshot_data) ? json_decode($recognition->snapshot_data, true) : $recognition->snapshot_data;
 
         // Format date and location strings
         $pdf->useTemplate($tplId, 0, 0, $size['width'], $size['height']);
@@ -314,11 +378,8 @@ class PdfGenerationService
         $pdf->SetXY(0, 225);
         $pdf->Cell($size['width'], 6, iconv('UTF-8', 'ISO-8859-1', $snapshot['date_text']), 0, 1, 'C');
 
-        // Capture Original String for Signature
-        $originalString = "||REC-{$recognition->id}|{$user->id}|" . Carbon::parse($recognition->sent_at)->toIso8601String() . "||";
-
         // Second Page setup for legal QR and Seal
-        $this->addLegalSignaturePage($pdf, $originalString, "Reconocimiento Evaluador", $user->id, $recognition->id, $size);
+        $this->addLegalSignaturePage($pdf, "Reconocimiento Evaluador", $user->id, $recognition->id, $size);
 
         // Output PDF
         return response($pdf->Output('S'), 200)
@@ -336,65 +397,28 @@ class PdfGenerationService
      */
     public function generateTeacherRecognitionPdf(Recognition $recognition, $user)
     {
-        // 1. Fetch Template (Priority: Frozen Template > Active Template)
-        $template = $recognition->template;
-        
-        if (!$template) {
-            $template = Template::active()->type('recognition')->first();
-            
-            // If we found an active template but this recognition didn't have one frozen, freeze it now
-            if ($template && isset($recognition->id)) {
-                $recognition->template_id = $template->id;
-                $recognition->save();
-            }
-        }
+        $this->freezeTeacherRecognition($recognition, $user);
 
-        // Si no hay plantilla (ni histórica ni activa), fallar
+        $template = $recognition->template;
         if (!$template || !Storage::disk('public')->exists($template->file_path)) {
             throw new Exception("El reconocimiento aún no se encuentra disponible.");
         }
 
         $templatePath = Storage::disk('public')->path($template->file_path);
-
-        // 2. Init FPDI
+        
         $pdf = new Fpdi();
         $pdf->SetAutoPageBreak(false);
-
-        // 3. Set source file
         try {
             $pdf->setSourceFile($templatePath);
-            // Import page 1
             $tplId = $pdf->importPage(1);
             $size = $pdf->getTemplateSize($tplId);
-
             $pdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
             $pdf->useTemplate($tplId, 0, 0, $size['width'], $size['height']);
         } catch (\Exception $e) {
             throw new Exception("Error al procesar la plantilla PDF: " . $e->getMessage());
         }
 
-        // --- Snapshot Data Fetch or Create ---
-        // Teacher recognitions use a FIXED body text — NOT the editable template text (that's for evaluators).
-        // snapshot_data cast as 'array' in Recognition, so it's already decoded here.
-        $snapshot = $recognition->snapshot_data;
-        if (!$snapshot) {
-            $contentData = $template ? $template->content_data : [];
-            $announcementName = $recognition->announcement ? $recognition->announcement->name : 'Convocatoria General';
-
-            // Fixed body text for teacher (postulant) — does NOT come from the template
-            $teacherBodyText = "Por su destacada participación como postulante en el Programa de Estímulo"
-                . "\nal Desempeño del Personal Docente para los Institutos Federales y Centros:";
-
-            $snapshot = [
-                'date_text'     => "CIUDAD DE MÉXICO, A " . mb_strtoupper(Carbon::now()->timezone('America/Mexico_City')->isoFormat('DD [DE] MMMM [DE] YYYY'), 'UTF-8'),
-                'director_name' => $contentData['director_name'] ?? 'Ramón Jiménez López',
-                'director_title'=> $contentData['director_title'] ?? 'Director General',
-                'body_text'     => $teacherBodyText . "\n" . $announcementName,
-            ];
-            // Assign array directly — 'array' cast on Recognition handles json_encode automatically
-            $recognition->snapshot_data = $snapshot;
-            $recognition->save();
-        }
+        $snapshot = is_string($recognition->snapshot_data) ? json_decode($recognition->snapshot_data, true) : $recognition->snapshot_data;
 
         // 1. Teacher Name (Centered)
         $pdf->SetFont('Arial', 'B', 24);
@@ -425,11 +449,8 @@ class PdfGenerationService
         $pdf->SetXY(0, 226);
         $pdf->Cell($size['width'], 6, iconv('UTF-8', 'ISO-8859-1', $snapshot['date_text']), 0, 1, 'C');
 
-        // Capture Original String for Signature
-        $originalString = "||DOC-{$recognition->id}|{$user->id}|" . Carbon::parse($recognition->sent_at)->toIso8601String() . "||";
-
         // Append Legal Page
-        $this->addLegalSignaturePage($pdf, $originalString, "Reconocimiento Postulante", $user->id, $recognition->id, $size);
+        $this->addLegalSignaturePage($pdf, "Reconocimiento Postulante", $user->id, $recognition->id, $size);
 
         // Output PDF
         return response($pdf->Output('S'), 200)
@@ -440,7 +461,7 @@ class PdfGenerationService
     /**
      * Creates a secondary page containing the legal QR code and the digital signature seal.
      */
-    private function addLegalSignaturePage($pdf, $originalString, $documentType, $userId, $recognitionId, $size = null)
+    private function addLegalSignaturePage($pdf, $documentType, $userId, $recognitionId, $size = null)
     {
         // Add a blank page with the exact same dimensions as the template, or fallback to standard A4 Portrait
         if ($size && isset($size['orientation'])) {
@@ -455,39 +476,13 @@ class PdfGenerationService
             
             if ($isAcceptanceLetter) {
                 $document = \App\Models\Application::find($recognitionId);
-                $folioPrefix = 'ACE';
             } else {
                 $document = \App\Models\Recognition::find($recognitionId);
-                $folioPrefix = $documentType === 'Reconocimiento Evaluador' ? 'EVAL' : 'DOC';
             }
             
-            // If document already has an identifier AND a digital seal, reuse both (idempotent re-downloads).
-            // If it has an identifier but NO seal (sign failed on first download), generate the seal now.
-            // If it has neither, generate both from scratch.
-            if ($document && $document->identifier && $document->digital_seal) {
-                // Fully formed → just reuse
-                $uniqueIdentifier = $document->identifier;
-                $digitalSeal      = $document->digital_seal;
-            } else {
-                // Generate identifier if missing
-                if ($document && $document->identifier) {
-                    $uniqueIdentifier = $document->identifier;
-                } else {
-                    $year            = date('Y');
-                    $uniqueSuffix    = substr(str_shuffle(str_repeat("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 5)), 0, 6);
-                    $uniqueIdentifier = "ACE-{$year}-{$folioPrefix}-{$recognitionId}-{$uniqueSuffix}";
-                }
-
-                // Always generate / re-generate the seal
-                $digitalSeal = $this->signatureService->sign($originalString);
-
-                // Persist both
-                if ($document) {
-                    $document->identifier  = $uniqueIdentifier;
-                    $document->digital_seal = $digitalSeal;
-                    $document->save();
-                }
-            }
+            // Should always have identifier and seal by now because of freeze routines
+            $uniqueIdentifier = $document->identifier ?? 'SIN-FOLIO';
+            $digitalSeal = $document->digital_seal ?? 'FIRMA ELECTRÓNICA NO DISPONIBLE';
 
             $user = \App\Models\User::find($userId);
 

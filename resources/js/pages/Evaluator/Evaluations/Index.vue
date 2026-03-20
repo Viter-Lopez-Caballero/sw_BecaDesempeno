@@ -157,7 +157,7 @@ const getStatusLabel = (status) => {
 
                 <div class="text-sm text-gray-500 mb-4">Buscar por convocatoria o docente</div>
 
-                <div class="flex flex-col md:flex-row gap-4 items-end mb-6">
+                <div class="flex flex-col sm:flex-row gap-4 sm:items-end mb-6">
                     <div class="relative w-full md:flex-1">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#1B396A">

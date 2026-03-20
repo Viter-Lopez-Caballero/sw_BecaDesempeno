@@ -21,7 +21,7 @@ class TemplateSeeder extends Seeder
                 'source_file' => database_path('seeders/templates/reconocimiento.pdf'),
                 'target_file' => 'templates/template_reconocimiento.pdf',
                 'content_data' => [
-                    'body_text' => "Por su destacada participación como miembro de la Comisión de Evaluación\nLocal y Nacional al Programa de Estímulo al Desempeño del Personal\nDocente para los Institutos Federales y Centros\n[CONVOCATORIA]",
+                    'body_text' => "Por su destacada participación como miembro de la Comisión de Evaluación\nLocal y Nacional al Programa de Estímulo al Desempeño del Personal\nDocente para los Institutos Federales y Centros",
                     'director_name' => 'RAMÓN JIMÉNEZ LÓPEZ',
                     'director_title' => 'DIRECTOR GENERAL',
                 ],

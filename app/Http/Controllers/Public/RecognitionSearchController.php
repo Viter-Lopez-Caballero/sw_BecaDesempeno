@@ -39,7 +39,7 @@ class RecognitionSearchController extends Controller
                       ->orWhere(function ($sub) {
                           $sub->where('type', 'postulante')
                               ->whereHas('announcement', function ($a) {
-                                  $a->where('current_stage', 'resultados');
+                                  $a->inResultadosStage();
                               });
                       });
                 });
@@ -94,7 +94,7 @@ class RecognitionSearchController extends Controller
                   ->orWhere(function ($sub) {
                       $sub->where('type', 'postulante')
                           ->whereHas('announcement', function ($a) {
-                              $a->where('current_stage', 'resultados');
+                              $a->inResultadosStage();
                           });
                   });
             })

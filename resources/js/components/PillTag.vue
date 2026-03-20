@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from "vue";
 import { colorsBgLight, colorsOutline } from "@/config/colors.js";
-import PillTagPlain from "@/Components/PillTagPlain.vue";
+import PillTagPlain from "@/components/PillTagPlain.vue";
 
 const props = defineProps({
   label: {
@@ -35,3 +35,4 @@ const componentClass = computed(() => [
     :small="small"
   />
 </template>
+

@@ -119,8 +119,8 @@ const isStageEvaluacion = computed(() => {
                         <span class="text-gray-900 font-semibold">Asignar Evaluador</span>
                     </div>
                 </div>
-                 <Link :href="route('admin.applications.index')" class="w-full md:w-auto justify-center px-4 py-2 border border-[#1B396A] rounded-lg text-[#1B396A] hover:bg-[#1B396A] hover:text-white transition flex items-center gap-2 text-[11px] font-bold uppercase bg-white cursor-pointer shadow-sm group">
-                    <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor" class="transition-colors">
+                <Link :href="route('admin.applications.index')" class="w-full md:w-auto justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition flex items-center gap-2 font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                         <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/>
                     </svg>
                     Regresar
@@ -289,7 +289,7 @@ const isStageEvaluacion = computed(() => {
                         </div>
 
                         <div class="flex items-center justify-end gap-3 pt-2">
-                             <Link :href="route('admin.applications.index')" class="px-6 py-2.5 border border-[#1B396A] text-[#1B396A] hover:bg-gray-50 rounded-lg text-center transition font-bold text-[11px] uppercase tracking-wider shadow-sm cursor-pointer">
+                            <Link :href="route('admin.applications.index')" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition">
                                 Cancelar
                             </Link>
                             <button 

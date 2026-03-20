@@ -1,5 +1,5 @@
 <script setup>
-import BaseIcon from "@/Components/BaseIcon.vue";
+import BaseIcon from "@/components/BaseIcon.vue";
 
 defineProps({
   title: {
@@ -43,3 +43,4 @@ const buttonClick = (event) => {
     </button>
   </header>
 </template>
+

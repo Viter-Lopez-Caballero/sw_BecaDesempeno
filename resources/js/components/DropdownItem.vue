@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue';
-import BaseIcon from "@/Components/BaseIcon.vue";
+import BaseIcon from "@/components/BaseIcon.vue";
 import {
     mdiChevronDown,
     mdiChevronUp

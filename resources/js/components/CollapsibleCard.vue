@@ -5,8 +5,8 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/Components/ui/accordion'
-import BaseIcon from "@/Components/BaseIcon.vue";
+} from '@/components/ui/accordion'
+import BaseIcon from "@/components/BaseIcon.vue";
 
 const props = defineProps({
   title: {

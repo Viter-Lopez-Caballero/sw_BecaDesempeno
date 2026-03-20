@@ -18,8 +18,8 @@
 <script setup>
 import { mdiFormatListBulleted } from '@mdi/js'
 import { computed } from 'vue'
-import BaseIcon from '@/Components/BaseIcon.vue'
-import CardBoxComponentEmpty from '@/Components/CardBoxComponentEmpty.vue'
+import BaseIcon from '@/components/BaseIcon.vue'
+import CardBoxComponentEmpty from '@/components/CardBoxComponentEmpty.vue'
 
 const props = defineProps({
     icon: {
@@ -49,3 +49,4 @@ const itemsFiltered = computed(() => {
     return props.isFiltered ? props.items.filter(item => model.value.includes(item.id)) : props.items
 })
 </script>
+

@@ -1,7 +1,7 @@
 <script setup>
 import { mdiUpload } from "@mdi/js";
 import { computed, ref, watch } from "vue";
-import BaseButton from "@/Components/BaseButton.vue";
+import BaseButton from "@/components/BaseButton.vue";
 
 const props = defineProps({
   modelValue: {
@@ -112,3 +112,4 @@ const upload = (event) => {
     </div>
   </div>
 </template>
+

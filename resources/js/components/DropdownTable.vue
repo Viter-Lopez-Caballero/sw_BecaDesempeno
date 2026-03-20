@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
-import BaseIcon from "@/Components/BaseIcon.vue";
+import BaseIcon from "@/components/BaseIcon.vue";
 import { mdiArrowUpDropCircleOutline, mdiArrowDownDropCircleOutline } from "@mdi/js";
 
 const props = defineProps({

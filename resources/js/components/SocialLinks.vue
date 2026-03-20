@@ -53,10 +53,10 @@
 </template>
 
 <script setup>
-import BaseButton from '@/Components/BaseButton.vue';
-import BaseButtons from '@/Components/BaseButtons.vue';
-import CardBoxComponentEmpty from '@/Components/CardBoxComponentEmpty.vue';
-import FormControl from '@/Components/FormControl.vue';
+import BaseButton from '@/components/BaseButton.vue';
+import BaseButtons from '@/components/BaseButtons.vue';
+import CardBoxComponentEmpty from '@/components/CardBoxComponentEmpty.vue';
+import FormControl from '@/components/FormControl.vue';
 import InputError from './InputError.vue';
 import {
 	mdiPlus,
@@ -98,3 +98,4 @@ const iconFor = (type) => ({
 	youtube: mdiYoutube,
 }[type] ?? mdiWeb)
 </script>
+

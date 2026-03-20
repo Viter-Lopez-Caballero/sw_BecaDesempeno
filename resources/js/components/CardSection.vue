@@ -23,7 +23,7 @@
 </template>
 
 <script setup>
-import BaseDivider from '@/Components/BaseDivider.vue';
+import BaseDivider from '@/components/BaseDivider.vue';
 import BaseIcon from './BaseIcon.vue';
 
 defineProps({

@@ -3,8 +3,8 @@ import { mdiCog, mdiClose, mdiHome, mdiChevronRight } from "@mdi/js";
 import { computed } from "vue";
 import { Link } from "@inertiajs/vue3";
 
-import BaseIcon from "@/Components/BaseIcon.vue";
-import IconRounded from "@/Components/IconRounded.vue";
+import BaseIcon from "@/components/BaseIcon.vue";
+import IconRounded from "@/components/IconRounded.vue";
 import { colorsBgLight } from "@/config/colors";
 
 const props = defineProps({

@@ -25,7 +25,7 @@
 
 <script setup>
 import { X } from "lucide-vue-next";
-import CardBoxComponentEmpty from "@/Components/CardBoxComponentEmpty.vue";
+import CardBoxComponentEmpty from "@/components/CardBoxComponentEmpty.vue";
 
 defineProps({
     selectedItems: { type: Array, required: true },
@@ -34,3 +34,4 @@ defineProps({
 
 defineEmits(['remove']);
 </script>
+

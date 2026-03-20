@@ -48,11 +48,11 @@
 </template>
 
 <script setup>
-import BaseButton from '@/Components/BaseButton.vue';
-import BaseButtons from '@/Components/BaseButtons.vue';
-import BaseIcon from '@/Components/BaseIcon.vue';
+import BaseButton from '@/components/BaseButton.vue';
+import BaseButtons from '@/components/BaseButtons.vue';
+import BaseIcon from '@/components/BaseIcon.vue';
 import CardBoxComponentEmpty from './CardBoxComponentEmpty.vue';
-import FileModal from '@/Components/FileModal.vue';
+import FileModal from '@/components/FileModal.vue';
 import { mdiEye, mdiFile } from '@mdi/js';
 import { useFileModal } from '@/Hooks/useFile';
 

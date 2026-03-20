@@ -78,7 +78,7 @@ Route::post('/register', [RegisterController::class, 'store'])->name('register.s
 // Email Verification Routes
 Route::get('/email/verify', [HomeController::class, 'verifyEmailNotice'])->name('verification.notice');
 
-Route::post('/email/verify/code', [CurpController::class, 'verifyCode'])->name('verification.verify');
+Route::post('/email/verify/code', [CurpController::class, 'verifyCode'])->name('verification.verify.code');
 Route::post('/email/verify/resend', [CurpController::class, 'resendCode'])->name('verification.resend');
 
 

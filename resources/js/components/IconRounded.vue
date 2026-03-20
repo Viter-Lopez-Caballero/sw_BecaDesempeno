@@ -1,6 +1,6 @@
 <script setup>
 import { colorsText, colorsBgLight } from "@/config/colors.js";
-import BaseIcon from "@/Components/BaseIcon.vue";
+import BaseIcon from "@/components/BaseIcon.vue";
 
 defineProps({
   icon: {
@@ -37,3 +37,4 @@ defineProps({
     "
   />
 </template>
+

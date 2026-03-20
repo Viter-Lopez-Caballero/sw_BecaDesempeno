@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import CardBoxComponentEmpty from '@/Components/CardBoxComponentEmpty.vue';
+import CardBoxComponentEmpty from '@/components/CardBoxComponentEmpty.vue';
 
 defineProps({
     socialLinks: {

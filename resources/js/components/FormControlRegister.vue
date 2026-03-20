@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, onMounted, onBeforeUnmount } from "vue";
 import { useMainStore } from "@/stores/main";
-import FormControlIcon from '@/Components/FormControlIcon.vue';
+import FormControlIcon from '@/components/FormControlIcon.vue';
 import { FwbInput } from 'flowbite-vue'
 
 const name = ref('')
@@ -175,3 +175,4 @@ if (props.ctrlKFocus) {
     <FormControlIcon v-if="icon" :icon="icon" :h="controlIconH" />
   </div>
 </template>
+

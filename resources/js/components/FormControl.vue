@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, onMounted, onBeforeUnmount } from "vue";
 import { useMainStore } from "@/stores/main";
-import FormControlIcon from "@/Components/FormControlIcon.vue";
+import FormControlIcon from "@/components/FormControlIcon.vue";
 import { mdiAlphabeticalVariant, mdiEye, mdiEyeOff } from "@mdi/js";
 import BaseIcon from "./BaseIcon.vue";
 
@@ -249,3 +249,4 @@ defineExpose({
     </span>
   </div>
 </template>
+

@@ -36,3 +36,4 @@ const { urlIsActive } = useActiveUrl();
         </SidebarMenu>
     </SidebarGroup>
 </template>
+

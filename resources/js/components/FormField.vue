@@ -8,7 +8,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/Components/ui/tooltip"
+} from "@/components/ui/tooltip"
 
 defineProps({
   textClass: {
@@ -83,3 +83,4 @@ const wrapperClass = computed(() => {
     <InputError :message="error" />
   </div>
 </template>
+

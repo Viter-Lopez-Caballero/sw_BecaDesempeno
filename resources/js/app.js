@@ -17,7 +17,22 @@ const pinia = createPinia();
 
 createInertiaApp({
   title: (title) => `${title} - ${appName}`,
-  resolve: (name) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
+  resolve: (name) => {
+    const pages = import.meta.glob('./pages/**/*.vue', { eager: true });
+    const path = `./pages/${name}.vue`;
+
+    if (pages[path]) {
+      return pages[path].default || pages[path];
+    }
+
+    // Fallback for Linux case-sensitive filesystems
+    const matchedKey = Object.keys(pages).find((key) => key.toLowerCase() === path.toLowerCase());
+    if (matchedKey) {
+      return pages[matchedKey].default || pages[matchedKey];
+    }
+
+    throw new Error(`Page not found: ${path}`);
+  },
   setup({ el, App, props, plugin }) {
     return createApp({ render: () => h(App, props) })
       .use(plugin)

@@ -208,10 +208,10 @@ const currentPreviewIsImage = computed(() => isImageResource(currentPdfUrl.value
             
             <div class="max-w-7xl mx-auto relative z-10">
                 <div class="text-center">
-                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
+                    <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
                         Programa de Estímulos al Desempeño<br />del Personal Docente
                     </h1>
-                    <p class="text-lg md:text-xl text-blue-50 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
+                    <p class="text-base sm:text-lg md:text-xl text-blue-50 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
                         Tecnológico Nacional de México - Reconociendo la excelencia académica y el compromiso docente de nuestra comunidad educativa.
                     </p>
                 </div>
@@ -287,7 +287,7 @@ const currentPreviewIsImage = computed(() => isImageResource(currentPdfUrl.value
             
             <div class="max-w-7xl mx-auto relative z-10">
                 <h2 class="text-3xl font-bold text-center mb-12 text-white">Etapas de la Convocatoria</h2>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                     <div 
                         v-for="etapa in etapas" 
                         :key="etapa.id"
@@ -333,7 +333,7 @@ const currentPreviewIsImage = computed(() => isImageResource(currentPdfUrl.value
                     Consulta las convocatorias disponibles y su estado actual.
                 </p>
                 
-                <div v-if="announcements.data && announcements.data.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <div v-if="announcements.data && announcements.data.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8 mb-8">
                     <div 
                         v-for="convocatoria in announcements.data" 
                         :key="convocatoria.id"
@@ -449,9 +449,9 @@ const currentPreviewIsImage = computed(() => isImageResource(currentPdfUrl.value
                     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
                     
                     <!-- Modal Content -->
-                    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col">
+                    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[88vh] sm:h-[90vh] flex flex-col">
                         <!-- Modal Header -->
-                        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                        <div class="flex items-start sm:items-center justify-between gap-3 p-4 sm:p-6 border-b border-gray-200">
                             <h2 class="text-lg font-semibold text-gray-900">{{ currentPdfTitle }}</h2>
                             <button @click="closePdfPreview" class="text-gray-400 hover:text-gray-800 transition-colors cursor-pointer">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

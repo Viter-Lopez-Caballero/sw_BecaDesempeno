@@ -74,10 +74,10 @@ const isEvaluatedByAdmin = computed(() => {
 
         <div class="space-y-6">
             <!-- Header with Breadcrumbs -->
-            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div class="w-full md:w-auto">
-                    <h1 class="text-3xl font-bold text-gray-900">Detalles de Evaluación</h1>
-                    <div class="flex items-center gap-2 mt-2 text-sm">
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Detalles de Evaluación</h1>
+                    <div class="flex flex-wrap items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
                             <path :d="mdiFileDocumentMultiple"/>
                         </svg>
@@ -99,7 +99,7 @@ const isEvaluatedByAdmin = computed(() => {
             <!-- Status Banner (Premium) -->
             <transition enter-active-class="transition duration-500 ease-out" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0">
                 <div 
-                    class="relative flex items-center gap-4 px-5 py-4 rounded-lg bg-white shadow-sm border border-gray-100"
+                    class="relative flex items-start sm:items-center gap-3 sm:gap-4 px-4 sm:px-5 py-4 rounded-lg bg-white shadow-sm border border-gray-100"
                     :style="{ borderLeft: `5px solid ${ isEvaluatedByAdmin ? '#7C3AED' : evaluation.status === 'approved' ? '#10A558' : '#EF4444' }` }"
                 >
                     <div class="p-2 flex-shrink-0">
@@ -120,12 +120,12 @@ const isEvaluatedByAdmin = computed(() => {
                             <span v-else-if="evaluation.status === 'approved'">Estado de Evaluación</span>
                             <span v-else>Estado de Evaluación</span>
                         </p>
-                        <h3 class="font-bold text-gray-900 text-base">
+                        <h3 class="font-bold text-gray-900 text-sm sm:text-base">
                             <span v-if="isEvaluatedByAdmin">Resuelta por Administración</span>
                             <span v-else-if="evaluation.status === 'approved'">Evaluación Completada — Aprobada</span>
                             <span v-else>Evaluación Completada — Rechazada</span>
                         </h3>
-                        <p class="text-sm text-gray-500 mt-0.5">
+                        <p class="text-xs sm:text-sm text-gray-500 mt-0.5">
                             <span v-if="isEvaluatedByAdmin">Esta solicitud fue tomada y resuelta directamente por un administrador. No requieres realizar ninguna acción en este expediente.</span>
                             <span v-else>Evaluada el {{ evaluation.updated_at ? formatDate(evaluation.updated_at) : 'Fecha no disponible' }}</span>
                         </p>
@@ -136,7 +136,7 @@ const isEvaluatedByAdmin = computed(() => {
             <!-- Comentario de Rechazo (si existe y NO fue por admin) -->
             <transition enter-active-class="transition duration-500 ease-out" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0">
                 <div v-if="!isEvaluatedByAdmin && evaluation.status === 'rejected' && evaluation.comment"
-                    class="relative flex items-start gap-4 px-5 py-4 rounded-lg bg-white shadow-sm border border-gray-100"
+                    class="relative flex items-start gap-3 sm:gap-4 px-4 sm:px-5 py-4 rounded-lg bg-white shadow-sm border border-gray-100"
                     style="border-left: 5px solid #EF4444;"
                 >
                     <div class="p-2 flex-shrink-0">
@@ -144,8 +144,8 @@ const isEvaluatedByAdmin = computed(() => {
                     </div>
                     <div>
                         <p class="text-xs font-bold uppercase tracking-wider mb-0.5" style="color: #EF4444;">Motivo de Rechazo</p>
-                        <h3 class="font-bold text-gray-900 text-base">Comentario del Evaluador</h3>
-                        <p class="text-sm text-gray-900 mt-0.5 italic">"{{ evaluation.comment }}"</p>
+                        <h3 class="font-bold text-gray-900 text-sm sm:text-base">Comentario del Evaluador</h3>
+                        <p class="text-xs sm:text-sm text-gray-900 mt-0.5 italic break-words">"{{ evaluation.comment }}"</p>
                     </div>
                 </div>
             </transition>
@@ -153,12 +153,12 @@ const isEvaluatedByAdmin = computed(() => {
             <div class="space-y-6">
                 
                 <!-- Información General (Applicant) -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative">
-                     <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-100 pb-4 mb-6 gap-2 md:gap-4">
+                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 relative">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 pb-4 mb-6 gap-2 sm:gap-4">
                         <h2 class="text-lg font-bold text-gray-900">Información General</h2>
                      </div>
                      
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         <div>
                             <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Docente</h3>
                             <p class="text-md font-medium text-gray-900">{{ teacher.name || 'Completar datos' }}</p>
@@ -211,7 +211,7 @@ const isEvaluatedByAdmin = computed(() => {
                 </div>
 
                 <!-- Documentación -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div class="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100">
                     <h2 class="text-lg font-bold text-gray-900 mb-6 border-b border-gray-100 pb-2">Documentación</h2>
 
                     <div class="grid grid-cols-1 gap-4">
@@ -274,7 +274,7 @@ const isEvaluatedByAdmin = computed(() => {
                                             </svg>
                                         </button>
                                     </div>
-                                    <div class="w-full h-[600px] bg-white rounded-xl overflow-hidden border border-gray-300 shadow-inner relative">
+                                    <div class="w-full h-[55vh] sm:h-[65vh] lg:h-[600px] bg-white rounded-xl overflow-hidden border border-gray-300 shadow-inner relative">
                                         <div class="absolute inset-0 flex items-center justify-center text-gray-400 z-0 text-center">
                                             <div class="flex flex-col items-center gap-2">
                                                 <svg class="w-10 h-10 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -293,18 +293,18 @@ const isEvaluatedByAdmin = computed(() => {
 
                 <!-- Rubric Evaluation (READ ONLY) -->
                 <div v-if="!isEvaluatedByAdmin" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="bg-[#1B396A] px-6 py-4 border-b border-gray-200 flex justify-between items-center text-white">
+                    <div class="bg-[#1B396A] px-4 sm:px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between sm:items-center gap-3 text-white">
                         <div>
                             <h2 class="font-bold text-lg">Resultados de Evaluación</h2>
                             <p class="text-blue-100 text-sm">Respuestas registradas</p>
                         </div>
-                        <div class="text-right">
+                        <div class="text-left sm:text-right">
                             <p class="text-xs opacity-80 uppercase tracking-widest">Puntuación Final</p>
-                            <p class="text-3xl font-bold">{{ Math.round(evaluation.score) }} <span class="text-lg font-normal">pts</span></p>
+                            <p class="text-2xl sm:text-3xl font-bold">{{ Math.round(evaluation.score) }} <span class="text-base sm:text-lg font-normal">pts</span></p>
                         </div>
                     </div>
                     
-                    <div class="p-6 space-y-8">
+                    <div class="p-4 sm:p-6 space-y-6 sm:space-y-8">
                         <div v-if="!rubric" class="text-center py-8 text-gray-500">
                             No se pudo cargar la rúbrica original.
                         </div>
@@ -312,20 +312,20 @@ const isEvaluatedByAdmin = computed(() => {
                         <div v-else v-for="(question, qIndex) in rubric.questions" :key="question.id" class="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
                             <div class="mb-3">
                                 <span class="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1 block">Criterio {{ qIndex + 1 }}</span>
-                                <h3 class="text-lg font-medium text-gray-900">{{ question.text }}</h3>
+                                <h3 class="text-base sm:text-lg font-medium text-gray-900">{{ question.text }}</h3>
                             </div>
                             
                             <div class="mt-3">
                                 <div v-if="getSelectedOption(question)" 
-                                    class="relative flex items-center p-4 rounded-lg border border-blue-500 bg-blue-50"
+                                    class="relative flex items-start sm:items-center p-3 sm:p-4 rounded-lg border border-blue-500 bg-blue-50"
                                 >
                                     <div class="flex items-center h-5">
                                         <div class="h-4 w-4 rounded-full border border-blue-600 bg-blue-600 flex items-center justify-center">
                                             <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
                                         </div>
                                     </div>
-                                    <div class="ml-3 flex-1 flex justify-between items-center">
-                                        <span class="text-sm font-medium text-blue-900">
+                                    <div class="ml-3 flex-1 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                                        <span class="text-sm font-medium text-blue-900 break-words">
                                             {{ getSelectedOption(question).text }}
                                         </span>
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">

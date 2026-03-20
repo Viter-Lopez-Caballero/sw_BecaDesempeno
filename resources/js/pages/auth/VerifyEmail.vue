@@ -129,13 +129,13 @@ const resendCode = () => {
     <LandingLayout>
         <Head title="Verificar Correo Electrónico" />
 
-        <div class="flex items-center justify-center min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-center min-h-screen py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
             <div class="max-w-xl w-full">
                 <!-- Card Principal -->
-                <div class="bg-white rounded-lg shadow-xl p-10 space-y-6">
+                <div class="bg-white rounded-lg shadow-xl p-5 sm:p-8 md:p-10 space-y-6">
                     <!-- Título -->
                     <div class="text-center">
-                        <h2 class="text-3xl font-semibold text-[#1B396A] mb-3">Confirma tu Correo Electrónico</h2>
+                        <h2 class="text-2xl sm:text-3xl font-semibold text-[#1B396A] mb-3">Confirma tu Correo Electrónico</h2>
                         <p class="text-gray-600 text-sm text-left">
                             Hemos enviado un código de verificación de 6 dígitos a tu dirección de email.
                             Por favor revisa tu bandeja de entrada e ingrésalo a continuación para activar tu cuenta.<br>
@@ -177,7 +177,7 @@ const resendCode = () => {
                                     maxlength="1"
                                     inputmode="numeric"
                                     pattern="[0-9]"
-                                    class="w-12 h-14 text-center text-2xl font-bold bg-[#F3F4F6] border-t-0 border-x-0 rounded-lg focus:ring-0 border-b-2 border-b-gray-300 focus:border-b-[#1B396A] transition-all"
+                                    class="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold bg-[#F3F4F6] border-t-0 border-x-0 rounded-lg focus:ring-0 border-b-2 border-b-gray-300 focus:border-b-[#1B396A] transition-all"
                                     :class="{ 'border-b-red-500': form.errors.code }"
                                     @input="handleInput(index - 1, $event)"
                                     @keydown="handleKeydown(index - 1, $event)"

@@ -171,7 +171,7 @@ const closeViewer = (id) => {
             <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">{{ title }}</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
                             <path :d="mdiBullhorn" />
@@ -278,7 +278,7 @@ const closeViewer = (id) => {
 
             <!-- Filter Card -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4">
-                <div class="flex items-center justify-between mb-2">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                     <div class="flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px"
                             fill="#374151">
@@ -321,7 +321,7 @@ const closeViewer = (id) => {
             <!-- Table -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left">
+                    <table class="w-full min-w-[980px] text-sm text-left">
                         <thead class="bg-[#1B396A] text-white uppercase text-xs font-semibold">
                             <tr>
                                 <th scope="col" class="px-6 py-4 text-center tracking-wider" style="width: 80px;">
@@ -441,7 +441,7 @@ const closeViewer = (id) => {
                                                     </svg>
                                                 </button>
                                             </div>
-                                            <div class="w-full h-[600px] border border-gray-300 rounded-xl overflow-hidden bg-white shadow-inner relative">
+                                            <div class="w-full h-[55vh] sm:h-[65vh] lg:h-[600px] border border-gray-300 rounded-xl overflow-hidden bg-white shadow-inner relative">
                                                 <div class="absolute inset-0 flex items-center justify-center text-gray-400 z-0">
                                                     <div class="text-center">
                                                         <svg class="w-12 h-12 mx-auto animate-pulse mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

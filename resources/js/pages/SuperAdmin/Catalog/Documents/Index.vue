@@ -234,7 +234,7 @@ const viewDetails = (id) => {
             <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">{{ title }}</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
                             <path :d="mdiBookOpenPageVariant"/>
@@ -459,7 +459,7 @@ const viewDetails = (id) => {
                                                         </svg>
                                                     </button>
                                                 </div>
-                                                <div class="w-full h-[600px] border border-gray-300 rounded-xl overflow-hidden bg-white shadow-inner relative">
+                                                <div class="w-full h-[55vh] sm:h-[65vh] lg:h-[600px] border border-gray-300 rounded-xl overflow-hidden bg-white shadow-inner relative">
                                                     <div class="absolute inset-0 flex items-center justify-center text-gray-400 z-0">
                                                         <div class="text-center">
                                                             <svg class="w-12 h-12 mx-auto animate-pulse mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -738,3 +738,4 @@ const viewDetails = (id) => {
     color: #ffffff;
 }
 </style>
+

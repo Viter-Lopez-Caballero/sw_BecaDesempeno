@@ -128,9 +128,9 @@ const submit = () => {
 
         <div class="space-y-6">
             <!-- Header -->
-            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div class="w-full md:w-auto">
-                    <h1 class="text-3xl font-bold text-gray-900">{{ pageTitle }}</h1>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">{{ pageTitle }}</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
                             <path :d="mdiBookOpenPageVariant"/>
@@ -261,7 +261,7 @@ const submit = () => {
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-end gap-3 pt-6 border-t border-gray-200">
                         <Link :href="route('catalog.templates.index')" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition cursor-pointer">
                             Cancelar
                         </Link>
@@ -302,3 +302,4 @@ const submit = () => {
     color: #9ca3af;
 }
 </style>
+

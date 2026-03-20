@@ -123,7 +123,7 @@ const submit = () => {
             <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">{{ title }}</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
                             <path :d="mdiSecurity"/>
@@ -152,7 +152,7 @@ const submit = () => {
                 </Link>
             </div>
 
-            <div class="bg-white rounded-lg shadow-md border border-gray-200 p-8">
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6 md:p-8">
                 <form @submit.prevent="submit" class="space-y-6">
                     <!-- Basic Info -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -297,7 +297,7 @@ const submit = () => {
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-end gap-3 pt-6 border-t border-gray-200">
                         <Link :href="route(`${routeName}index`)" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition">
                             Cancelar
                         </Link>

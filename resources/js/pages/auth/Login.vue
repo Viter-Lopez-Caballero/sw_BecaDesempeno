@@ -73,15 +73,15 @@ const submit = () => {
     <LandingLayout>
         <Head title="Iniciar Sesión" />
 
-        <div class="flex items-center justify-center min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
+        <div class="flex items-center justify-center min-h-screen py-8 sm:py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
             <div class="max-w-6xl w-full">
                 <!-- Card contenedor unificado -->
                 <div class="bg-white rounded-2xl shadow-xl overflow-hidden grid grid-cols-1 lg:grid-cols-2">
                     <!-- Login Form -->
-                    <div class="p-10 space-y-7 flex flex-col justify-center">
+                    <div class="p-5 sm:p-8 lg:p-10 space-y-6 sm:space-y-7 flex flex-col justify-center">
                         <!-- Title -->
                         <div class="text-center">
-                            <h2 class="text-3xl text-[#1B396A] font-semibold">Iniciar sesión</h2>
+                            <h2 class="text-2xl sm:text-3xl text-[#1B396A] font-semibold">Iniciar sesión</h2>
                         </div>
 
                         <!-- Form -->
@@ -195,9 +195,9 @@ const submit = () => {
                             class="absolute inset-0 w-full h-full object-cover"
                         />
                         <div class="absolute inset-0 bg-gradient-to-t from-[#1B396A]/90 via-[#1B396A]/40 to-transparent"></div>
-                        <div class="relative z-10 flex flex-col justify-end p-10 text-white">
+                        <div class="relative z-10 flex flex-col justify-end p-6 xl:p-10 text-white">
                             <div class="space-y-4">
-                                <h3 class="text-3xl font-bold drop-shadow-lg">
+                                <h3 class="text-2xl xl:text-3xl font-bold drop-shadow-lg">
                                     Sistema de Estímulos al Desempeño del Personal Docente
                                 </h3>
                                 <p class="text-lg text-blue-100 leading-relaxed drop-shadow-md">

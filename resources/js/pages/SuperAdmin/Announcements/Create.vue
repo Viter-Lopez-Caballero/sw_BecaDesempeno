@@ -185,7 +185,7 @@ const submit = () => {
             <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">{{ title }}</h1>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">{{ title }}</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <Link :href="route(`${routeName}index`)" class="flex items-center gap-2 hover:underline">
                             <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
@@ -207,9 +207,9 @@ const submit = () => {
                 </Link>
             </div>
 
-            <div class="bg-white rounded-lg shadow-md border border-gray-200 p-8">
+            <div class="bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6 md:p-8">
                 <form @submit.prevent="submit" class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                         <!-- Nombre -->
                         <div class="col-span-1 md:col-span-2">
                             <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">Nombre: <span class="text-red-500">*</span></label>
@@ -298,7 +298,7 @@ const submit = () => {
                                 </div>
                                 
                                 <!-- Visor integrado -->
-                                <div class="bg-gray-100" style="height: 500px;">
+                                <div class="bg-gray-100 h-[55vh] sm:h-[65vh] lg:h-[500px]">
                                     <iframe v-if="archivoTipo?.includes('pdf')" 
                                         :src="archivoUrl" 
                                         class="w-full h-full border-0"

@@ -144,8 +144,8 @@ const getFileIcon = (type) => {
             <!-- Header with Breadcrumbs -->
             <div class="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div class="w-full md:w-auto">
-                    <h1 class="text-3xl font-bold text-gray-900">Detalles de la Solicitud</h1>
-                    <div class="flex items-center gap-2 mt-2 text-sm">
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Detalles de la Solicitud</h1>
+                    <div class="flex flex-wrap items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
                             <path :d="mdiFileDocumentMultiple"/>
                         </svg>
@@ -164,7 +164,7 @@ const getFileIcon = (type) => {
                 </Link>
             </div>
                         <!-- Main Info Card -->
-            <div class="bg-white p-8 rounded-lg shadow-md border border-gray-200">
+            <div class="bg-white p-4 sm:p-8 rounded-lg shadow-md border border-gray-200">
                 <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-100 pb-4 mb-8 gap-2 md:gap-4">
                     <h3 class="text-xl font-bold text-gray-900">Información de la Solicitud</h3>
                      <span 
@@ -188,7 +188,7 @@ const getFileIcon = (type) => {
                 </div>
 
                 <!-- Info Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-y-8 gap-x-12 mb-10">
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-y-6 sm:gap-y-8 gap-x-8 xl:gap-x-12 mb-10">
                     <div>
                         <p class="text-sm font-medium text-gray-600 mb-1">Profesor</p>
                         <p class="text-gray-900 font-medium text-base">{{ getUser()?.name || 'Usuario' }}</p>
@@ -242,7 +242,7 @@ const getFileIcon = (type) => {
                             class="border border-gray-200 rounded-xl p-5 hover:bg-gray-50 transition shadow-sm"
                             :class="{ 'bg-blue-50/50 ring-1 ring-[#1B396A]/10': documentsState[doc.id]?.showPreview }"
                         >
-                            <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6">
                                 <div class="flex items-center gap-4 w-full sm:w-auto min-w-0">
                                     <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-gray-100 rounded-xl text-[#1B396A]"
                                          :class="{ 'bg-blue-100': documentsState[doc.id]?.showPreview }">
@@ -257,11 +257,11 @@ const getFileIcon = (type) => {
                                 </div>
                                 
                                 <!-- Actions -->
-                                <div class="flex items-center gap-3 w-full sm:w-auto justify-end flex-shrink-0">
+                                <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto sm:justify-end flex-shrink-0">
                                     <button 
                                         v-if="doc.file_type === 'pdf'" 
                                         @click="togglePreview(doc.id)" 
-                                        class="inline-flex items-center justify-center gap-2 px-4 py-2 border border-[#1B396A] text-[#1B396A] rounded-lg font-bold transition cursor-pointer text-xs whitespace-nowrap shadow-sm hover:bg-[#1B396A] hover:text-white"
+                                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 border border-[#1B396A] text-[#1B396A] rounded-lg font-bold transition cursor-pointer text-xs whitespace-nowrap shadow-sm hover:bg-[#1B396A] hover:text-white"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor">
                                             <path v-if="!documentsState[doc.id]?.showPreview" d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Z"/>
@@ -288,7 +288,7 @@ const getFileIcon = (type) => {
                                             </svg>
                                         </button>
                                     </div>
-                                    <div class="w-full h-[600px] bg-white rounded-xl overflow-hidden border border-gray-300 shadow-inner relative">
+                                    <div class="w-full h-[55vh] md:h-[600px] bg-white rounded-xl overflow-hidden border border-gray-300 shadow-inner relative">
                                         <div class="absolute inset-0 flex items-center justify-center text-gray-400 z-0 text-center">
                                             <div class="flex flex-col items-center gap-2">
                                                 <svg class="w-10 h-10 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -312,7 +312,7 @@ const getFileIcon = (type) => {
                         <h2 class="text-lg font-bold text-gray-900">Evaluadores Asignados</h2>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left">
+                        <table class="w-full min-w-[920px] text-left">
                             <thead class="bg-[#1B396A] text-white">
                                 <tr>
                                 <th class="px-6 py-3 text-xs uppercase font-semibold w-12 whitespace-nowrap">ID</th>
@@ -324,9 +324,9 @@ const getFileIcon = (type) => {
                             </thead>
                             <tbody class="divide-y divide-gray-100">
                                 <tr v-for="(ev, index) in application.evaluations" :key="ev.id">
-                                    <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{{ index + 1 }}</td>
-                                    <td class="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">{{ ev.evaluator?.name }}</td>
-                                    <td class="px-6 py-4 text-sm whitespace-normal break-words max-w-xs">
+                                    <td class="px-3 md:px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{{ index + 1 }}</td>
+                                    <td class="px-3 md:px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">{{ ev.evaluator?.name }}</td>
+                                    <td class="px-3 md:px-6 py-4 text-sm whitespace-normal break-words max-w-xs">
                                         <div v-if="ev.comment" class="text-gray-800">
                                             <span v-if="!expandedComments[ev.id] && ev.comment.length > 100">
                                                 {{ ev.comment.substring(0, 100) }}...
@@ -345,7 +345,7 @@ const getFileIcon = (type) => {
                                         </div>
                                         <span v-else class="text-gray-400 italic">Sin comentarios</span>
                                     </td>
-                                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                                    <td class="px-3 md:px-6 py-4 text-right whitespace-nowrap">
                                         <span 
                                             class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white text-xs font-bold shadow-sm border border-gray-100"
                                             :class="{
@@ -369,7 +369,7 @@ const getFileIcon = (type) => {
                                             {{ getStatusLabel(getEvaluatorStatus(ev.status, application.status)) }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 text-center whitespace-nowrap">
+                                    <td class="px-3 md:px-6 py-4 text-center whitespace-nowrap">
                                         <Link v-if="ev.status !== 'pending' && ev.status !== 'expired'" :href="route('admin.applications.evaluation.show', { application: application.id, evaluation: ev.id })" 
                                             class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 border border-[#1B396A] text-[#1B396A] hover:bg-[#1B396A] hover:text-white rounded-lg text-xs font-bold transition shadow-sm"
                                             title="Ver Respuestas de la Rúbrica"
@@ -403,7 +403,7 @@ const getFileIcon = (type) => {
                         </div>
                     </div>
                     
-                    <div v-else class="w-full flex gap-4">
+                    <div v-else class="w-full flex flex-col sm:flex-row gap-4">
                         <button 
                             @click="approveRequest"
                             class="flex-1 bg-[#1B396A] text-white py-2.5 rounded-lg text-[11px] font-bold uppercase tracking-wider hover:bg-[#152d47] transition shadow-md cursor-pointer transform hover:-translate-y-0.5"
@@ -422,7 +422,7 @@ const getFileIcon = (type) => {
                         
                         <Link
                             :href="route('admin.applications.index')"
-                            class="px-6 py-2.5 bg-white border border-[#1B396A] rounded-lg text-[11px] font-bold uppercase tracking-wider text-[#1B396A] hover:bg-gray-50 transition shadow-sm text-center cursor-pointer"
+                            class="w-full sm:w-auto px-6 py-2.5 bg-white border border-[#1B396A] rounded-lg text-[11px] font-bold uppercase tracking-wider text-[#1B396A] hover:bg-gray-50 transition shadow-sm text-center cursor-pointer"
                         >
                             Cancelar
                         </Link>

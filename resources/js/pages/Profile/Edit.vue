@@ -166,9 +166,9 @@ const updatePassword = () => {
 
         <div class="space-y-6">
             <!-- Profile Information -->
-            <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="bg-white rounded-lg shadow-md p-4 sm:p-6">
                 <div class="border-b border-gray-200 pb-4 mb-6">
-                    <h2 class="text-2xl font-semibold text-[#1B396A]">Información del Perfil</h2>
+                    <h2 class="text-xl sm:text-2xl font-semibold text-[#1B396A]">Información del Perfil</h2>
                     <p class="text-sm text-gray-600 mt-1">Actualiza tu información personal</p>
                 </div>
 
@@ -302,11 +302,11 @@ const updatePassword = () => {
 
 
                     <!-- Submit Button -->
-                    <div class="flex justify-end">
+                    <div class="flex justify-stretch sm:justify-end">
                         <button
                             type="submit"
                             :disabled="profileForm.processing"
-                            class="px-6 py-2 cursor-pointer bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl disabled:opacity-75 flex items-center gap-2 font-medium"
+                            class="w-full sm:w-auto px-6 py-2 cursor-pointer bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl disabled:opacity-75 flex items-center justify-center gap-2 font-medium"
                         >
                             <span v-if="!profileForm.processing">Guardar Cambios</span>
                             <span v-else>Guardando...</span>
@@ -316,9 +316,9 @@ const updatePassword = () => {
             </div>
 
             <!-- Update Password -->
-            <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="bg-white rounded-lg shadow-md p-4 sm:p-6">
                 <div class="border-b border-gray-200 pb-4 mb-6">
-                    <h2 class="text-2xl font-semibold text-[#1B396A]">Actualizar Contraseña</h2>
+                    <h2 class="text-xl sm:text-2xl font-semibold text-[#1B396A]">Actualizar Contraseña</h2>
                     <p class="text-sm text-gray-600 mt-1">Asegúrate de usar una contraseña larga y segura</p>
                 </div>
 
@@ -418,11 +418,11 @@ const updatePassword = () => {
 
 
                     <!-- Submit Button -->
-                    <div class="flex justify-end">
+                    <div class="flex justify-stretch sm:justify-end">
                         <button
                             type="submit"
                             :disabled="passwordForm.processing"
-                            class="px-6 py-2 cursor-pointer bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl disabled:opacity-75 flex items-center gap-2 font-medium"
+                            class="w-full sm:w-auto px-6 py-2 cursor-pointer bg-[#1B396A] text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl disabled:opacity-75 flex items-center justify-center gap-2 font-medium"
                         >
                             <span v-if="!passwordForm.processing">Actualizar Contraseña</span>
                             <span v-else>Actualizando...</span>

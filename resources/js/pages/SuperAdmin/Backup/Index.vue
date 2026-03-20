@@ -92,7 +92,7 @@ const deleteBackup = async (id, name) => {
             <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Gestión de Respaldos</h1>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Gestión de Respaldos</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill:#1B396A">
                             <path :d="mdiDatabaseOutline"/>
@@ -360,3 +360,4 @@ const deleteBackup = async (id, name) => {
 :deep(.vue-select-custom .vs__open-indicator) { fill: #1B396A; transform: scale(.85); }
 :deep(.vue-select-custom .vs__actions) { padding-right: 4px; }
 </style>
+

@@ -100,15 +100,15 @@ const submitContact = async () => {
             <div class="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4"></div>
             <div class="absolute top-1/2 left-1/4 w-48 h-48 bg-white/[0.03] rounded-full -translate-y-1/2"></div>
             <div class="relative max-w-7xl mx-auto text-center">
-                <h1 class="text-4xl md:text-4xl font-bold text-white mb-4">Contacto</h1>
-                <p class="text-lg md:text-lg text-gray-100 max-w-3xl mx-auto">¿Tienes dudas sobre el programa? Estamos aquí para ayudarte.</p>
+                <h1 class="text-3xl sm:text-4xl font-bold text-white mb-4">Contacto</h1>
+                <p class="text-base sm:text-lg text-gray-100 max-w-3xl mx-auto">¿Tienes dudas sobre el programa? Estamos aquí para ayudarte.</p>
             </div>
         </section>
 
         <!-- CONTACTO Section -->
         <section class="py-16 bg-gray-50">
             <div class="max-w-4xl mx-auto px-4 sm:px-6">
-                <div class="bg-white rounded-lg shadow-md border border-gray-200 p-8">
+                <div class="bg-white rounded-lg shadow-md border border-gray-200 p-5 sm:p-8">
                     <form @submit.prevent="submitContact" class="space-y-6">
 
                         <!-- Título -->
@@ -120,7 +120,7 @@ const submitContact = async () => {
                         </div>
 
                         <!-- Inputs -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
                             <!-- Nombre -->
                             <div>
                                 <label for="name" class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">
@@ -236,11 +236,11 @@ const submitContact = async () => {
                         </div>
 
                         <!-- Botón -->
-                        <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
+                        <div class="flex items-center justify-stretch sm:justify-end gap-3 pt-6 border-t border-gray-200">
                             <button
                                 type="submit"
                                 :disabled="loading"
-                                class="px-6 py-2 bg-[#1B396A] cursor-pointer text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                class="w-full sm:w-auto px-6 py-2 bg-[#1B396A] cursor-pointer text-white rounded-lg hover:bg-[#0f2347] transition shadow-lg hover:shadow-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
                                 <span v-if="!loading">Enviar mensaje</span>
                                 <span v-else>Enviando...</span>

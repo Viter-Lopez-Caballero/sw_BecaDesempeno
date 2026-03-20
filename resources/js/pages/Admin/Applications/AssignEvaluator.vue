@@ -5,6 +5,7 @@ import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
 import { ref, computed, watch } from 'vue';
 import { 
+    mdiFileDocumentMultiple,
     mdiAccountPlus, 
     mdiChevronRight, 
     mdiDelete,
@@ -108,10 +109,10 @@ const isStageEvaluacion = computed(() => {
             <!-- Header with Breadcrumbs -->
             <div class="flex flex-col md:flex-row items-center justify-between gap-4">
                 <div class="w-full md:w-auto">
-                    <h1 class="text-3xl font-bold text-gray-900">Asignar Evaluador</h1>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Asignar Evaluador</h1>
                     <div class="flex items-center gap-2 mt-2 text-sm">
                         <svg viewBox="0 0 24 24" class="w-4 h-4 flex-shrink-0" style="fill: #1B396A;">
-                            <path :d="mdiAccountPlus"/>
+                            <path :d="mdiFileDocumentMultiple"/>
                         </svg>
                         <Link :href="route('admin.applications.index')" class="text-gray-700 font-medium hover:text-[#1B396A]">Solicitudes</Link>
                          <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="#9CA3AF">
@@ -153,7 +154,7 @@ const isStageEvaluacion = computed(() => {
                     <h2 class="text-lg font-bold text-gray-900 md:order-first">Información General</h2>
                  </div>
                  
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                     <div>
                         <h3 class="text-xs uppercase text-gray-500 font-semibold mb-1">Profesor</h3>
                         <p class="text-md font-medium text-gray-900">{{ getUser()?.name || 'Completar datos' }}</p>
@@ -235,8 +236,8 @@ const isStageEvaluacion = computed(() => {
                         </div>
 
                         <!-- Table of Selected Evaluators -->
-                        <div class="overflow-hidden border border-gray-200 rounded-lg">
-                            <table class="min-w-full divide-y divide-gray-200">
+                        <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                            <table class="min-w-[720px] w-full divide-y divide-gray-200">
                                 <thead class="bg-[#1B396A]">
                                     <tr>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-white uppercase tracking-wider w-16">
@@ -255,16 +256,16 @@ const isStageEvaluacion = computed(() => {
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
                                     <tr v-for="(evaluator, index) in selectedEvaluatorsObjects" :key="evaluator.id" class="hover:bg-gray-50 transition">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                        <td class="px-3 md:px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                             {{ index + 1 }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        <td class="px-3 md:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                             {{ evaluator.name }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                        <td class="px-3 md:px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                             {{ evaluator.institution?.name || 'N/A' }}
                                         </td>
-                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                         <td class="px-3 md:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <button 
                                                 type="button" 
                                                 @click="removeEvaluator(evaluator.id)"
@@ -289,13 +290,13 @@ const isStageEvaluacion = computed(() => {
                             </table>
                         </div>
 
-                        <div class="flex items-center justify-end gap-3 pt-2">
-                            <Link :href="route('admin.applications.index')" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition">
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-2">
+                            <Link :href="route('admin.applications.index')" class="w-full sm:w-auto px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition text-center">
                                 Cancelar
                             </Link>
                             <button 
                                 type="submit" 
-                                class="px-6 py-2.5 bg-[#1B396A] text-white rounded-lg font-bold uppercase text-[11px] tracking-wider hover:bg-[#152d47] transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
+                                class="w-full sm:w-auto px-6 py-2.5 bg-[#1B396A] text-white rounded-lg font-bold uppercase text-[11px] tracking-wider hover:bg-[#152d47] transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer transform hover:-translate-y-0.5 active:translate-y-0"
                                 :disabled="form.processing || selectedEvaluators.length === 0"
                             >
                                 <svg viewBox="0 0 24 24" class="w-4 h-4" fill="currentColor"><path :d="mdiAccountPlus"/></svg>

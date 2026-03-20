@@ -52,17 +52,17 @@ const currentPreviewIsImage = computed(() => isImageResource(currentPdfUrl.value
             <div class="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4"></div>
             <div class="absolute top-1/2 left-1/4 w-48 h-48 bg-white/[0.03] rounded-full -translate-y-1/2"></div>
             <div class="relative max-w-7xl mx-auto text-center">
-                <h1 class="text-4xl md:text-4xl font-bold text-white mb-4">Documentos de Trabajo 2026</h1>
-                <p class="text-lg md:text-lg text-gray-100 max-w-3xl mx-auto">Descarga los formatos oficiales y documentación necesaria para tu participación en el programa</p>
+                <h1 class="text-3xl sm:text-4xl font-bold text-white mb-4">Documentos de Trabajo 2026</h1>
+                <p class="text-base sm:text-lg text-gray-100 max-w-3xl mx-auto">Descarga los formatos oficiales y documentación necesaria para tu participación en el programa</p>
             </div>
         </section>
 
         <!-- DOCUMENTOS Section -->
         <section class="py-16 bg-gray-50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     <!-- 1. Carta de Exclusividad Laboral -->
-                    <a href="https://edd.tecnm.mx/formatos/2025/CARTA_EXCLUSIVIDAD_EDD2025.docx" class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-md border-l-4 border-[#2B579A] hover:shadow-xl transition-all group cursor-pointer">
+                    <a href="https://edd.tecnm.mx/formatos/2025/CARTA_EXCLUSIVIDAD_EDD2025.docx" class="flex items-start space-x-4 bg-white p-4 sm:p-6 rounded-xl shadow-md border-l-4 border-[#2B579A] hover:shadow-xl transition-all group cursor-pointer">
                         <div class="flex-shrink-0">
                             <svg class="w-8 h-8 text-[#2B579A]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -81,7 +81,7 @@ const currentPreviewIsImage = computed(() => isImageResource(currentPdfUrl.value
                     </a>
 
                     <!-- 2. Formato de Liberación de Actividades Académicas -->
-                    <a href="https://edd.tecnm.mx/formatos/2025/Formato_Liberacion_de_Actividades_Academicas_2025.docx" class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-md border-l-4 border-[#2B579A] hover:shadow-xl transition-all group cursor-pointer">
+                    <a href="https://edd.tecnm.mx/formatos/2025/Formato_Liberacion_de_Actividades_Academicas_2025.docx" class="flex items-start space-x-4 bg-white p-4 sm:p-6 rounded-xl shadow-md border-l-4 border-[#2B579A] hover:shadow-xl transition-all group cursor-pointer">
                         <div class="flex-shrink-0">
                             <svg class="w-8 h-8 text-[#2B579A]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -100,7 +100,7 @@ const currentPreviewIsImage = computed(() => isImageResource(currentPdfUrl.value
                     </a>
 
                     <!-- 3. Formato de Constancia de Liberación de Actividades Docentes -->
-                    <a href="https://edd.tecnm.mx/formatos/2025/Formato_Constancia_de_Liberacion_de_Actividades_Docentes_2025.docx" class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-md border-l-4 border-[#2B579A] hover:shadow-xl transition-all group cursor-pointer">
+                    <a href="https://edd.tecnm.mx/formatos/2025/Formato_Constancia_de_Liberacion_de_Actividades_Docentes_2025.docx" class="flex items-start space-x-4 bg-white p-4 sm:p-6 rounded-xl shadow-md border-l-4 border-[#2B579A] hover:shadow-xl transition-all group cursor-pointer">
                         <div class="flex-shrink-0">
                             <svg class="w-8 h-8 text-[#2B579A]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -119,7 +119,7 @@ const currentPreviewIsImage = computed(() => isImageResource(currentPdfUrl.value
                     </a>
 
                     <!-- 4. Lineamientos del Programa -->
-                    <button @click="toggleDocument('doc4', 'https://edd.tecnm.mx/formatos/2025/LINEAMIENTOS_EDD_2025.pdf', 'Lineamientos del Programa')" class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-md border-l-4 border-[#059669] hover:shadow-xl transition-all group text-left w-full cursor-pointer" :class="{'ring-2 ring-offset-2 ring-[#059669]': activeDocument === 'doc4'}">
+                    <button @click="toggleDocument('doc4', 'https://edd.tecnm.mx/formatos/2025/LINEAMIENTOS_EDD_2025.pdf', 'Lineamientos del Programa')" class="flex items-start space-x-4 bg-white p-4 sm:p-6 rounded-xl shadow-md border-l-4 border-[#059669] hover:shadow-xl transition-all group text-left w-full cursor-pointer" :class="{'ring-2 ring-offset-2 ring-[#059669]': activeDocument === 'doc4'}">
                         <div class="flex-shrink-0">
                             <svg class="w-8 h-8 text-[#059669]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
@@ -148,7 +148,7 @@ const currentPreviewIsImage = computed(() => isImageResource(currentPdfUrl.value
                                 </svg>
                             </button>
                         </div>
-                        <div class="w-full h-[600px] relative bg-gray-100">
+                        <div class="w-full h-[55vh] sm:h-[65vh] lg:h-[600px] relative bg-gray-100">
                             <div class="absolute inset-0 flex items-center justify-center text-gray-400 z-0">
                                 <div class="text-center">
                                     <svg class="w-12 h-12 mx-auto animate-pulse mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -186,7 +186,7 @@ const currentPreviewIsImage = computed(() => isImageResource(currentPdfUrl.value
                     </div>
 
                     <!-- 5. SPD - Solicitud de Personal Docente -->
-                    <button @click="toggleDocument('doc5', 'https://edd.tecnm.mx/formatos/2025/FORMATO_SPD_2025.pdf', 'Guía SPD - Integración de Expediente')" class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-md border-l-4 border-[#059669] hover:shadow-xl transition-all group text-left w-full cursor-pointer" :class="{'ring-2 ring-offset-2 ring-[#059669]': activeDocument === 'doc5'}">
+                    <button @click="toggleDocument('doc5', 'https://edd.tecnm.mx/formatos/2025/FORMATO_SPD_2025.pdf', 'Guía SPD - Integración de Expediente')" class="flex items-start space-x-4 bg-white p-4 sm:p-6 rounded-xl shadow-md border-l-4 border-[#059669] hover:shadow-xl transition-all group text-left w-full cursor-pointer" :class="{'ring-2 ring-offset-2 ring-[#059669]': activeDocument === 'doc5'}">
                         <div class="flex-shrink-0">
                             <svg class="w-8 h-8 text-[#059669]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
@@ -206,7 +206,7 @@ const currentPreviewIsImage = computed(() => isImageResource(currentPdfUrl.value
                     </button>
                     
                     <!-- 6. Convocatoria (Dinámica) -->
-                    <button v-if="activeAnnouncement && activeAnnouncement.file_url" @click="toggleDocument('doc6', activeAnnouncement.file_url, `Convocatoria ${announcementYear}`)" class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-md border-l-4 border-[#1B396A] hover:shadow-xl transition-all group text-left w-full cursor-pointer" :class="{'ring-2 ring-offset-2 ring-[#1B396A]': activeDocument === 'doc6'}">
+                    <button v-if="activeAnnouncement && activeAnnouncement.file_url" @click="toggleDocument('doc6', activeAnnouncement.file_url, `Convocatoria ${announcementYear}`)" class="flex items-start space-x-4 bg-white p-4 sm:p-6 rounded-xl shadow-md border-l-4 border-[#1B396A] hover:shadow-xl transition-all group text-left w-full cursor-pointer" :class="{'ring-2 ring-offset-2 ring-[#1B396A]': activeDocument === 'doc6'}">
                         <div class="flex-shrink-0">
                             <svg class="w-8 h-8 text-[#1B396A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
@@ -225,7 +225,7 @@ const currentPreviewIsImage = computed(() => isImageResource(currentPdfUrl.value
                         </div>
                     </button>
                     <!-- Fallback 6. Convocatoria Estática -->
-                    <button v-else @click="toggleDocument('doc6', 'https://edd.tecnm.mx/formatos/2025/CONVOCATORIA_EDD_2025.pdf', 'Convocatoria 2026')" class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-md border-l-4 border-[#1B396A] hover:shadow-xl transition-all group text-left w-full cursor-pointer" :class="{'ring-2 ring-offset-2 ring-[#1B396A]': activeDocument === 'doc6'}">
+                    <button v-else @click="toggleDocument('doc6', 'https://edd.tecnm.mx/formatos/2025/CONVOCATORIA_EDD_2025.pdf', 'Convocatoria 2026')" class="flex items-start space-x-4 bg-white p-4 sm:p-6 rounded-xl shadow-md border-l-4 border-[#1B396A] hover:shadow-xl transition-all group text-left w-full cursor-pointer" :class="{'ring-2 ring-offset-2 ring-[#1B396A]': activeDocument === 'doc6'}">
                         <div class="flex-shrink-0">
                             <svg class="w-8 h-8 text-[#1B396A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
@@ -254,7 +254,7 @@ const currentPreviewIsImage = computed(() => isImageResource(currentPdfUrl.value
                                 </svg>
                             </button>
                         </div>
-                        <div class="w-full h-[600px] relative bg-gray-100">
+                        <div class="w-full h-[55vh] sm:h-[65vh] lg:h-[600px] relative bg-gray-100">
                             <div class="absolute inset-0 flex items-center justify-center text-gray-400 z-0">
                                 <div class="text-center">
                                     <svg class="w-12 h-12 mx-auto animate-pulse mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -292,7 +292,7 @@ const currentPreviewIsImage = computed(() => isImageResource(currentPdfUrl.value
                     </div>
 
                     <!-- 7. Aviso de Privacidad Integral -->
-                    <button @click="toggleDocument('doc7', 'https://www.tecnm.mx/menu/proteccion_datos_personales/AVISO_DE_PRIVACIDAD_INTEGRAL_2023.pdf?doc=1', 'Aviso de Privacidad Integral')" class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-md border-l-4 border-[#E9C81F] hover:shadow-xl transition-all group text-left w-full cursor-pointer" :class="{'ring-2 ring-offset-2 ring-[#E9C81F]': activeDocument === 'doc7'}">
+                    <button @click="toggleDocument('doc7', 'https://www.tecnm.mx/menu/proteccion_datos_personales/AVISO_DE_PRIVACIDAD_INTEGRAL_2023.pdf?doc=1', 'Aviso de Privacidad Integral')" class="flex items-start space-x-4 bg-white p-4 sm:p-6 rounded-xl shadow-md border-l-4 border-[#E9C81F] hover:shadow-xl transition-all group text-left w-full cursor-pointer" :class="{'ring-2 ring-offset-2 ring-[#E9C81F]': activeDocument === 'doc7'}">
                         <div class="flex-shrink-0">
                             <svg class="w-8 h-8 text-[#E9C81F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
@@ -314,7 +314,7 @@ const currentPreviewIsImage = computed(() => isImageResource(currentPdfUrl.value
                     <!-- Doc 7 & 8 are handled after card 8 below -->
 
                     <!-- 8. Aviso de Privacidad Simplificado -->
-                    <button @click="toggleDocument('doc8', 'https://www.tecnm.mx/menu/proteccion_datos_personales/AVISO_DE_PRIVACIDAD_SIMPLIFICADO_2023.pdf?doc=1', 'Aviso de Privacidad Simplificado')" class="flex items-start space-x-4 bg-white p-6 rounded-xl shadow-md border-l-4 border-[#E9C81F] hover:shadow-xl transition-all group text-left w-full cursor-pointer" :class="{'ring-2 ring-offset-2 ring-[#E9C81F]': activeDocument === 'doc8'}">
+                    <button @click="toggleDocument('doc8', 'https://www.tecnm.mx/menu/proteccion_datos_personales/AVISO_DE_PRIVACIDAD_SIMPLIFICADO_2023.pdf?doc=1', 'Aviso de Privacidad Simplificado')" class="flex items-start space-x-4 bg-white p-4 sm:p-6 rounded-xl shadow-md border-l-4 border-[#E9C81F] hover:shadow-xl transition-all group text-left w-full cursor-pointer" :class="{'ring-2 ring-offset-2 ring-[#E9C81F]': activeDocument === 'doc8'}">
                         <div class="flex-shrink-0">
                             <svg class="w-8 h-8 text-[#E9C81F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
@@ -343,7 +343,7 @@ const currentPreviewIsImage = computed(() => isImageResource(currentPdfUrl.value
                                 </svg>
                             </button>
                         </div>
-                        <div class="w-full h-[600px] relative bg-gray-100">
+                        <div class="w-full h-[55vh] sm:h-[65vh] lg:h-[600px] relative bg-gray-100">
                             <div class="absolute inset-0 flex items-center justify-center text-gray-400 z-0">
                                 <div class="text-center">
                                     <svg class="w-12 h-12 mx-auto animate-pulse mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

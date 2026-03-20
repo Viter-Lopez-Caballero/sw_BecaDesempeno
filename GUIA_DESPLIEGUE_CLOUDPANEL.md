@@ -273,7 +273,7 @@ Antes de cerrar despliegue, confirmar:
 Para cada deploy futuro:
 
     git pull origin main
-         --no-dev --optimize-autoloader
+    composer install --no-dev --optimize-autoloader
     npm install
     npm run build
     php artisan migrate --force
@@ -284,3 +284,5 @@ Para cada deploy futuro:
     php artisan queue:restart
 
 Con eso el sistema queda actualizado y estable.
+
+Ya me quiero ir ahhh

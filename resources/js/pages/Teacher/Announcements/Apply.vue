@@ -103,7 +103,7 @@ const handleViaChange = async (newVia) => {
 
     form.via = newVia;
     viaUiVersion.value += 1;
-    initializeState({ reset: true, includePrevious: false });
+    initializeState({ reset: true, includePrevious: true });
 };
 
 const requiredDocsCount = computed(() => {

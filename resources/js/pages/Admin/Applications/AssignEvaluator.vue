@@ -22,22 +22,23 @@ const selectedEvaluators = ref([]);
 // Alias para la tabla (misma referencia)
 const selectedEvaluatorsObjects = computed(() => selectedEvaluators.value);
 
-const availableEvaluators = computed(() => {
-    const selectedIds = selectedEvaluators.value.map(e => e.id);
-    return props.evaluators.filter(e => !selectedIds.includes(e.id));
-});
-
-const form = useForm({
-    application_id: props.application.id,
-    evaluator_ids: [],
-});
-
 const unwrap = (obj) => {
     return obj && obj.data ? obj.data : obj;
 };
 
 const getUser = () => unwrap(props.application.user);
 const getConvocatoria = () => unwrap(props.application.announcement);
+
+const availableEvaluators = computed(() => {
+    const selectedIds = selectedEvaluators.value.map(e => e.id);
+    const applicantId = getUser()?.id;
+    return props.evaluators.filter(e => !selectedIds.includes(e.id) && e.id !== applicantId);
+});
+
+const form = useForm({
+    application_id: props.application.id,
+    evaluator_ids: [],
+});
 
 // Update form when selection changes
 watch(selectedEvaluators, (newVal) => {

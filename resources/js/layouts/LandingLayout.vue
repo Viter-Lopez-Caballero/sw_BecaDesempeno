@@ -14,8 +14,8 @@ const showingNavigationDropdown = ref(false);
 <template>
     <div class="font-sans text-gray-800 bg-gray-50 min-h-screen flex flex-col">
         <nav class="bg-[#1B396A] text-white fixed w-full z-50 shadow-md">
-            <!-- Desktop & Tablet -->
-            <div class="hidden md:flex items-center justify-between w-full px-6 lg:px-10 h-24">
+            <!-- Desktop Menu -->
+            <div class="hidden xl:flex items-center justify-between w-full px-6 xl:px-10 h-24">
                 <!-- Logos -->
                 <div class="flex items-center gap-3 shrink-0">
                     <img src="/img/LogoTecNMCompleto.png" alt="TecNM" class="h-12 lg:h-14 w-auto" />
@@ -38,8 +38,8 @@ const showingNavigationDropdown = ref(false);
                 </div>
             </div>
 
-            <!-- Mobile -->
-            <div class="md:hidden flex items-center justify-between px-4 h-16">
+            <!-- Mobile & Tablet -->
+            <div class="xl:hidden flex items-center justify-between px-4 h-16">
                 <!-- Logos -->
                 <div class="flex items-center gap-2">
                     <img src="/img/LogoTecNMCompleto.png" alt="TecNM" class="h-9 w-auto" />
@@ -66,10 +66,10 @@ const showingNavigationDropdown = ref(false);
                 </button>
             </div>
 
-            <!-- Mobile Dropdown Menu -->
+            <!-- Mobile & Tablet Dropdown Menu -->
             <div
                 :class="{ block: showingNavigationDropdown, hidden: !showingNavigationDropdown }"
-                class="md:hidden bg-[#162e55]"
+                class="xl:hidden bg-[#162e55]"
             >
                 <div class="pt-2 pb-3 space-y-1">
                     <Link :href="route('inicio')" :class="{'bg-blue-800 border-l-4 border-white': route().current('inicio')}" class="block pl-4 pr-4 py-3 border-l-4 border-transparent text-base font-medium text-blue-100 hover:text-white hover:bg-blue-800 hover:border-blue-300 transition">INICIO</Link>
@@ -85,7 +85,7 @@ const showingNavigationDropdown = ref(false);
             </div>
         </nav>
 
-        <main class="flex-grow pt-16 md:pt-24">
+        <main class="flex-grow pt-16 xl:pt-24">
             <slot />
         </main>
 

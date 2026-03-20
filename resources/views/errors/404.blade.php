@@ -246,7 +246,7 @@
             Parece que la página que estás buscando no existe o fue movida. 
             Verifica la URL o regresa al inicio.
         </p>
-        <a href="{{ url('/') }}" class="btn-home">Volver al Inicio</a>
+        <a href="{{ url('/') }}" class="btn-home" target="_top" rel="noopener noreferrer">Volver al Inicio</a>
     </div>
 </body>
 </html>

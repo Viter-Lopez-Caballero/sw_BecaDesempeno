@@ -23,7 +23,7 @@ class TemplateService
                 // NOTE: this body_text is shown on EVALUATOR recognitions only.
                 // Teacher (docente) recognitions use a fixed text defined in PdfGenerationService.
                 $defaultContentData = [
-                    'body_text'      => "Por su destacada participación como miembro de la Comisión de Evaluación\nLocal y Nacional al Programa de Estímulo al Desempeño del Personal\nDocente para los Institutos Federales y Centros",
+                    'body_text'      => "Por su destacada participación como miembro de la Comisión de Evaluación\nLocal y Nacional al Programa de Estímulo al Desempeño del Personal\nDocente para los Institutos Federales y Centros\n[CONVOCATORIA]",
                     'director_name'  => "RAMÓN JIMÉNEZ LÓPEZ",
                     'director_title' => "DIRECTOR GENERAL"
                 ];

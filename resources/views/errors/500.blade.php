@@ -246,7 +246,7 @@
             Lo sentimos, algo salió mal en nuestro servidor. 
             Nuestro equipo ya fue notificado y está trabajando para solucionarlo.
         </p>
-        <a href="{{ url('/') }}" class="btn-home">Volver al Inicio</a>
+        <a href="{{ url('/') }}" class="btn-home" target="_top" rel="noopener noreferrer">Volver al Inicio</a>
     </div>
 </body>
 </html>

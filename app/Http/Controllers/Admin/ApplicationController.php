@@ -4,11 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ApplicationResource;
-use App\Models\Application;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Requests\RemoveEvaluatorRequest;
-use Illuminate\Support\Facades\DB;
 use App\Traits\Filterable;
 use Inertia\Inertia;
 use App\Services\NotificationService;
@@ -166,6 +164,16 @@ class ApplicationController extends Controller
                 $year = date('Y');
                 $suffix = substr(str_shuffle(str_repeat('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 5)), 0, 6);
                 $recognition->identifier = "ACE-{$year}-DOC-{$recognition->id}-{$suffix}";
+                $recognition->save();
+            }
+        } else {
+            // If admin changes verdict to rejected, make sure any prior teacher recognition is disabled.
+            $recognition = \App\Models\Recognition::where('user_id', $application->user_id)
+                ->where('announcement_id', $application->announcement_id)
+                ->first();
+
+            if ($recognition && $recognition->active) {
+                $recognition->active = false;
                 $recognition->save();
             }
         }

@@ -273,7 +273,7 @@ Antes de cerrar despliegue, confirmar:
 Para cada deploy futuro:
 
     git pull origin main
-    composer install --no-dev --optimize-autoloader
+         --no-dev --optimize-autoloader
     npm install
     npm run build
     php artisan migrate --force

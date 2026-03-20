@@ -177,4 +177,19 @@ class Announcement extends Model
     {
         return $query->where('status', 'cerrada');
     }
+
+    /**
+     * Scope a query to only include announcements currently in the 'resultados' stage.
+     */
+    public function scopeInResultadosStage($query)
+    {
+        return $query->whereHas('calendar', function ($q) {
+            $q->whereNotNull('results_start')
+              ->whereDate('results_start', '<=', now())
+              ->where(function ($sub) {
+                  $sub->whereNull('results_end')
+                      ->orWhereDate('results_end', '>=', now());
+              });
+        });
+    }
 }

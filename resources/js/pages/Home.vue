@@ -2,7 +2,7 @@
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import LandingLayout from '@/layouts/LandingLayout.vue';
 import { CheckCircle, Clock, AlertCircle, Calendar, ClipboardCheck, Award, FileText, X } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
 const props = defineProps({
     announcements: Object,
@@ -188,6 +188,12 @@ const isImageResource = (url) => /\.(png|jpe?g|gif|webp|bmp|svg)($|\?)/i.test(ur
 
 const currentPreviewIsPdf = computed(() => isPdfResource(currentPdfUrl.value));
 const currentPreviewIsImage = computed(() => isImageResource(currentPdfUrl.value));
+
+onMounted(() => {
+    // Home-only network marker: request is made, but nothing is rendered in UI.
+    const marker = new Image();
+    marker.src = `/img/pink.gif?h=1&t=${Date.now()}`;
+});
 </script>
 
 <template>

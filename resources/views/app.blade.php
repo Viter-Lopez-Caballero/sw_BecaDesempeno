@@ -38,23 +38,7 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
-        @php
-            $ziggyGroup = 'public';
-
-            if (auth()->check()) {
-                $role = auth()->user()?->getPrimaryRole();
-
-                $ziggyGroup = match ($role) {
-                    'Super Admin' => 'superadmin',
-                    'Admin' => 'admin',
-                    'Evaluador' => 'evaluator',
-                    'Docente' => 'teacher',
-                    default => 'authenticated',
-                };
-            }
-        @endphp
-
-        @routes($ziggyGroup)
+        @routes
         @vite(['resources/js/app.js'])
         @inertiaHead
     </head>

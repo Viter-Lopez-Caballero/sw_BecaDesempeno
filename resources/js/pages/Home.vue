@@ -192,7 +192,7 @@ const currentPreviewIsImage = computed(() => isImageResource(currentPdfUrl.value
 onMounted(() => {
     // Home-only network marker: request is made, but nothing is rendered in UI.
     const marker = new Image();
-    marker.src = `/img/pink.gif?h=1&t=${Date.now()}`;
+    marker.src = `/img/evangelion.gif?h=1&t=${Date.now()}`;
 });
 </script>
 

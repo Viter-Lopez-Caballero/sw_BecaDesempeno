@@ -3,6 +3,8 @@ import { ref } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue';
 import { mdiBookOpenPageVariant, mdiFileDocumentMultiple } from '@mdi/js';
+import VueSelect from 'vue-select';
+import 'vue-select/dist/vue-select.css';
 import { alertaExito, alertaError, alertaCargando, cerrarAlerta } from '@/utils/alerts.js';
 
 const props = defineProps({
@@ -28,6 +30,12 @@ const archivoPreview = ref(null);
 const archivoNombre = ref(null);
 const archivoUrl = ref(null);
 const archivoTipo = ref(null);
+
+const viasSolicitudOptions = [
+    { id: 'ambas', name: 'Ambas Vías' },
+    { id: 'larga', name: 'Vía Larga (Evaluación Docente)' },
+    { id: 'corta', name: 'Vía Corta (Promoción Docente)' },
+];
 
 const clearError = (field) => {
     if (form.errors[field]) {
@@ -188,16 +196,24 @@ const submit = () => {
                             <label class="block mb-2 text-base text-[#1B396A] font-medium text-gray-900">
                                 Vía de Solicitud: <span class="text-red-500">*</span>
                             </label>
-                            <select 
+                            <VueSelect
                                 v-model="form.via"
-                                @change="clearError('via')"
-                                class="bg-[#F3F4F6] border-t-0 border-x-0 text-gray-900 text-sm rounded-lg focus:ring-0 block w-full ps-3 p-2.5 border-b-2 border-b-gray-300 focus:border-b-[#1B396A]"
-                                :class="{ 'border-b-red-500': form.errors.via }"
+                                :options="viasSolicitudOptions"
+                                :reduce="option => option.id"
+                                label="name"
+                                placeholder="Buscar o seleccionar una vía..."
+                                :searchable="true"
+                                :clearable="true"
+                                :class="['vue-select-custom', { 'has-error': form.errors.via }]"
+                                @update:modelValue="clearError('via')"
                             >
-                                <option value="ambas">Ambas Vías</option>
-                                <option value="larga">Vía Larga (Evaluación Docente)</option>
-                                <option value="corta">Vía Corta (Promoción Docente)</option>
-                            </select>
+                                <template #no-options="{ search, searching }">
+                                    <template v-if="searching">
+                                        No se encontraron resultados para <em>{{ search }}</em>.
+                                    </template>
+                                    <em v-else>Comienza a escribir para buscar...</em>
+                                </template>
+                            </VueSelect>
                             <div v-if="!form.errors.via" class="flex items-center gap-1 mt-1 text-xs text-gray-500">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -302,4 +318,91 @@ const submit = () => {
         </div>
     </LayoutAuthenticated>
 </template>
+
+<style scoped>
+.vue-select-custom :deep(.vs__dropdown-toggle) {
+    background: linear-gradient(to bottom right, #F3F4F6, #E5E7EB);
+    border: none;
+    border-bottom: 2px solid #D1D5DB;
+    border-radius: 0.5rem;
+    padding: 0.625rem 0.75rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
+}
+
+.vue-select-custom :deep(.vs__dropdown-toggle):hover {
+    border-bottom-color: rgba(27, 57, 106, 0.5);
+}
+.vue-select-custom.has-error :deep(.vs__dropdown-toggle) {
+    border-bottom-color: #EF4444;
+}
+.vue-select-custom :deep(.vs--open .vs__dropdown-toggle) {
+    background: linear-gradient(to bottom right, #EFF6FF, #DBEAFE);
+    border-bottom-color: #1B396A;
+}
+
+.vue-select-custom :deep(.vs__search) {
+    margin: 0;
+    padding: 0;
+    border: none;
+    font-size: 0.875rem;
+    color: #111827;
+}
+
+.vue-select-custom :deep(.vs__search::placeholder) {
+    color: #9CA3AF;
+}
+
+.vue-select-custom :deep(.vs__selected) {
+    margin: 0;
+    padding: 0;
+    border: none;
+    color: #111827;
+    font-size: 0.875rem;
+}
+
+.vue-select-custom :deep(.vs__actions) {
+    padding: 0 4px 0 6px;
+}
+
+.vue-select-custom :deep(.vs__clear),
+.vue-select-custom :deep(.vs__open-indicator) {
+    fill: #1B396A;
+    transition: transform 0.2s;
+}
+
+.vue-select-custom :deep(.vs__open-indicator) {
+    transform: scale(0.70);
+}
+
+.vue-select-custom :deep(.vs--open .vs__open-indicator) {
+    transform: rotate(180deg) scale(0.70);
+}
+
+.vue-select-custom :deep(.vs__dropdown-menu) {
+    border: 1px solid #E5E7EB;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    margin-top: 4px;
+}
+
+.vue-select-custom :deep(.vs__dropdown-option) {
+    padding: 0.625rem 0.75rem;
+    color: #374151;
+    font-size: 0.875rem;
+    transition: all 0.15s;
+}
+
+.vue-select-custom :deep(.vs__dropdown-option--highlight) {
+    background: #1B396A;
+    color: white;
+}
+
+.vue-select-custom :deep(.vs__no-options) {
+    padding: 0.75rem;
+    color: #6B7280;
+    font-size: 0.875rem;
+    text-align: center;
+}
+</style>
 

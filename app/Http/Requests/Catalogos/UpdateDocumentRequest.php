@@ -24,6 +24,7 @@ class UpdateDocumentRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'description' => 'required|string|max:1000',
+            'via' => 'required|string|in:ambas,larga,corta',
             'archivo' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,xlsx,xls|max:30720',
             'active' => 'boolean',
         ];
@@ -38,6 +39,8 @@ class UpdateDocumentRequest extends FormRequest
     {
         return [
             'name.required' => 'El nombre del documento es obligatorio.',
+            'via.required' => 'La via de solicitud es obligatoria.',
+            'via.in' => 'La via de solicitud seleccionada no es valida.',
             'archivo.file' => 'El archivo debe ser un archivo válido.',
             'archivo.mimes' => 'El archivo debe ser de tipo: PDF, JPG, JPEG, PNG, DOC o DOCX.',
             'archivo.max' => 'El archivo no puede exceder 30MB.',

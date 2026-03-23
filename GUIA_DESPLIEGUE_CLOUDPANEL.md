@@ -150,8 +150,8 @@ Si falta carpeta de logs:
 
 ## 4.2 En servidor (deploy)
 
-    git push origin feature/tests
-    git push viter feature/tests:dev
+    git push origin feature/responsive
+    git push viter feature/responsive:dev
     su - tecnm-edd-cenidet
     cd /home/tecnm-edd-cenidet/htdocs/edd.cenidet.tecnm.mx
     git pull origin main

@@ -54,11 +54,11 @@ class RecognitionController extends Controller
             ->orderBy($sortColumn, $sortDirection)
             ->get();
 
-        // Filtrar en memoria para asegurar que la etapa sea resultados o terminada
+        // Filtrar en memoria: permitir reconocimientos de convocatorias que
+        // tengan definida una etapa de resultados (incluye actuales, pasadas y planificadas)
         $filteredRecognitions = $recognitionsQuery->filter(function ($recognition) {
-            if (!$recognition->announcement) return false;
-            $stage = $recognition->announcement->current_stage;
-            return in_array($stage, ['resultados', 'terminada']);
+            if (!$recognition->announcement || !$recognition->announcement->calendar) return false;
+            return !is_null($recognition->announcement->calendar->results_start);
         });
 
         // Paginación manual del collection ya que Inertia espera paginado

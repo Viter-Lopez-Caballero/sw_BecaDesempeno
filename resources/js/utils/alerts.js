@@ -1,11 +1,19 @@
 import Swal from 'sweetalert2';
 import './alerts.css';
 
+const fireAlert = (options, { closePrevious = true } = {}) => {
+    if (closePrevious && Swal.isVisible()) {
+        Swal.close();
+    }
+
+    return Swal.fire(options);
+};
+
 /**
  * Alerta personalizada básica
  */
 export const customAlert = (title, text, icon) => {
-    return Swal.fire({
+    return fireAlert({
         title,
         text,
         icon,
@@ -18,7 +26,7 @@ export const customAlert = (title, text, icon) => {
  * Alerta de éxito
  */
 export const alertaExito = (titulo, mensaje) => {
-    Swal.fire({
+    return fireAlert({
         icon: 'success',
         title: titulo,
         text: mensaje,
@@ -35,7 +43,7 @@ export const alertaExito = (titulo, mensaje) => {
  * Alerta de error
  */
 export const alertaError = (titulo, mensaje) => {
-    Swal.fire({
+    return fireAlert({
         icon: 'error',
         title: titulo,
         text: mensaje,
@@ -52,7 +60,7 @@ export const alertaError = (titulo, mensaje) => {
  * Alerta de advertencia
  */
 export const alertaAdvertencia = (titulo, mensaje) => {
-    Swal.fire({
+    return fireAlert({
         icon: 'warning',
         title: titulo,
         text: mensaje,
@@ -69,7 +77,7 @@ export const alertaAdvertencia = (titulo, mensaje) => {
  * Alerta de información
  */
 export const alertaInfo = (titulo, mensaje) => {
-    Swal.fire({
+    return fireAlert({
         icon: 'info',
         title: titulo,
         text: mensaje,
@@ -83,7 +91,7 @@ export const alertaInfo = (titulo, mensaje) => {
  * Alerta de cargando
  */
 export const alertaCargando = (titulo, mensaje) => {
-    Swal.fire({
+    return fireAlert({
         html: `
             <div class="flex flex-col items-center">
                 <div class="loader spinner-border mt-5 mb-5"></div>
@@ -92,6 +100,8 @@ export const alertaCargando = (titulo, mensaje) => {
             </div>
         `,
         allowOutsideClick: false,
+        allowEscapeKey: false,
+        allowEnterKey: false,
         showConfirmButton: false,
         customClass: {
             popup: 'custom-alert-loading',
@@ -110,7 +120,7 @@ export const cerrarAlerta = () => {
  * Alerta de confirmación/pregunta
  */
 export const alertaPregunta = (titulo, mensaje) => {
-    return Swal.fire({
+    return fireAlert({
         icon: 'question',
         title: titulo,
         text: mensaje,
@@ -136,7 +146,7 @@ export const alertaPregunta = (titulo, mensaje) => {
  * Retorna true si confirmó, false si canceló o escribió mal.
  */
 export const alertaConfirmacionEscrita = (titulo, mensaje, palabraClave = 'CONFIRMAR') => {
-    return Swal.fire({
+    return fireAlert({
         title: titulo,
         html: `
             <p class="text-sm text-gray-600 mb-4">${mensaje}</p>

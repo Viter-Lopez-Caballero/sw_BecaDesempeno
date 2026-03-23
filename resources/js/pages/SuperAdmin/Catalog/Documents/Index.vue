@@ -83,6 +83,14 @@ const props = defineProps({
     activeTab: {
         type: String,
         default: 'requeridos'
+    },
+    canDeleteDocuments: {
+        type: Boolean,
+        default: true,
+    },
+    deleteDocumentsBlockedReason: {
+        type: String,
+        default: '',
     }
 });
 
@@ -160,6 +168,11 @@ const sortBy = (field) => {
 };
 
 const deleteItem = async (id, name) => {
+    if (!props.canDeleteDocuments) {
+        alertaError('No permitido', props.deleteDocumentsBlockedReason || 'No se puede eliminar documentos en la etapa actual de la convocatoria.');
+        return;
+    }
+
     const confirmed = await alertaPregunta(
         '¿Estás seguro?',
         `Se eliminará el documento "${name}"`
@@ -177,12 +190,7 @@ const deleteItem = async (id, name) => {
 const toggleActivo = (id, active) => {
     router.post(route('catalog.documents.toggleActive', id), {}, {
         preserveScroll: true,
-        onSuccess: () => {
-            alertaExito(
-                '¡Actualizado!',
-                active ? 'Documento desactivado' : 'Documento activado'
-            );
-        },
+        onSuccess: () => {},
         onError: () => alertaError('Error', 'No se pudo actualizar el estado')
     });
 };
@@ -439,7 +447,14 @@ const viewDetails = (id) => {
                                                         <path d="M200-200h57l391-391-57-57-391 391v57Zm-40 80q-17 0-28.5-11.5T120-160v-97q0-16 6-30.5t17-25.5l505-504q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L313-143q-11 11-25.5 17t-30.5 6h-97Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/>
                                                     </svg>
                                                 </Link>
-                                                <button v-if="useCan('documents.delete')" @click="deleteItem(document.id, document.name)" class="p-2 text-red-600 border border-red-600 rounded-full hover:bg-red-600 hover:text-white transition group cursor-pointer" title="Eliminar">
+                                                <button
+                                                    v-if="useCan('documents.delete')"
+                                                    @click="deleteItem(document.id, document.name)"
+                                                    :disabled="!canDeleteDocuments"
+                                                    class="p-2 border rounded-full transition group"
+                                                    :class="canDeleteDocuments ? 'text-red-600 border-red-600 hover:bg-red-600 hover:text-white cursor-pointer' : 'text-gray-400 border-gray-300 cursor-not-allowed opacity-60'"
+                                                    :title="canDeleteDocuments ? 'Eliminar' : (deleteDocumentsBlockedReason || 'No se puede eliminar en la etapa actual')"
+                                                >
                                                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="currentColor">
                                                         <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
                                                     </svg>

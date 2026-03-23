@@ -4,6 +4,7 @@ namespace App\Http\Requests\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 
 class RegisterUserRequest extends FormRequest
@@ -26,12 +27,26 @@ class RegisterUserRequest extends FormRequest
         return [
             'curp' => 'required|string|size:18',
             'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255',
+            'email' => [
+                'required',
+                'string',
+                'lowercase',
+                'email',
+                'max:255',
+                Rule::notIn(['admin@gmail.com', 'superadmin@gmail.com']),
+            ],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'institution_id' => 'required|exists:institutions,id',
             'priority_area_id' => 'required|exists:priority_areas,id',
             'sub_area_id' => 'required|exists:sub_areas,id',
             'role_type' => 'sometimes|string|in:evaluador,docente', // Optional parameter to determine role
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'email.not_in' => 'Este correo esta reservado para la administracion del sistema y no puede usarse en registro publico.',
         ];
     }
 }

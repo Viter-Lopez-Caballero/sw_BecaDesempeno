@@ -45,6 +45,7 @@
                  <Link
                     v-if="item.items.length > 0"
                     :href="route(item.items[0].route)" 
+                    @click="closeSidebarOnMobileNavigate"
                     :class="[
                         'flex items-center py-3 px-4 justify-center transition-all duration-200 relative',
                         'before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-[80%] before:w-[4px] before:rounded-r-lg before:transition-colors',
@@ -65,6 +66,7 @@
         <Link
             v-else
             :href="resolveRoute(item.route)"
+            @click="closeSidebarOnMobileNavigate"
             :class="[
                 'flex items-center py-3 transition-all duration-200 relative',
                  'before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-[80%] before:w-[4px] before:rounded-r-lg before:transition-colors',
@@ -105,6 +107,7 @@ const props = defineProps({
 const page = usePage();
 const collapsed = inject('sidebarCollapsed', ref(false));
 const isMobile = inject('isMobile', ref(false));
+const sidebarOpen = inject('sidebarOpen', ref(false));
 
 const isExpanded = ref(false);
 
@@ -149,6 +152,12 @@ const isVisible = computed(() => {
 
 const toggleGroup = () => {
     isExpanded.value = !isExpanded.value;
+};
+
+const closeSidebarOnMobileNavigate = () => {
+    if (isMobile.value) {
+        sidebarOpen.value = false;
+    }
 };
 
 onMounted(() => {

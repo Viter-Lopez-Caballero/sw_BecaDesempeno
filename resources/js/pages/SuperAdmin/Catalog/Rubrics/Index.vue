@@ -103,9 +103,7 @@ const toggleActive = (rubric) => {
     }
     router.post(route('catalog.rubrics.toggle-active', rubric.id), {}, {
         preserveScroll: true,
-        onSuccess: () => {
-            alertaExito('Actualizado', 'El estado de la rúbrica ha sido actualizado correctamente');
-        },
+        onSuccess: () => {},
         onError: () => {
             alertaError('Error', 'No se pudo actualizar el estado de la rúbrica');
         }

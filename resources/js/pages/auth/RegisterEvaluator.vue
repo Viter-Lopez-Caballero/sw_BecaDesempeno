@@ -45,6 +45,9 @@ const buscandoCurp = ref(false);
 const curpEncontrado = ref(false);
 const usuarioExistente = ref(false);
 const errorCurp = ref('');
+const protectedEmails = ['admin@gmail.com', 'superadmin@gmail.com'];
+
+const isProtectedEmail = (email) => protectedEmails.includes((email || '').trim().toLowerCase());
 
 // Watch for Priority Area change to fetch Sub Areas
 watch(() => form.priority_area_id, async (newValue) => {
@@ -94,6 +97,11 @@ const submit = () => {
         form.errors.email = 'El correo electrónico es obligatorio';
         return;
     }
+    if (isProtectedEmail(form.email)) {
+        form.errors.email = 'Este correo está reservado para la administración del sistema';
+        alertaError('Correo no permitido', 'Este correo está reservado para la administración del sistema');
+        return;
+    }
     if (!form.email.includes('@')) {
         form.errors.email = 'El correo electrónico debe contener un @';
         return;
@@ -135,9 +143,10 @@ const submit = () => {
             cerrarAlerta();
             alertaExito('¡Registro exitoso!', 'Revisa tu correo para verificar tu cuenta');
         },
-        onError: () => {
+        onError: (errors) => {
             cerrarAlerta();
-            alertaError('Error en el registro', 'Por favor verifica los datos ingresados');
+            const backendMsg = errors?.email || errors?.curp || 'Por favor verifica los datos ingresados';
+            alertaError('Error en el registro', backendMsg);
         },
         onFinish: () => form.reset('password', 'password_confirmation'),
     });
@@ -157,7 +166,8 @@ const buscarCurp = async () => {
 
     try {
         const response = await axios.post('/api/buscar-curp', {
-            curp: form.curp.toUpperCase()
+            curp: form.curp.toUpperCase(),
+            role_type: form.role_type
         });
 
         if (response.data.success) {
@@ -170,6 +180,16 @@ const buscarCurp = async () => {
             if (response.data.existing_user && response.data.existing_data) {
                 usuarioExistente.value = true;
                 const d = response.data.existing_data;
+
+                if (isProtectedEmail(d.email)) {
+                    errorCurp.value = 'Esta cuenta pertenece a la administración del sistema y no puede modificarse desde registro';
+                    alertaError('Cuenta protegida', errorCurp.value);
+                    form.name = '';
+                    curpEncontrado.value = false;
+                    usuarioExistente.value = false;
+                    return;
+                }
+
                 form.email = d.email ?? form.email;
                 form.institution_id = d.institution_id ?? form.institution_id;
 
@@ -203,8 +223,12 @@ const buscarCurp = async () => {
             errorCurp.value = 'CURP no encontrado en el sistema RENAPO';
             alertaError('CURP no encontrado', 'No se encontró el CURP en el sistema RENAPO');
         } else if (error.response?.status === 422) {
-            errorCurp.value = error.response.data.message || 'Este CURP ya está registrado';
-            alertaError('CURP ya registrado', 'Este CURP ya está registrado en el sistema');
+            const backendMsg = error.response.data.message
+                || error.response.data.errors?.curp?.[0]
+                || error.response.data.errors?.email?.[0]
+                || 'Este CURP ya está registrado';
+            errorCurp.value = backendMsg;
+            alertaError('CURP ya registrado', backendMsg);
         } else {
             errorCurp.value = 'Error al buscar el CURP. Por favor intenta de nuevo.';
             alertaError('Error', 'Error al buscar el CURP. Por favor intenta de nuevo');

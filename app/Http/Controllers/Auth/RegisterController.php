@@ -4,13 +4,12 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\Institution;
 use App\Models\PriorityArea;
 use App\Mail\VerificationCode;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 use App\Http\Requests\Auth\RegisterUserRequest;
 use Inertia\Inertia;
 
@@ -46,6 +45,14 @@ class RegisterController extends Controller
         Log::info('📝 RegisterController::store - Inicio del registro');
 
         $validated = $request->validated();
+        $protectedEmails = ['admin@gmail.com', 'superadmin@gmail.com'];
+        $requestEmail = strtolower(trim((string) $request->email));
+
+        if (in_array($requestEmail, $protectedEmails, true)) {
+            throw ValidationException::withMessages([
+                'email' => ['Este correo esta reservado para la administracion del sistema y no puede usarse en registro publico.'],
+            ]);
+        }
 
         // Generar código de verificación de 6 dígitos
         $verificationCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -57,7 +64,25 @@ class RegisterController extends Controller
             ->orWhere('curp', strtoupper($request->curp))
             ->first();
 
+        $roleType = $request->input('role_type', 'docente');
+        $targetRole = $roleType === 'evaluador' ? 'Evaluador' : 'Docente';
+
         if ($user) {
+            $existingUserEmail = strtolower(trim((string) $user->email));
+
+            if (in_array($existingUserEmail, $protectedEmails, true)) {
+                throw ValidationException::withMessages([
+                    'email' => ['Esta cuenta pertenece a la administracion del sistema y no puede modificarse desde registro.'],
+                ]);
+            }
+
+            // Seguridad: impedir re-registro del mismo rol para evitar sobrescrituras no autorizadas.
+            if ($user->hasRole($targetRole)) {
+                throw ValidationException::withMessages([
+                    'curp' => ["Ya existe una cuenta registrada como {$targetRole} con este CURP."],
+                ]);
+            }
+
             Log::info('🔄 Usuario existente encontrado: ' . $user->email . '. Intentando fusionar roles.');
 
             // Actualizar created_at para que actúe como cuenta nueva (sin notificaciones previas)
@@ -94,7 +119,6 @@ class RegisterController extends Controller
         }
 
         // Asignar rol según el tipo de registro
-        $roleType = $request->input('role_type', 'docente');
         if ($roleType === 'evaluador') {
             if (!$user->hasRole('Evaluador')) {
                 $user->assignRole('Evaluador');

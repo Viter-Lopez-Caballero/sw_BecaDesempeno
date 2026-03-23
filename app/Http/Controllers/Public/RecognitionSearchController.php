@@ -37,9 +37,13 @@ class RecognitionSearchController extends Controller
                 ->where(function ($q) {
                     $q->where('type', 'evaluator')
                       ->orWhere(function ($sub) {
+                          // Allow teacher recognitions for announcements that have a results stage defined
+                          // (covers current resultados window, already finished ones, and announcements with results planned)
                           $sub->where('type', 'postulante')
                               ->whereHas('announcement', function ($a) {
-                                  $a->inResultadosStage();
+                                  $a->whereHas('calendar', function ($c) {
+                                      $c->whereNotNull('results_start');
+                                  });
                               });
                       });
                 });
@@ -94,7 +98,9 @@ class RecognitionSearchController extends Controller
                   ->orWhere(function ($sub) {
                       $sub->where('type', 'postulante')
                           ->whereHas('announcement', function ($a) {
-                              $a->inResultadosStage();
+                              $a->whereHas('calendar', function ($c) {
+                                  $c->whereNotNull('results_start');
+                              });
                           });
                   });
             })

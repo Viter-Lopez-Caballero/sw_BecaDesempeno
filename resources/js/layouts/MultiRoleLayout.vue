@@ -55,7 +55,7 @@ const page = usePage();
 
 const sidebarOpen = ref(false);
 const sidebarCollapsed = ref(false);
-const isMobile = ref(false);
+const isMobile = ref(typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
 
 provide('sidebarOpen', sidebarOpen);
 provide('sidebarCollapsed', sidebarCollapsed);

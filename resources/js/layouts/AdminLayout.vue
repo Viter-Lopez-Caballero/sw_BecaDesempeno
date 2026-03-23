@@ -73,7 +73,7 @@ const activeMenu = computed(() => {
 
 const sidebarOpen = ref(false);
 const sidebarCollapsed = ref(false);
-const isMobile = ref(false);
+const isMobile = ref(typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
 
 // Provide state to sidebar and other components
 provide('sidebarOpen', sidebarOpen);

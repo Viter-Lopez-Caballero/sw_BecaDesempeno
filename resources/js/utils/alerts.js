@@ -101,7 +101,6 @@ export const alertaCargando = (titulo, mensaje) => {
         `,
         allowOutsideClick: false,
         allowEscapeKey: false,
-        allowEnterKey: false,
         showConfirmButton: false,
         customClass: {
             popup: 'custom-alert-loading',

@@ -7,7 +7,8 @@ use App\Services\CurpService;
 use App\Http\Requests\SearchCurpRequest;
 use App\Http\Requests\VerifyCurpCodeRequest;
 use App\Http\Requests\ResendCurpCodeRequest;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class CurpController extends Controller
 {
@@ -23,7 +24,7 @@ class CurpController extends Controller
      */
     public function search(SearchCurpRequest $request)
     {
-        \Log::info('🔍 CurpController->buscar() llamado', [
+        Log::info('🔍 CurpController->buscar() llamado', [
             'curp' => $request->curp,
             'ip' => $request->ip(),
             'method' => $request->method()
@@ -43,6 +44,24 @@ class CurpController extends Controller
             ->with(['institution', 'priorityArea', 'subArea'])
             ->first();
 
+        $protectedEmails = ['admin@gmail.com', 'superadmin@gmail.com'];
+
+        $roleType = $request->input('role_type', 'docente');
+        $targetRole = $roleType === 'evaluador' ? 'Evaluador' : 'Docente';
+
+        // Bloquear re-registro cuando ya tiene el mismo rol.
+        if ($usuarioExistente && $usuarioExistente->hasRole($targetRole)) {
+            throw ValidationException::withMessages([
+                'curp' => ["Ya existe una cuenta registrada como {$targetRole} con este CURP."],
+            ]);
+        }
+
+        if ($usuarioExistente && in_array(strtolower(trim((string) $usuarioExistente->email)), $protectedEmails, true)) {
+            throw ValidationException::withMessages([
+                'email' => ['Esta cuenta pertenece a la administracion del sistema y no puede modificarse desde registro.'],
+            ]);
+        }
+
         $datosUsuario = null;
         if ($usuarioExistente) {
             $datosUsuario = [
@@ -59,6 +78,7 @@ class CurpController extends Controller
             'data'             => $datos,
             'existing_user'    => $usuarioExistente !== null,
             'existing_data'    => $datosUsuario,
+            'target_role'      => $targetRole,
         ]);
     }
 
@@ -132,7 +152,7 @@ class CurpController extends Controller
         // Generar nuevo código
         $verificationCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         
-        \Log::info('🔄 Reenviando código. Código anterior: ' . $user->email_verification_code . ' | Nuevo código: ' . $verificationCode);
+        Log::info('🔄 Reenviando código. Código anterior: ' . $user->email_verification_code . ' | Nuevo código: ' . $verificationCode);
 
         $user->update([
             'email_verification_code' => $verificationCode,
@@ -143,7 +163,7 @@ class CurpController extends Controller
         try {
             \Illuminate\Support\Facades\Mail::to($user->email)->queue(new \App\Mail\VerificationCode($user, $verificationCode));
         } catch (\Exception $e) {
-            \Log::error('❌ Error al reenviar correo de verificación: ' . $e->getMessage());
+            Log::error('❌ Error al reenviar correo de verificación: ' . $e->getMessage());
             // No retornamos error al usuario para evitar bloqueos si el SMTP falla
         }
 

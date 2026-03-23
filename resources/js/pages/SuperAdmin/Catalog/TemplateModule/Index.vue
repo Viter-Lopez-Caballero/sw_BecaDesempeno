@@ -82,12 +82,7 @@ const toggleActive = (template) => {
   router.post(route('catalog.templates.toggle-active', template.id), {}, {
       preserveScroll: true,
       preserveState: true,
-      onSuccess: () => {
-          const msg = template.is_active 
-            ? 'Plantilla desactivada correctamente.' 
-            : 'Plantilla activada correctamente.';
-          alertaExito('¡Actualizado!', msg);
-      }
+            onSuccess: () => {}
   });
 };
 

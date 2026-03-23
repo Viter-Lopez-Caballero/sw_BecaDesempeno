@@ -13,7 +13,6 @@ use App\Traits\Filterable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 use App\Services\FileService;
@@ -49,6 +48,8 @@ class DocumentController extends Controller
      */
     public function index(Request $request): Response
     {
+        $documentDeletionLock = $this->getDocumentDeletionLockState();
+
         $filters = $this->getFiltersBase($request->query());
         $activeTab = $request->query('tab', 'requeridos');
 
@@ -150,6 +151,8 @@ class DocumentController extends Controller
             'routeName' => $this->routeName,
             'filters' => $filters,
             'activeTab' => $activeTab,
+            'canDeleteDocuments' => !$documentDeletionLock['blocked'],
+            'deleteDocumentsBlockedReason' => $documentDeletionLock['reason'],
         ]);
     }
 
@@ -224,6 +227,13 @@ class DocumentController extends Controller
      */
     public function destroy($id): RedirectResponse
     {
+        $documentDeletionLock = $this->getDocumentDeletionLockState();
+        if ($documentDeletionLock['blocked']) {
+            return back()->withErrors([
+                'error' => $documentDeletionLock['reason'],
+            ]);
+        }
+
         $document = CatalogDocument::findOrFail($id);
 
         // Eliminar archivo si existe
@@ -232,6 +242,44 @@ class DocumentController extends Controller
         // Usar forceDelete para eliminar permanentemente de la base de datos
         $document->forceDelete();
         return redirect()->route("{$this->routeName}index")->with('success', 'Documento eliminado con éxito');
+    }
+
+    /**
+     * Determina si la eliminación de documentos debe bloquearse según la etapa
+     * de la convocatoria activa.
+     */
+    private function getDocumentDeletionLockState(): array
+    {
+        $activeAnnouncement = Announcement::with('calendar')->activa()->latest('id')->first();
+
+        if (!$activeAnnouncement) {
+            return [
+                'blocked' => false,
+                'reason' => null,
+            ];
+        }
+
+        $currentStage = $activeAnnouncement->current_stage;
+        $blockedStages = ['registro', 'evaluacion', 'resultados'];
+
+        if (!in_array($currentStage, $blockedStages, true)) {
+            return [
+                'blocked' => false,
+                'reason' => null,
+            ];
+        }
+
+        $stageLabel = match ($currentStage) {
+            'registro' => 'Registro',
+            'evaluacion' => 'Evaluación',
+            'resultados' => 'Resultados',
+            default => 'Actual',
+        };
+
+        return [
+            'blocked' => true,
+            'reason' => "No se pueden eliminar documentos mientras la convocatoria esté en etapa de {$stageLabel}. Solo es posible eliminarlos cuando la convocatoria esté cerrada.",
+        ];
     }
 
     /**

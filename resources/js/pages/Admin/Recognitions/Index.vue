@@ -7,7 +7,7 @@ import { debounce } from 'lodash';
 import VueSelect from 'vue-select';
 import 'vue-select/dist/vue-select.css';
 import { mdiStar } from '@mdi/js';
-import { alertaExito, alertaError } from '@/utils/alerts.js';
+import { alertaError } from '@/utils/alerts.js';
 
 const props = defineProps({
     recognitions: {
@@ -89,12 +89,7 @@ const toggleReconocimiento = (userId, announcementId, currentStatus, application
     }, {
         preserveScroll: true,
         only: ['recognitions'],
-        onSuccess: () => {
-            alertaExito(
-                currentStatus ? 'Reconocimiento desactivado' : 'Reconocimiento activado',
-                currentStatus ? 'El reconocimiento ha sido desactivado' : 'El reconocimiento ha sido activado y enviado'
-            );
-        },
+        onSuccess: () => {},
         onError: () => {
             alertaError('Error', 'No se pudo actualizar el reconocimiento');
         }

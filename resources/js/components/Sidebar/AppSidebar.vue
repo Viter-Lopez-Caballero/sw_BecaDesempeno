@@ -109,7 +109,7 @@
                         <Link
                             :href="route('profile.edit')"
                             class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
-                            @click="profileMenuOpen = false"
+                            @click="profileMenuOpen = false; if (isMobile) sidebarOpen = false"
                         >
                             <svg viewBox="0 0 24 24" class="w-4 h-4 mr-3 text-[#1e3a5f]">
                                 <path fill="currentColor" :d="mdiAccount"/>
@@ -121,7 +121,7 @@
                             method="post"
                             as="button"
                             class="w-full flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-red-50 transition-colors duration-150 border-t border-gray-100 cursor-pointer"
-                            @click="profileMenuOpen = false"
+                            @click="profileMenuOpen = false; if (isMobile) sidebarOpen = false"
                         >
                             <svg viewBox="0 0 24 24" class="w-4 h-4 mr-3 text-red-600">
                                 <path fill="currentColor" :d="mdiLogout"/>
@@ -137,7 +137,7 @@
 
 <script setup>
 import { Link, usePage } from '@inertiajs/vue3';
-import { computed, inject, ref } from 'vue';
+import { computed, inject, ref, watch, onUnmounted } from 'vue';
 import { mdiAccount, mdiLogout } from "@mdi/js";
 import SidebarContent from './SidebarContent.vue';
 
@@ -154,12 +154,57 @@ const sidebarOpen = inject('sidebarOpen', ref(false));
 const sidebarCollapsed = inject('sidebarCollapsed', ref(false));
 const isMobile = inject('isMobile', ref(false));
 const profileMenuOpen = ref(false);
+let savedScrollY = 0;
+
+const lockBodyScroll = () => {
+    if (typeof window === 'undefined') return;
+
+    savedScrollY = window.scrollY || window.pageYOffset || 0;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${savedScrollY}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+};
+
+const unlockBodyScroll = () => {
+    if (typeof window === 'undefined') return;
+
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    document.body.style.overflow = '';
+    document.documentElement.style.overflow = '';
+
+    window.scrollTo(0, savedScrollY);
+};
 
 const userName = computed(() => page.props.auth?.user?.name || 'Usuario');
 const userEmail = computed(() => page.props.auth?.user?.email || '');
 const userInitials = computed(() => {
     const name = userName.value;
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+});
+
+watch(
+    () => sidebarOpen.value && isMobile.value,
+    (isOpen) => {
+        if (isOpen) {
+            lockBodyScroll();
+            return;
+        }
+
+        unlockBodyScroll();
+    },
+    { immediate: true }
+);
+
+onUnmounted(() => {
+    unlockBodyScroll();
 });
 </script>
 

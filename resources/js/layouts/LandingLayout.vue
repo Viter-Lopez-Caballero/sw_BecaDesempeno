@@ -18,8 +18,12 @@ const showingNavigationDropdown = ref(false);
             <div class="hidden xl:flex items-center justify-between w-full px-6 xl:px-10 h-24">
                 <!-- Logos -->
                 <div class="flex items-center gap-3 shrink-0">
-                    <img src="/img/LogoTecNMCompleto.png" alt="TecNM" class="h-12 lg:h-14 w-auto" />
-                    <img src="/img/LogoCenidetCompleto.png" alt="Cenidet" class="h-12 lg:h-14 w-auto" />
+                    <Link :href="route('inicio')" class="inline-flex items-center" aria-label="Ir a inicio desde logo TecNM">
+                        <img src="/img/LogoTecNMCompleto.png" alt="TecNM" class="h-12 lg:h-14 w-auto" />
+                    </Link>
+                    <Link :href="route('inicio')" class="inline-flex items-center" aria-label="Ir a inicio desde logo CENIDET">
+                        <img src="/img/LogoCenidetCompleto.png" alt="Cenidet" class="h-12 lg:h-14 w-auto" />
+                    </Link>
                 </div>
 
                 <!-- Nav links -->
@@ -42,8 +46,12 @@ const showingNavigationDropdown = ref(false);
             <div class="xl:hidden flex items-center justify-between px-4 h-16">
                 <!-- Logos -->
                 <div class="flex items-center gap-2">
-                    <img src="/img/LogoTecNMCompleto.png" alt="TecNM" class="h-9 w-auto" />
-                    <img src="/img/LogoCenidetCompleto.png" alt="Cenidet" class="h-9 w-auto" />
+                    <Link :href="route('inicio')" class="inline-flex items-center" aria-label="Ir a inicio desde logo TecNM">
+                        <img src="/img/LogoTecNMCompleto.png" alt="TecNM" class="h-9 w-auto" />
+                    </Link>
+                    <Link :href="route('inicio')" class="inline-flex items-center" aria-label="Ir a inicio desde logo CENIDET">
+                        <img src="/img/LogoCenidetCompleto.png" alt="Cenidet" class="h-9 w-auto" />
+                    </Link>
                 </div>
 
                 <!-- Hamburger -->

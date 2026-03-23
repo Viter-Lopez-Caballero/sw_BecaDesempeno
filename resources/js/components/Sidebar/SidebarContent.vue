@@ -4,9 +4,16 @@
             <!-- Section Header (no link, just a label) -->
             <div
                 v-if="item.type === 'section'"
-                class="px-6 pt-5 pb-1"
+                :class="[
+                    'pt-5 pb-1',
+                    collapsed && !isMobile ? 'px-4' : 'px-6'
+                ]"
             >
-                <span class="text-[11px] font-semibold uppercase tracking-wider text-white/40 select-none">
+                <span
+                    class="block text-[11px] font-semibold uppercase tracking-wider text-white/40 select-none truncate"
+                    :class="collapsed && !isMobile ? 'text-center' : ''"
+                    :title="item.label"
+                >
                     {{ item.label }}
                 </span>
             </div>
@@ -21,7 +28,11 @@
 </template>
 
 <script setup>
+import { inject, ref } from 'vue';
 import SidebarItem from './SidebarItem.vue';
+
+const collapsed = inject('sidebarCollapsed', ref(false));
+const isMobile = inject('isMobile', ref(false));
 
 defineProps({
     items: {
